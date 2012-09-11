@@ -148,8 +148,22 @@ void AfterDaemonFun( int Signal ){
   }
 }
 
+void analyseDoc( folia::Document *doc, ostream& os ){
+  os << "document: " << doc->id() << endl;
+  os << "paragraphs " << doc->paragraphs().size() << endl;
+  os << "sentences " << doc->sentences().size() << endl;
+  os << "words " << doc->words().size() << endl;
+}
+
+void analyseDocs( vector<folia::Document*>& docs, ostream& os ){
+  os << "read " << docs.size() << " folia documents" << endl;
+  for ( size_t i=0; i < docs.size(); ++i ){
+    analyseDoc( docs[i], os );
+  }
+}
+
 void TscanServerClass::getFrogResults( istream& is, 
-				       vector<folia::Document>& docs ){
+				       vector<folia::Document*>& docs ){
   string host = config.lookUp( "host", "frog" );
   string port = config.lookUp( "port", "frog" );
   Sockets::ClientSocket client;
@@ -177,14 +191,14 @@ void TscanServerClass::getFrogResults( istream& is,
       SDBG << "received data [" << result << "]" << endl;
       if ( !result.empty() && result.size() > 10 ){
 	SDBG << "start parsing" << endl;
-	folia::Document doc;
-	docs.push_back( doc );
+	folia::Document *doc = new folia::Document();
 	try {
-	  doc.readFromString( result );
+	  doc->readFromString( result );
+	  docs.push_back( doc );
 	  SDBG << "finished parsing" << endl;
 	}
 	catch ( std::exception& e ){
-	  docs.pop_back();
+	  delete doc;
 	  SLOG << "FoLiaParsing failed:" << endl
 	       << e.what() << endl;	  
 	}
@@ -201,9 +215,9 @@ void TscanServerClass::exec( const string& file, ostream& os ){
   }
   else {
     os << "opened file " << file << endl;
-    vector<folia::Document> docs;
+    vector<folia::Document*> docs;
     getFrogResults( is, docs );
-    os << "read " << docs.size() << " folia documents" << endl;
+    analyseDocs( docs, os );
   }
 }
 
