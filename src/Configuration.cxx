@@ -1,6 +1,6 @@
 /*
-  $Id: Configuration.cxx 15093 2012-08-09 13:16:00Z sloot $
-  $URL: https://ilk.uvt.nl/svn/sources/Frog/trunk/src/Configuration.cxx $
+  $Id$
+  $URL$
   Copyright (c) 2006 - 2012
   Tilburg University
 

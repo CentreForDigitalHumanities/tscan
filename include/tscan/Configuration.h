@@ -1,6 +1,6 @@
 /*
-  $Id: Configuration.h 14344 2012-02-27 16:40:05Z sloot $
-  $URL: https://ilk.uvt.nl/svn/sources/Frog/trunk/include/frog/Configuration.h $
+  $Id$
+  $URL$
 
   Copyright (c) 2006 - 2012
   Tilburg University
