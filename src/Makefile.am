@@ -5,4 +5,4 @@ AM_CPPFLAGS = -I@top_srcdir@/include
 
 bin_PROGRAMS = tscan
 
-tscan_SOURCES = tscan.cxx
+tscan_SOURCES = tscan.cxx Configuration.cxx

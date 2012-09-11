@@ -2,6 +2,7 @@
 #define TSCAN_SERVER_H
 
 #include "ticcutils/LogStream.h"
+#include "tscan/Configuration.h"
 
 class TscanServerClass {
  public:
@@ -11,13 +12,15 @@ class TscanServerClass {
   void exec( const std::string&, std::ostream& );
   TiCC::LogStream cur_log;
  private:
-  void RunServer();
+  bool RunServer();
+  bool RunOnce( const std::string& );
   bool getConfig( const std::string& );
-  int maxConn;
-  int serverPort;
+  void getFrogResults( std::istream&, 
+		       std::vector<folia::Document>& );
   std::string configFile;
   std::string pidFile;
   std::string logFile;
+  Configuration config;
   bool doDaemon;
   int tcp_socket;
   LogLevel dbLevel;

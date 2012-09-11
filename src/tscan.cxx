@@ -35,8 +35,6 @@
 #include "timblserver/FdStream.h"
 #include "libfolia/document.h"
 #include "ticcutils/StringOps.h"
-#include "ticcutils/LogStream.h"
-
 #include "tscan/TscanServer.h"
 
 using namespace std;
@@ -48,56 +46,6 @@ using namespace TiCC;
 
 #define LOG cerr
 
-bool TscanServerClass::getConfig( const string& serverConfigFile ){
-  maxConn = 25;
-  serverPort = -1;
-  ifstream is( serverConfigFile.c_str() );
-  if ( !is ){
-    cerr << "problem reading config from " << serverConfigFile << endl;
-    return false;
-  }
-  else {
-    string line;
-    while ( getline( is, line ) ){
-      if ( line.empty() || line[0] == '#' )
-	continue;
-      string::size_type ispos = line.find('=');
-      if ( ispos == string::npos ){
-	cerr << "invalid entry in: " << serverConfigFile 
-	     <<  " offending line: '" << line << "'" << endl;
-	return false;
-      }
-      else {
-	string base = line.substr(0,ispos);
-	string rest = line.substr( ispos+1 );
-	base = TiCC::trim(base);
-	rest = TiCC::trim(rest);
-	if ( !rest.empty() ){
-	  string tmp = TiCC::lowercase(base);
-	  if ( tmp == "maxconn" ){
-	    if ( !Timbl::stringTo( rest, maxConn ) ){
-	      cerr << "invalid value for maxconn" << endl;
-	      return false;
-	    }
-	  }
-	  else if ( tmp == "port" ){
-	    if ( !Timbl::stringTo( rest, serverPort ) ){
-	      cerr << "invalid value for port" << endl;
-	      return false;
-	    }
-	  }
-	}
-      }
-    }
-    if ( serverPort < 0 ){
-      cerr << "missing 'port=' entry in config file" << endl;
-      return false;
-    }
-    else
-      return true;
-  }
-}
-
 inline void usage(){
   cerr << "usage:  tscan" << endl;
 }
@@ -106,22 +54,10 @@ TscanServerClass::TscanServerClass( Timbl::TimblOpts& opts ):
   cur_log("T-Scan", StampMessage ){
   cerr << "TScan server " << VERSION << endl;
   cerr << "based on " << TimblServer::VersionName() << endl;
-  maxConn = 25;
-  serverPort = -1;
-  tcp_socket = 0;
   doDaemon = true;
   dbLevel = LogNormal;
   string val;
   bool mood;
-  if ( opts.Find( "h", val, mood ) ||
-       opts.Find( "help", val, mood ) ){
-    usage();
-    exit( EXIT_SUCCESS );
-  }
-  if ( opts.Find( "V", val, mood ) ||
-       opts.Find( "version", val, mood ) ){
-    exit( EXIT_SUCCESS );
-  }
   if ( opts.Find( "config", val, mood ) ){
     configFile = val;
     opts.Delete( "config" );
@@ -158,11 +94,19 @@ TscanServerClass::TscanServerClass( Timbl::TimblOpts& opts ):
     opts.Delete( 'D' );
   }
   
-  if ( !configFile.empty() ){
-    if ( getConfig( configFile ) )
+  if ( !configFile.empty() &&
+       config.fill( configFile ) ){
+    if ( opts.Find( "t", val, mood ) ){
+      RunOnce( val );
+    }
+    else {
       RunServer();
+    }
   }
-} 
+  else {
+    cerr << "invalid configuration" << endl;
+  }
+}
 
 TscanServerClass::~TscanServerClass(){
 }
@@ -204,8 +148,52 @@ void AfterDaemonFun( int Signal ){
   }
 }
 
+void TscanServerClass::getFrogResults( istream& is, 
+				       vector<folia::Document>& docs ){
+  string host = config.lookUp( "host", "frog" );
+  string port = config.lookUp( "port", "frog" );
+  Sockets::ClientSocket client;
+  client.connect( host, port );
+  while ( is ){
+    SDBG << "start input loop" << endl;
+    string line;
+    string buffer;
+    while ( getline( is, line ) ){
+      SDBG << "read: " << line << endl;
+      if ( line.empty() )
+	break;
+      buffer += line + " ";
+    }
+    SDBG << "Buffer=" << buffer << " size=" << buffer.size() << endl;
+    if ( buffer.size() > 0 ){
+      client.write( buffer + "\n" );
+      string result;
+      string s;
+      while ( client.read(s) ){
+	if ( s == "READY" )
+	  break;
+	result += s + "\n";
+      }
+      SDBG << "received data [" << result << "]" << endl;
+      if ( !result.empty() && result.size() > 10 ){
+	SDBG << "start parsing" << endl;
+	folia::Document doc;
+	docs.push_back( doc );
+	try {
+	  doc.readFromString( result );
+	  SDBG << "finished parsing" << endl;
+	}
+	catch ( std::exception& e ){
+	  docs.pop_back();
+	  SLOG << "FoLiaParsing failed:" << endl
+	       << e.what() << endl;	  
+	}
+      }
+    }
+  }
+}
+
 void TscanServerClass::exec( const string& file, ostream& os ){
-  vector<folia::Document> docs;
   SLOG << "try file ='" << file << "'" << endl;
   ifstream is( file.c_str() );
   if ( !is ){
@@ -213,45 +201,8 @@ void TscanServerClass::exec( const string& file, ostream& os ){
   }
   else {
     os << "opened file " << file << endl;
-    Sockets::ClientSocket client;
-    client.connect( "localhost", "7345" );
-    while ( is ){
-      SDBG << "start input loop" << endl;
-      string line;
-      string buffer;
-      while ( getline( is, line ) ){
-	SDBG << "read: " << line << endl;
-	if ( line.empty() )
-	  break;
-	buffer += line + " ";
-      }
-      SDBG << "Buffer=" << buffer << " size=" << buffer.size() << endl;
-      if ( buffer.size() > 0 ){
-	client.write( buffer + "\n" );
-	string result;
-	string s;
-	while ( client.read(s) ){
-	  if ( s == "READY" )
-	    break;
-	  result += s + "\n";
-	}
-	SDBG << "received data [" << result << "]" << endl;
-	if ( !result.empty() && result.size() > 10 ){
-	  SDBG << "start parsing" << endl;
-	  folia::Document doc;
-	  docs.push_back( doc );
-	  try {
-	    doc.readFromString( result );
-	    SDBG << "finished parsing" << endl;
-	  }
-	  catch ( std::exception& e ){
-	    docs.pop_back();
-	    SLOG << "FoLiaParsing failed:" << endl
-		 << e.what() << endl;	  
-	  }
-	}
-      }
-    }
+    vector<folia::Document> docs;
+    getFrogResults( is, docs );
     os << "read " << docs.size() << " folia documents" << endl;
   }
 }
@@ -313,7 +264,38 @@ void *runChild( void *arg ){
   return 0;
 }
 
-void TscanServerClass::RunServer(){
+bool TscanServerClass::RunOnce( const string& file ){
+  if ( !logFile.empty() ){
+    ostream *tmp = new ofstream( logFile.c_str() );
+    if ( tmp && tmp->good() ){
+      cerr << "switching logging to file " << logFile << endl;
+      cur_log.associate( *tmp );
+      cur_log.message( "T-Scan:" );
+      LOG << "Started logging " << endl;	
+    }
+    else {
+      cerr << "unable to create logfile: " << logFile << endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+  exec( file, cout );
+}
+  
+bool TscanServerClass::RunServer(){
+  int maxConn = 25;
+  int serverPort = -1;
+  string value;
+  value = config.lookUp( "maxconn" );
+  if ( !value.empty() && !Timbl::stringTo( value, maxConn ) ){
+    cerr << "invalid value for maxconn" << endl;
+    return false;
+  }
+  value = config.lookUp( "port" );
+  if ( !value.empty() && !Timbl::stringTo( value, serverPort ) ){
+    cerr << "invalid value for port" << endl;
+    return false;
+  }
+
   cerr << "trying to start a Server on port: " << serverPort << endl
        << "maximum # of simultaneous connections: " << maxConn
        << endl;
@@ -417,6 +399,17 @@ void TscanServerClass::RunServer(){
   
 int main(int argc, char *argv[]) {
   Timbl::TimblOpts opts( argc, argv );
+  string val;
+  bool mood;
+  if ( opts.Find( "h", val, mood ) ||
+       opts.Find( "help", val, mood ) ){
+    usage();
+    exit( EXIT_SUCCESS );
+  }
+  if ( opts.Find( "V", val, mood ) ||
+       opts.Find( "version", val, mood ) ){
+    exit( EXIT_SUCCESS );
+  }
   TscanServerClass server( opts );
   exit(EXIT_SUCCESS);
 }
