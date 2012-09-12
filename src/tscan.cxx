@@ -41,7 +41,7 @@ using namespace std;
 using namespace TiCC;
 
 #define SLOG (*Log(cur_log))
-#define SDBG (*Dbg(cur_log))
+#define SDBG (*Log(cur_log))
 
 
 #define LOG cerr
@@ -168,41 +168,34 @@ void TscanServerClass::getFrogResults( istream& is,
   string port = config.lookUp( "port", "frog" );
   Sockets::ClientSocket client;
   client.connect( host, port );
-  while ( is ){
-    SDBG << "start input loop" << endl;
-    string line;
-    string buffer;
-    while ( getline( is, line ) ){
-      SDBG << "read: " << line << endl;
-      if ( line.empty() )
-	break;
-      buffer += line + " ";
+  //  while ( is ){
+  SDBG << "start input loop" << endl;
+  string line;
+  while ( getline( is, line ) ){
+    SDBG << "read: " << line << endl;
+    client.write( line + "\n" );
+  }
+  client.write( "\nEOT\n" );
+  string result;
+  string s;
+  while ( client.read(s) ){
+    if ( s == "READY" )
+      break;
+    result += s + "\n";
+  }
+  SDBG << "received data [" << result << "]" << endl;
+  if ( !result.empty() && result.size() > 10 ){
+    SDBG << "start parsing" << endl;
+    folia::Document *doc = new folia::Document();
+    try {
+      doc->readFromString( result );
+      docs.push_back( doc );
+      SDBG << "finished parsing" << endl;
     }
-    SDBG << "Buffer=" << buffer << " size=" << buffer.size() << endl;
-    if ( buffer.size() > 0 ){
-      client.write( buffer + "\n" );
-      string result;
-      string s;
-      while ( client.read(s) ){
-	if ( s == "READY" )
-	  break;
-	result += s + "\n";
-      }
-      SDBG << "received data [" << result << "]" << endl;
-      if ( !result.empty() && result.size() > 10 ){
-	SDBG << "start parsing" << endl;
-	folia::Document *doc = new folia::Document();
-	try {
-	  doc->readFromString( result );
-	  docs.push_back( doc );
-	  SDBG << "finished parsing" << endl;
-	}
-	catch ( std::exception& e ){
-	  delete doc;
-	  SLOG << "FoLiaParsing failed:" << endl
-	       << e.what() << endl;	  
-	}
-      }
+    catch ( std::exception& e ){
+      delete doc;
+      SLOG << "FoLiaParsing failed:" << endl
+	   << e.what() << endl;	  
     }
   }
 }
