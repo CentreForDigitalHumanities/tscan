@@ -28,7 +28,6 @@
 #include <csignal>
 #include <cerrno>
 #include <string>
-#include <vector>
 #include <cstdio> // for remove()
 #include "config.h"
 #include "timblserver/TimblServerAPI.h"
@@ -155,15 +154,7 @@ void analyseDoc( folia::Document *doc, ostream& os ){
   os << "words " << doc->words().size() << endl;
 }
 
-void analyseDocs( vector<folia::Document*>& docs, ostream& os ){
-  os << "read " << docs.size() << " folia documents" << endl;
-  for ( size_t i=0; i < docs.size(); ++i ){
-    analyseDoc( docs[i], os );
-  }
-}
-
-void TscanServerClass::getFrogResults( istream& is, 
-				       vector<folia::Document*>& docs ){
+folia::Document *TscanServerClass::getFrogResult( istream& is ){
   string host = config.lookUp( "host", "frog" );
   string port = config.lookUp( "port", "frog" );
   Sockets::ClientSocket client;
@@ -184,20 +175,21 @@ void TscanServerClass::getFrogResults( istream& is,
     result += s + "\n";
   }
   SDBG << "received data [" << result << "]" << endl;
+  folia::Document *doc;
   if ( !result.empty() && result.size() > 10 ){
-    SDBG << "start parsing" << endl;
-    folia::Document *doc = new folia::Document();
+    SDBG << "start FoLiA parsing" << endl;
+    doc = new folia::Document();
     try {
       doc->readFromString( result );
-      docs.push_back( doc );
-      SDBG << "finished parsing" << endl;
+      SDBG << "finished" << endl;
     }
     catch ( std::exception& e ){
-      delete doc;
+      doc = 0;
       SLOG << "FoLiaParsing failed:" << endl
 	   << e.what() << endl;	  
     }
   }
+  return doc;
 }
 
 void TscanServerClass::exec( const string& file, ostream& os ){
@@ -208,9 +200,8 @@ void TscanServerClass::exec( const string& file, ostream& os ){
   }
   else {
     os << "opened file " << file << endl;
-    vector<folia::Document*> docs;
-    getFrogResults( is, docs );
-    analyseDocs( docs, os );
+    folia::Document *doc = getFrogResult( is );
+    analyseDoc( doc, os );
   }
 }
 

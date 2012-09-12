@@ -15,8 +15,7 @@ class TscanServerClass {
   bool RunServer();
   bool RunOnce( const std::string& );
   bool getConfig( const std::string& );
-  void getFrogResults( std::istream&, 
-		       std::vector<folia::Document*>& );
+  folia::Document *getFrogResult( std::istream& );
   std::string configFile;
   std::string pidFile;
   std::string logFile;
