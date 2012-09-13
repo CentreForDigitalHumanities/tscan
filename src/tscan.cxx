@@ -32,18 +32,21 @@
 #include "config.h"
 #include "timblserver/TimblServerAPI.h"
 #include "timblserver/FdStream.h"
+#include "libfolia/folia.h"
 #include "libfolia/document.h"
 #include "ticcutils/StringOps.h"
 #include "tscan/TscanServer.h"
 
 using namespace std;
 using namespace TiCC;
+using namespace folia;
 
 #define SLOG (*Log(cur_log))
 #define SDBG (*Log(cur_log))
 
-
 #define LOG cerr
+
+bool doAlpino = true;
 
 inline void usage(){
   cerr << "usage:  tscan" << endl;
@@ -147,11 +150,160 @@ void AfterDaemonFun( int Signal ){
   }
 }
 
+struct sentStats {
+  sentStats() : wordCnt(0),posCnt(0),lemmaCnt(0),morphCnt(0){};
+  int wordCnt;
+  int posCnt;
+  int lemmaCnt;
+  int morphCnt;
+};
+
+ostream& operator<<( ostream& os, const sentStats& s ){
+  os << "#words=" << s.wordCnt << ", #posTags=" << s.posCnt 
+     << ", #lemmas=" << s.lemmaCnt;
+  return os;
+}
+
+struct parStats {
+  vector<sentStats> sstat;
+};
+
+sentStats analyseSent( folia::Sentence *s, ostream& os ){
+  sentStats ss;
+  vector<folia::Word*> w = s->words();
+  ss.wordCnt = w.size();
+  os << "sentence  " << s->id() << endl;
+  for ( size_t i=0; i < w.size(); ++i ){
+    vector<folia::PosAnnotation*> pos = w[i]->select<folia::PosAnnotation>();
+    if ( pos.size() > 0 )
+      os << "head = " << pos[0]->feat("head") << endl;
+  }
+  for ( size_t i=0; i < w.size(); ++i ){
+    os << "[" << i << "]\t" << w[i]->text() << "\t";
+    os << w[i]->lemma() << "\t";
+    string morph;
+    vector<folia::MorphologyLayer*> ml = w[i]->annotations<folia::MorphologyLayer>();
+    for ( size_t q=0; q < ml.size(); ++q ){
+      vector<folia::Morpheme*> m = ml[q]->select<folia::Morpheme>();
+      for ( size_t t=0; t < m.size(); ++t ){
+	morph += "[" + folia::UnicodeToUTF8( m[t]->text() ) + "]";
+      }
+      if ( q < ml.size()-1 )
+	morph += "/";
+    }
+    os << morph + "\t";
+    os << w[i]->pos() << "\t";
+    os << endl;
+  }
+  os << endl;
+  return ss;
+}
+
+void addSU( xmlNode *n, vector<Word*>& words, FoliaElement *s ){
+  if ( Name( n ) == "node" ){
+    KWargs atts = getAttributes( n );
+    string cls = atts["cat"];
+    if ( cls.empty() )
+      cls = atts["lcat"];
+    if ( !cls.empty() ){
+      FoliaElement *e = 
+	s->append( new SyntacticUnit( s->doc(), "cls='" + cls + "'" ) );
+      string posS = atts["begin"];
+      cerr << "poss = " << posS << endl;
+      int start = stringTo<int>( posS );
+      posS = atts["end"];
+      cerr << "poss = " << posS << endl;
+      int end = stringTo<int>( posS );
+      if ( end - start == 1 ){
+	e->append( words[start] );
+      }
+      else {
+	xmlNode *pnt = n->children;
+	while ( pnt ){
+	  addSU( pnt, words, e );
+	  pnt = pnt->next;
+	}
+      }
+    }
+  }
+}
+
+void extractSyntax( xmlNode *node, folia::Sentence *s ){
+  Document *doc = s->doc();
+  doc->declare( AnnotationType::SYNTAX, 
+		"myset", 
+		"annotator='alpino'" );
+  vector<Word*> words = s->words();
+  FoliaElement *layer = s->append( new SyntaxLayer( doc ) );
+  FoliaElement *sent = layer->append( new SyntacticUnit( doc, "cls='s'" ) );
+  xmlNode *pnt = node->children;
+  while ( pnt ){
+    addSU( pnt, words, sent );
+    pnt = pnt->next;
+  }
+}
+
+void extractDependency( xmlNode *node, folia::Sentence *s ){
+}
+
+void extractAndAppendParse( xmlDoc *doc, folia::Sentence *s ){
+  cerr << "extract the Alpino results!" << endl;
+  xmlNode *root = xmlDocGetRootElement( doc );
+  xmlNode *pnt = root->children;
+  while ( pnt ){
+    if ( folia::Name( pnt ) == "node" ){
+      cerr << "founds a node" << endl;
+      // 1 top node i hope
+      extractSyntax( pnt, s );
+      cerr << "added syntax " << s->xmlstring() << endl;
+      extractDependency( pnt, s );
+      break;
+    }
+    pnt = pnt->next;
+  }
+}
+
+bool AlpinoParse( folia::Sentence *s ){
+  string txt = folia::UnicodeToUTF8(s->text());
+  cerr << "parse line: " << txt << endl;
+  ofstream os( "tempparse.txt" );
+  os << txt;
+  os.close();
+  string parseCmd = "Alpino -fast -flag treebank ./temp_parse end_hook=xml -parse < tempparse.txt -notk > /dev/null 2>&1";
+  int res = system( parseCmd.c_str() );
+  cerr << "parse res: " << res << endl;
+  remove( "tempparse.txt" );
+  xmlDoc *xmldoc = xmlReadFile( "./temp_parse/1.xml", 0, XML_PARSE_NOBLANKS );
+  if ( xmldoc ){
+    extractAndAppendParse( xmldoc, s );
+  }
+  return (xmldoc != 0 );
+}
+
+parStats analysePar( folia::Paragraph *p, ostream& os ){
+  os << endl << "paragraph " << p->id() << endl;
+  vector<folia::Sentence*> sents = p->sentences();
+  os << " # sentences " << sents.size() << endl;
+  parStats ps;
+  for ( size_t i=0; i < sents.size(); ++i ){
+    if ( doAlpino ){
+      AlpinoParse( sents[i] );
+    }
+    ps.sstat.push_back( analyseSent( sents[i], os ) );
+  }
+  return ps;
+}
+
 void analyseDoc( folia::Document *doc, ostream& os ){
   os << "document: " << doc->id() << endl;
   os << "paragraphs " << doc->paragraphs().size() << endl;
   os << "sentences " << doc->sentences().size() << endl;
   os << "words " << doc->words().size() << endl;
+  vector<parStats> result;
+  vector<folia::Paragraph*> pars = doc->paragraphs();
+  for ( size_t i=0; i < pars.size(); ++i ){
+    result.push_back( analysePar( pars[i], os ) );
+  }
 }
 
 folia::Document *TscanServerClass::getFrogResult( istream& is ){

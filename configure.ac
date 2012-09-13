@@ -3,7 +3,9 @@
 
 AC_PREREQ([2.60])
 AC_INIT([tscan], [0.1], [to-be-decided@ergens.nl])
+AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
+
 AC_CONFIG_SRCDIR([src/tscan.cxx])
 AC_CONFIG_HEADERS([config.h])
 
@@ -37,6 +39,11 @@ if test "x$PKG_CONFIG_PATH" = x; then
      export PKG_CONFIG_PATH=""
 fi
 PKG_PROG_PKG_CONFIG
+
+AX_ICU_CHECK( [3.6],
+	      [CXXFLAGS="$CXXFLAGS $ICU_CPPSEARCHPATH"
+	       LIBS="$ICU_LIBPATH $ICU_LIBS $ICU_IOLIBS $LIBS"],
+	      [AC_MSG_FAILURE( "No ICU development environment found. Please check if libicu-dev or the like is installed" )] )
 
 AC_ARG_WITH(timbl,
        [  --with-timbl=DIR       use timbl installed in <DIR>; 
