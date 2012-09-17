@@ -203,18 +203,17 @@ void addSU( xmlNode *n, vector<Word*>& words, FoliaElement *s ){
   if ( Name( n ) == "node" ){
     KWargs atts = getAttributes( n );
     string cls = atts["cat"];
-    if ( cls.empty() )
+    bool leaf = false;
+    if ( cls.empty() ){
       cls = atts["lcat"];
+      leaf = true;
+    }
     if ( !cls.empty() ){
       FoliaElement *e = 
 	s->append( new SyntacticUnit( s->doc(), "cls='" + cls + "'" ) );
-      string posS = atts["begin"];
-      cerr << "poss = " << posS << endl;
-      int start = stringTo<int>( posS );
-      posS = atts["end"];
-      cerr << "poss = " << posS << endl;
-      int end = stringTo<int>( posS );
-      if ( end - start == 1 ){
+      if ( leaf ){
+	string posS = atts["begin"];
+	int start = stringTo<int>( posS );
 	e->append( words[start] );
       }
       else {
