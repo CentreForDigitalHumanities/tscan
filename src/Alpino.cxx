@@ -1,6 +1,6 @@
 /*
-  $Id: tscan.cxx 15187 2012-09-17 09:12:13Z sloot $
-  $URL: https://ilk.uvt.nl/svn/sources/tscan/trunk/src/tscan.cxx $
+  $Id$
+  $URL$
 
   Copyright (c) 1998 - 2012
  
