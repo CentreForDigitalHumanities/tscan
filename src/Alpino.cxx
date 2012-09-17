@@ -69,10 +69,10 @@ void addSU( xmlNode *n, vector<Word*>& words, FoliaElement *s ){
   }
 }
 
-void extractSyntax( xmlNode *node, folia::Sentence *s ){
+void extractSyntax( xmlNode *node, Sentence *s ){
   Document *doc = s->doc();
   doc->declare( AnnotationType::SYNTAX, 
-		"myset", 
+		"mysyntaxse4t", 
 		"annotator='alpino'" );
   vector<Word*> words = s->words();
   FoliaElement *layer = s->append( new SyntaxLayer( doc ) );
@@ -84,7 +84,88 @@ void extractSyntax( xmlNode *node, folia::Sentence *s ){
   }
 }
 
+xmlNode *findSubHead( xmlNode *node ){
+  xmlNode *pnt = node->children;
+  while ( pnt ){
+    KWargs atts = getAttributes( pnt );
+    string rel = atts["rel"];
+    if ( rel == "hd" ){
+      return pnt;
+      break;
+    }
+    pnt = pnt->next;
+  }
+  return 0;
+}
+
+void addDep( xmlNode *node, vector<Word*>& words, FoliaElement *layer ){
+  KWargs atts = getAttributes( node );
+  cerr << "addDep rel=" << atts["rel"] << endl;
+  xmlNode *hd = 0;
+  xmlNode *pnt = node->children;
+  while ( pnt ){
+    KWargs atts = getAttributes( pnt );
+    string rel = atts["rel"];
+    if ( rel == "hd" ){
+      hd = pnt;
+      break;
+    }
+    pnt = pnt->next;
+  }
+  if ( hd ){
+    KWargs atts = getAttributes( hd );
+    string posH = atts["begin"];
+    int headStart = stringTo<int>( posH );
+    cerr << "found a head: " << words[headStart]->text() << endl;
+    pnt = node->children;
+    while ( pnt ){
+      if ( pnt != hd ){
+	KWargs atts = getAttributes( pnt );
+	string rel = atts["rel"];
+	cerr << "bekijk REL=" << rel << endl;
+	FoliaElement *dep = layer->append( new Dependency( layer->doc(),
+							   "class='" + rel + "'" ) );
+	FoliaElement *h = dep->append( new DependencyHead() );
+	h->append( words[headStart] );
+	xmlNode *sub = findSubHead( pnt );
+	if ( !sub ){
+	  cerr << "geen subHead " << endl;
+	  string posD = atts["begin"];
+	  int start = stringTo<int>( posD );
+	  FoliaElement *d = dep->append( new DependencyDependent() );
+	  d->append( words[start] );
+	}
+	else {
+	  KWargs atts = getAttributes( sub );
+	  string posD = atts["begin"];
+	  int start = stringTo<int>( posD );
+	  cerr << "er is een subHead " << words[start]->text() << endl;
+	  FoliaElement *d = dep->append( new DependencyDependent() );
+	  d->append( words[start] );
+	  addDep( pnt, words, layer );
+	}
+      }
+      pnt = pnt->next;
+    }
+  }
+  else {
+    cerr << "found no head, recurse " << endl;
+    xmlNode *pnt = node->children;
+    while ( pnt ){
+      addDep( pnt, words, layer );
+      pnt = pnt->next;
+    }
+  }
+}
+
 void extractDependency( xmlNode *node, folia::Sentence *s ){
+  Document *doc = s->doc();
+  doc->declare( AnnotationType::DEPENDENCY, 
+		"mysdepset", 
+		"annotator='alpino'" );
+  vector<Word*> words = s->words();
+  FoliaElement *layer = s->append( new DependenciesLayer( doc ) );
+  addDep( node, words, layer );
 }
 
 void extractAndAppendParse( xmlDoc *doc, folia::Sentence *s ){
@@ -93,11 +174,11 @@ void extractAndAppendParse( xmlDoc *doc, folia::Sentence *s ){
   xmlNode *pnt = root->children;
   while ( pnt ){
     if ( folia::Name( pnt ) == "node" ){
-      cerr << "founds a node" << endl;
+      cerr << "found a node" << endl;
       // 1 top node i hope
       extractSyntax( pnt, s );
-      cerr << "added syntax " << s->xmlstring() << endl;
       extractDependency( pnt, s );
+      cerr << "added syntax and dependencies " << s->xmlstring() << endl;
       break;
     }
     pnt = pnt->next;
