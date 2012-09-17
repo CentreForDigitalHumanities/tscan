@@ -36,6 +36,7 @@
 #include "libfolia/document.h"
 #include "ticcutils/StringOps.h"
 #include "tscan/TscanServer.h"
+#include "tscan/Alpino.h"
 
 using namespace std;
 using namespace TiCC;
@@ -197,86 +198,6 @@ sentStats analyseSent( folia::Sentence *s, ostream& os ){
   }
   os << endl;
   return ss;
-}
-
-void addSU( xmlNode *n, vector<Word*>& words, FoliaElement *s ){
-  if ( Name( n ) == "node" ){
-    KWargs atts = getAttributes( n );
-    string cls = atts["cat"];
-    bool leaf = false;
-    if ( cls.empty() ){
-      cls = atts["lcat"];
-      leaf = true;
-    }
-    if ( !cls.empty() ){
-      FoliaElement *e = 
-	s->append( new SyntacticUnit( s->doc(), "cls='" + cls + "'" ) );
-      if ( leaf ){
-	string posS = atts["begin"];
-	int start = stringTo<int>( posS );
-	e->append( words[start] );
-      }
-      else {
-	xmlNode *pnt = n->children;
-	while ( pnt ){
-	  addSU( pnt, words, e );
-	  pnt = pnt->next;
-	}
-      }
-    }
-  }
-}
-
-void extractSyntax( xmlNode *node, folia::Sentence *s ){
-  Document *doc = s->doc();
-  doc->declare( AnnotationType::SYNTAX, 
-		"myset", 
-		"annotator='alpino'" );
-  vector<Word*> words = s->words();
-  FoliaElement *layer = s->append( new SyntaxLayer( doc ) );
-  FoliaElement *sent = layer->append( new SyntacticUnit( doc, "cls='s'" ) );
-  xmlNode *pnt = node->children;
-  while ( pnt ){
-    addSU( pnt, words, sent );
-    pnt = pnt->next;
-  }
-}
-
-void extractDependency( xmlNode *node, folia::Sentence *s ){
-}
-
-void extractAndAppendParse( xmlDoc *doc, folia::Sentence *s ){
-  cerr << "extract the Alpino results!" << endl;
-  xmlNode *root = xmlDocGetRootElement( doc );
-  xmlNode *pnt = root->children;
-  while ( pnt ){
-    if ( folia::Name( pnt ) == "node" ){
-      cerr << "founds a node" << endl;
-      // 1 top node i hope
-      extractSyntax( pnt, s );
-      cerr << "added syntax " << s->xmlstring() << endl;
-      extractDependency( pnt, s );
-      break;
-    }
-    pnt = pnt->next;
-  }
-}
-
-bool AlpinoParse( folia::Sentence *s ){
-  string txt = folia::UnicodeToUTF8(s->text());
-  cerr << "parse line: " << txt << endl;
-  ofstream os( "tempparse.txt" );
-  os << txt;
-  os.close();
-  string parseCmd = "Alpino -fast -flag treebank ./temp_parse end_hook=xml -parse < tempparse.txt -notk > /dev/null 2>&1";
-  int res = system( parseCmd.c_str() );
-  cerr << "parse res: " << res << endl;
-  remove( "tempparse.txt" );
-  xmlDoc *xmldoc = xmlReadFile( "./temp_parse/1.xml", 0, XML_PARSE_NOBLANKS );
-  if ( xmldoc ){
-    extractAndAppendParse( xmldoc, s );
-  }
-  return (xmldoc != 0 );
 }
 
 parStats analysePar( folia::Paragraph *p, ostream& os ){
