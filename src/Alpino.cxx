@@ -105,7 +105,7 @@ void extractAndAppendParse( xmlDoc *doc, folia::Sentence *s ){
 }
 
 bool AlpinoParse( folia::Sentence *s ){
-  string txt = folia::UnicodeToUTF8(s->text());
+  string txt = folia::UnicodeToUTF8(s->toktext());
   cerr << "parse line: " << txt << endl;
   struct stat sbuf;
   int res = stat( "/tmp/alpino", &sbuf );
