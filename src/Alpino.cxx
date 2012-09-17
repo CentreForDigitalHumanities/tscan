@@ -38,7 +38,6 @@
 #include "tscan/Alpino.h"
 
 using namespace std;
-//using namespace TiCC;
 using namespace folia;
 
 void addSU( xmlNode *n, vector<Word*>& words, FoliaElement *s ){
@@ -72,7 +71,7 @@ void addSU( xmlNode *n, vector<Word*>& words, FoliaElement *s ){
 void extractSyntax( xmlNode *node, Sentence *s ){
   Document *doc = s->doc();
   doc->declare( AnnotationType::SYNTAX, 
-		"mysyntaxse4t", 
+		"mysyntaxset", 
 		"annotator='alpino'" );
   vector<Word*> words = s->words();
   FoliaElement *layer = s->append( new SyntaxLayer( doc ) );
@@ -100,7 +99,6 @@ xmlNode *findSubHead( xmlNode *node ){
 
 void addDep( xmlNode *node, vector<Word*>& words, FoliaElement *layer ){
   KWargs atts = getAttributes( node );
-  cerr << "addDep rel=" << atts["rel"] << endl;
   xmlNode *hd = 0;
   xmlNode *pnt = node->children;
   while ( pnt ){
@@ -116,20 +114,17 @@ void addDep( xmlNode *node, vector<Word*>& words, FoliaElement *layer ){
     KWargs atts = getAttributes( hd );
     string posH = atts["begin"];
     int headStart = stringTo<int>( posH );
-    cerr << "found a head: " << words[headStart]->text() << endl;
     pnt = node->children;
     while ( pnt ){
       if ( pnt != hd ){
 	KWargs atts = getAttributes( pnt );
 	string rel = atts["rel"];
-	cerr << "bekijk REL=" << rel << endl;
 	FoliaElement *dep = layer->append( new Dependency( layer->doc(),
 							   "class='" + rel + "'" ) );
 	FoliaElement *h = dep->append( new DependencyHead() );
 	h->append( words[headStart] );
 	xmlNode *sub = findSubHead( pnt );
 	if ( !sub ){
-	  cerr << "geen subHead " << endl;
 	  string posD = atts["begin"];
 	  int start = stringTo<int>( posD );
 	  FoliaElement *d = dep->append( new DependencyDependent() );
@@ -139,7 +134,6 @@ void addDep( xmlNode *node, vector<Word*>& words, FoliaElement *layer ){
 	  KWargs atts = getAttributes( sub );
 	  string posD = atts["begin"];
 	  int start = stringTo<int>( posD );
-	  cerr << "er is een subHead " << words[start]->text() << endl;
 	  FoliaElement *d = dep->append( new DependencyDependent() );
 	  d->append( words[start] );
 	  addDep( pnt, words, layer );
@@ -149,7 +143,6 @@ void addDep( xmlNode *node, vector<Word*>& words, FoliaElement *layer ){
     }
   }
   else {
-    cerr << "found no head, recurse " << endl;
     xmlNode *pnt = node->children;
     while ( pnt ){
       addDep( pnt, words, layer );
@@ -169,16 +162,13 @@ void extractDependency( xmlNode *node, folia::Sentence *s ){
 }
 
 void extractAndAppendParse( xmlDoc *doc, folia::Sentence *s ){
-  cerr << "extract the Alpino results!" << endl;
   xmlNode *root = xmlDocGetRootElement( doc );
   xmlNode *pnt = root->children;
   while ( pnt ){
     if ( folia::Name( pnt ) == "node" ){
-      cerr << "found a node" << endl;
       // 1 top node i hope
       extractSyntax( pnt, s );
       extractDependency( pnt, s );
-      cerr << "added syntax and dependencies " << s->xmlstring() << endl;
       break;
     }
     pnt = pnt->next;
@@ -187,7 +177,7 @@ void extractAndAppendParse( xmlDoc *doc, folia::Sentence *s ){
 
 bool AlpinoParse( folia::Sentence *s ){
   string txt = folia::UnicodeToUTF8(s->toktext());
-  cerr << "parse line: " << txt << endl;
+  //  cerr << "parse line: " << txt << endl;
   struct stat sbuf;
   int res = stat( "/tmp/alpino", &sbuf );
   if ( !S_ISDIR(sbuf.st_mode) ){
@@ -202,7 +192,6 @@ bool AlpinoParse( folia::Sentence *s ){
   os.close();
   string parseCmd = "Alpino -fast -flag treebank /tmp/alpino/parses end_hook=xml -parse < /tmp/alpino/tempparse.txt -notk > /dev/null 2>&1";
   res = system( parseCmd.c_str() );
-  cerr << "parse res: " << res << endl;
   remove( "/tmp/alpino/tempparse.txt" );
   xmlDoc *xmldoc = xmlReadFile( "/tmp/alpino/parses/1.xml", 0, XML_PARSE_NOBLANKS );
   if ( xmldoc ){
