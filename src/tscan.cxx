@@ -28,6 +28,7 @@
 #include <csignal>
 #include <cerrno>
 #include <string>
+#include <algorithm>
 #include <cstdio> // for remove()
 #include "config.h"
 #include "timblserver/TimblServerAPI.h"
@@ -43,11 +44,25 @@ using namespace TiCC;
 using namespace folia;
 
 #define SLOG (*Log(cur_log))
-#define SDBG (*Log(cur_log))
+#define SDBG (*Dbg(cur_log))
 
 #define LOG cerr
 
-bool doAlpino = true;
+struct settingData {
+  void init( const Configuration& );
+  bool doAlpino;
+  
+};
+
+void settingData::init( const Configuration& cf ){
+  string val = cf.lookUp( "useAlpino" );
+  doAlpino = false;
+  if( !Timbl::stringTo( val, doAlpino ) ){
+    cerr << "invalid value for 'useAlpino' in config file" << endl;
+  }
+}
+
+settingData settings;
 
 inline void usage(){
   cerr << "usage:  tscan" << endl;
@@ -99,6 +114,7 @@ TscanServerClass::TscanServerClass( Timbl::TimblOpts& opts ):
   
   if ( !configFile.empty() &&
        config.fill( configFile ) ){
+    settings.init( config );
     if ( opts.Find( "t", val, mood ) ){
       RunOnce( val );
     }
@@ -151,65 +167,172 @@ void AfterDaemonFun( int Signal ){
   }
 }
 
+struct wordStats {
+  string word;
+  string pos;
+  string posHead;
+  string lemma;
+  string morph;
+  int wordLen;
+};
+
+ostream& operator<<( ostream& os, const wordStats& ws ){
+  os << "word: " << ws.word << ", HEAD: " << ws.posHead;
+  return os;
+}
+
 struct sentStats {
-  sentStats() : wordCnt(0),posCnt(0),lemmaCnt(0),morphCnt(0){};
+  string id;
+  string text;
+  int wordLen;
   int wordCnt;
-  int posCnt;
-  int lemmaCnt;
-  int morphCnt;
+  vector<wordStats> wsv;
+  map<string,int> heads;
+  set<string> unique_lemmas;
+  set<string> unique_words;
 };
 
 ostream& operator<<( ostream& os, const sentStats& s ){
-  os << "#words=" << s.wordCnt << ", #posTags=" << s.posCnt 
-     << ", #lemmas=" << s.lemmaCnt;
+  os << "sentence " << s.id << " [" << s.text << "]" << endl;
+  os << "sentence POS tags: ";
+  for ( map<string,int>::const_iterator it = s.heads.begin();
+	it != s.heads.end(); ++it ){
+    os << it->first << "[" << it->second << "] ";
+  }
+  os << endl;
+  os << "gemiddelde woordlengte " << s.wordLen/double(s.wordCnt) << endl;
+  os << "zinslengte " << s.wordCnt << endl;
+  for ( size_t i=0;  i < s.wsv.size(); ++ i ){
+    os << s.wsv[i] << endl;
+  }
   return os;
 }
 
 struct parStats {
-  vector<sentStats> sstat;
+  string id;
+  size_t wordCnt;
+  int wordLen;
+  int sentCnt;
+  vector<sentStats> ssv;
+  map<string,int> heads;
+  set<string> unique_lemmas;
+  set<string> unique_words;
 };
 
-sentStats analyseSent( folia::Sentence *s, ostream& os ){
-  sentStats ss;
-  vector<folia::Word*> w = s->words();
-  ss.wordCnt = w.size();
-  os << "sentence  " << s->id() << endl;
-  for ( size_t i=0; i < w.size(); ++i ){
-    vector<folia::PosAnnotation*> pos = w[i]->select<folia::PosAnnotation>();
-    if ( pos.size() > 0 )
-      os << "head = " << pos[0]->feat("head") << endl;
-  }
-  for ( size_t i=0; i < w.size(); ++i ){
-    os << "[" << i << "]\t" << w[i]->text() << "\t";
-    os << w[i]->lemma() << "\t";
-    string morph;
-    vector<folia::MorphologyLayer*> ml = w[i]->annotations<folia::MorphologyLayer>();
-    for ( size_t q=0; q < ml.size(); ++q ){
-      vector<folia::Morpheme*> m = ml[q]->select<folia::Morpheme>();
-      for ( size_t t=0; t < m.size(); ++t ){
-	morph += "[" + folia::UnicodeToUTF8( m[t]->text() ) + "]";
-      }
-      if ( q < ml.size()-1 )
-	morph += "/";
-    }
-    os << morph + "\t";
-    os << w[i]->pos() << "\t";
-    os << endl;
+ostream& operator<<( ostream& os, const parStats& p ){
+  os << "paragraph: " << p.id << endl;
+  os << "paragraph POS tags: ";
+  for ( map<string,int>::const_iterator it = p.heads.begin();
+	it != p.heads.end(); ++it ){
+    os << it->first << "[" << it->second << "] ";
   }
   os << endl;
+  os << "aantal zinnen " << p.sentCnt << endl;
+  os << "gemiddelde woordlengte " << p.wordLen/double(p.wordCnt) << endl << endl;
+  os << "gemiddelde zinslengte " << p.wordCnt/double(p.sentCnt) << endl << endl;
+  for ( size_t i=0; i != p.ssv.size(); ++i ){
+    os << p.ssv[i] << endl;
+  }
+  os << endl;
+  return os;
+}
+
+struct docStats {
+  string id;
+  size_t wordCnt;
+  int wordLen;
+  int sentCnt;
+  vector<parStats> psv;
+  map<string,int> heads;
+  set<string> unique_lemmas;
+  set<string> unique_words;
+};
+
+ostream& operator<<( ostream& os, const docStats& d ){
+  os << "Document: " << d.id << endl;
+  os << "TTW = " << d.unique_words.size()/double(d.wordCnt) << endl;
+  os << "TTL = " << d.unique_lemmas.size()/double(d.wordCnt) << endl;
+  os << "Document POS tags: ";
+  for ( map<string,int>::const_iterator it = d.heads.begin();
+	it != d.heads.end(); ++it ){
+    os << it->first << "[" << it->second << "] ";
+  }
+  os << endl;
+  os << "gemiddelde woordlengte " << d.wordLen/double(d.wordCnt) << endl;
+  os << "gemiddelde zinslengte " << d.wordCnt/double(d.sentCnt) << endl << endl;
+  for ( size_t i=0; i < d.psv.size(); ++i ){
+    os << d.psv[i] << endl;
+  }
+  os << endl;
+  return os;
+}
+
+wordStats analyseWord( folia::Word *w ){
+  wordStats ws;
+  ws.word = UnicodeToUTF8( w->text() );
+  ws.wordLen = w->text().length();
+  vector<folia::PosAnnotation*> pos = w->select<folia::PosAnnotation>();
+  if ( pos.size() != 1 )
+    throw ValueError( "word doesn't have POS tag info" );
+  ws.pos = pos[0]->cls();
+  ws.posHead = pos[0]->feat("head");
+  ws.lemma= w->lemma();
+  string morph;
+  vector<folia::MorphologyLayer*> ml = w->annotations<folia::MorphologyLayer>();
+  for ( size_t q=0; q < ml.size(); ++q ){
+    vector<folia::Morpheme*> m = ml[q]->select<folia::Morpheme>();
+    for ( size_t t=0; t < m.size(); ++t ){
+      morph += "[" + folia::UnicodeToUTF8( m[t]->text() ) + "]";
+    }
+    if ( q < ml.size()-1 )
+      morph += "/";
+  }
+  ws.morph = morph;
+  return ws;
+}
+
+sentStats analyseSent( folia::Sentence *s ){
+  sentStats ss;
+  ss.id = s->id();
+  ss.text = UnicodeToUTF8( s->toktext() );
+  vector<folia::Word*> w = s->words();
+  ss.wordCnt = 0;
+  ss.wordLen = 0;
+  for ( size_t i=0; i < w.size(); ++i ){
+    wordStats ws = analyseWord( w[i] );
+    if ( ws.posHead != "LET" )
+      ss.heads[ws.posHead]++;
+    ss.wordCnt += 1;
+    ss.wordLen += ws.wordLen;
+    ss.unique_words.insert(lowercase(ws.word));
+    ss.unique_lemmas.insert(ws.lemma);
+    ss.wsv.push_back( ws );
+  }
   return ss;
 }
 
-parStats analysePar( folia::Paragraph *p, ostream& os ){
-  os << endl << "paragraph " << p->id() << endl;
-  vector<folia::Sentence*> sents = p->sentences();
-  os << " # sentences " << sents.size() << endl;
+parStats analysePar( folia::Paragraph *p ){
   parStats ps;
+  ps.id = p->id();
+  ps.wordCnt = 0;
+  ps.wordLen = 0;
+  ps.sentCnt = 0;
+  vector<folia::Sentence*> sents = p->sentences();
   for ( size_t i=0; i < sents.size(); ++i ){
-    if ( doAlpino ){
-      AlpinoParse( sents[i] );
+    if ( settings.doAlpino ){
+      cerr << "calling Alpino parser" << endl;
+      if ( !AlpinoParse( sents[i] ) ){
+	cerr << "alpino parser failed!" << endl;
+      }
     }
-    ps.sstat.push_back( analyseSent( sents[i], os ) );
+    sentStats ss = analyseSent( sents[i] );
+    ps.wordCnt += ss.wordCnt;
+    ps.wordLen += ss.wordLen;
+    ps.sentCnt += 1;
+    ps.ssv.push_back( ss );
+    ps.heads.insert( ss.heads.begin(), ss.heads.end() );
+    ps.unique_words.insert( ss.unique_words.begin(), ss.unique_words.end() );
+    ps.unique_lemmas.insert( ss.unique_lemmas.begin(), ss.unique_lemmas.end() );
   }
   return ps;
 }
@@ -219,19 +342,35 @@ void analyseDoc( folia::Document *doc, ostream& os ){
   os << "paragraphs " << doc->paragraphs().size() << endl;
   os << "sentences " << doc->sentences().size() << endl;
   os << "words " << doc->words().size() << endl;
-  vector<parStats> result;
+  docStats result;
+  result.wordCnt = 0;
+  result.wordLen = 0;
+  result.sentCnt = 0;
   vector<folia::Paragraph*> pars = doc->paragraphs();
-  for ( size_t i=0; i < pars.size(); ++i ){
-    result.push_back( analysePar( pars[i], os ) );
+  for ( size_t i=0; i != pars.size(); ++i ){
+    parStats ps = analysePar( pars[i] );
+    result.wordCnt += ps.wordCnt;
+    result.wordLen += ps.wordLen;
+    result.sentCnt += ps.sentCnt;
+    result.psv.push_back( ps );
+    result.heads.insert( ps.heads.begin(),
+			 ps.heads.end() );
+    result.unique_words.insert( ps.unique_words.begin(),
+				ps.unique_words.end() );
+    result.unique_lemmas.insert( ps.unique_lemmas.begin(),
+				 ps.unique_lemmas.end() );
   }
+  os << result << endl;
 }
 
 folia::Document *TscanServerClass::getFrogResult( istream& is ){
   string host = config.lookUp( "host", "frog" );
   string port = config.lookUp( "port", "frog" );
   Sockets::ClientSocket client;
-  client.connect( host, port );
-  //  while ( is ){
+  if ( !client.connect( host, port ) ){
+    SLOG << "failed to open Frog connection: "<< host << ":" << port << endl;
+    return 0;
+  }
   SDBG << "start input loop" << endl;
   string line;
   while ( getline( is, line ) ){
@@ -273,7 +412,12 @@ void TscanServerClass::exec( const string& file, ostream& os ){
   else {
     os << "opened file " << file << endl;
     folia::Document *doc = getFrogResult( is );
-    analyseDoc( doc, os );
+    if ( !doc ){
+      os << "big trouble: no FoLiA document created " << endl;
+    }
+    else {
+      analyseDoc( doc, os );
+    }
   }
 }
 
@@ -349,6 +493,7 @@ bool TscanServerClass::RunOnce( const string& file ){
     }
   }
   exec( file, cout );
+  return true;
 }
   
 bool TscanServerClass::RunServer(){

@@ -192,6 +192,9 @@ bool AlpinoParse( folia::Sentence *s ){
   os.close();
   string parseCmd = "Alpino -fast -flag treebank /tmp/alpino/parses end_hook=xml -parse < /tmp/alpino/tempparse.txt -notk > /dev/null 2>&1";
   res = system( parseCmd.c_str() );
+  if ( res ){
+    cerr << "RES = " << res << endl;
+  }
   remove( "/tmp/alpino/tempparse.txt" );
   xmlDoc *xmldoc = xmlReadFile( "/tmp/alpino/parses/1.xml", 0, XML_PARSE_NOBLANKS );
   if ( xmldoc ){
