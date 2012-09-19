@@ -199,7 +199,9 @@ bool AlpinoParse( folia::Sentence *s ){
   xmlDoc *xmldoc = xmlReadFile( "/tmp/alpino/parses/1.xml", 0, XML_PARSE_NOBLANKS );
   if ( xmldoc ){
     extractAndAppendParse( xmldoc, s );
+    xmlFreeDoc( xmldoc );
+    return true;
   }
-  return (xmldoc != 0 );
+  return false;
 }
 
