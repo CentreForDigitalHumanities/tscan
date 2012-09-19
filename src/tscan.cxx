@@ -70,10 +70,6 @@ inline void usage(){
 
 TscanServerClass::TscanServerClass( Timbl::TimblOpts& opts ):
   cur_log("T-Scan", StampMessage ){
-  cerr << "TScan server " << VERSION << endl;
-  cerr << "based on " << TimblServer::VersionName() << endl;
-  doDaemon = true;
-  dbLevel = LogNormal;
   string val;
   bool mood;
   if ( opts.Find( "config", val, mood ) ){
@@ -85,17 +81,13 @@ TscanServerClass::TscanServerClass( Timbl::TimblOpts& opts ):
     usage();
     exit( EXIT_FAILURE );
   }
-  if ( opts.Find( "pidfile", val ) ) {
-    pidFile = val;
-    opts.Delete( "pidfile" );
+  if ( !configFile.empty() &&
+       config.fill( configFile ) ){
+    settings.init( config );
   }
-  if ( opts.Find( "logfile", val ) ) {
-    logFile = val;
-    opts.Delete( "logfile" );
-  }
-  if ( opts.Find( "daemonize", val ) ) {
-    doDaemon = ( val != "no" && val != "NO" && val != "false" && val != "FALSE" );
-    opts.Delete( "daemonize" );
+  else {
+    cerr << "invalid configuration" << endl;
+    exit( EXIT_FAILURE );
   }
   if ( opts.Find( 'D', val, mood ) ){
     if ( val == "LogNormal" )
@@ -111,19 +103,30 @@ TscanServerClass::TscanServerClass( Timbl::TimblOpts& opts ):
     }
     opts.Delete( 'D' );
   }
-  
-  if ( !configFile.empty() &&
-       config.fill( configFile ) ){
-    settings.init( config );
-    if ( opts.Find( "t", val, mood ) ){
-      RunOnce( val );
+  string fileName;
+  if ( !opts.Find( "t", val, mood ) ){
+    cerr << "TScan server " << VERSION << endl;
+    cerr << "based on " << TimblServer::VersionName() << endl;
+    doDaemon = true;
+    dbLevel = LogNormal;
+    if ( opts.Find( "pidfile", val ) ) {
+      pidFile = val;
+      opts.Delete( "pidfile" );
     }
-    else {
-      RunServer();
+    if ( opts.Find( "logfile", val ) ) {
+      logFile = val;
+      opts.Delete( "logfile" );
     }
+    if ( opts.Find( "daemonize", val ) ) {
+      doDaemon = ( val != "no" && val != "NO" && val != "false" && val != "FALSE" );
+      opts.Delete( "daemonize" );
+    }
+    RunServer();
   }
   else {
-    cerr << "invalid configuration" << endl;
+    fileName = val;
+    cerr << "TScan " << VERSION << endl;
+    RunOnce( fileName );
   }
 }
 
@@ -167,41 +170,96 @@ void AfterDaemonFun( int Signal ){
   }
 }
 
+enum WordProp { ISNAME, ISPUNCT, 
+		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL,
+		JUSTAWORD };
+
 struct wordStats {
+  wordStats(): wordLen(0),wordLenExNames(0),
+	       morphLen(0),morphLenExNames(0),
+	       prop(JUSTAWORD) {};
   string word;
   string pos;
   string posHead;
   string lemma;
-  string morph;
   int wordLen;
+  int wordLenExNames;
+  int morphLen;
+  int morphLenExNames;
+  WordProp prop;
 };
 
 ostream& operator<<( ostream& os, const wordStats& ws ){
-  os << "word: " << ws.word << ", HEAD: " << ws.posHead;
+  os << "word: [" << ws.word << "], lengte=" << ws.wordLen 
+     << ", aantal morphemen=" << ws.morphLen <<  ", HEAD: " << ws.posHead;
+  switch ( ws.prop ){
+  case ISINF:
+    os << " (Infinitief)";
+    break;
+  case ISVD:
+    os << " (Voltooid deelwoord)";
+    break;
+  case ISOD:
+    os << " (Onvoltooid Deelwoord)";
+    break;
+  case ISPVTGW:
+    os << " (Tegenwoordige tijd)";
+    break;
+  case ISPVVERL:
+    os << " (Verleden tijd)";
+    break;
+  }
   return os;
 }
 
 struct sentStats {
+  sentStats(): wordCnt(0),aggWordLen(0),aggWordLenExNames(0),
+	       aggMorphLen(0),aggMorphLenExNames(0),
+	       vdCnt(0),odCnt(0),infCnt(0), presentCnt(0), pastCnt(0),
+	       nameCnt(0) {};
   string id;
   string text;
-  int wordLen;
   int wordCnt;
+  int aggWordLen;
+  int aggWordLenExNames;
+  int aggMorphLen;
+  int aggMorphLenExNames;
+  int vdCnt;
+  int odCnt;
+  int infCnt;
+  int presentCnt;
+  int pastCnt;
+  int nameCnt;
   vector<wordStats> wsv;
   map<string,int> heads;
+  map<string,int> unique_words;
   set<string> unique_lemmas;
-  set<string> unique_words;
 };
 
 ostream& operator<<( ostream& os, const sentStats& s ){
-  os << "sentence " << s.id << " [" << s.text << "]" << endl;
-  os << "sentence POS tags: ";
+  os << "Zin " << s.id << " [" << s.text << "]" << endl;
+  os << "Zin POS tags: ";
   for ( map<string,int>::const_iterator it = s.heads.begin();
 	it != s.heads.end(); ++it ){
     os << it->first << "[" << it->second << "] ";
   }
   os << endl;
-  os << "gemiddelde woordlengte " << s.wordLen/double(s.wordCnt) << endl;
-  os << "zinslengte " << s.wordCnt << endl;
+  os << "#Voltooid deelwoorden " << s.vdCnt 
+     << " gemiddeld: " << s.vdCnt/double(s.wordCnt) << endl;
+  os << "#Onvoltooid deelwoorden " << s.odCnt 
+     << " gemiddeld: " << s.odCnt/double(s.wordCnt) << endl;
+  os << "#Infinitieven " << s.infCnt 
+     << " gemiddeld: " << s.infCnt/double(s.wordCnt) << endl;
+  os << "#Persoonsvorm (TW) " << s.presentCnt
+     << " gemiddeld: " << s.presentCnt/double(s.wordCnt) << endl;
+  os << "#Persoonsvorm (VERL) " << s.pastCnt
+     << " gemiddeld: " << s.pastCnt/double(s.wordCnt) << endl;
+  os << "Zin gemiddelde woordlengte " << s.aggWordLen/double(s.wordCnt) << endl;
+  os << "Zin gemiddelde woordlengte zonder Namen " << s.aggWordLenExNames/double(s.wordCnt - s.nameCnt) << endl;
+  os << "Zin gemiddelde aantal morphemen " << s.aggMorphLen/double(s.wordCnt) << endl;
+  os << "Zin gemiddelde aantal morphemen zonder Namen " << s.aggMorphLenExNames/double(s.wordCnt-s.nameCnt) << endl;
+  os << "Zin aantal Namen " << s.nameCnt << endl;
+  os << "Zin lengte " << s.wordCnt << endl;
   for ( size_t i=0;  i < s.wsv.size(); ++ i ){
     os << s.wsv[i] << endl;
   }
@@ -209,27 +267,55 @@ ostream& operator<<( ostream& os, const sentStats& s ){
 }
 
 struct parStats {
+  parStats(): aggWordCnt(0), aggWordLen(0), aggWordLenExNames(0),
+	      aggMorphLen(0), aggMorphLenExNames(0), aggNameCnt(0),
+	      sentCnt(0), 
+	      aggVdCnt(0), aggOdCnt(0), aggInfCnt(0), aggPresentCnt(0),
+	      aggPastCnt(0) {};
   string id;
-  size_t wordCnt;
-  int wordLen;
+  int aggWordCnt;
+  int aggWordLen;
+  int aggWordLenExNames;
+  int aggMorphLen;
+  int aggMorphLenExNames;
+  int aggNameCnt;
   int sentCnt;
+  int aggVdCnt;
+  int aggOdCnt;
+  int aggInfCnt;
+  int aggPresentCnt;
+  int aggPastCnt;
   vector<sentStats> ssv;
   map<string,int> heads;
+  map<string,int> unique_words;
   set<string> unique_lemmas;
-  set<string> unique_words;
 };
 
 ostream& operator<<( ostream& os, const parStats& p ){
-  os << "paragraph: " << p.id << endl;
-  os << "paragraph POS tags: ";
+  os << "Paragraaf " << p.id << endl;
+  os << "Paragraaf POS tags: ";
   for ( map<string,int>::const_iterator it = p.heads.begin();
 	it != p.heads.end(); ++it ){
     os << it->first << "[" << it->second << "] ";
   }
   os << endl;
-  os << "aantal zinnen " << p.sentCnt << endl;
-  os << "gemiddelde woordlengte " << p.wordLen/double(p.wordCnt) << endl << endl;
-  os << "gemiddelde zinslengte " << p.wordCnt/double(p.sentCnt) << endl << endl;
+  os << "#Voltooid deelwoorden " << p.aggVdCnt
+     << " gemiddeld: " << p.aggVdCnt/double(p.aggWordCnt) << endl;
+  os << "#Onvoltooid deelwoorden " << p.aggOdCnt
+     << " gemiddeld: " << p.aggOdCnt/double(p.aggWordCnt) << endl;
+  os << "#Infinitieven " << p.aggInfCnt
+     << " gemiddeld: " << p.aggInfCnt/double(p.aggWordCnt) << endl;
+  os << "#Persoonsvorm (TW) " << p.aggPresentCnt
+     << " gemiddeld: " << p.aggPresentCnt/double(p.aggWordCnt) << endl;
+  os << "#Persoonsvorm (VERL) " << p.aggPastCnt
+     << " gemiddeld: " << p.aggPastCnt/double(p.aggWordCnt) << endl;
+  os << "Paragraaf aantal zinnen " << p.sentCnt << endl;
+  os << "Paragraaf gemiddelde woordlengte " << p.aggWordLen/double(p.aggWordCnt) << endl;
+  os << "Paragraaf gemiddelde woordlengte zonder Namen " << p.aggWordLenExNames/double(p.aggWordCnt-p.aggNameCnt) << endl;
+  os << "Paragraaf gemiddelde aantal morphemen " << p.aggMorphLen/double(p.aggWordCnt) << endl;
+  os << "Paragraaf gemiddelde aantal morphemen zonder Namen " << p.aggMorphLenExNames/double(p.aggWordCnt-p.aggNameCnt) << endl;
+  os << "Paragraaf gemiddelde zinslengte " << p.aggWordCnt/double(p.sentCnt) << endl;
+  os << "Paragraaf aantal namen " << p.aggNameCnt << endl << endl;
   for ( size_t i=0; i != p.ssv.size(); ++i ){
     os << p.ssv[i] << endl;
   }
@@ -238,28 +324,59 @@ ostream& operator<<( ostream& os, const parStats& p ){
 }
 
 struct docStats {
+  docStats(): aggWordCnt(0),aggWordLen(0),aggWordLenExNames(0),
+	      aggMorphLen(0),aggMorphLenExNames(), 
+	      aggSentCnt(0),aggNameCnt(0),
+	      aggVdCnt(0), aggOdCnt(0), aggInfCnt(0), 
+	      aggPresentCnt(0), aggPastCnt(0) {};
   string id;
-  size_t wordCnt;
-  int wordLen;
-  int sentCnt;
+  int aggWordCnt;
+  int aggWordLen;
+  int aggWordLenExNames;
+  int aggMorphLen;
+  int aggMorphLenExNames;
+  int aggSentCnt;
+  int aggNameCnt;
+  int aggVdCnt;
+  int aggOdCnt;
+  int aggInfCnt;
+  int aggPresentCnt;
+  int aggPastCnt;
   vector<parStats> psv;
   map<string,int> heads;
+  map<string,int> unique_words;
   set<string> unique_lemmas;
-  set<string> unique_words;
 };
 
 ostream& operator<<( ostream& os, const docStats& d ){
   os << "Document: " << d.id << endl;
-  os << "TTW = " << d.unique_words.size()/double(d.wordCnt) << endl;
-  os << "TTL = " << d.unique_lemmas.size()/double(d.wordCnt) << endl;
+  os << "#paragraphs " << d.psv.size() << endl;
+  os << "#sentences " << d.aggSentCnt << endl;
+  os << "#words " << d.aggWordCnt << endl;
+  os << "#namen " << d.aggNameCnt << endl;
+  os << "#Voltooid deelwoorden " << d.aggVdCnt
+     << " gemiddeld: " << d.aggVdCnt/double(d.aggWordCnt) << endl;
+  os << "#Onvoltooid deelwoorden " << d.aggOdCnt
+     << " gemiddeld: " << d.aggOdCnt/double(d.aggWordCnt) << endl;
+  os << "#Infinitieven " << d.aggInfCnt
+     << " gemiddeld: " << d.aggInfCnt/double(d.aggWordCnt) << endl;
+  os << "#Persoonsvorm (TW) " << d.aggPresentCnt
+     << " gemiddeld: " << d.aggPresentCnt/double(d.aggWordCnt) << endl;
+  os << "#Persoonsvorm (VERL) " << d.aggPastCnt
+     << " gemiddeld: " << d.aggPastCnt/double(d.aggWordCnt) << endl;
+  os << "TTW = " << d.unique_words.size()/double(d.aggWordCnt) << endl;
+  os << "TTL = " << d.unique_lemmas.size()/double(d.aggWordCnt) << endl;
   os << "Document POS tags: ";
   for ( map<string,int>::const_iterator it = d.heads.begin();
 	it != d.heads.end(); ++it ){
     os << it->first << "[" << it->second << "] ";
   }
   os << endl;
-  os << "gemiddelde woordlengte " << d.wordLen/double(d.wordCnt) << endl;
-  os << "gemiddelde zinslengte " << d.wordCnt/double(d.sentCnt) << endl << endl;
+  os << "Document gemiddelde woordlengte " << d.aggWordLen/double(d.aggWordCnt) << endl;
+  os << "Document gemiddelde woordlengte zonder Namen " << d.aggWordLenExNames/double(d.aggWordCnt-d.aggNameCnt) << endl;
+  os << "Document gemiddelde aantal morphemen " << d.aggMorphLen/double(d.aggWordCnt) << endl;
+  os << "Document gemiddelde aantal morphemen zonder Namen " << d.aggMorphLenExNames/double(d.aggWordCnt-d.aggNameCnt) << endl;
+  os << "Document gemiddelde zinslengte " << d.aggWordCnt/double(d.aggSentCnt) << endl << endl;
   for ( size_t i=0; i < d.psv.size(); ++i ){
     os << d.psv[i] << endl;
   }
@@ -277,17 +394,48 @@ wordStats analyseWord( folia::Word *w ){
   ws.pos = pos[0]->cls();
   ws.posHead = pos[0]->feat("head");
   ws.lemma= w->lemma();
-  string morph;
-  vector<folia::MorphologyLayer*> ml = w->annotations<folia::MorphologyLayer>();
-  for ( size_t q=0; q < ml.size(); ++q ){
-    vector<folia::Morpheme*> m = ml[q]->select<folia::Morpheme>();
-    for ( size_t t=0; t < m.size(); ++t ){
-      morph += "[" + folia::UnicodeToUTF8( m[t]->text() ) + "]";
+  if ( ws.posHead == "LET" )
+    ws.prop = ISPUNCT;
+  else if ( ws.posHead == "SPEC" && ws.pos.find("eigen") != string::npos )
+    ws.prop = ISNAME;
+  if ( ws.posHead == "WW" ){
+    string wvorm = pos[0]->feat("wvorm");
+    if ( wvorm == "inf" )
+      ws.prop = ISINF;
+    else if ( wvorm == "vd" )
+      ws.prop = ISVD;
+    else if ( wvorm == "od" )
+      ws.prop = ISOD;
+    else if ( wvorm == "pv" ){
+      string tijd = pos[0]->feat("pvtijd");
+      if ( tijd == "tgw" )
+	ws.prop = ISPVTGW;
+      else if ( tijd == "verl" )
+	ws.prop = ISPVVERL;
+      else {
+	cerr << "PANIEK: een onverwachte ww tijd: " << tijd << endl;
+	exit(3);
+      }
     }
-    if ( q < ml.size()-1 )
-      morph += "/";
+    else {
+      cerr << "PANIEK: een onverwachte ww vorm: " << wvorm << endl;
+      exit(3);
+    }
   }
-  ws.morph = morph;
+  if ( ws.prop != ISPUNCT ){
+    int max = 0;
+    vector<folia::MorphologyLayer*> ml = w->annotations<folia::MorphologyLayer>();
+    for ( size_t q=0; q < ml.size(); ++q ){
+      vector<folia::Morpheme*> m = ml[q]->select<folia::Morpheme>();
+      if ( m.size() > max )
+	max = m.size();
+    }
+    ws.morphLen = max;
+    if ( ws.prop != ISNAME ){
+      ws.wordLenExNames = ws.wordLen;
+      ws.morphLenExNames = max;
+    }
+  }
   return ws;
 }
 
@@ -296,17 +444,43 @@ sentStats analyseSent( folia::Sentence *s ){
   ss.id = s->id();
   ss.text = UnicodeToUTF8( s->toktext() );
   vector<folia::Word*> w = s->words();
-  ss.wordCnt = 0;
-  ss.wordLen = 0;
   for ( size_t i=0; i < w.size(); ++i ){
     wordStats ws = analyseWord( w[i] );
-    if ( ws.posHead != "LET" )
+    if ( ws.prop == ISPUNCT )
+      continue;
+    else {
+      ss.wordCnt++;
       ss.heads[ws.posHead]++;
-    ss.wordCnt += 1;
-    ss.wordLen += ws.wordLen;
-    ss.unique_words.insert(lowercase(ws.word));
-    ss.unique_lemmas.insert(ws.lemma);
-    ss.wsv.push_back( ws );
+      ss.aggWordLen += ws.wordLen;
+      ss.aggWordLenExNames += ws.wordLenExNames;
+      ss.aggMorphLen += ws.morphLen;
+      ss.aggMorphLenExNames += ws.morphLenExNames;
+      ss.unique_words[lowercase(ws.word)] += 1;
+      ss.unique_lemmas.insert(ws.lemma);
+      ss.wsv.push_back( ws );
+      switch ( ws.prop ){
+      case ISNAME:
+	ss.nameCnt++;
+	break;
+      case ISVD:
+	ss.vdCnt++;
+	break;
+      case ISINF:
+	ss.infCnt++;
+	break;
+      case ISOD:
+	ss.odCnt++;
+	break;
+      case ISPVVERL:
+	ss.pastCnt++;
+	break;
+      case ISPVTGW:
+	ss.presentCnt++;
+	break;
+      default:
+	;// ignore
+      }
+    }
   }
   return ss;
 }
@@ -314,9 +488,6 @@ sentStats analyseSent( folia::Sentence *s ){
 parStats analysePar( folia::Paragraph *p ){
   parStats ps;
   ps.id = p->id();
-  ps.wordCnt = 0;
-  ps.wordLen = 0;
-  ps.sentCnt = 0;
   vector<folia::Sentence*> sents = p->sentences();
   for ( size_t i=0; i < sents.size(); ++i ){
     if ( settings.doAlpino ){
@@ -326,9 +497,18 @@ parStats analysePar( folia::Paragraph *p ){
       }
     }
     sentStats ss = analyseSent( sents[i] );
-    ps.wordCnt += ss.wordCnt;
-    ps.wordLen += ss.wordLen;
-    ps.sentCnt += 1;
+    ps.aggWordCnt += ss.wordCnt;
+    ps.aggWordLen += ss.aggWordLen;
+    ps.aggWordLenExNames += ss.aggWordLenExNames;
+    ps.aggMorphLen += ss.aggMorphLen;
+    ps.aggMorphLenExNames += ss.aggMorphLenExNames;
+    ps.sentCnt++;
+    ps.aggNameCnt += ss.nameCnt;
+    ps.aggVdCnt += ss.vdCnt;
+    ps.aggOdCnt += ss.odCnt;
+    ps.aggInfCnt += ss.infCnt;
+    ps.aggPresentCnt += ss.presentCnt;
+    ps.aggPastCnt += ss.pastCnt;
     ps.ssv.push_back( ss );
     ps.heads.insert( ss.heads.begin(), ss.heads.end() );
     ps.unique_words.insert( ss.unique_words.begin(), ss.unique_words.end() );
@@ -337,21 +517,23 @@ parStats analysePar( folia::Paragraph *p ){
   return ps;
 }
 
-void analyseDoc( folia::Document *doc, ostream& os ){
-  os << "document: " << doc->id() << endl;
-  os << "paragraphs " << doc->paragraphs().size() << endl;
-  os << "sentences " << doc->sentences().size() << endl;
-  os << "words " << doc->words().size() << endl;
+docStats analyseDoc( folia::Document *doc ){
   docStats result;
-  result.wordCnt = 0;
-  result.wordLen = 0;
-  result.sentCnt = 0;
   vector<folia::Paragraph*> pars = doc->paragraphs();
   for ( size_t i=0; i != pars.size(); ++i ){
     parStats ps = analysePar( pars[i] );
-    result.wordCnt += ps.wordCnt;
-    result.wordLen += ps.wordLen;
-    result.sentCnt += ps.sentCnt;
+    result.aggWordCnt += ps.aggWordCnt;
+    result.aggWordLen += ps.aggWordLen;
+    result.aggWordLenExNames += ps.aggWordLenExNames;
+    result.aggMorphLen += ps.aggMorphLen;
+    result.aggMorphLenExNames += ps.aggMorphLenExNames;
+    result.aggNameCnt += ps.aggNameCnt;
+    result.aggSentCnt += ps.sentCnt;
+    result.aggVdCnt += ps.aggVdCnt;
+    result.aggOdCnt += ps.aggOdCnt;
+    result.aggInfCnt += ps.aggInfCnt;
+    result.aggPresentCnt += ps.aggPresentCnt;
+    result.aggPastCnt += ps.aggPastCnt;
     result.psv.push_back( ps );
     result.heads.insert( ps.heads.begin(),
 			 ps.heads.end() );
@@ -360,7 +542,7 @@ void analyseDoc( folia::Document *doc, ostream& os ){
     result.unique_lemmas.insert( ps.unique_lemmas.begin(),
 				 ps.unique_lemmas.end() );
   }
-  os << result << endl;
+  return result;
 }
 
 folia::Document *TscanServerClass::getFrogResult( istream& is ){
@@ -386,7 +568,7 @@ folia::Document *TscanServerClass::getFrogResult( istream& is ){
     result += s + "\n";
   }
   SDBG << "received data [" << result << "]" << endl;
-  folia::Document *doc;
+  folia::Document *doc = 0;
   if ( !result.empty() && result.size() > 10 ){
     SDBG << "start FoLiA parsing" << endl;
     doc = new folia::Document();
@@ -395,7 +577,6 @@ folia::Document *TscanServerClass::getFrogResult( istream& is ){
       SDBG << "finished" << endl;
     }
     catch ( std::exception& e ){
-      doc = 0;
       SLOG << "FoLiaParsing failed:" << endl
 	   << e.what() << endl;	  
     }
@@ -416,7 +597,10 @@ void TscanServerClass::exec( const string& file, ostream& os ){
       os << "big trouble: no FoLiA document created " << endl;
     }
     else {
-      analyseDoc( doc, os );
+      cerr << *doc << endl;
+      docStats result = analyseDoc( doc );
+      delete doc;
+      os << result << endl;
     }
   }
 }
@@ -485,7 +669,7 @@ bool TscanServerClass::RunOnce( const string& file ){
       cerr << "switching logging to file " << logFile << endl;
       cur_log.associate( *tmp );
       cur_log.message( "T-Scan:" );
-      LOG << "Started logging " << endl;	
+      SLOG << "Started logging " << endl;	
     }
     else {
       cerr << "unable to create logfile: " << logFile << endl;
@@ -520,7 +704,7 @@ bool TscanServerClass::RunServer(){
       cerr << "switching logging to file " << logFile << endl;
       cur_log.associate( *tmp );
       cur_log.message( "T-Scan:" );
-      LOG << "Started logging " << endl;	
+      SLOG << "Started logging " << endl;	
     }
     else {
       cerr << "unable to create logfile: " << logFile << endl;
