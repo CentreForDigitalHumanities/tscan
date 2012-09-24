@@ -51,7 +51,7 @@ using namespace folia;
 struct settingData {
   void init( const Configuration& );
   bool doAlpino;
-  
+  int rarityLevel;
 };
 
 void settingData::init( const Configuration& cf ){
@@ -59,6 +59,13 @@ void settingData::init( const Configuration& cf ){
   doAlpino = false;
   if( !Timbl::stringTo( val, doAlpino ) ){
     cerr << "invalid value for 'useAlpino' in config file" << endl;
+  }
+  val = cf.lookUp( "rarityLevel" );
+  if ( val.empty() ){
+    rarityLevel = 5;
+  }
+  else if ( !Timbl::stringTo( val, rarityLevel ) ){ 
+    cerr << "invalid value for 'rarityLevel' in config file" << endl;
   }
 }
 
@@ -285,6 +292,7 @@ struct sentStats {
   map<string,int> unique_words;
   map<string,int> unique_lemmas;
   map<NerProp, int> ners;
+  //  multimap<NerProp, string> ners; alternative?
 };
 
 ostream& operator<<( ostream& os, const sentStats& s ){
@@ -311,6 +319,7 @@ ostream& operator<<( ostream& os, const sentStats& s ){
   os << "Zin gemiddelde aantal morphemen zonder Namen " << s.aggMorphLenExNames/double(s.wordCnt-s.nameCnt) << endl;
   os << "Zin aantal Namen " << s.nameCnt << endl;
   os << "Zin Named Entities ";
+  //  for ( multimap<NerProp,string>::const_iterator it = s.ners.begin();
   for ( map<NerProp,int>::const_iterator it = s.ners.begin();
 	it != s.ners.end(); ++it ){
     os << it->first << "[" << it->second << "] ";
@@ -347,6 +356,7 @@ struct parStats {
   map<string,int> unique_words;
   map<string,int> unique_lemmas;
   map<NerProp, int> ners;
+  //  multimap<NerProp, string> ners;
 };
 
 ostream& operator<<( ostream& os, const parStats& p ){
@@ -375,6 +385,7 @@ ostream& operator<<( ostream& os, const parStats& p ){
   os << "Paragraaf gemiddelde zinslengte " << p.aggWordCnt/double(p.sentCnt) << endl;
   os << "Paragraaf aantal namen " << p.aggNameCnt << endl << endl;
   os << "Paragraaf Named Entities ";
+  //  for ( multimap<NerProp,string>::const_iterator it = p.ners.begin();
   for ( map<NerProp,int>::const_iterator it = p.ners.begin();
 	it != p.ners.end(); ++it ){
     os << it->first << "[" << it->second << "] ";
@@ -412,7 +423,19 @@ struct docStats {
   map<string,int> unique_words;
   map<string,int> unique_lemmas;
   map<NerProp, int> ners;
+  //  multimap<NerProp, string> ners;
 };
+
+double rarity( const docStats& d, double level ){
+  map<string,int>::const_iterator it = d.unique_lemmas.begin();
+  int rare = 0;
+  while ( it != d.unique_lemmas.end() ){
+    if ( it->second <= level )
+      ++rare;
+    ++it;
+  }
+  return rare/double( d.unique_lemmas.size() );
+}
 
 ostream& operator<<( ostream& os, const docStats& d ){
   os << "Document: " << d.id << endl;
@@ -432,6 +455,8 @@ ostream& operator<<( ostream& os, const docStats& d ){
      << " gemiddeld: " << d.aggPastCnt/double(d.aggWordCnt) << endl;
   os << "TTW = " << d.unique_words.size()/double(d.aggWordCnt) << endl;
   os << "TTL = " << d.unique_lemmas.size()/double(d.aggWordCnt) << endl;
+  os << "rarity(" << settings.rarityLevel << ")=" 
+     << rarity( d, settings.rarityLevel ) << endl;
   os << "Document POS tags: ";
   for ( map<string,int>::const_iterator it = d.heads.begin();
 	it != d.heads.end(); ++it ){
@@ -439,6 +464,7 @@ ostream& operator<<( ostream& os, const docStats& d ){
   }
   os << endl;
   os << "Document Named Entities ";
+  //  for ( multimap<NerProp,string>::const_iterator it = d.ners.begin();
   for ( map<NerProp,int>::const_iterator it = d.ners.begin();
 	it != d.ners.end(); ++it ){
     os << it->first << "[" << it->second << "] ";
@@ -510,11 +536,11 @@ NerProp lookupNer( const Word *w, const Sentence * s ){
   return result;
 }
 
-wordStats analyseWord( folia::Word *w ){
+wordStats analyseWord( Word *w ){
   wordStats ws;
   ws.word = UnicodeToUTF8( w->text() );
   ws.wordLen = w->text().length();
-  vector<folia::PosAnnotation*> pos = w->select<folia::PosAnnotation>();
+  vector<PosAnnotation*> pos = w->select<PosAnnotation>();
   if ( pos.size() != 1 )
     throw ValueError( "word doesn't have POS tag info" );
   ws.pos = pos[0]->cls();
@@ -550,9 +576,9 @@ wordStats analyseWord( folia::Word *w ){
   }
   if ( ws.prop != ISPUNCT ){
     int max = 0;
-    vector<folia::MorphologyLayer*> ml = w->annotations<folia::MorphologyLayer>();
+    vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
     for ( size_t q=0; q < ml.size(); ++q ){
-      vector<folia::Morpheme*> m = ml[q]->select<folia::Morpheme>();
+      vector<Morpheme*> m = ml[q]->select<Morpheme>();
       if ( m.size() > max )
 	max = m.size();
     }
@@ -608,6 +634,7 @@ sentStats analyseSent( folia::Sentence *s ){
   ss.id = s->id();
   ss.text = UnicodeToUTF8( s->toktext() );
   vector<folia::Word*> w = s->words();
+  //  multimap<NerProp,string>::iterator last = ss.ners.end();
   for ( size_t i=0; i < w.size(); ++i ){
     wordStats ws = analyseWord( w[i] );
     if ( ws.prop == ISPUNCT )
@@ -622,7 +649,21 @@ sentStats analyseSent( folia::Sentence *s ){
       case PER_B:
       case PRO_B:
 	ss.ners[ner]++;
+	//	last = ss.ners.insert( make_pair( ner, ws.word ) );
 	break;
+      // case LOC_I:
+      // case EVE_I:
+      // case MISC_I:
+      // case ORG_I:
+      // case PER_I:
+      // case PRO_I:
+      // 	if ( last == ss.ners.end() ){
+      // 	  throw runtime_error( "confused ! " );
+      // 	}
+      // 	else {
+      // 	  last->second += " " + ws.word;
+      // 	}
+      // 	break;
       default:
 	;// skip
       }
@@ -693,6 +734,7 @@ parStats analysePar( folia::Paragraph *p ){
     aggregate( ps.heads, ss.heads );
     aggregate( ps.unique_words, ss.unique_words );
     aggregate( ps.unique_lemmas, ss.unique_lemmas );
+    //ps.ners.insert( ss.ners.begin(), ss.ners.end() );
     aggregate( ps.ners, ss.ners );
   }
   return ps;
@@ -719,12 +761,13 @@ docStats analyseDoc( folia::Document *doc ){
     aggregate( result.heads, ps.heads );
     aggregate( result.unique_words, ps.unique_words );
     aggregate( result.unique_lemmas, ps.unique_lemmas );
+    //    result.ners.insert( ps.ners.begin(), ps.ners.end() );
     aggregate( result.ners, ps.ners );
   }
   return result;
 }
 
-folia::Document *TscanServerClass::getFrogResult( istream& is ){
+Document *TscanServerClass::getFrogResult( istream& is ){
   string host = config.lookUp( "host", "frog" );
   string port = config.lookUp( "port", "frog" );
   Sockets::ClientSocket client;
@@ -750,7 +793,7 @@ folia::Document *TscanServerClass::getFrogResult( istream& is ){
   folia::Document *doc = 0;
   if ( !result.empty() && result.size() > 10 ){
     SDBG << "start FoLiA parsing" << endl;
-    doc = new folia::Document();
+    doc = new Document();
     try {
       doc->readFromString( result );
       SDBG << "finished" << endl;
@@ -771,7 +814,7 @@ void TscanServerClass::exec( const string& file, ostream& os ){
   }
   else {
     os << "opened file " << file << endl;
-    folia::Document *doc = getFrogResult( is );
+    Document *doc = getFrogResult( is );
     if ( !doc ){
       os << "big trouble: no FoLiA document created " << endl;
     }
