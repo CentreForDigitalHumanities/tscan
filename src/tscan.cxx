@@ -194,11 +194,13 @@ void aggregate( M& out, const M& in ){
 
 enum WordProp { ISNAME, ISPUNCT, 
 		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL,
+		ISPPRON1, ISPPRON2, ISPPRON3,
 		JUSTAWORD };
 
 struct wordStats {
   wordStats(): wordLen(0),wordLenExNames(0),
 	       morphLen(0),morphLenExNames(0),
+	       isPronRef(false), archaic(false),
 	       prop(JUSTAWORD) {};
   string word;
   string pos;
@@ -208,6 +210,8 @@ struct wordStats {
   int wordLenExNames;
   int morphLen;
   int morphLenExNames;
+  bool isPronRef;
+  bool archaic;
   WordProp prop;
 };
 
@@ -229,6 +233,15 @@ ostream& operator<<( ostream& os, const wordStats& ws ){
     break;
   case ISPVVERL:
     os << " (Verleden tijd)";
+    break;
+  case ISPPRON1:
+    os << " (1-ste persoon)";
+    break;
+  case ISPPRON2:
+    os << " (2-de persoon)";
+    break;
+  case ISPPRON3:
+    os << " (3-de persoon)";
     break;
   }
   return os;
@@ -273,7 +286,8 @@ struct sentStats {
   sentStats(): wordCnt(0),aggWordLen(0),aggWordLenExNames(0),
 	       aggMorphLen(0),aggMorphLenExNames(0),
 	       vdCnt(0),odCnt(0),infCnt(0), presentCnt(0), pastCnt(0),
-	       nameCnt(0) {};
+	       pron1Cnt(0), pron2Cnt(0), pron3Cnt(0), pronRefCnt(0),
+	       nameCnt(0), archaicsCnt(0) {};
   string id;
   string text;
   int wordCnt;
@@ -287,6 +301,11 @@ struct sentStats {
   int presentCnt;
   int pastCnt;
   int nameCnt;
+  int pron1Cnt;
+  int pron2Cnt;
+  int pron3Cnt;
+  int pronRefCnt;
+  int archaicsCnt;
   vector<wordStats> wsv;
   map<string,int> heads;
   map<string,int> unique_words;
@@ -309,10 +328,23 @@ ostream& operator<<( ostream& os, const sentStats& s ){
      << " gemiddeld: " << s.odCnt/double(s.wordCnt) << endl;
   os << "#Infinitieven " << s.infCnt 
      << " gemiddeld: " << s.infCnt/double(s.wordCnt) << endl;
+  os << "#Archaische constructies " << s.archaicsCnt
+     << " gemiddeld: " << s.archaicsCnt/double(s.wordCnt) << endl;
   os << "#Persoonsvorm (TW) " << s.presentCnt
      << " gemiddeld: " << s.presentCnt/double(s.wordCnt) << endl;
   os << "#Persoonsvorm (VERL) " << s.pastCnt
      << " gemiddeld: " << s.pastCnt/double(s.wordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden terugverwijzend " << s.pronRefCnt
+     << " gemiddeld: " << s.pronRefCnt/double(s.wordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden 1-ste persoon " << s.pron1Cnt
+     << " gemiddeld: " << s.pron1Cnt/double(s.wordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden 2-de persoon " << s.pron2Cnt
+     << " gemiddeld: " << s.pron2Cnt/double(s.wordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden 3-de persoon " << s.pron3Cnt
+     << " gemiddeld: " << s.pron3Cnt/double(s.wordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden totaal " 
+     << s.pron1Cnt + s.pron2Cnt + s.pron3Cnt
+     << " gemiddeld: " << (s.pron1Cnt + s.pron2Cnt + s.pron3Cnt)/double(s.wordCnt) << endl;
   os << "Zin gemiddelde woordlengte " << s.aggWordLen/double(s.wordCnt) << endl;
   os << "Zin gemiddelde woordlengte zonder Namen " << s.aggWordLenExNames/double(s.wordCnt - s.nameCnt) << endl;
   os << "Zin gemiddelde aantal morphemen " << s.aggMorphLen/double(s.wordCnt) << endl;
@@ -337,7 +369,9 @@ struct parStats {
 	      aggMorphLen(0), aggMorphLenExNames(0), aggNameCnt(0),
 	      sentCnt(0), 
 	      aggVdCnt(0), aggOdCnt(0), aggInfCnt(0), aggPresentCnt(0),
-	      aggPastCnt(0) {};
+	      aggPastCnt(0),
+	      aggPron1Cnt(0), aggPron2Cnt(0), aggPron3Cnt(0), 
+	      aggPronRefCnt(0), aggArchaicsCnt(0) {};
   string id;
   int aggWordCnt;
   int aggWordLen;
@@ -351,6 +385,11 @@ struct parStats {
   int aggInfCnt;
   int aggPresentCnt;
   int aggPastCnt;
+  int aggPron1Cnt;
+  int aggPron2Cnt;
+  int aggPron3Cnt;
+  int aggPronRefCnt;
+  int aggArchaicsCnt;
   vector<sentStats> ssv;
   map<string,int> heads;
   map<string,int> unique_words;
@@ -373,10 +412,23 @@ ostream& operator<<( ostream& os, const parStats& p ){
      << " gemiddeld: " << p.aggOdCnt/double(p.aggWordCnt) << endl;
   os << "#Infinitieven " << p.aggInfCnt
      << " gemiddeld: " << p.aggInfCnt/double(p.aggWordCnt) << endl;
+  os << "#Archaische constructies " << p.aggArchaicsCnt
+     << " gemiddeld: " << p.aggArchaicsCnt/double(p.aggWordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden terugverwijzend " << p.aggPronRefCnt
+     << " gemiddeld: " << p.aggPronRefCnt/double(p.aggWordCnt) << endl;
   os << "#Persoonsvorm (TW) " << p.aggPresentCnt
      << " gemiddeld: " << p.aggPresentCnt/double(p.aggWordCnt) << endl;
   os << "#Persoonsvorm (VERL) " << p.aggPastCnt
      << " gemiddeld: " << p.aggPastCnt/double(p.aggWordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden 1-ste persoon " << p.aggPron1Cnt
+     << " gemiddeld: " << p.aggPron1Cnt/double(p.aggWordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden 2-de persoon " << p.aggPron2Cnt
+     << " gemiddeld: " << p.aggPron2Cnt/double(p.aggWordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden 3-de persoon " << p.aggPron3Cnt
+     << " gemiddeld: " << p.aggPron3Cnt/double(p.aggWordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden totaal " 
+     << p.aggPron1Cnt + p.aggPron2Cnt + p.aggPron3Cnt
+     << " gemiddeld: " << (p.aggPron1Cnt + p.aggPron2Cnt + p.aggPron3Cnt)/double(p.aggWordCnt) << endl;
   os << "Paragraaf aantal zinnen " << p.sentCnt << endl;
   os << "Paragraaf gemiddelde woordlengte " << p.aggWordLen/double(p.aggWordCnt) << endl;
   os << "Paragraaf gemiddelde woordlengte zonder Namen " << p.aggWordLenExNames/double(p.aggWordCnt-p.aggNameCnt) << endl;
@@ -404,7 +456,9 @@ struct docStats {
 	      aggMorphLen(0),aggMorphLenExNames(), 
 	      aggSentCnt(0),aggNameCnt(0),
 	      aggVdCnt(0), aggOdCnt(0), aggInfCnt(0), 
-	      aggPresentCnt(0), aggPastCnt(0) {};
+	      aggPresentCnt(0), aggPastCnt(0),
+	      aggPron1Cnt(0), aggPron2Cnt(0), aggPron3Cnt(0),
+	      aggPronRefCnt(0), aggArchaicsCnt(0) {};
   string id;
   int aggWordCnt;
   int aggWordLen;
@@ -418,6 +472,11 @@ struct docStats {
   int aggInfCnt;
   int aggPresentCnt;
   int aggPastCnt;
+  int aggPron1Cnt;
+  int aggPron2Cnt;
+  int aggPron3Cnt;
+  int aggPronRefCnt;
+  int aggArchaicsCnt;
   vector<parStats> psv;
   map<string,int> heads;
   map<string,int> unique_words;
@@ -449,10 +508,23 @@ ostream& operator<<( ostream& os, const docStats& d ){
      << " gemiddeld: " << d.aggOdCnt/double(d.aggWordCnt) << endl;
   os << "#Infinitieven " << d.aggInfCnt
      << " gemiddeld: " << d.aggInfCnt/double(d.aggWordCnt) << endl;
+  os << "#Archaische constructies " << d.aggArchaicsCnt
+     << " gemiddeld: " << d.aggArchaicsCnt/double(d.aggWordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden terugverwijzend " << d.aggPronRefCnt
+     << " gemiddeld: " << d.aggPronRefCnt/double(d.aggWordCnt) << endl;
   os << "#Persoonsvorm (TW) " << d.aggPresentCnt
      << " gemiddeld: " << d.aggPresentCnt/double(d.aggWordCnt) << endl;
   os << "#Persoonsvorm (VERL) " << d.aggPastCnt
      << " gemiddeld: " << d.aggPastCnt/double(d.aggWordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden 1-ste persoon " << d.aggPron1Cnt
+     << " gemiddeld: " << d.aggPron1Cnt/double(d.aggWordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden 2-de persoon " << d.aggPron2Cnt
+     << " gemiddeld: " << d.aggPron2Cnt/double(d.aggWordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden 3-de persoon " << d.aggPron3Cnt
+     << " gemiddeld: " << d.aggPron3Cnt/double(d.aggWordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden totaal " 
+     << d.aggPron1Cnt + d.aggPron2Cnt + d.aggPron3Cnt
+     << " gemiddeld: " << (d.aggPron1Cnt + d.aggPron2Cnt + d.aggPron3Cnt)/double(d.aggWordCnt) << endl;
   os << "TTW = " << d.unique_words.size()/double(d.aggWordCnt) << endl;
   os << "TTL = " << d.unique_lemmas.size()/double(d.aggWordCnt) << endl;
   os << "rarity(" << settings.rarityLevel << ")=" 
@@ -550,7 +622,7 @@ wordStats analyseWord( Word *w ){
     ws.prop = ISPUNCT;
   else if ( ws.posHead == "SPEC" && ws.pos.find("eigen") != string::npos )
     ws.prop = ISNAME;
-  if ( ws.posHead == "WW" ){
+  else if ( ws.posHead == "WW" ){
     string wvorm = pos[0]->feat("wvorm");
     if ( wvorm == "inf" )
       ws.prop = ISINF;
@@ -573,6 +645,36 @@ wordStats analyseWord( Word *w ){
       cerr << "PANIEK: een onverwachte ww vorm: " << wvorm << endl;
       exit(3);
     }
+  }
+  else if ( ws.posHead == "VNW" && lowercase( ws.word ) != "men" ){
+    string cas = pos[0]->feat("case");
+    ws.archaic = ( cas == "gen" || cas == "dat" );
+    string vwtype = pos[0]->feat("vwtype");
+    if ( vwtype == "pers" || vwtype == "refl" 
+	 || vwtype == "pr" || vwtype == "bez" ) {
+      string persoon = pos[0]->feat("persoon");
+      if ( !persoon.empty() ){
+	if ( persoon[0] == '1' )
+	  ws.prop = ISPPRON1;
+	else if ( persoon[0] == '2' )
+	  ws.prop = ISPPRON2;
+	else if ( persoon[0] == '3' ){
+	  ws.prop = ISPPRON3;
+	  ws.isPronRef = ( vwtype == "pers" || vwtype == "bez" );
+	}
+	else {
+	  cerr << "PANIEK: een onverwachte PRONOUN persoon : " << persoon 
+	       << " in word " << w << endl;
+	  exit(3);
+	}
+      }
+    }
+    if ( vwtype == "aanw" )
+      ws.isPronRef = true;
+  }
+  else if ( ws.posHead == "LID" ) {
+    string cas = pos[0]->feat("case");
+    ws.archaic = ( cas == "gen" || cas == "dat" );
   }
   if ( ws.prop != ISPUNCT ){
     int max = 0;
@@ -698,9 +800,19 @@ sentStats analyseSent( folia::Sentence *s ){
       case ISPVTGW:
 	ss.presentCnt++;
 	break;
+      case ISPPRON1:
+	ss.pron1Cnt++;
+      case ISPPRON2:
+	ss.pron2Cnt++;
+      case ISPPRON3:
+	ss.pron3Cnt++;
       default:
 	;// ignore
       }
+      if ( ws.isPronRef )
+	ss.pronRefCnt++;
+      if ( ws.archaic )
+	ss.archaicsCnt++;
     }
   }
   return ss;
@@ -730,6 +842,10 @@ parStats analysePar( folia::Paragraph *p ){
     ps.aggInfCnt += ss.infCnt;
     ps.aggPresentCnt += ss.presentCnt;
     ps.aggPastCnt += ss.pastCnt;
+    ps.aggPron1Cnt += ss.pron1Cnt;
+    ps.aggPron2Cnt += ss.pron2Cnt;
+    ps.aggPron3Cnt += ss.pron3Cnt;
+    ps.aggPronRefCnt += ss.pronRefCnt;
     ps.ssv.push_back( ss );
     aggregate( ps.heads, ss.heads );
     aggregate( ps.unique_words, ss.unique_words );
@@ -756,6 +872,10 @@ docStats analyseDoc( folia::Document *doc ){
     result.aggOdCnt += ps.aggOdCnt;
     result.aggInfCnt += ps.aggInfCnt;
     result.aggPresentCnt += ps.aggPresentCnt;
+    result.aggPron1Cnt += ps.aggPron1Cnt;
+    result.aggPron2Cnt += ps.aggPron2Cnt;
+    result.aggPron3Cnt += ps.aggPron3Cnt;
+    result.aggPronRefCnt += ps.aggPronRefCnt;
     result.aggPastCnt += ps.aggPastCnt;
     result.psv.push_back( ps );
     aggregate( result.heads, ps.heads );
@@ -819,9 +939,9 @@ void TscanServerClass::exec( const string& file, ostream& os ){
       os << "big trouble: no FoLiA document created " << endl;
     }
     else {
-      //      cerr << *doc << endl;
+      doc->save( "/tmp/folia.1.xml" );
       docStats result = analyseDoc( doc );
-      //      cerr << *doc << endl;
+      doc->save( "/tmp/folia.2.xml" );
       delete doc;
       os << result << endl;
     }
