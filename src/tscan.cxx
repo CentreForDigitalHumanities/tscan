@@ -227,6 +227,41 @@ ostream& operator<<( ostream& os, const wordStats& ws ){
   return os;
 }
 
+enum NerProp { NONER, LOC_B, LOC_I, EVE_B, EVE_I, ORG_B, ORG_I, 
+	       MISC_B, MISC_I, PER_B, PER_I, PRO_B, PRO_I };
+
+ostream& operator<<( ostream& os, const NerProp& n ){
+  switch ( n ){
+  case NONER:
+    break;
+  case LOC_B:
+  case LOC_I:
+    os << "LOC";
+    break;
+  case EVE_B:
+  case EVE_I:
+    os << "EVE";
+    break;
+  case ORG_B:
+  case ORG_I:
+    os << "ORG";
+    break;
+  case MISC_B:
+  case MISC_I:
+    os << "MISC";
+    break;
+  case PER_B:
+  case PER_I:
+    os << "PER";
+    break;
+  case PRO_B:
+  case PRO_I:
+    os << "PRO";
+    break;
+  };
+  return os;
+}
+
 struct sentStats {
   sentStats(): wordCnt(0),aggWordLen(0),aggWordLenExNames(0),
 	       aggMorphLen(0),aggMorphLenExNames(0),
@@ -248,7 +283,8 @@ struct sentStats {
   vector<wordStats> wsv;
   map<string,int> heads;
   map<string,int> unique_words;
-  set<string> unique_lemmas;
+  map<string,int> unique_lemmas;
+  map<NerProp, int> ners;
 };
 
 ostream& operator<<( ostream& os, const sentStats& s ){
@@ -274,6 +310,12 @@ ostream& operator<<( ostream& os, const sentStats& s ){
   os << "Zin gemiddelde aantal morphemen " << s.aggMorphLen/double(s.wordCnt) << endl;
   os << "Zin gemiddelde aantal morphemen zonder Namen " << s.aggMorphLenExNames/double(s.wordCnt-s.nameCnt) << endl;
   os << "Zin aantal Namen " << s.nameCnt << endl;
+  os << "Zin Named Entities ";
+  for ( map<NerProp,int>::const_iterator it = s.ners.begin();
+	it != s.ners.end(); ++it ){
+    os << it->first << "[" << it->second << "] ";
+  }
+  os << endl;
   os << "Zin lengte " << s.wordCnt << endl;
   for ( size_t i=0;  i < s.wsv.size(); ++ i ){
     os << s.wsv[i] << endl;
@@ -303,7 +345,8 @@ struct parStats {
   vector<sentStats> ssv;
   map<string,int> heads;
   map<string,int> unique_words;
-  set<string> unique_lemmas;
+  map<string,int> unique_lemmas;
+  map<NerProp, int> ners;
 };
 
 ostream& operator<<( ostream& os, const parStats& p ){
@@ -331,6 +374,13 @@ ostream& operator<<( ostream& os, const parStats& p ){
   os << "Paragraaf gemiddelde aantal morphemen zonder Namen " << p.aggMorphLenExNames/double(p.aggWordCnt-p.aggNameCnt) << endl;
   os << "Paragraaf gemiddelde zinslengte " << p.aggWordCnt/double(p.sentCnt) << endl;
   os << "Paragraaf aantal namen " << p.aggNameCnt << endl << endl;
+  os << "Paragraaf Named Entities ";
+  for ( map<NerProp,int>::const_iterator it = p.ners.begin();
+	it != p.ners.end(); ++it ){
+    os << it->first << "[" << it->second << "] ";
+  }
+  os << endl;
+
   for ( size_t i=0; i != p.ssv.size(); ++i ){
     os << p.ssv[i] << endl;
   }
@@ -360,7 +410,8 @@ struct docStats {
   vector<parStats> psv;
   map<string,int> heads;
   map<string,int> unique_words;
-  set<string> unique_lemmas;
+  map<string,int> unique_lemmas;
+  map<NerProp, int> ners;
 };
 
 ostream& operator<<( ostream& os, const docStats& d ){
@@ -387,6 +438,12 @@ ostream& operator<<( ostream& os, const docStats& d ){
     os << it->first << "[" << it->second << "] ";
   }
   os << endl;
+  os << "Document Named Entities ";
+  for ( map<NerProp,int>::const_iterator it = d.ners.begin();
+	it != d.ners.end(); ++it ){
+    os << it->first << "[" << it->second << "] ";
+  }
+  os << endl;
   os << "Document gemiddelde woordlengte " << d.aggWordLen/double(d.aggWordCnt) << endl;
   os << "Document gemiddelde woordlengte zonder Namen " << d.aggWordLenExNames/double(d.aggWordCnt-d.aggNameCnt) << endl;
   os << "Document gemiddelde aantal morphemen " << d.aggMorphLen/double(d.aggWordCnt) << endl;
@@ -397,6 +454,60 @@ ostream& operator<<( ostream& os, const docStats& d ){
   }
   os << endl;
   return os;
+}
+
+NerProp lookupNer( const Word *w, const Sentence * s ){
+  NerProp result = NONER;
+  vector<Entity*> v = s->select<Entity>("http://ilk.uvt.nl/folia/sets/frog-ner-nl");
+  for ( size_t i=0; i < v.size(); ++i ){
+    FoliaElement *e = v[i];
+    for ( size_t j=0; j < e->size(); ++j ){
+      if ( e->index(j) == w ){
+	cerr << "hit " << e->index(j) << " in " << v[i] << endl;
+	string cls = v[i]->cls();
+	if ( cls == "org" ){
+	  if ( j == 0 )
+	    result = ORG_B;
+	  else
+	    result = ORG_I;
+	}
+	else if ( cls == "eve" ){
+	  if ( j == 0 )	  
+	    result = EVE_B;
+	  else
+	    result = EVE_I;
+	}
+	else if ( cls == "loc" ){
+	  if ( j == 0 )	  
+	    result = LOC_B;
+	  else
+	    result = LOC_I;
+	}
+	else if ( cls == "misc" ){
+	  if ( j == 0 )
+	    result = MISC_B;
+	  else
+	    result = MISC_I;
+	}
+	else if ( cls == "per" ){
+	  if ( j == 0 )	  
+	    result = PER_B;
+	  else
+	    result = PER_I;
+	}
+	else if ( cls == "pro" ){
+	  if ( j == 0 )	  
+	    result = PRO_B;
+	  else
+	    result = PRO_I;
+	}
+	else {
+	  throw ValueError( "unknown NER class: " + cls );
+	}
+      }
+    }
+  }
+  return result;
 }
 
 wordStats analyseWord( folia::Word *w ){
@@ -502,6 +613,19 @@ sentStats analyseSent( folia::Sentence *s ){
     if ( ws.prop == ISPUNCT )
       continue;
     else {
+      NerProp ner = lookupNer( w[i], s );
+      switch( ner ){
+      case LOC_B:
+      case EVE_B:
+      case MISC_B:
+      case ORG_B:
+      case PER_B:
+      case PRO_B:
+	ss.ners[ner]++;
+	break;
+      default:
+	;// skip
+      }
       ss.wordCnt++;
       ss.heads[ws.posHead]++;
       // if ( ws.posHead == "WW" ){
@@ -512,7 +636,7 @@ sentStats analyseSent( folia::Sentence *s ){
       ss.aggMorphLen += ws.morphLen;
       ss.aggMorphLenExNames += ws.morphLenExNames;
       ss.unique_words[lowercase(ws.word)] += 1;
-      ss.unique_lemmas.insert(ws.lemma);
+      ss.unique_lemmas[ws.lemma] += 1;
       ss.wsv.push_back( ws );
       switch ( ws.prop ){
       case ISNAME:
@@ -568,7 +692,8 @@ parStats analysePar( folia::Paragraph *p ){
     ps.ssv.push_back( ss );
     aggregate( ps.heads, ss.heads );
     aggregate( ps.unique_words, ss.unique_words );
-    ps.unique_lemmas.insert( ss.unique_lemmas.begin(), ss.unique_lemmas.end() );
+    aggregate( ps.unique_lemmas, ss.unique_lemmas );
+    aggregate( ps.ners, ss.ners );
   }
   return ps;
 }
@@ -593,8 +718,8 @@ docStats analyseDoc( folia::Document *doc ){
     result.psv.push_back( ps );
     aggregate( result.heads, ps.heads );
     aggregate( result.unique_words, ps.unique_words );
-    result.unique_lemmas.insert( ps.unique_lemmas.begin(),
-				 ps.unique_lemmas.end() );
+    aggregate( result.unique_lemmas, ps.unique_lemmas );
+    aggregate( result.ners, ps.ners );
   }
   return result;
 }
