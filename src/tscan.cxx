@@ -170,6 +170,21 @@ void AfterDaemonFun( int Signal ){
   }
 }
 
+template <class M>
+void aggregate( M& out, const M& in ){
+  typename M::const_iterator ii = in.begin();
+  while ( ii != in.end() ){
+    typename M::iterator oi = out.find( ii->first );
+    if ( oi == out.end() ){
+      out[ii->first] = ii->second;
+    }
+    else {
+      oi->second += ii->second;
+    }
+    ++ii;
+  }
+}
+
 enum WordProp { ISNAME, ISPUNCT, 
 		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL,
 		JUSTAWORD };
@@ -439,6 +454,44 @@ wordStats analyseWord( folia::Word *w ){
   return ws;
 }
 
+FoliaElement *search( Word *w, FoliaElement *l ){
+  for ( size_t i=0; i < l->size(); ++i ){
+    if ( l->index(i) == w ){
+      cerr << "FOUND " << w << endl;
+      return l;
+    }
+    else {
+      FoliaElement *tmp = search( w, l->index(i) );
+      if ( tmp )
+	return tmp;
+    }
+  }
+  return 0;
+}
+
+vector<FoliaElement*> siblings( Word *w, Sentence *s ){
+  vector<FoliaElement*> result;
+  vector<SyntaxLayer*> l = s->select<SyntaxLayer>();
+  if ( l.size() > 0 ){
+    FoliaElement *parent = search( w, l[0] );
+    if ( parent ){
+      cerr << "FOUND " << parent << endl;
+      for ( size_t i =0; i < parent->size(); ++ i ){
+	if ( parent->index(i) != w ){
+	  result.push_back( parent->index(i) );
+	}
+      }
+    }
+  }
+  cerr << "found siblings! " << result << endl;
+  return result;
+}
+
+string classifyVerb( Word *w, Sentence *s ){
+  vector<FoliaElement*> v = siblings( w, s );
+  return "";
+}
+
 sentStats analyseSent( folia::Sentence *s ){
   sentStats ss;
   ss.id = s->id();
@@ -451,6 +504,9 @@ sentStats analyseSent( folia::Sentence *s ){
     else {
       ss.wordCnt++;
       ss.heads[ws.posHead]++;
+      if ( ws.posHead == "WW" ){
+	string vt = classifyVerb( w[i], s );
+      }
       ss.aggWordLen += ws.wordLen;
       ss.aggWordLenExNames += ws.wordLenExNames;
       ss.aggMorphLen += ws.morphLen;
@@ -510,8 +566,8 @@ parStats analysePar( folia::Paragraph *p ){
     ps.aggPresentCnt += ss.presentCnt;
     ps.aggPastCnt += ss.pastCnt;
     ps.ssv.push_back( ss );
-    ps.heads.insert( ss.heads.begin(), ss.heads.end() );
-    ps.unique_words.insert( ss.unique_words.begin(), ss.unique_words.end() );
+    aggregate( ps.heads, ss.heads );
+    aggregate( ps.unique_words, ss.unique_words );
     ps.unique_lemmas.insert( ss.unique_lemmas.begin(), ss.unique_lemmas.end() );
   }
   return ps;
@@ -535,10 +591,8 @@ docStats analyseDoc( folia::Document *doc ){
     result.aggPresentCnt += ps.aggPresentCnt;
     result.aggPastCnt += ps.aggPastCnt;
     result.psv.push_back( ps );
-    result.heads.insert( ps.heads.begin(),
-			 ps.heads.end() );
-    result.unique_words.insert( ps.unique_words.begin(),
-				ps.unique_words.end() );
+    aggregate( result.heads, ps.heads );
+    aggregate( result.unique_words, ps.unique_words );
     result.unique_lemmas.insert( ps.unique_lemmas.begin(),
 				 ps.unique_lemmas.end() );
   }
@@ -597,8 +651,9 @@ void TscanServerClass::exec( const string& file, ostream& os ){
       os << "big trouble: no FoLiA document created " << endl;
     }
     else {
-      cerr << *doc << endl;
+      //      cerr << *doc << endl;
       docStats result = analyseDoc( doc );
+      cerr << *doc << endl;
       delete doc;
       os << result << endl;
     }
