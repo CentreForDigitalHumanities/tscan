@@ -504,9 +504,9 @@ sentStats analyseSent( folia::Sentence *s ){
     else {
       ss.wordCnt++;
       ss.heads[ws.posHead]++;
-      if ( ws.posHead == "WW" ){
-	string vt = classifyVerb( w[i], s );
-      }
+      // if ( ws.posHead == "WW" ){
+      // 	string vt = classifyVerb( w[i], s );
+      // }
       ss.aggWordLen += ws.wordLen;
       ss.aggWordLenExNames += ws.wordLenExNames;
       ss.aggMorphLen += ws.morphLen;
