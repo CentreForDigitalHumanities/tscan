@@ -463,7 +463,7 @@ NerProp lookupNer( const Word *w, const Sentence * s ){
     FoliaElement *e = v[i];
     for ( size_t j=0; j < e->size(); ++j ){
       if ( e->index(j) == w ){
-	cerr << "hit " << e->index(j) << " in " << v[i] << endl;
+	//	cerr << "hit " << e->index(j) << " in " << v[i] << endl;
 	string cls = v[i]->cls();
 	if ( cls == "org" ){
 	  if ( j == 0 )
@@ -778,7 +778,7 @@ void TscanServerClass::exec( const string& file, ostream& os ){
     else {
       //      cerr << *doc << endl;
       docStats result = analyseDoc( doc );
-      cerr << *doc << endl;
+      //      cerr << *doc << endl;
       delete doc;
       os << result << endl;
     }
