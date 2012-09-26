@@ -893,6 +893,7 @@ Document *TscanServerClass::getFrogResult( istream& is ){
   Sockets::ClientSocket client;
   if ( !client.connect( host, port ) ){
     SLOG << "failed to open Frog connection: "<< host << ":" << port << endl;
+    SLOG << "Reason: " << client.getMessage() << endl;
     return 0;
   }
   SDBG << "start input loop" << endl;
