@@ -197,28 +197,49 @@ enum WordProp { ISNAME, ISPUNCT,
 		ISPPRON1, ISPPRON2, ISPPRON3,
 		JUSTAWORD };
 
-struct wordStats {
-  wordStats(): wordLen(0),wordLenExNames(0),
-	       morphLen(0),morphLenExNames(0),
-	       isPronRef(false), archaic(false),
-	       prop(JUSTAWORD) {};
-  string word;
-  string pos;
-  string posHead;
-  string lemma;
+struct basicStats {
+  basicStats( const string& cat ): category( cat ), 
+				   wordLen(0),wordLenExNames(0),
+				   morphLen(0), morphLenExNames(0) {};
+  virtual ~basicStats(){};
+  virtual void print( ostream& ) const;
+  string category;
   int wordLen;
   int wordLenExNames;
   int morphLen;
   int morphLenExNames;
+};
+
+ostream& operator<<( ostream& os, const basicStats& b ){
+  b.print(os);
+  return os;
+}
+
+void basicStats::print( ostream& os ) const {
+  os << "BASICTATS PRINT" << endl;
+  os << category << endl;
+  os << " lengte=" << wordLen << ", aantal morphemen=" << morphLen << endl;
+  os << " lengte zonder namem =" << wordLenExNames << ", aantal morphemen zonder namen=" << morphLenExNames << endl;
+}
+
+struct wordStats : public basicStats {
+  wordStats(): basicStats( "WORD" ),
+	       isPronRef(false), archaic(false),
+	       prop(JUSTAWORD) {};
+  void print( ostream& ) const;
+  string word;
+  string pos;
+  string posHead;
+  string lemma;
   bool isPronRef;
   bool archaic;
   WordProp prop;
 };
 
-ostream& operator<<( ostream& os, const wordStats& ws ){
-  os << "word: [" << ws.word << "], lengte=" << ws.wordLen 
-     << ", aantal morphemen=" << ws.morphLen <<  ", HEAD: " << ws.posHead;
-  switch ( ws.prop ){
+void wordStats::print( ostream& os ) const {
+  os << "word: [" <<word << "], lengte=" << wordLen 
+     << ", aantal morphemen=" << morphLen <<  ", HEAD: " << posHead;
+  switch ( prop ){
   case ISINF:
     os << " (Infinitief)";
     break;
@@ -244,7 +265,6 @@ ostream& operator<<( ostream& os, const wordStats& ws ){
     os << " (3-de persoon)";
     break;
   }
-  return os;
 }
 
 enum NerProp { NONER, LOC_B, LOC_I, EVE_B, EVE_I, ORG_B, ORG_I, 
@@ -282,19 +302,19 @@ ostream& operator<<( ostream& os, const NerProp& n ){
   return os;
 }
 
-struct sentStats {
-  sentStats(): wordCnt(0),aggWordLen(0),aggWordLenExNames(0),
-	       aggMorphLen(0),aggMorphLenExNames(0),
-	       vdCnt(0),odCnt(0),infCnt(0), presentCnt(0), pastCnt(0),
-	       pron1Cnt(0), pron2Cnt(0), pron3Cnt(0), pronRefCnt(0),
-	       nameCnt(0), archaicsCnt(0) {};
+struct structStats: public basicStats {
+  structStats( const string& cat ): basicStats( cat ),
+				    wordCnt(0),
+				    vdCnt(0),odCnt(0),
+				    infCnt(0), presentCnt(0), pastCnt(0),
+				    pron1Cnt(0), pron2Cnt(0), pron3Cnt(0), 
+				    pronRefCnt(0),
+				    nameCnt(0), archaicsCnt(0) {};
+  virtual void print(  ostream& ) const;
+  void merge( structStats * );
   string id;
   string text;
   int wordCnt;
-  int aggWordLen;
-  int aggWordLenExNames;
-  int aggMorphLen;
-  int aggMorphLenExNames;
   int vdCnt;
   int odCnt;
   int infCnt;
@@ -306,252 +326,135 @@ struct sentStats {
   int pron3Cnt;
   int pronRefCnt;
   int archaicsCnt;
-  vector<wordStats> wsv;
+  vector<basicStats *> sv;
   map<string,int> heads;
   map<string,int> unique_words;
   map<string,int> unique_lemmas;
   map<NerProp, int> ners;
-  //  multimap<NerProp, string> ners; alternative?
 };
 
-ostream& operator<<( ostream& os, const sentStats& s ){
-  os << "Zin " << s.id << " [" << s.text << "]" << endl;
-  os << "Zin POS tags: ";
-  for ( map<string,int>::const_iterator it = s.heads.begin();
-	it != s.heads.end(); ++it ){
-    os << it->first << "[" << it->second << "] ";
-  }
-  os << endl;
-  os << "#Voltooid deelwoorden " << s.vdCnt 
-     << " gemiddeld: " << s.vdCnt/double(s.wordCnt) << endl;
-  os << "#Onvoltooid deelwoorden " << s.odCnt 
-     << " gemiddeld: " << s.odCnt/double(s.wordCnt) << endl;
-  os << "#Infinitieven " << s.infCnt 
-     << " gemiddeld: " << s.infCnt/double(s.wordCnt) << endl;
-  os << "#Archaische constructies " << s.archaicsCnt
-     << " gemiddeld: " << s.archaicsCnt/double(s.wordCnt) << endl;
-  os << "#Persoonsvorm (TW) " << s.presentCnt
-     << " gemiddeld: " << s.presentCnt/double(s.wordCnt) << endl;
-  os << "#Persoonsvorm (VERL) " << s.pastCnt
-     << " gemiddeld: " << s.pastCnt/double(s.wordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden terugverwijzend " << s.pronRefCnt
-     << " gemiddeld: " << s.pronRefCnt/double(s.wordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden 1-ste persoon " << s.pron1Cnt
-     << " gemiddeld: " << s.pron1Cnt/double(s.wordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden 2-de persoon " << s.pron2Cnt
-     << " gemiddeld: " << s.pron2Cnt/double(s.wordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden 3-de persoon " << s.pron3Cnt
-     << " gemiddeld: " << s.pron3Cnt/double(s.wordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden totaal " 
-     << s.pron1Cnt + s.pron2Cnt + s.pron3Cnt
-     << " gemiddeld: " << (s.pron1Cnt + s.pron2Cnt + s.pron3Cnt)/double(s.wordCnt) << endl;
-  os << "Zin gemiddelde woordlengte " << s.aggWordLen/double(s.wordCnt) << endl;
-  os << "Zin gemiddelde woordlengte zonder Namen " << s.aggWordLenExNames/double(s.wordCnt - s.nameCnt) << endl;
-  os << "Zin gemiddelde aantal morphemen " << s.aggMorphLen/double(s.wordCnt) << endl;
-  os << "Zin gemiddelde aantal morphemen zonder Namen " << s.aggMorphLenExNames/double(s.wordCnt-s.nameCnt) << endl;
-  os << "Zin aantal Namen " << s.nameCnt << endl;
-  os << "Zin Named Entities ";
-  //  for ( multimap<NerProp,string>::const_iterator it = s.ners.begin();
-  for ( map<NerProp,int>::const_iterator it = s.ners.begin();
-	it != s.ners.end(); ++it ){
-    os << it->first << "[" << it->second << "] ";
-  }
-  os << endl;
-  os << "Zin lengte " << s.wordCnt << endl;
-  for ( size_t i=0;  i < s.wsv.size(); ++ i ){
-    os << s.wsv[i] << endl;
-  }
-  return os;
+void structStats::merge( structStats *ss ){
+  wordCnt += ss->wordCnt;
+  wordLen += ss->wordLen;
+  wordLenExNames += ss->wordLenExNames;
+  morphLen += ss->morphLen;
+  morphLenExNames += ss->morphLenExNames;
+  nameCnt += ss->nameCnt;
+  vdCnt += ss->vdCnt;
+  odCnt += ss->odCnt;
+  infCnt += ss->infCnt;
+  presentCnt += ss->presentCnt;
+  pastCnt += ss->pastCnt;
+  pron1Cnt += ss->pron1Cnt;
+  pron2Cnt += ss->pron2Cnt;
+  pron3Cnt += ss->pron3Cnt;
+  pronRefCnt += ss->pronRefCnt;
+  sv.push_back( ss );
+  aggregate( heads, ss->heads );
+  aggregate( unique_words, ss->unique_words );
+  aggregate( unique_lemmas, ss->unique_lemmas );
+  aggregate( ners, ss->ners );
 }
 
-struct parStats {
-  parStats(): aggWordCnt(0), aggWordLen(0), aggWordLenExNames(0),
-	      aggMorphLen(0), aggMorphLenExNames(0), aggNameCnt(0),
-	      sentCnt(0), 
-	      aggVdCnt(0), aggOdCnt(0), aggInfCnt(0), aggPresentCnt(0),
-	      aggPastCnt(0),
-	      aggPron1Cnt(0), aggPron2Cnt(0), aggPron3Cnt(0), 
-	      aggPronRefCnt(0), aggArchaicsCnt(0) {};
-  string id;
-  int aggWordCnt;
-  int aggWordLen;
-  int aggWordLenExNames;
-  int aggMorphLen;
-  int aggMorphLenExNames;
-  int aggNameCnt;
+void structStats::print( ostream& os ) const {
+  os << category << " " << id << endl;
+  os << category << " POS tags: ";
+  for ( map<string,int>::const_iterator it = heads.begin();
+	it != heads.end(); ++it ){
+    os << it->first << "[" << it->second << "] ";
+  }
+  os << endl;
+  os << "#Voltooid deelwoorden " << vdCnt 
+     << " gemiddeld: " << vdCnt/double(wordCnt) << endl;
+  os << "#Onvoltooid deelwoorden " << odCnt 
+     << " gemiddeld: " << odCnt/double(wordCnt) << endl;
+  os << "#Infinitieven " << infCnt 
+     << " gemiddeld: " << infCnt/double(wordCnt) << endl;
+  os << "#Archaische constructies " << archaicsCnt
+     << " gemiddeld: " << archaicsCnt/double(wordCnt) << endl;
+  os << "#Persoonsvorm (TW) " << presentCnt
+     << " gemiddeld: " << presentCnt/double(wordCnt) << endl;
+  os << "#Persoonsvorm (VERL) " << pastCnt
+     << " gemiddeld: " << pastCnt/double(wordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden terugverwijzend " << pronRefCnt
+     << " gemiddeld: " << pronRefCnt/double(wordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden 1-ste persoon " << pron1Cnt
+     << " gemiddeld: " << pron1Cnt/double(wordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden 2-de persoon " << pron2Cnt
+     << " gemiddeld: " << pron2Cnt/double(wordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden 3-de persoon " << pron3Cnt
+     << " gemiddeld: " << pron3Cnt/double(wordCnt) << endl;
+  os << "#PersoonLijke Voornaamwoorden totaal " 
+     << pron1Cnt + pron2Cnt + pron3Cnt
+     << " gemiddeld: " << (pron1Cnt + pron2Cnt + pron3Cnt)/double(wordCnt) << endl;
+  os << category << " gemiddelde woordlengte " << wordLen/double(wordCnt) << endl;
+  os << category << " gemiddelde woordlengte zonder Namen " << wordLenExNames/double(wordCnt - nameCnt) << endl;
+  os << category << " gemiddelde aantal morphemen " << morphLen/double(wordCnt) << endl;
+  os << category << " gemiddelde aantal morphemen zonder Namen " << morphLenExNames/double(wordCnt-nameCnt) << endl;
+  os << category << " aantal Namen " << nameCnt << endl;
+  os << category << " Named Entities ";
+  for ( map<NerProp,int>::const_iterator it = ners.begin();
+	it != ners.end(); ++it ){
+    os << it->first << "[" << it->second << "] ";
+  }
+  os << endl;
+  os << category << " aantal woorden " << wordCnt << endl;
+  if ( sv.size() > 0 ){
+    os << category << " bevat " << sv.size() << " " 
+       << sv[0]->category << " onderdelen." << endl << endl;
+    for ( size_t i=0;  i < sv.size(); ++ i ){
+      os << *sv[i] << endl;
+    }
+  }
+}
+
+struct sentStats : public structStats {
+  sentStats(): structStats("ZIN" ){};
+  virtual void print( ostream& ) const;
+};
+
+void sentStats::print( ostream& os ) const {
+  os << category << "[" << text << "]" << endl;
+  os << structStats(*this) << endl;
+}
+
+struct parStats: public structStats {
+  parStats(): structStats( "PARAGRAAF" ),
+	      sentCnt(0) {};
+  void print( ostream& ) const;
   int sentCnt;
-  int aggVdCnt;
-  int aggOdCnt;
-  int aggInfCnt;
-  int aggPresentCnt;
-  int aggPastCnt;
-  int aggPron1Cnt;
-  int aggPron2Cnt;
-  int aggPron3Cnt;
-  int aggPronRefCnt;
-  int aggArchaicsCnt;
-  vector<sentStats> ssv;
-  map<string,int> heads;
-  map<string,int> unique_words;
-  map<string,int> unique_lemmas;
-  map<NerProp, int> ners;
-  //  multimap<NerProp, string> ners;
 };
 
-ostream& operator<<( ostream& os, const parStats& p ){
-  os << "Paragraaf " << p.id << endl;
-  os << "Paragraaf POS tags: ";
-  for ( map<string,int>::const_iterator it = p.heads.begin();
-	it != p.heads.end(); ++it ){
-    os << it->first << "[" << it->second << "] ";
-  }
-  os << endl;
-  os << "#Voltooid deelwoorden " << p.aggVdCnt
-     << " gemiddeld: " << p.aggVdCnt/double(p.aggWordCnt) << endl;
-  os << "#Onvoltooid deelwoorden " << p.aggOdCnt
-     << " gemiddeld: " << p.aggOdCnt/double(p.aggWordCnt) << endl;
-  os << "#Infinitieven " << p.aggInfCnt
-     << " gemiddeld: " << p.aggInfCnt/double(p.aggWordCnt) << endl;
-  os << "#Archaische constructies " << p.aggArchaicsCnt
-     << " gemiddeld: " << p.aggArchaicsCnt/double(p.aggWordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden terugverwijzend " << p.aggPronRefCnt
-     << " gemiddeld: " << p.aggPronRefCnt/double(p.aggWordCnt) << endl;
-  os << "#Persoonsvorm (TW) " << p.aggPresentCnt
-     << " gemiddeld: " << p.aggPresentCnt/double(p.aggWordCnt) << endl;
-  os << "#Persoonsvorm (VERL) " << p.aggPastCnt
-     << " gemiddeld: " << p.aggPastCnt/double(p.aggWordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden 1-ste persoon " << p.aggPron1Cnt
-     << " gemiddeld: " << p.aggPron1Cnt/double(p.aggWordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden 2-de persoon " << p.aggPron2Cnt
-     << " gemiddeld: " << p.aggPron2Cnt/double(p.aggWordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden 3-de persoon " << p.aggPron3Cnt
-     << " gemiddeld: " << p.aggPron3Cnt/double(p.aggWordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden totaal " 
-     << p.aggPron1Cnt + p.aggPron2Cnt + p.aggPron3Cnt
-     << " gemiddeld: " << (p.aggPron1Cnt + p.aggPron2Cnt + p.aggPron3Cnt)/double(p.aggWordCnt) << endl;
-  os << "Paragraaf aantal zinnen " << p.sentCnt << endl;
-  os << "Paragraaf gemiddelde woordlengte " << p.aggWordLen/double(p.aggWordCnt) << endl;
-  os << "Paragraaf gemiddelde woordlengte zonder Namen " << p.aggWordLenExNames/double(p.aggWordCnt-p.aggNameCnt) << endl;
-  os << "Paragraaf gemiddelde aantal morphemen " << p.aggMorphLen/double(p.aggWordCnt) << endl;
-  os << "Paragraaf gemiddelde aantal morphemen zonder Namen " << p.aggMorphLenExNames/double(p.aggWordCnt-p.aggNameCnt) << endl;
-  os << "Paragraaf gemiddelde zinslengte " << p.aggWordCnt/double(p.sentCnt) << endl;
-  os << "Paragraaf aantal namen " << p.aggNameCnt << endl << endl;
-  os << "Paragraaf Named Entities ";
-  //  for ( multimap<NerProp,string>::const_iterator it = p.ners.begin();
-  for ( map<NerProp,int>::const_iterator it = p.ners.begin();
-	it != p.ners.end(); ++it ){
-    os << it->first << "[" << it->second << "] ";
-  }
-  os << endl;
-
-  for ( size_t i=0; i != p.ssv.size(); ++i ){
-    os << p.ssv[i] << endl;
-  }
-  os << endl;
-  return os;
+void parStats::print( ostream& os ) const {
+  os << category << " with " << sentCnt << " Sentences" << endl;
+  structStats::print( os );
 }
 
-struct docStats {
-  docStats(): aggWordCnt(0),aggWordLen(0),aggWordLenExNames(0),
-	      aggMorphLen(0),aggMorphLenExNames(), 
-	      aggSentCnt(0),aggNameCnt(0),
-	      aggVdCnt(0), aggOdCnt(0), aggInfCnt(0), 
-	      aggPresentCnt(0), aggPastCnt(0),
-	      aggPron1Cnt(0), aggPron2Cnt(0), aggPron3Cnt(0),
-	      aggPronRefCnt(0), aggArchaicsCnt(0) {};
-  string id;
-  int aggWordCnt;
-  int aggWordLen;
-  int aggWordLenExNames;
-  int aggMorphLen;
-  int aggMorphLenExNames;
-  int aggSentCnt;
-  int aggNameCnt;
-  int aggVdCnt;
-  int aggOdCnt;
-  int aggInfCnt;
-  int aggPresentCnt;
-  int aggPastCnt;
-  int aggPron1Cnt;
-  int aggPron2Cnt;
-  int aggPron3Cnt;
-  int aggPronRefCnt;
-  int aggArchaicsCnt;
-  vector<parStats> psv;
-  map<string,int> heads;
-  map<string,int> unique_words;
-  map<string,int> unique_lemmas;
-  map<NerProp, int> ners;
-  //  multimap<NerProp, string> ners;
+struct docStats : public structStats {
+  docStats(): structStats( "DOCUMENT" ), sentCnt(0) {};
+  void print( ostream& ) const;
+  int sentCnt;
 };
 
-double rarity( const docStats& d, double level ){
-  map<string,int>::const_iterator it = d.unique_lemmas.begin();
+double rarity( const docStats *d, double level ){
+  map<string,int>::const_iterator it = d->unique_lemmas.begin();
   int rare = 0;
-  while ( it != d.unique_lemmas.end() ){
+  while ( it != d->unique_lemmas.end() ){
     if ( it->second <= level )
       ++rare;
     ++it;
   }
-  return rare/double( d.unique_lemmas.size() );
+  return rare/double( d->unique_lemmas.size() );
 }
 
-ostream& operator<<( ostream& os, const docStats& d ){
-  os << "Document: " << d.id << endl;
-  os << "#paragraphs " << d.psv.size() << endl;
-  os << "#sentences " << d.aggSentCnt << endl;
-  os << "#words " << d.aggWordCnt << endl;
-  os << "#namen " << d.aggNameCnt << endl;
-  os << "#Voltooid deelwoorden " << d.aggVdCnt
-     << " gemiddeld: " << d.aggVdCnt/double(d.aggWordCnt) << endl;
-  os << "#Onvoltooid deelwoorden " << d.aggOdCnt
-     << " gemiddeld: " << d.aggOdCnt/double(d.aggWordCnt) << endl;
-  os << "#Infinitieven " << d.aggInfCnt
-     << " gemiddeld: " << d.aggInfCnt/double(d.aggWordCnt) << endl;
-  os << "#Archaische constructies " << d.aggArchaicsCnt
-     << " gemiddeld: " << d.aggArchaicsCnt/double(d.aggWordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden terugverwijzend " << d.aggPronRefCnt
-     << " gemiddeld: " << d.aggPronRefCnt/double(d.aggWordCnt) << endl;
-  os << "#Persoonsvorm (TW) " << d.aggPresentCnt
-     << " gemiddeld: " << d.aggPresentCnt/double(d.aggWordCnt) << endl;
-  os << "#Persoonsvorm (VERL) " << d.aggPastCnt
-     << " gemiddeld: " << d.aggPastCnt/double(d.aggWordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden 1-ste persoon " << d.aggPron1Cnt
-     << " gemiddeld: " << d.aggPron1Cnt/double(d.aggWordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden 2-de persoon " << d.aggPron2Cnt
-     << " gemiddeld: " << d.aggPron2Cnt/double(d.aggWordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden 3-de persoon " << d.aggPron3Cnt
-     << " gemiddeld: " << d.aggPron3Cnt/double(d.aggWordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden totaal " 
-     << d.aggPron1Cnt + d.aggPron2Cnt + d.aggPron3Cnt
-     << " gemiddeld: " << (d.aggPron1Cnt + d.aggPron2Cnt + d.aggPron3Cnt)/double(d.aggWordCnt) << endl;
-  os << "TTW = " << d.unique_words.size()/double(d.aggWordCnt) << endl;
-  os << "TTL = " << d.unique_lemmas.size()/double(d.aggWordCnt) << endl;
+void docStats::print( ostream& os ) const {
+  os << category << " with "  << sv.size() << " paragraphs and "
+     << sentCnt << " Sentences" << endl;
+  os << "TTW = " << unique_words.size()/double(wordCnt) << endl;
+  os << "TTL = " << unique_lemmas.size()/double(wordCnt) << endl;
   os << "rarity(" << settings.rarityLevel << ")=" 
-     << rarity( d, settings.rarityLevel ) << endl;
-  os << "Document POS tags: ";
-  for ( map<string,int>::const_iterator it = d.heads.begin();
-	it != d.heads.end(); ++it ){
-    os << it->first << "[" << it->second << "] ";
-  }
-  os << endl;
-  os << "Document Named Entities ";
-  //  for ( multimap<NerProp,string>::const_iterator it = d.ners.begin();
-  for ( map<NerProp,int>::const_iterator it = d.ners.begin();
-	it != d.ners.end(); ++it ){
-    os << it->first << "[" << it->second << "] ";
-  }
-  os << endl;
-  os << "Document gemiddelde woordlengte " << d.aggWordLen/double(d.aggWordCnt) << endl;
-  os << "Document gemiddelde woordlengte zonder Namen " << d.aggWordLenExNames/double(d.aggWordCnt-d.aggNameCnt) << endl;
-  os << "Document gemiddelde aantal morphemen " << d.aggMorphLen/double(d.aggWordCnt) << endl;
-  os << "Document gemiddelde aantal morphemen zonder Namen " << d.aggMorphLenExNames/double(d.aggWordCnt-d.aggNameCnt) << endl;
-  os << "Document gemiddelde zinslengte " << d.aggWordCnt/double(d.aggSentCnt) << endl << endl;
-  for ( size_t i=0; i < d.psv.size(); ++i ){
-    os << d.psv[i] << endl;
-  }
-  os << endl;
-  return os;
+     << rarity( this, settings.rarityLevel ) << endl;
+  structStats::print( os );
 }
 
 NerProp lookupNer( const Word *w, const Sentence * s ){
@@ -608,34 +511,34 @@ NerProp lookupNer( const Word *w, const Sentence * s ){
   return result;
 }
 
-wordStats analyseWord( Word *w ){
-  wordStats ws;
-  ws.word = UnicodeToUTF8( w->text() );
-  ws.wordLen = w->text().length();
+wordStats *analyseWord( Word *w ){
+  wordStats *ws = new wordStats();
+  ws->word = UnicodeToUTF8( w->text() );
+  ws->wordLen = w->text().length();
   vector<PosAnnotation*> pos = w->select<PosAnnotation>();
   if ( pos.size() != 1 )
     throw ValueError( "word doesn't have POS tag info" );
-  ws.pos = pos[0]->cls();
-  ws.posHead = pos[0]->feat("head");
-  ws.lemma= w->lemma();
-  if ( ws.posHead == "LET" )
-    ws.prop = ISPUNCT;
-  else if ( ws.posHead == "SPEC" && ws.pos.find("eigen") != string::npos )
-    ws.prop = ISNAME;
-  else if ( ws.posHead == "WW" ){
+  ws->pos = pos[0]->cls();
+  ws->posHead = pos[0]->feat("head");
+  ws->lemma= w->lemma();
+  if ( ws->posHead == "LET" )
+    ws->prop = ISPUNCT;
+  else if ( ws->posHead == "SPEC" && ws->pos.find("eigen") != string::npos )
+    ws->prop = ISNAME;
+  else if ( ws->posHead == "WW" ){
     string wvorm = pos[0]->feat("wvorm");
     if ( wvorm == "inf" )
-      ws.prop = ISINF;
+      ws->prop = ISINF;
     else if ( wvorm == "vd" )
-      ws.prop = ISVD;
+      ws->prop = ISVD;
     else if ( wvorm == "od" )
-      ws.prop = ISOD;
+      ws->prop = ISOD;
     else if ( wvorm == "pv" ){
       string tijd = pos[0]->feat("pvtijd");
       if ( tijd == "tgw" )
-	ws.prop = ISPVTGW;
+	ws->prop = ISPVTGW;
       else if ( tijd == "verl" )
-	ws.prop = ISPVVERL;
+	ws->prop = ISPVVERL;
       else {
 	cerr << "PANIEK: een onverwachte ww tijd: " << tijd << endl;
 	exit(3);
@@ -646,21 +549,21 @@ wordStats analyseWord( Word *w ){
       exit(3);
     }
   }
-  else if ( ws.posHead == "VNW" && lowercase( ws.word ) != "men" ){
+  else if ( ws->posHead == "VNW" && lowercase( ws->word ) != "men" ){
     string cas = pos[0]->feat("case");
-    ws.archaic = ( cas == "gen" || cas == "dat" );
+    ws->archaic = ( cas == "gen" || cas == "dat" );
     string vwtype = pos[0]->feat("vwtype");
     if ( vwtype == "pers" || vwtype == "refl" 
 	 || vwtype == "pr" || vwtype == "bez" ) {
       string persoon = pos[0]->feat("persoon");
       if ( !persoon.empty() ){
 	if ( persoon[0] == '1' )
-	  ws.prop = ISPPRON1;
+	  ws->prop = ISPPRON1;
 	else if ( persoon[0] == '2' )
-	  ws.prop = ISPPRON2;
+	  ws->prop = ISPPRON2;
 	else if ( persoon[0] == '3' ){
-	  ws.prop = ISPPRON3;
-	  ws.isPronRef = ( vwtype == "pers" || vwtype == "bez" );
+	  ws->prop = ISPPRON3;
+	  ws->isPronRef = ( vwtype == "pers" || vwtype == "bez" );
 	}
 	else {
 	  cerr << "PANIEK: een onverwachte PRONOUN persoon : " << persoon 
@@ -670,13 +573,13 @@ wordStats analyseWord( Word *w ){
       }
     }
     if ( vwtype == "aanw" )
-      ws.isPronRef = true;
+      ws->isPronRef = true;
   }
-  else if ( ws.posHead == "LID" ) {
+  else if ( ws->posHead == "LID" ) {
     string cas = pos[0]->feat("case");
-    ws.archaic = ( cas == "gen" || cas == "dat" );
+    ws->archaic = ( cas == "gen" || cas == "dat" );
   }
-  if ( ws.prop != ISPUNCT ){
+  if ( ws->prop != ISPUNCT ){
     int max = 0;
     vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
     for ( size_t q=0; q < ml.size(); ++q ){
@@ -684,10 +587,10 @@ wordStats analyseWord( Word *w ){
       if ( m.size() > max )
 	max = m.size();
     }
-    ws.morphLen = max;
-    if ( ws.prop != ISNAME ){
-      ws.wordLenExNames = ws.wordLen;
-      ws.morphLenExNames = max;
+    ws->morphLen = max;
+    if ( ws->prop != ISNAME ){
+      ws->wordLenExNames = ws->wordLen;
+      ws->morphLenExNames = max;
     }
   }
   return ws;
@@ -731,15 +634,14 @@ string classifyVerb( Word *w, Sentence *s ){
   return "";
 }
 
-sentStats analyseSent( folia::Sentence *s ){
-  sentStats ss;
-  ss.id = s->id();
-  ss.text = UnicodeToUTF8( s->toktext() );
+sentStats *analyseSent( folia::Sentence *s ){
+  sentStats *ss = new sentStats();
+  ss->id = s->id();
+  ss->text = UnicodeToUTF8( s->toktext() );
   vector<folia::Word*> w = s->words();
-  //  multimap<NerProp,string>::iterator last = ss.ners.end();
   for ( size_t i=0; i < w.size(); ++i ){
-    wordStats ws = analyseWord( w[i] );
-    if ( ws.prop == ISPUNCT )
+    wordStats *ws = analyseWord( w[i] );
+    if ( ws->prop == ISPUNCT )
       continue;
     else {
       NerProp ner = lookupNer( w[i], s );
@@ -750,77 +652,63 @@ sentStats analyseSent( folia::Sentence *s ){
       case ORG_B:
       case PER_B:
       case PRO_B:
-	ss.ners[ner]++;
-	//	last = ss.ners.insert( make_pair( ner, ws.word ) );
+	ss->ners[ner]++;
 	break;
-      // case LOC_I:
-      // case EVE_I:
-      // case MISC_I:
-      // case ORG_I:
-      // case PER_I:
-      // case PRO_I:
-      // 	if ( last == ss.ners.end() ){
-      // 	  throw runtime_error( "confused ! " );
-      // 	}
-      // 	else {
-      // 	  last->second += " " + ws.word;
-      // 	}
-      // 	break;
       default:
-	;// skip
+	;
       }
-      ss.wordCnt++;
-      ss.heads[ws.posHead]++;
+      ss->wordCnt++;
+      ss->heads[ws->posHead]++;
       // if ( ws.posHead == "WW" ){
       // 	string vt = classifyVerb( w[i], s );
       // }
-      ss.aggWordLen += ws.wordLen;
-      ss.aggWordLenExNames += ws.wordLenExNames;
-      ss.aggMorphLen += ws.morphLen;
-      ss.aggMorphLenExNames += ws.morphLenExNames;
-      ss.unique_words[lowercase(ws.word)] += 1;
-      ss.unique_lemmas[ws.lemma] += 1;
-      ss.wsv.push_back( ws );
-      switch ( ws.prop ){
+      ss->wordLen += ws->wordLen;
+      ss->wordLenExNames += ws->wordLenExNames;
+      ss->morphLen += ws->morphLen;
+      ss->morphLenExNames += ws->morphLenExNames;
+      ss->unique_words[lowercase(ws->word)] += 1;
+      ss->unique_lemmas[ws->lemma] += 1;
+      ss->sv.push_back( ws );
+      switch ( ws->prop ){
       case ISNAME:
-	ss.nameCnt++;
+	ss->nameCnt++;
 	break;
       case ISVD:
-	ss.vdCnt++;
+	ss->vdCnt++;
 	break;
       case ISINF:
-	ss.infCnt++;
+	ss->infCnt++;
 	break;
       case ISOD:
-	ss.odCnt++;
+	ss->odCnt++;
 	break;
       case ISPVVERL:
-	ss.pastCnt++;
+	ss->pastCnt++;
 	break;
       case ISPVTGW:
-	ss.presentCnt++;
+	ss->presentCnt++;
 	break;
       case ISPPRON1:
-	ss.pron1Cnt++;
+	ss->pron1Cnt++;
       case ISPPRON2:
-	ss.pron2Cnt++;
+	ss->pron2Cnt++;
       case ISPPRON3:
-	ss.pron3Cnt++;
+	ss->pron3Cnt++;
       default:
 	;// ignore
       }
-      if ( ws.isPronRef )
-	ss.pronRefCnt++;
-      if ( ws.archaic )
-	ss.archaicsCnt++;
+      if ( ws->isPronRef )
+	ss->pronRefCnt++;
+      if ( ws->archaic )
+	ss->archaicsCnt++;
     }
   }
   return ss;
 }
 
-parStats analysePar( folia::Paragraph *p ){
-  parStats ps;
-  ps.id = p->id();
+parStats *analysePar( folia::Paragraph *p ){
+  parStats *ps = new parStats();
+  ps->id = p->id();
   vector<folia::Sentence*> sents = p->sentences();
   for ( size_t i=0; i < sents.size(); ++i ){
     if ( settings.doAlpino ){
@@ -829,29 +717,9 @@ parStats analysePar( folia::Paragraph *p ){
 	cerr << "alpino parser failed!" << endl;
       }
     }
-    sentStats ss = analyseSent( sents[i] );
-    ps.aggWordCnt += ss.wordCnt;
-    ps.aggWordLen += ss.aggWordLen;
-    ps.aggWordLenExNames += ss.aggWordLenExNames;
-    ps.aggMorphLen += ss.aggMorphLen;
-    ps.aggMorphLenExNames += ss.aggMorphLenExNames;
-    ps.sentCnt++;
-    ps.aggNameCnt += ss.nameCnt;
-    ps.aggVdCnt += ss.vdCnt;
-    ps.aggOdCnt += ss.odCnt;
-    ps.aggInfCnt += ss.infCnt;
-    ps.aggPresentCnt += ss.presentCnt;
-    ps.aggPastCnt += ss.pastCnt;
-    ps.aggPron1Cnt += ss.pron1Cnt;
-    ps.aggPron2Cnt += ss.pron2Cnt;
-    ps.aggPron3Cnt += ss.pron3Cnt;
-    ps.aggPronRefCnt += ss.pronRefCnt;
-    ps.ssv.push_back( ss );
-    aggregate( ps.heads, ss.heads );
-    aggregate( ps.unique_words, ss.unique_words );
-    aggregate( ps.unique_lemmas, ss.unique_lemmas );
-    //ps.ners.insert( ss.ners.begin(), ss.ners.end() );
-    aggregate( ps.ners, ss.ners );
+    sentStats *ss = analyseSent( sents[i] );
+    ps->merge( ss );
+    ps->sentCnt++;
   }
   return ps;
 }
@@ -860,29 +728,9 @@ docStats analyseDoc( folia::Document *doc ){
   docStats result;
   vector<folia::Paragraph*> pars = doc->paragraphs();
   for ( size_t i=0; i != pars.size(); ++i ){
-    parStats ps = analysePar( pars[i] );
-    result.aggWordCnt += ps.aggWordCnt;
-    result.aggWordLen += ps.aggWordLen;
-    result.aggWordLenExNames += ps.aggWordLenExNames;
-    result.aggMorphLen += ps.aggMorphLen;
-    result.aggMorphLenExNames += ps.aggMorphLenExNames;
-    result.aggNameCnt += ps.aggNameCnt;
-    result.aggSentCnt += ps.sentCnt;
-    result.aggVdCnt += ps.aggVdCnt;
-    result.aggOdCnt += ps.aggOdCnt;
-    result.aggInfCnt += ps.aggInfCnt;
-    result.aggPresentCnt += ps.aggPresentCnt;
-    result.aggPron1Cnt += ps.aggPron1Cnt;
-    result.aggPron2Cnt += ps.aggPron2Cnt;
-    result.aggPron3Cnt += ps.aggPron3Cnt;
-    result.aggPronRefCnt += ps.aggPronRefCnt;
-    result.aggPastCnt += ps.aggPastCnt;
-    result.psv.push_back( ps );
-    aggregate( result.heads, ps.heads );
-    aggregate( result.unique_words, ps.unique_words );
-    aggregate( result.unique_lemmas, ps.unique_lemmas );
-    //    result.ners.insert( ps.ners.begin(), ps.ners.end() );
-    aggregate( result.ners, ps.ners );
+    parStats *ps = analysePar( pars[i] );
+    result.merge( ps );
+    result.sentCnt += ps->sentCnt;
   }
   return result;
 }
