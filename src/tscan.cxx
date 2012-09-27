@@ -311,6 +311,7 @@ struct structStats: public basicStats {
 				    pronRefCnt(0),
 				    nameCnt(0), archaicsCnt(0) {};
   virtual void print(  ostream& ) const;
+  virtual void addMetrics( FoliaElement *el ) const;
   void merge( structStats * );
   string id;
   string text;
@@ -422,6 +423,7 @@ struct parStats: public structStats {
   parStats(): structStats( "PARAGRAAF" ),
 	      sentCnt(0) {};
   void print( ostream& ) const;
+  void addMetrics( FoliaElement *el ) const;
   int sentCnt;
 };
 
@@ -433,8 +435,54 @@ void parStats::print( ostream& os ) const {
 struct docStats : public structStats {
   docStats(): structStats( "DOCUMENT" ), sentCnt(0) {};
   void print( ostream& ) const;
+  void addMetrics( FoliaElement *el ) const;
   int sentCnt;
 };
+
+void addOneMetric( Document *doc, FoliaElement *parent,
+		   const string& cls, const string& val ){
+  MetricAnnotation *m = new MetricAnnotation( doc,
+					      "class='" + cls + "', value='" 
+					      + val + "'" );
+  parent->append( m );
+}
+
+void structStats::addMetrics( FoliaElement *el ) const {
+  Document *doc = el->doc();
+  doc->declare( AnnotationType::METRIC, 
+		"metricset", 
+		"annotator='tscan'" );
+  addOneMetric( doc, el, "word_count", toString(wordCnt) );
+  addOneMetric( doc, el, "name_count", toString(nameCnt) );
+  addOneMetric( doc, el, "vd_count", toString(vdCnt) );
+  addOneMetric( doc, el, "od_count", toString(odCnt) );
+  addOneMetric( doc, el, "inf_count", toString(infCnt) );
+  addOneMetric( doc, el, "archaic_count", toString(infCnt) );
+  addOneMetric( doc, el, "pronoun_tw_count", toString(presentCnt) );
+  addOneMetric( doc, el, "pronoun_verl_count", toString(pastCnt) );
+  addOneMetric( doc, el, "pronoun_ref_count", toString(pronRefCnt) );
+  addOneMetric( doc, el, "pronoun_1_count", toString(pron1Cnt) );
+  addOneMetric( doc, el, "pronoun_2_count", toString(pron2Cnt) );
+  addOneMetric( doc, el, "pronoun_3_count", toString(pron3Cnt) );
+  addOneMetric( doc, el, "character_sum", toString(wordLen) );
+  addOneMetric( doc, el, "character_sum_no_names", toString(wordLenExNames) );
+  addOneMetric( doc, el, "morph_count", toString(morphLen) );
+  addOneMetric( doc, el, "morph_count_no_names", toString(morphLenExNames) );
+
+  /*
+  os << category << " Named Entities ";
+  for ( map<NerProp,int>::const_iterator it = ners.begin();
+	it != ners.end(); ++it ){
+    os << it->first << "[" << it->second << "] ";
+  }
+  os << endl;
+  */
+
+}
+
+void parStats::addMetrics( FoliaElement *el ) const {
+  structStats::addMetrics( el );
+}
 
 double rarity( const docStats *d, double level ){
   map<string,int>::const_iterator it = d->unique_lemmas.begin();
@@ -445,6 +493,16 @@ double rarity( const docStats *d, double level ){
     ++it;
   }
   return rare/double( d->unique_lemmas.size() );
+}
+
+void docStats::addMetrics( FoliaElement *el ) const {
+  structStats::addMetrics( el );
+  addOneMetric( el->doc(), el, 
+		"TTW", toString( unique_words.size()/double(wordCnt) ) );
+  addOneMetric( el->doc(), el, 
+		"TTL", toString( unique_lemmas.size()/double(wordCnt) ) );
+  addOneMetric( el->doc(), el, 
+		"rarity", toString( rarity( this, settings.rarityLevel ) ) );
 }
 
 void docStats::print( ostream& os ) const {
@@ -703,6 +761,7 @@ sentStats *analyseSent( folia::Sentence *s ){
 	ss->archaicsCnt++;
     }
   }
+
   return ss;
 }
 
@@ -721,6 +780,7 @@ parStats *analysePar( folia::Paragraph *p ){
     ps->merge( ss );
     ps->sentCnt++;
   }
+  ps->addMetrics( p );
   return ps;
 }
 
@@ -732,6 +792,7 @@ docStats analyseDoc( folia::Document *doc ){
     result.merge( ps );
     result.sentCnt += ps->sentCnt;
   }
+  result.addMetrics( pars[0]->parent() );
   return result;
 }
 
