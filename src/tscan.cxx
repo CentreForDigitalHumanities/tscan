@@ -702,7 +702,6 @@ vector<FoliaElement*> siblings( Word *w, Sentence *s ){
 xmlNode *getAlpWord( xmlNode *node, const string& pos ){
   xmlNode *result = 0;
   xmlNode *pnt = node->children;
-  //  cerr << "zoek naar " << pos << endl;
   while ( pnt ){
     if ( Name( pnt ) == "node" ){
       KWargs atts = getAttributes( pnt );
@@ -714,6 +713,9 @@ xmlNode *getAlpWord( xmlNode *node, const string& pos ){
 	//	cerr << "begin = " << start << ", end=" << finish << endl;
 	if ( start + 1 == finish ){
 	  result = pnt;
+	}
+	else {
+	  result = getAlpWord( pnt, pos );
 	}
       }
       else {
