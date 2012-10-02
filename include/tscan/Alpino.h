@@ -27,6 +27,6 @@
 
 #ifndef ALPINO_H
 #define ALPINO_H
-bool AlpinoParse( folia::Sentence * );
+xmlDoc *AlpinoParse( folia::Sentence * );
 
 #endif // ALPINO_H

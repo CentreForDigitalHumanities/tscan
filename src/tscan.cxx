@@ -224,7 +224,7 @@ void basicStats::print( ostream& os ) const {
 
 struct wordStats : public basicStats {
   wordStats(): basicStats( "WORD" ),
-	       isPronRef(false), archaic(false),
+	       isPronRef(false), archaic(false), isContent(false),
 	       prop(JUSTAWORD) {};
   void print( ostream& ) const;
   string word;
@@ -233,6 +233,7 @@ struct wordStats : public basicStats {
   string lemma;
   bool isPronRef;
   bool archaic;
+  bool isContent;
   WordProp prop;
 };
 
@@ -309,7 +310,8 @@ struct structStats: public basicStats {
 				    infCnt(0), presentCnt(0), pastCnt(0),
 				    pron1Cnt(0), pron2Cnt(0), pron3Cnt(0), 
 				    pronRefCnt(0),
-				    nameCnt(0), archaicsCnt(0) {};
+				    nameCnt(0), archaicsCnt(0),
+				    contentCnt(0) {};
   virtual void print(  ostream& ) const;
   virtual void addMetrics( FoliaElement *el ) const;
   void merge( structStats * );
@@ -327,6 +329,7 @@ struct structStats: public basicStats {
   int pron3Cnt;
   int pronRefCnt;
   int archaicsCnt;
+  int contentCnt;
   vector<basicStats *> sv;
   map<string,int> heads;
   map<string,int> unique_words;
@@ -344,6 +347,8 @@ void structStats::merge( structStats *ss ){
   vdCnt += ss->vdCnt;
   odCnt += ss->odCnt;
   infCnt += ss->infCnt;
+  archaicsCnt += ss->archaicsCnt;
+  contentCnt += ss->contentCnt;
   presentCnt += ss->presentCnt;
   pastCnt += ss->pastCnt;
   pron1Cnt += ss->pron1Cnt;
@@ -373,6 +378,8 @@ void structStats::print( ostream& os ) const {
      << " gemiddeld: " << infCnt/double(wordCnt) << endl;
   os << "#Archaische constructies " << archaicsCnt
      << " gemiddeld: " << archaicsCnt/double(wordCnt) << endl;
+  os << "#Content woorden " << contentCnt
+     << " gemiddeld: " << contentCnt/double(wordCnt) << endl;
   os << "#Persoonsvorm (TW) " << presentCnt
      << " gemiddeld: " << presentCnt/double(wordCnt) << endl;
   os << "#Persoonsvorm (VERL) " << pastCnt
@@ -457,7 +464,8 @@ void structStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( doc, el, "vd_count", toString(vdCnt) );
   addOneMetric( doc, el, "od_count", toString(odCnt) );
   addOneMetric( doc, el, "inf_count", toString(infCnt) );
-  addOneMetric( doc, el, "archaic_count", toString(infCnt) );
+  addOneMetric( doc, el, "archaic_count", toString(archaicsCnt) );
+  addOneMetric( doc, el, "content_count", toString(contentCnt) );
   addOneMetric( doc, el, "pronoun_tw_count", toString(presentCnt) );
   addOneMetric( doc, el, "pronoun_verl_count", toString(pastCnt) );
   addOneMetric( doc, el, "pronoun_ref_count", toString(pronRefCnt) );
@@ -637,6 +645,10 @@ wordStats *analyseWord( Word *w ){
     string cas = pos[0]->feat("case");
     ws->archaic = ( cas == "gen" || cas == "dat" );
   }
+  ws->isContent = ( ws->posHead == "N" 
+		    || ws->posHead == "BW" 
+		    || ws->posHead == "ADJ" );
+  cerr << "found a Content word! " << ws << endl;
   if ( ws->prop != ISPUNCT ){
     int max = 0;
     vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
@@ -687,12 +699,176 @@ vector<FoliaElement*> siblings( Word *w, Sentence *s ){
   return result;
 }
 
-string classifyVerb( Word *w, Sentence *s ){
-  vector<FoliaElement*> v = siblings( w, s );
-  return "";
+xmlNode *getAlpWord( xmlNode *node, const string& pos ){
+  xmlNode *result = 0;
+  xmlNode *pnt = node->children;
+  //  cerr << "zoek naar " << pos << endl;
+  while ( pnt ){
+    if ( Name( pnt ) == "node" ){
+      KWargs atts = getAttributes( pnt );
+      string epos = atts["end"];
+      if ( epos == pos ){
+	string bpos = atts["begin"];
+	int start = stringTo<int>( bpos );
+	int finish = stringTo<int>( epos );
+	//	cerr << "begin = " << start << ", end=" << finish << endl;
+	if ( start + 1 == finish ){
+	  result = pnt;
+	}
+      }
+      else {
+	result = getAlpWord( pnt, pos );
+      }
+    }
+    if ( result )
+      return result;
+    pnt = pnt->next;
+  }
+  return result;
 }
 
-sentStats *analyseSent( folia::Sentence *s ){
+vector< xmlNode*> getSibblings( xmlNode *node ){
+  vector<xmlNode *> result;
+  xmlNode *pnt = node->prev;
+  while ( pnt ){
+    if ( pnt->prev )
+      pnt = pnt->prev;
+    else
+      break;
+  }
+  if ( !pnt )
+    pnt = node;
+  while ( pnt ){
+    result.push_back( pnt );
+    pnt = pnt->next;
+  }
+  return result;
+}
+
+vector<xmlNode*> getChildElements( xmlNode *node ){
+  vector<xmlNode*> result;
+  xmlNode *pnt = node->children;
+  while ( pnt ){
+    if ( pnt->type == XML_ELEMENT_NODE ){
+      result.push_back( pnt );
+    }
+    pnt = pnt->next;
+  }
+  return result;
+}
+
+xmlNode *node_search( const vector<xmlNode*>& vec,
+		      const string& att, const string& val ){
+  vector<xmlNode*>::const_iterator it = vec.begin();
+  while ( it != vec.end() ){
+    KWargs atts = getAttributes( *it );
+    if ( atts[att] == val ){
+      return *it;
+    }
+    else if ( atts["root"] == "" ){
+      vector<xmlNode*> expand = getChildElements( *it );
+      xmlNode *tmp = node_search( expand, att, val );
+      if ( tmp )
+	return tmp;
+    }
+    ++it;
+  }
+  return 0;
+}
+
+const string modalA[] = { "kunnen", "moeten", "hoeven", "behoeven", "mogen",
+			  "willen", "blijken", "lijken", "schijnen", "heten" };
+
+const string koppelA[] = { "zijn", "worden", "blijven", "lijken", "schijnen",
+			   "heten", "dunken", "voorkomen" };
+
+set<string> modals = set<string>( modalA, modalA + 10 );
+set<string> koppels = set<string>( koppelA, koppelA + 8 );
+
+string classifyVerb( Word *w, xmlDoc *alp ){
+  string id = w->id();
+  string::size_type ppos = id.find_last_of( '.' );
+  string posS = id.substr( ppos + 1 );
+  if ( posS.empty() ){
+    cerr << "unable to extract a word index from " << id << endl;
+  }
+  else {
+    xmlNode *root = xmlDocGetRootElement( alp );
+    xmlNode *wnode = getAlpWord( root, posS );
+    if ( wnode ){
+      vector< xmlNode *> siblinglist = getSibblings( wnode );
+      string pos = w->pos();
+      string lemma = w->lemma();
+      if ( lemma == "zijn" || lemma == "worden" ){
+	xmlNode *obj_node = 0;
+	xmlNode *su_node = 0;
+	for ( size_t i=0; i < siblinglist.size(); ++i ){
+	  KWargs atts = getAttributes( siblinglist[i] );
+	  if ( atts["rel"] == "su" ){
+	    su_node = siblinglist[i];
+	    //	    cerr << "Found a SU node!" << su_node << endl;
+	  }
+	}
+	for ( size_t i=0; i < siblinglist.size(); ++i ){
+	  KWargs atts = getAttributes( siblinglist[i] );
+	  if ( atts["rel"] == "vc" && atts["cat"] == "ppart" ){
+	    vector<xmlNode*> vec = getChildElements( siblinglist[i] );
+	    obj_node = node_search( vec, "rel", "obj1" );
+	    if ( obj_node ){
+	      //	      cerr << "found an obj node! " << obj_node << endl;
+	      KWargs atts = getAttributes( obj_node );
+	      string index = atts["index"];
+	      if ( !index.empty() ){
+		KWargs atts = getAttributes( su_node );
+		if ( atts["index"] == index ){
+		  return "passiefww";
+		}
+	      }
+	    }
+	  }
+	}
+      }
+      if ( koppels.find( lemma ) != koppels.end() ){
+	for ( size_t i=0; i < siblinglist.size(); ++i ){
+	  KWargs atts = getAttributes( siblinglist[i] );
+	  if ( atts["rel"] == "predc" )
+	    return "passiefww";
+	}
+      }
+      if ( lemma == "schijnen" ){
+	for ( size_t i=0; i < siblinglist.size(); ++i ){
+	  KWargs atts = getAttributes( siblinglist[i] );
+	  if ( atts["rel"] == "su" ){
+	    cerr << "do some VERY strange stuff" << endl;
+	  }
+	}
+      }
+      string data = XmlContent( wnode->children );
+      if ( data == "zul" || data == "zal" 
+	   || data == "zullen" || data == "zult" ) {
+	return "tijdww";
+      }
+      if ( modals.find( lemma ) != modals.end() ){
+	return "modaalww";
+      }      
+      if ( lemma == "hebben" ){
+	for ( size_t i=0; i < siblinglist.size(); ++i ){
+	  KWargs atts = getAttributes( siblinglist[i] );
+	  if ( atts["rel"] == "vc" && atts["cat"] == "ppart" )
+	    return "tijdww";
+	}
+	return "hoofdww";
+      }
+      if ( lemma == "zijn" ){
+	return "tijdww";
+      }
+    }
+    return "hoofdww";
+  }
+  return "none";
+}
+
+sentStats *analyseSent( folia::Sentence *s, xmlDoc *alpDoc ){
   sentStats *ss = new sentStats();
   ss->id = s->id();
   ss->text = UnicodeToUTF8( s->toktext() );
@@ -717,9 +893,13 @@ sentStats *analyseSent( folia::Sentence *s ){
       }
       ss->wordCnt++;
       ss->heads[ws->posHead]++;
-      // if ( ws.posHead == "WW" ){
-      // 	string vt = classifyVerb( w[i], s );
-      // }
+      if ( alpDoc && ws->posHead == "WW" ){
+	string vt = classifyVerb( w[i], alpDoc );
+	cerr << "Classify WW gave " << vt << endl;
+	if ( vt == "hoofdww" ){
+	  ws->isContent = true;
+	}
+      }
       ss->wordLen += ws->wordLen;
       ss->wordLenExNames += ws->wordLenExNames;
       ss->morphLen += ws->morphLen;
@@ -759,6 +939,8 @@ sentStats *analyseSent( folia::Sentence *s ){
 	ss->pronRefCnt++;
       if ( ws->archaic )
 	ss->archaicsCnt++;
+      if ( ws->isContent )
+	ss->contentCnt++;
     }
   }
 
@@ -770,13 +952,16 @@ parStats *analysePar( folia::Paragraph *p ){
   ps->id = p->id();
   vector<folia::Sentence*> sents = p->sentences();
   for ( size_t i=0; i < sents.size(); ++i ){
+    xmlDoc *alpDoc = 0;
     if ( settings.doAlpino ){
       cerr << "calling Alpino parser" << endl;
-      if ( !AlpinoParse( sents[i] ) ){
+      alpDoc = AlpinoParse( sents[i] );
+      if ( !alpDoc ){
 	cerr << "alpino parser failed!" << endl;
       }
     }
-    sentStats *ss = analyseSent( sents[i] );
+    sentStats *ss = analyseSent( sents[i], alpDoc );
+    xmlFreeDoc( alpDoc );
     ps->merge( ss );
     ps->sentCnt++;
   }

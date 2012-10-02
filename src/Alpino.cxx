@@ -121,7 +121,7 @@ void addDep( xmlNode *node, vector<Word*>& words, FoliaElement *layer ){
 	string rel = atts["rel"];
 	FoliaElement *dep = layer->append( new Dependency( layer->doc(),
 							   "class='" + rel + "'" ) );
-	FoliaElement *h = dep->append( new DependencyHead() );
+	FoliaElement *h = dep->append( new Headwords() );
 	h->append( words[headStart] );
 	xmlNode *sub = findSubHead( pnt );
 	if ( !sub ){
@@ -175,7 +175,7 @@ void extractAndAppendParse( xmlDoc *doc, folia::Sentence *s ){
   }
 }
 
-bool AlpinoParse( folia::Sentence *s ){
+xmlDoc *AlpinoParse( folia::Sentence *s ){
   string txt = folia::UnicodeToUTF8(s->toktext());
   //  cerr << "parse line: " << txt << endl;
   struct stat sbuf;
@@ -198,10 +198,10 @@ bool AlpinoParse( folia::Sentence *s ){
   remove( "/tmp/alpino/tempparse.txt" );
   xmlDoc *xmldoc = xmlReadFile( "/tmp/alpino/parses/1.xml", 0, XML_PARSE_NOBLANKS );
   if ( xmldoc ){
-    extractAndAppendParse( xmldoc, s );
-    xmlFreeDoc( xmldoc );
-    return true;
+    // extractAndAppendParse( xmldoc, s );
+    // xmlFreeDoc( xmldoc );
+    return xmldoc;
   }
-  return false;
+  return 0;
 }
 
