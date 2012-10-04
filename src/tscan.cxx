@@ -226,7 +226,10 @@ void basicStats::print( ostream& os ) const {
 struct wordStats : public basicStats {
   wordStats( Word *, xmlDoc * );
   void print( ostream& ) const;
-  void addMetrics( FoliaElement *el ) const;
+  void addMetrics( FoliaElement * ) const;
+  bool checkContent( Word *, xmlDoc * ) const;
+  bool checkNominal( Word *, xmlDoc * ) const;
+  WordProp checkProps( const PosAnnotation* );
   string word;
   string pos;
   string posHead;
@@ -238,6 +241,22 @@ struct wordStats : public basicStats {
   WordProp prop;
   vector<string> morphemes;
 };
+
+bool wordStats::checkContent( Word *w, xmlDoc *alp ) const {
+  if ( posHead == "WW" ){
+    if ( alp ){
+      string vt = classifyVerb( w, alp );
+      //      cerr << "Classify WW gave " << vt << endl;
+      if ( vt == "hoofdww" ){
+	return true;
+      }
+    }
+  }
+  else {
+    return ( posHead == "N" || posHead == "BW" || posHead == "ADJ" );
+  }
+  return false;
+}
 
 bool match_tail( const string& word, const string& tail ){
   if ( tail.size() > word.size() )
@@ -253,25 +272,45 @@ bool match_tail( const string& word, const string& tail ){
   return false;
 }
 
-wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
-  basicStats( "WORD" ), 
-  isPronRef(false), archaic(false), isContent(false), isNominal(false),
-  prop(JUSTAWORD) 
-{
-  word = UnicodeToUTF8( w->text() );
-  wordLen = w->text().length();
-  vector<PosAnnotation*> posV = w->select<PosAnnotation>();
-  if ( posV.size() != 1 )
-    throw ValueError( "word doesn't have POS tag info" );
-  pos = posV[0]->cls();
-  posHead = posV[0]->feat("head");
-  lemma = w->lemma();
+bool wordStats::checkNominal( Word *w, xmlDoc *alpDoc ) const {
+  static string morphList[] = { "ing", "sel", "(e)nis", "heid", "te", "schap",
+				"dom", "sie", "iek", "iteit", "age", "esse",
+				"name" };
+  static set<string> morphs( morphList, morphList + 13 );
+  if ( posHead == "N" && morphemes.size() > 1 
+       && morphs.find( morphemes[morphemes.size()-1] ) != morphs.end() ){
+    return true;
+  }
+  bool matched = match_tail( word, "ose" ) ||
+    match_tail( word, "ase" ) ||
+    match_tail( word, "ese" ) ||
+    match_tail( word, "isme" ) ||
+    match_tail( word, "sie" ) ||
+    match_tail( word, "tie" );
+  if ( matched )
+    return true;
+  else {
+    xmlNode *node = getAlpWord( alpDoc, w );
+    if ( node ){
+      KWargs args = getAttributes( node );
+      if ( args["pos"] == "verb" ){
+	node = node->parent;
+	KWargs args = getAttributes( node );
+	if ( args["cat"] == "np" )
+	  return true;
+      }
+    }
+  }
+  return false;
+}
+
+WordProp wordStats::checkProps( const PosAnnotation* pa ) {
   if ( posHead == "LET" )
     prop = ISPUNCT;
   else if ( posHead == "SPEC" && pos.find("eigen") != string::npos )
     prop = ISNAME;
   else if ( posHead == "WW" ){
-    string wvorm = posV[0]->feat("wvorm");
+    string wvorm = pa->feat("wvorm");
     if ( wvorm == "inf" )
       prop = ISINF;
     else if ( wvorm == "vd" )
@@ -279,7 +318,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
     else if ( wvorm == "od" )
       prop = ISOD;
     else if ( wvorm == "pv" ){
-      string tijd = posV[0]->feat("pvtijd");
+      string tijd = pa->feat("pvtijd");
       if ( tijd == "tgw" )
 	prop = ISPVTGW;
       else if ( tijd == "verl" )
@@ -295,12 +334,12 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
     }
   }
   else if ( posHead == "VNW" && lowercase( word ) != "men" ){
-    string cas = posV[0]->feat("case");
+    string cas = pa->feat("case");
     archaic = ( cas == "gen" || cas == "dat" );
-    string vwtype = posV[0]->feat("vwtype");
+    string vwtype = pa->feat("vwtype");
     if ( vwtype == "pers" || vwtype == "refl" 
 	 || vwtype == "pr" || vwtype == "bez" ) {
-      string persoon = posV[0]->feat("persoon");
+      string persoon = pa->feat("persoon");
       if ( !persoon.empty() ){
 	if ( persoon[0] == '1' )
 	  prop = ISPPRON1;
@@ -312,7 +351,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
 	}
 	else {
 	  cerr << "PANIEK: een onverwachte PRONOUN persoon : " << persoon 
-	       << " in word " << w << endl;
+	       << " for word " << word << endl;
 	  exit(3);
 	}
       }
@@ -321,23 +360,29 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
       isPronRef = true;
   }
   else if ( posHead == "LID" ) {
-    string cas = posV[0]->feat("case");
+    string cas = pa->feat("case");
     archaic = ( cas == "gen" || cas == "dat" );
   }
-  if ( posHead == "WW" ){
-    if ( alpDoc ){
-      string vt = classifyVerb( w, alpDoc );
-      //      cerr << "Classify WW gave " << vt << endl;
-      if ( vt == "hoofdww" ){
-	isContent = true;
-      }
-    }
-  }
-  else {
-    isContent = ( posHead == "N" 
-		      || posHead == "BW" 
-		      || posHead == "ADJ" );
-  }
+  return prop;
+}
+
+
+wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
+  basicStats( "WORD" ), 
+  isPronRef(false), archaic(false), isContent(false), isNominal(false),
+  prop(JUSTAWORD) 
+{
+  word = UnicodeToUTF8( w->text() );
+  wordLen = w->text().length();
+  vector<PosAnnotation*> posV = w->select<PosAnnotation>();
+  if ( posV.size() != 1 )
+    throw ValueError( "word doesn't have POS tag info" );
+  PosAnnotation *pa = posV[0];
+  pos = pa->cls();
+  posHead = pa->feat("head");
+  lemma = w->lemma();
+  prop = checkProps( pa );
+  isContent = checkContent( w, alpDoc );
   if ( prop != ISPUNCT ){
     size_t max = 0;
     vector<Morpheme*> morphemeV;
@@ -354,41 +399,12 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
     for ( size_t q=0; q < morphemeV.size(); ++q ){
       morphemes.push_back( morphemeV[q]->str() );
     }
-    static string morphList[] = { "ing", "sel", "(e)nis", "heid", "te", "schap",
-				  "dom", "sie", "iek", "iteit", "age", "esse",
-				  "name" };
-    static set<string> morphs( morphList, morphList + 13 );
-    if ( posHead == "N" && morphemes.size() > 1 
-	 && morphs.find( morphemes[morphemes.size()-1] ) != morphs.end() ){
-      isNominal = true;
-    }
-    if ( !isNominal ){
-      bool matched = match_tail( word, "ose" ) ||
-	match_tail( word, "ase" ) ||
-	match_tail( word, "ese" ) ||
-	match_tail( word, "isme" ) ||
-	match_tail( word, "sie" ) ||
-	match_tail( word, "tie" );
-      if ( matched )
-	isNominal = true;
-      else {
-	xmlNode *node = getAlpWord( alpDoc, w );
-	if ( node ){
-	  KWargs args = getAttributes( node );
-	  if ( args["pos"] == "verb" ){
-	    node = node->parent;
-	    KWargs args = getAttributes( node );
-	    if ( args["cat"] == "np" )
-	      isNominal = true;
-	  }
-	}
-      }
-    }
     morphLen = max;
     if ( prop != ISNAME ){
       wordLenExNames = wordLen;
       morphLenExNames = max;
     }
+    isNominal = checkNominal( w, alpDoc );
   }
   addMetrics( w );
 }
