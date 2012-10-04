@@ -29,5 +29,6 @@
 #define ALPINO_H
 xmlDoc *AlpinoParse( folia::Sentence * );
 std::string classifyVerb( folia::Word *, xmlDoc * );
+xmlNode *getAlpWord( xmlDoc *, const folia::Word * );
 
 #endif // ALPINO_H

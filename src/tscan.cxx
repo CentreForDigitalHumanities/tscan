@@ -202,7 +202,8 @@ struct basicStats {
 				   wordLen(0),wordLenExNames(0),
 				   morphLen(0), morphLenExNames(0) {};
   virtual ~basicStats(){};
-  virtual void print( ostream& ) const;
+  virtual void print( ostream& ) const = 0;
+  virtual void addMetrics( FoliaElement *el ) const = 0;
   string category;
   int wordLen;
   int wordLenExNames;
@@ -225,6 +226,7 @@ void basicStats::print( ostream& os ) const {
 struct wordStats : public basicStats {
   wordStats( Word *, xmlDoc * );
   void print( ostream& ) const;
+  void addMetrics( FoliaElement *el ) const;
   string word;
   string pos;
   string posHead;
@@ -232,12 +234,28 @@ struct wordStats : public basicStats {
   bool isPronRef;
   bool archaic;
   bool isContent;
+  bool isNominal;
   WordProp prop;
+  vector<string> morphemes;
 };
+
+bool match_tail( const string& word, const string& tail ){
+  if ( tail.size() > word.size() )
+    return false;
+  string::const_reverse_iterator wir = word.rbegin();
+  string::const_reverse_iterator tir = tail.rbegin();
+  while ( tir != tail.rend() ){
+    if ( *tir != *wir )
+      return false;
+    ++tir;
+    ++wir;
+  }
+  return false;
+}
 
 wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   basicStats( "WORD" ), 
-  isPronRef(false), archaic(false), isContent(false),
+  isPronRef(false), archaic(false), isContent(false), isNominal(false),
   prop(JUSTAWORD) 
 {
   word = UnicodeToUTF8( w->text() );
@@ -309,7 +327,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   if ( posHead == "WW" ){
     if ( alpDoc ){
       string vt = classifyVerb( w, alpDoc );
-      cerr << "Classify WW gave " << vt << endl;
+      //      cerr << "Classify WW gave " << vt << endl;
       if ( vt == "hoofdww" ){
 	isContent = true;
       }
@@ -322,11 +340,49 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   }
   if ( prop != ISPUNCT ){
     size_t max = 0;
+    vector<Morpheme*> morphemeV;
     vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
     for ( size_t q=0; q < ml.size(); ++q ){
       vector<Morpheme*> m = ml[q]->select<Morpheme>();
-      if ( m.size() > max )
+      if ( m.size() > max ){
+	// a hack we assume first the longest morpheme list to 
+	// be the best choice. 
+	morphemeV = m;
 	max = m.size();
+      }
+    }
+    for ( size_t q=0; q < morphemeV.size(); ++q ){
+      morphemes.push_back( morphemeV[q]->str() );
+    }
+    static string morphList[] = { "ing", "sel", "(e)nis", "heid", "te", "schap",
+				  "dom", "sie", "iek", "iteit", "age", "esse",
+				  "name" };
+    static set<string> morphs( morphList, morphList + 13 );
+    if ( posHead == "N" && morphemes.size() > 1 
+	 && morphs.find( morphemes[morphemes.size()-1] ) != morphs.end() ){
+      isNominal = true;
+    }
+    if ( !isNominal ){
+      bool matched = match_tail( word, "ose" ) ||
+	match_tail( word, "ase" ) ||
+	match_tail( word, "ese" ) ||
+	match_tail( word, "isme" ) ||
+	match_tail( word, "sie" ) ||
+	match_tail( word, "tie" );
+      if ( matched )
+	isNominal = true;
+      else {
+	xmlNode *node = getAlpWord( alpDoc, w );
+	if ( node ){
+	  KWargs args = getAttributes( node );
+	  if ( args["pos"] == "verb" ){
+	    node = node->parent;
+	    KWargs args = getAttributes( node );
+	    if ( args["cat"] == "np" )
+	      isNominal = true;
+	  }
+	}
+      }
     }
     morphLen = max;
     if ( prop != ISNAME ){
@@ -334,11 +390,32 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
       morphLenExNames = max;
     }
   }
+  addMetrics( w );
+}
+
+void addOneMetric( Document *doc, FoliaElement *parent,
+		   const string& cls, const string& val ){
+  MetricAnnotation *m = new MetricAnnotation( doc,
+					      "class='" + cls + "', value='" 
+					      + val + "'" );
+  parent->append( m );
+}
+
+void wordStats::addMetrics( FoliaElement *el ) const {
+  if ( isContent )
+    addOneMetric( el->doc(), el, 
+		  "content_word", "true" );
+  if ( archaic )
+    addOneMetric( el->doc(), el, 
+		  "archaic", "true" );
+  if ( isNominal )
+    addOneMetric( el->doc(), el, 
+		  "nomalization", "true" );
 }
 
 void wordStats::print( ostream& os ) const {
   os << "word: [" <<word << "], lengte=" << wordLen 
-     << ", aantal morphemen=" << morphLen <<  ", HEAD: " << posHead;
+     << ", morphemen: " << morphemes << ", HEAD: " << posHead;
   switch ( prop ){
   case ISINF:
     os << " (Infinitief)";
@@ -371,6 +448,8 @@ void wordStats::print( ostream& os ) const {
   case JUSTAWORD:
     break;
   }
+  if ( isNominal )
+    os << " nominalisatie";  
 }
 
 enum NerProp { NONER, LOC_B, LOC_I, EVE_B, EVE_I, ORG_B, ORG_I, 
@@ -416,10 +495,11 @@ struct structStats: public basicStats {
 				    nameCnt(0),
 				    pron1Cnt(0), pron2Cnt(0), pron3Cnt(0), 
 				    pronRefCnt(0), archaicsCnt(0),
-				    contentCnt(0) {};
+				    contentCnt(0),
+				    nominalCnt(0) {};
   ~structStats();
   virtual void print(  ostream& ) const;
-  virtual void addMetrics( FoliaElement *el ) const;
+  void addMetrics( FoliaElement *el ) const;
   void merge( structStats * );
   string id;
   string text;
@@ -436,6 +516,7 @@ struct structStats: public basicStats {
   int pronRefCnt;
   int archaicsCnt;
   int contentCnt;
+  int nominalCnt;
   vector<basicStats *> sv;
   map<string,int> heads;
   map<string,int> unique_words;
@@ -463,6 +544,7 @@ void structStats::merge( structStats *ss ){
   infCnt += ss->infCnt;
   archaicsCnt += ss->archaicsCnt;
   contentCnt += ss->contentCnt;
+  nominalCnt += ss->nominalCnt;
   presentCnt += ss->presentCnt;
   pastCnt += ss->pastCnt;
   pron1Cnt += ss->pron1Cnt;
@@ -494,6 +576,8 @@ void structStats::print( ostream& os ) const {
      << " gemiddeld: " << archaicsCnt/double(wordCnt) << endl;
   os << "#Content woorden " << contentCnt
      << " gemiddeld: " << contentCnt/double(wordCnt) << endl;
+  os << "#Nominalizaties " << nominalCnt
+     << " gemiddeld: " << nominalCnt/double(wordCnt) << endl;
   os << "#Persoonsvorm (TW) " << presentCnt
      << " gemiddeld: " << presentCnt/double(wordCnt) << endl;
   os << "#Persoonsvorm (VERL) " << pastCnt
@@ -530,19 +614,8 @@ void structStats::print( ostream& os ) const {
   }
 }
 
-void addOneMetric( Document *doc, FoliaElement *parent,
-		   const string& cls, const string& val ){
-  MetricAnnotation *m = new MetricAnnotation( doc,
-					      "class='" + cls + "', value='" 
-					      + val + "'" );
-  parent->append( m );
-}
-
 void structStats::addMetrics( FoliaElement *el ) const {
   Document *doc = el->doc();
-  doc->declare( AnnotationType::METRIC, 
-		"metricset", 
-		"annotator='tscan'" );
   addOneMetric( doc, el, "word_count", toString(wordCnt) );
   addOneMetric( doc, el, "name_count", toString(nameCnt) );
   addOneMetric( doc, el, "vd_count", toString(vdCnt) );
@@ -550,6 +623,7 @@ void structStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( doc, el, "inf_count", toString(infCnt) );
   addOneMetric( doc, el, "archaic_count", toString(archaicsCnt) );
   addOneMetric( doc, el, "content_count", toString(contentCnt) );
+  addOneMetric( doc, el, "nominal_count", toString(nominalCnt) );
   addOneMetric( doc, el, "pronoun_tw_count", toString(presentCnt) );
   addOneMetric( doc, el, "pronoun_verl_count", toString(pastCnt) );
   addOneMetric( doc, el, "pronoun_ref_count", toString(pronRefCnt) );
@@ -575,6 +649,7 @@ void structStats::addMetrics( FoliaElement *el ) const {
 struct sentStats : public structStats {
   sentStats( Sentence *, xmlDoc * );
   virtual void print( ostream& ) const;
+  void addMetrics( FoliaElement *el ) const;
 };
 
 NerProp lookupNer( const Word *w, const Sentence * s ){
@@ -698,13 +773,20 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
 	archaicsCnt++;
       if ( ws->isContent )
 	contentCnt++;
+      if ( ws->isNominal )
+	nominalCnt++;
     }
   }
+  addMetrics( s );
 }
 
 void sentStats::print( ostream& os ) const {
   os << category << "[" << text << "]" << endl;
   structStats::print( os );
+}
+
+void sentStats::addMetrics( FoliaElement *el ) const {
+  structStats::addMetrics( el );
 }
 
 struct parStats: public structStats {
@@ -744,6 +826,8 @@ void parStats::print( ostream& os ) const {
 
 void parStats::addMetrics( FoliaElement *el ) const {
   structStats::addMetrics( el );
+  addOneMetric( el->doc(), el, 
+		"sentence_count", toString(sentCnt) );
 }
 
 struct docStats : public structStats {
@@ -756,6 +840,9 @@ struct docStats : public structStats {
 docStats::docStats( Document *doc ):
   structStats( "DOCUMENT" ), sentCnt(0) 
 {
+  doc->declare( AnnotationType::METRIC, 
+		"metricset", 
+		"annotator='tscan'" );
   vector<Paragraph*> pars = doc->paragraphs();
   for ( size_t i=0; i != pars.size(); ++i ){
     parStats *ps = new parStats( pars[i] );
@@ -778,6 +865,10 @@ double rarity( const docStats *d, double level ){
 
 void docStats::addMetrics( FoliaElement *el ) const {
   structStats::addMetrics( el );
+  addOneMetric( el->doc(), el, 
+		"sentence_count", toString( sentCnt ) );
+  addOneMetric( el->doc(), el, 
+		"paragraph_count", toString( sv.size() ) );
   addOneMetric( el->doc(), el, 
 		"TTW", toString( unique_words.size()/double(wordCnt) ) );
   addOneMetric( el->doc(), el, 
