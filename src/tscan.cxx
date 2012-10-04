@@ -235,6 +235,107 @@ struct wordStats : public basicStats {
   WordProp prop;
 };
 
+wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
+  basicStats( "WORD" ), 
+  isPronRef(false), archaic(false), isContent(false),
+  prop(JUSTAWORD) 
+{
+  word = UnicodeToUTF8( w->text() );
+  wordLen = w->text().length();
+  vector<PosAnnotation*> posV = w->select<PosAnnotation>();
+  if ( posV.size() != 1 )
+    throw ValueError( "word doesn't have POS tag info" );
+  pos = posV[0]->cls();
+  posHead = posV[0]->feat("head");
+  lemma = w->lemma();
+  if ( posHead == "LET" )
+    prop = ISPUNCT;
+  else if ( posHead == "SPEC" && pos.find("eigen") != string::npos )
+    prop = ISNAME;
+  else if ( posHead == "WW" ){
+    string wvorm = posV[0]->feat("wvorm");
+    if ( wvorm == "inf" )
+      prop = ISINF;
+    else if ( wvorm == "vd" )
+      prop = ISVD;
+    else if ( wvorm == "od" )
+      prop = ISOD;
+    else if ( wvorm == "pv" ){
+      string tijd = posV[0]->feat("pvtijd");
+      if ( tijd == "tgw" )
+	prop = ISPVTGW;
+      else if ( tijd == "verl" )
+	prop = ISPVVERL;
+      else {
+	cerr << "PANIEK: een onverwachte ww tijd: " << tijd << endl;
+	exit(3);
+      }
+    }
+    else {
+      cerr << "PANIEK: een onverwachte ww vorm: " << wvorm << endl;
+      exit(3);
+    }
+  }
+  else if ( posHead == "VNW" && lowercase( word ) != "men" ){
+    string cas = posV[0]->feat("case");
+    archaic = ( cas == "gen" || cas == "dat" );
+    string vwtype = posV[0]->feat("vwtype");
+    if ( vwtype == "pers" || vwtype == "refl" 
+	 || vwtype == "pr" || vwtype == "bez" ) {
+      string persoon = posV[0]->feat("persoon");
+      if ( !persoon.empty() ){
+	if ( persoon[0] == '1' )
+	  prop = ISPPRON1;
+	else if ( persoon[0] == '2' )
+	  prop = ISPPRON2;
+	else if ( persoon[0] == '3' ){
+	  prop = ISPPRON3;
+	  isPronRef = ( vwtype == "pers" || vwtype == "bez" );
+	}
+	else {
+	  cerr << "PANIEK: een onverwachte PRONOUN persoon : " << persoon 
+	       << " in word " << w << endl;
+	  exit(3);
+	}
+      }
+    }
+    if ( vwtype == "aanw" )
+      isPronRef = true;
+  }
+  else if ( posHead == "LID" ) {
+    string cas = posV[0]->feat("case");
+    archaic = ( cas == "gen" || cas == "dat" );
+  }
+  if ( posHead == "WW" ){
+    if ( alpDoc ){
+      string vt = classifyVerb( w, alpDoc );
+      cerr << "Classify WW gave " << vt << endl;
+      if ( vt == "hoofdww" ){
+	isContent = true;
+      }
+    }
+  }
+  else {
+    isContent = ( posHead == "N" 
+		      || posHead == "BW" 
+		      || posHead == "ADJ" );
+  }
+  if ( prop != ISPUNCT ){
+    size_t max = 0;
+    vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
+    for ( size_t q=0; q < ml.size(); ++q ){
+      vector<Morpheme*> m = ml[q]->select<Morpheme>();
+      if ( m.size() > max )
+	max = m.size();
+    }
+    morphLen = max;
+    if ( prop != ISNAME ){
+      wordLenExNames = wordLen;
+      morphLenExNames = max;
+    }
+  }
+}
+
 void wordStats::print( ostream& os ) const {
   os << "word: [" <<word << "], lengte=" << wordLen 
      << ", aantal morphemen=" << morphLen <<  ", HEAD: " << posHead;
@@ -345,7 +446,6 @@ struct structStats: public basicStats {
 structStats::~structStats(){
   vector<basicStats *>::iterator it = sv.begin();
   while ( it != sv.end() ){
-    cerr << "delete " << (*it)->category << endl;
     delete( *it );
     ++it;
   }
@@ -430,36 +530,6 @@ void structStats::print( ostream& os ) const {
   }
 }
 
-struct sentStats : public structStats {
-  sentStats(): structStats("ZIN" ){};
-  virtual void print( ostream& ) const;
-};
-
-void sentStats::print( ostream& os ) const {
-  os << category << "[" << text << "]" << endl;
-  structStats::print( os );
-}
-
-struct parStats: public structStats {
-  parStats(): structStats( "PARAGRAAF" ),
-	      sentCnt(0) {};
-  void print( ostream& ) const;
-  void addMetrics( FoliaElement *el ) const;
-  int sentCnt;
-};
-
-void parStats::print( ostream& os ) const {
-  os << category << " with " << sentCnt << " Sentences" << endl;
-  structStats::print( os );
-}
-
-struct docStats : public structStats {
-  docStats(): structStats( "DOCUMENT" ), sentCnt(0) {};
-  void print( ostream& ) const;
-  void addMetrics( FoliaElement *el ) const;
-  int sentCnt;
-};
-
 void addOneMetric( Document *doc, FoliaElement *parent,
 		   const string& cls, const string& val ){
   MetricAnnotation *m = new MetricAnnotation( doc,
@@ -502,40 +572,10 @@ void structStats::addMetrics( FoliaElement *el ) const {
 
 }
 
-void parStats::addMetrics( FoliaElement *el ) const {
-  structStats::addMetrics( el );
-}
-
-double rarity( const docStats *d, double level ){
-  map<string,int>::const_iterator it = d->unique_lemmas.begin();
-  int rare = 0;
-  while ( it != d->unique_lemmas.end() ){
-    if ( it->second <= level )
-      ++rare;
-    ++it;
-  }
-  return rare/double( d->unique_lemmas.size() );
-}
-
-void docStats::addMetrics( FoliaElement *el ) const {
-  structStats::addMetrics( el );
-  addOneMetric( el->doc(), el, 
-		"TTW", toString( unique_words.size()/double(wordCnt) ) );
-  addOneMetric( el->doc(), el, 
-		"TTL", toString( unique_lemmas.size()/double(wordCnt) ) );
-  addOneMetric( el->doc(), el, 
-		"rarity", toString( rarity( this, settings.rarityLevel ) ) );
-}
-
-void docStats::print( ostream& os ) const {
-  os << category << " with "  << sv.size() << " paragraphs and "
-     << sentCnt << " Sentences" << endl;
-  os << "TTW = " << unique_words.size()/double(wordCnt) << endl;
-  os << "TTL = " << unique_lemmas.size()/double(wordCnt) << endl;
-  os << "rarity(" << settings.rarityLevel << ")=" 
-     << rarity( this, settings.rarityLevel ) << endl;
-  structStats::print( os );
-}
+struct sentStats : public structStats {
+  sentStats( Sentence *, xmlDoc * );
+  virtual void print( ostream& ) const;
+};
 
 NerProp lookupNer( const Word *w, const Sentence * s ){
   NerProp result = NONER;
@@ -591,112 +631,10 @@ NerProp lookupNer( const Word *w, const Sentence * s ){
   return result;
 }
 
-wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
-  basicStats( "WORD" ), 
-  isPronRef(false), archaic(false), isContent(false),
-  prop(JUSTAWORD) 
-{
-  word = UnicodeToUTF8( w->text() );
-  wordLen = w->text().length();
-  vector<PosAnnotation*> posV = w->select<PosAnnotation>();
-  if ( posV.size() != 1 )
-    throw ValueError( "word doesn't have POS tag info" );
-  pos = posV[0]->cls();
-  posHead = posV[0]->feat("head");
-  lemma = w->lemma();
-  if ( posHead == "LET" )
-    prop = ISPUNCT;
-  else if ( posHead == "SPEC" && pos.find("eigen") != string::npos )
-    prop = ISNAME;
-  else if ( posHead == "WW" ){
-    string wvorm = posV[0]->feat("wvorm");
-    if ( wvorm == "inf" )
-      prop = ISINF;
-    else if ( wvorm == "vd" )
-      prop = ISVD;
-    else if ( wvorm == "od" )
-      prop = ISOD;
-    else if ( wvorm == "pv" ){
-      string tijd = posV[0]->feat("pvtijd");
-      if ( tijd == "tgw" )
-	prop = ISPVTGW;
-      else if ( tijd == "verl" )
-	prop = ISPVVERL;
-      else {
-	cerr << "PANIEK: een onverwachte ww tijd: " << tijd << endl;
-	exit(3);
-      }
-    }
-    else {
-      cerr << "PANIEK: een onverwachte ww vorm: " << wvorm << endl;
-      exit(3);
-    }
-  }
-  else if ( posHead == "VNW" && lowercase( word ) != "men" ){
-    string cas = posV[0]->feat("case");
-    archaic = ( cas == "gen" || cas == "dat" );
-    string vwtype = posV[0]->feat("vwtype");
-    if ( vwtype == "pers" || vwtype == "refl" 
-	 || vwtype == "pr" || vwtype == "bez" ) {
-      string persoon = posV[0]->feat("persoon");
-      if ( !persoon.empty() ){
-	if ( persoon[0] == '1' )
-	  prop = ISPPRON1;
-	else if ( persoon[0] == '2' )
-	  prop = ISPPRON2;
-	else if ( persoon[0] == '3' ){
-	  prop = ISPPRON3;
-	  isPronRef = ( vwtype == "pers" || vwtype == "bez" );
-	}
-	else {
-	  cerr << "PANIEK: een onverwachte PRONOUN persoon : " << persoon 
-	       << " in word " << w << endl;
-	  exit(3);
-	}
-      }
-    }
-    if ( vwtype == "aanw" )
-      isPronRef = true;
-  }
-  else if ( posHead == "LID" ) {
-    string cas = posV[0]->feat("case");
-    archaic = ( cas == "gen" || cas == "dat" );
-  }
-  if ( posHead == "WW" ){
-    if ( alpDoc ){
-      string vt = classifyVerb( w, alpDoc );
-      cerr << "Classify WW gave " << vt << endl;
-      if ( vt == "hoofdww" ){
-	isContent = true;
-      }
-    }
-  }
-  else {
-    isContent = ( posHead == "N" 
-		      || posHead == "BW" 
-		      || posHead == "ADJ" );
-  }
-  if ( prop != ISPUNCT ){
-    size_t max = 0;
-    vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
-    for ( size_t q=0; q < ml.size(); ++q ){
-      vector<Morpheme*> m = ml[q]->select<Morpheme>();
-      if ( m.size() > max )
-	max = m.size();
-    }
-    morphLen = max;
-    if ( prop != ISNAME ){
-      wordLenExNames = wordLen;
-      morphLenExNames = max;
-    }
-  }
-}
-
-sentStats *analyseSent( folia::Sentence *s, xmlDoc *alpDoc ){
-  sentStats *ss = new sentStats();
-  ss->id = s->id();
-  ss->text = UnicodeToUTF8( s->toktext() );
-  vector<folia::Word*> w = s->words();
+sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
+  id = s->id();
+  text = UnicodeToUTF8( s->toktext() );
+  vector<Word*> w = s->words();
   for ( size_t i=0; i < w.size(); ++i ){
     wordStats *ws = new wordStats( w[i], alpDoc );
     if ( ws->prop == ISPUNCT ){
@@ -712,64 +650,76 @@ sentStats *analyseSent( folia::Sentence *s, xmlDoc *alpDoc ){
       case ORG_B:
       case PER_B:
       case PRO_B:
-	ss->ners[ner]++;
+	ners[ner]++;
 	break;
       default:
 	;
       }
-      ss->wordCnt++;
-      ss->heads[ws->posHead]++;
-      ss->wordLen += ws->wordLen;
-      ss->wordLenExNames += ws->wordLenExNames;
-      ss->morphLen += ws->morphLen;
-      ss->morphLenExNames += ws->morphLenExNames;
-      ss->unique_words[lowercase(ws->word)] += 1;
-      ss->unique_lemmas[ws->lemma] += 1;
-      ss->sv.push_back( ws );
+      wordCnt++;
+      heads[ws->posHead]++;
+      wordLen += ws->wordLen;
+      wordLenExNames += ws->wordLenExNames;
+      morphLen += ws->morphLen;
+      morphLenExNames += ws->morphLenExNames;
+      unique_words[lowercase(ws->word)] += 1;
+      unique_lemmas[ws->lemma] += 1;
+      sv.push_back( ws );
       switch ( ws->prop ){
       case ISNAME:
-	ss->nameCnt++;
+	nameCnt++;
 	break;
       case ISVD:
-	ss->vdCnt++;
+	vdCnt++;
 	break;
       case ISINF:
-	ss->infCnt++;
+	infCnt++;
 	break;
       case ISOD:
-	ss->odCnt++;
+	odCnt++;
 	break;
       case ISPVVERL:
-	ss->pastCnt++;
+	pastCnt++;
 	break;
       case ISPVTGW:
-	ss->presentCnt++;
+	presentCnt++;
 	break;
       case ISPPRON1:
-	ss->pron1Cnt++;
+	pron1Cnt++;
       case ISPPRON2:
-	ss->pron2Cnt++;
+	pron2Cnt++;
       case ISPPRON3:
-	ss->pron3Cnt++;
+	pron3Cnt++;
       default:
 	;// ignore
       }
       if ( ws->isPronRef )
-	ss->pronRefCnt++;
+	pronRefCnt++;
       if ( ws->archaic )
-	ss->archaicsCnt++;
+	archaicsCnt++;
       if ( ws->isContent )
-	ss->contentCnt++;
+	contentCnt++;
     }
   }
-
-  return ss;
 }
 
-parStats *analysePar( folia::Paragraph *p ){
-  parStats *ps = new parStats();
-  ps->id = p->id();
-  vector<folia::Sentence*> sents = p->sentences();
+void sentStats::print( ostream& os ) const {
+  os << category << "[" << text << "]" << endl;
+  structStats::print( os );
+}
+
+struct parStats: public structStats {
+  parStats( Paragraph * );
+  void print( ostream& ) const;
+  void addMetrics( FoliaElement *el ) const;
+  int sentCnt;
+};
+
+parStats::parStats( Paragraph *p ): 
+  structStats( "PARAGRAAF" ), 
+  sentCnt(0) 
+{
+  id = p->id();
+  vector<Sentence*> sents = p->sentences();
   for ( size_t i=0; i < sents.size(); ++i ){
     xmlDoc *alpDoc = 0;
     if ( settings.doAlpino ){
@@ -779,25 +729,71 @@ parStats *analysePar( folia::Paragraph *p ){
 	cerr << "alpino parser failed!" << endl;
       }
     }
-    sentStats *ss = analyseSent( sents[i], alpDoc );
+    sentStats *ss = new sentStats( sents[i], alpDoc );
     xmlFreeDoc( alpDoc );
-    ps->merge( ss );
-    ps->sentCnt++;
+    merge( ss );
+    sentCnt++;
   }
-  ps->addMetrics( p );
-  return ps;
+  addMetrics( p );
 }
 
-docStats analyseDoc( folia::Document *doc ){
-  docStats result;
-  vector<folia::Paragraph*> pars = doc->paragraphs();
+void parStats::print( ostream& os ) const {
+  os << category << " with " << sentCnt << " Sentences" << endl;
+  structStats::print( os );
+}
+
+void parStats::addMetrics( FoliaElement *el ) const {
+  structStats::addMetrics( el );
+}
+
+struct docStats : public structStats {
+  docStats( Document * );
+  void print( ostream& ) const;
+  void addMetrics( FoliaElement *el ) const;
+  int sentCnt;
+};
+
+docStats::docStats( Document *doc ):
+  structStats( "DOCUMENT" ), sentCnt(0) 
+{
+  vector<Paragraph*> pars = doc->paragraphs();
   for ( size_t i=0; i != pars.size(); ++i ){
-    parStats *ps = analysePar( pars[i] );
-    result.merge( ps );
-    result.sentCnt += ps->sentCnt;
+    parStats *ps = new parStats( pars[i] );
+    merge( ps );
+    sentCnt += ps->sentCnt;
   }
-  result.addMetrics( pars[0]->parent() );
-  return result;
+  addMetrics( pars[0]->parent() );
+}
+
+double rarity( const docStats *d, double level ){
+  map<string,int>::const_iterator it = d->unique_lemmas.begin();
+  int rare = 0;
+  while ( it != d->unique_lemmas.end() ){
+    if ( it->second <= level )
+      ++rare;
+    ++it;
+  }
+  return rare/double( d->unique_lemmas.size() );
+}
+
+void docStats::addMetrics( FoliaElement *el ) const {
+  structStats::addMetrics( el );
+  addOneMetric( el->doc(), el, 
+		"TTW", toString( unique_words.size()/double(wordCnt) ) );
+  addOneMetric( el->doc(), el, 
+		"TTL", toString( unique_lemmas.size()/double(wordCnt) ) );
+  addOneMetric( el->doc(), el, 
+		"rarity", toString( rarity( this, settings.rarityLevel ) ) );
+}
+
+void docStats::print( ostream& os ) const {
+  os << category << " with "  << sv.size() << " paragraphs and "
+     << sentCnt << " Sentences" << endl;
+  os << "TTW = " << unique_words.size()/double(wordCnt) << endl;
+  os << "TTL = " << unique_lemmas.size()/double(wordCnt) << endl;
+  os << "rarity(" << settings.rarityLevel << ")=" 
+     << rarity( this, settings.rarityLevel ) << endl;
+  structStats::print( os );
 }
 
 Document *TscanServerClass::getFrogResult( istream& is ){
@@ -824,7 +820,7 @@ Document *TscanServerClass::getFrogResult( istream& is ){
     result += s + "\n";
   }
   SDBG << "received data [" << result << "]" << endl;
-  folia::Document *doc = 0;
+  Document *doc = 0;
   if ( !result.empty() && result.size() > 10 ){
     SDBG << "start FoLiA parsing" << endl;
     doc = new Document();
@@ -854,7 +850,7 @@ void TscanServerClass::exec( const string& file, ostream& os ){
     }
     else {
       doc->save( "/tmp/folia.1.xml" );
-      docStats result = analyseDoc( doc );
+      docStats result( doc );
       doc->save( "/tmp/folia.2.xml" );
       delete doc;
       os << result << endl;
