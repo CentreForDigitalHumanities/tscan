@@ -223,9 +223,7 @@ void basicStats::print( ostream& os ) const {
 }
 
 struct wordStats : public basicStats {
-  wordStats(): basicStats( "WORD" ),
-	       isPronRef(false), archaic(false), isContent(false),
-	       prop(JUSTAWORD) {};
+  wordStats( Word *, xmlDoc * );
   void print( ostream& ) const;
   string word;
   string pos;
@@ -264,6 +262,12 @@ void wordStats::print( ostream& os ) const {
     break;
   case ISPPRON3:
     os << " (3-de persoon)";
+    break;
+  case ISNAME:
+    os << " (Name)";
+    break;
+  case ISPUNCT:
+  case JUSTAWORD:
     break;
   }
 }
@@ -308,10 +312,11 @@ struct structStats: public basicStats {
 				    wordCnt(0),
 				    vdCnt(0),odCnt(0),
 				    infCnt(0), presentCnt(0), pastCnt(0),
+				    nameCnt(0),
 				    pron1Cnt(0), pron2Cnt(0), pron3Cnt(0), 
-				    pronRefCnt(0),
-				    nameCnt(0), archaicsCnt(0),
+				    pronRefCnt(0), archaicsCnt(0),
 				    contentCnt(0) {};
+  ~structStats();
   virtual void print(  ostream& ) const;
   virtual void addMetrics( FoliaElement *el ) const;
   void merge( structStats * );
@@ -336,6 +341,15 @@ struct structStats: public basicStats {
   map<string,int> unique_lemmas;
   map<NerProp, int> ners;
 };
+
+structStats::~structStats(){
+  vector<basicStats *>::iterator it = sv.begin();
+  while ( it != sv.end() ){
+    cerr << "delete " << (*it)->category << endl;
+    delete( *it );
+    ++it;
+  }
+}
 
 void structStats::merge( structStats *ss ){
   wordCnt += ss->wordCnt;
@@ -423,7 +437,7 @@ struct sentStats : public structStats {
 
 void sentStats::print( ostream& os ) const {
   os << category << "[" << text << "]" << endl;
-  os << structStats(*this) << endl;
+  structStats::print( os );
 }
 
 struct parStats: public structStats {
@@ -577,34 +591,37 @@ NerProp lookupNer( const Word *w, const Sentence * s ){
   return result;
 }
 
-wordStats *analyseWord( Word *w ){
-  wordStats *ws = new wordStats();
-  ws->word = UnicodeToUTF8( w->text() );
-  ws->wordLen = w->text().length();
-  vector<PosAnnotation*> pos = w->select<PosAnnotation>();
-  if ( pos.size() != 1 )
+wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
+  basicStats( "WORD" ), 
+  isPronRef(false), archaic(false), isContent(false),
+  prop(JUSTAWORD) 
+{
+  word = UnicodeToUTF8( w->text() );
+  wordLen = w->text().length();
+  vector<PosAnnotation*> posV = w->select<PosAnnotation>();
+  if ( posV.size() != 1 )
     throw ValueError( "word doesn't have POS tag info" );
-  ws->pos = pos[0]->cls();
-  ws->posHead = pos[0]->feat("head");
-  ws->lemma= w->lemma();
-  if ( ws->posHead == "LET" )
-    ws->prop = ISPUNCT;
-  else if ( ws->posHead == "SPEC" && ws->pos.find("eigen") != string::npos )
-    ws->prop = ISNAME;
-  else if ( ws->posHead == "WW" ){
-    string wvorm = pos[0]->feat("wvorm");
+  pos = posV[0]->cls();
+  posHead = posV[0]->feat("head");
+  lemma = w->lemma();
+  if ( posHead == "LET" )
+    prop = ISPUNCT;
+  else if ( posHead == "SPEC" && pos.find("eigen") != string::npos )
+    prop = ISNAME;
+  else if ( posHead == "WW" ){
+    string wvorm = posV[0]->feat("wvorm");
     if ( wvorm == "inf" )
-      ws->prop = ISINF;
+      prop = ISINF;
     else if ( wvorm == "vd" )
-      ws->prop = ISVD;
+      prop = ISVD;
     else if ( wvorm == "od" )
-      ws->prop = ISOD;
+      prop = ISOD;
     else if ( wvorm == "pv" ){
-      string tijd = pos[0]->feat("pvtijd");
+      string tijd = posV[0]->feat("pvtijd");
       if ( tijd == "tgw" )
-	ws->prop = ISPVTGW;
+	prop = ISPVTGW;
       else if ( tijd == "verl" )
-	ws->prop = ISPVVERL;
+	prop = ISPVVERL;
       else {
 	cerr << "PANIEK: een onverwachte ww tijd: " << tijd << endl;
 	exit(3);
@@ -615,21 +632,21 @@ wordStats *analyseWord( Word *w ){
       exit(3);
     }
   }
-  else if ( ws->posHead == "VNW" && lowercase( ws->word ) != "men" ){
-    string cas = pos[0]->feat("case");
-    ws->archaic = ( cas == "gen" || cas == "dat" );
-    string vwtype = pos[0]->feat("vwtype");
+  else if ( posHead == "VNW" && lowercase( word ) != "men" ){
+    string cas = posV[0]->feat("case");
+    archaic = ( cas == "gen" || cas == "dat" );
+    string vwtype = posV[0]->feat("vwtype");
     if ( vwtype == "pers" || vwtype == "refl" 
 	 || vwtype == "pr" || vwtype == "bez" ) {
-      string persoon = pos[0]->feat("persoon");
+      string persoon = posV[0]->feat("persoon");
       if ( !persoon.empty() ){
 	if ( persoon[0] == '1' )
-	  ws->prop = ISPPRON1;
+	  prop = ISPPRON1;
 	else if ( persoon[0] == '2' )
-	  ws->prop = ISPPRON2;
+	  prop = ISPPRON2;
 	else if ( persoon[0] == '3' ){
-	  ws->prop = ISPPRON3;
-	  ws->isPronRef = ( vwtype == "pers" || vwtype == "bez" );
+	  prop = ISPPRON3;
+	  isPronRef = ( vwtype == "pers" || vwtype == "bez" );
 	}
 	else {
 	  cerr << "PANIEK: een onverwachte PRONOUN persoon : " << persoon 
@@ -639,30 +656,40 @@ wordStats *analyseWord( Word *w ){
       }
     }
     if ( vwtype == "aanw" )
-      ws->isPronRef = true;
+      isPronRef = true;
   }
-  else if ( ws->posHead == "LID" ) {
-    string cas = pos[0]->feat("case");
-    ws->archaic = ( cas == "gen" || cas == "dat" );
+  else if ( posHead == "LID" ) {
+    string cas = posV[0]->feat("case");
+    archaic = ( cas == "gen" || cas == "dat" );
   }
-  ws->isContent = ( ws->posHead == "N" 
-		    || ws->posHead == "BW" 
-		    || ws->posHead == "ADJ" );
-  if ( ws->prop != ISPUNCT ){
-    int max = 0;
+  if ( posHead == "WW" ){
+    if ( alpDoc ){
+      string vt = classifyVerb( w, alpDoc );
+      cerr << "Classify WW gave " << vt << endl;
+      if ( vt == "hoofdww" ){
+	isContent = true;
+      }
+    }
+  }
+  else {
+    isContent = ( posHead == "N" 
+		      || posHead == "BW" 
+		      || posHead == "ADJ" );
+  }
+  if ( prop != ISPUNCT ){
+    size_t max = 0;
     vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
     for ( size_t q=0; q < ml.size(); ++q ){
       vector<Morpheme*> m = ml[q]->select<Morpheme>();
       if ( m.size() > max )
 	max = m.size();
     }
-    ws->morphLen = max;
-    if ( ws->prop != ISNAME ){
-      ws->wordLenExNames = ws->wordLen;
-      ws->morphLenExNames = max;
+    morphLen = max;
+    if ( prop != ISNAME ){
+      wordLenExNames = wordLen;
+      morphLenExNames = max;
     }
   }
-  return ws;
 }
 
 sentStats *analyseSent( folia::Sentence *s, xmlDoc *alpDoc ){
@@ -671,9 +698,11 @@ sentStats *analyseSent( folia::Sentence *s, xmlDoc *alpDoc ){
   ss->text = UnicodeToUTF8( s->toktext() );
   vector<folia::Word*> w = s->words();
   for ( size_t i=0; i < w.size(); ++i ){
-    wordStats *ws = analyseWord( w[i] );
-    if ( ws->prop == ISPUNCT )
+    wordStats *ws = new wordStats( w[i], alpDoc );
+    if ( ws->prop == ISPUNCT ){
+      delete ws;
       continue;
+    }
     else {
       NerProp ner = lookupNer( w[i], s );
       switch( ner ){
@@ -690,13 +719,6 @@ sentStats *analyseSent( folia::Sentence *s, xmlDoc *alpDoc ){
       }
       ss->wordCnt++;
       ss->heads[ws->posHead]++;
-      if ( alpDoc && ws->posHead == "WW" ){
-	string vt = classifyVerb( w[i], alpDoc );
-	cerr << "Classify WW gave " << vt << endl;
-	if ( vt == "hoofdww" ){
-	  ws->isContent = true;
-	}
-      }
       ss->wordLen += ws->wordLen;
       ss->wordLenExNames += ws->wordLenExNames;
       ss->morphLen += ws->morphLen;
