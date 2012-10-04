@@ -227,13 +227,14 @@ struct wordStats : public basicStats {
   wordStats( Word *, xmlDoc * );
   void print( ostream& ) const;
   void addMetrics( FoliaElement * ) const;
-  bool checkContent( Word *, xmlDoc * ) const;
+  bool checkContent() const;
   bool checkNominal( Word *, xmlDoc * ) const;
   WordProp checkProps( const PosAnnotation* );
   string word;
   string pos;
   string posHead;
   string lemma;
+  string wwform;
   bool isPronRef;
   bool archaic;
   bool isContent;
@@ -242,14 +243,10 @@ struct wordStats : public basicStats {
   vector<string> morphemes;
 };
 
-bool wordStats::checkContent( Word *w, xmlDoc *alp ) const {
+bool wordStats::checkContent() const {
   if ( posHead == "WW" ){
-    if ( alp ){
-      string vt = classifyVerb( w, alp );
-      //      cerr << "Classify WW gave " << vt << endl;
-      if ( vt == "hoofdww" ){
-	return true;
-      }
+    if ( wwform == "hoofdww" ){
+      return true;
     }
   }
   else {
@@ -382,7 +379,9 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   posHead = pa->feat("head");
   lemma = w->lemma();
   prop = checkProps( pa );
-  isContent = checkContent( w, alpDoc );
+  if ( posHead == "WW"  && alpDoc )
+    wwform = classifyVerb( w, alpDoc );
+  isContent = checkContent();
   if ( prop != ISPUNCT ){
     size_t max = 0;
     vector<Morpheme*> morphemeV;
@@ -427,6 +426,9 @@ void wordStats::addMetrics( FoliaElement *el ) const {
   if ( isNominal )
     addOneMetric( el->doc(), el, 
 		  "nomalization", "true" );
+  if ( !wwform.empty() )
+    addOneMetric( el->doc(), el, 
+		  "ww_form", wwform );
 }
 
 void wordStats::print( ostream& os ) const {
@@ -464,6 +466,8 @@ void wordStats::print( ostream& os ) const {
   case JUSTAWORD:
     break;
   }
+  if ( !wwform.empty() )
+    os << " (" << wwform << ")";  
   if ( isNominal )
     os << " nominalisatie";  
 }
