@@ -40,6 +40,7 @@
 using namespace std;
 using namespace folia;
 
+#ifdef OLD_STUFF
 void addSU( xmlNode *n, vector<Word*>& words, FoliaElement *s ){
   if ( Name( n ) == "node" ){
     KWargs atts = getAttributes( n );
@@ -174,6 +175,196 @@ void extractAndAppendParse( xmlDoc *doc, folia::Sentence *s ){
     pnt = pnt->next;
   }
 }
+#endif // OLD_STUFF
+
+xmlNode *getAlpWord( xmlNode *node, const string& pos ){
+  xmlNode *result = 0;
+  xmlNode *pnt = node->children;
+  while ( pnt ){
+    if ( pnt->type == XML_ELEMENT_NODE
+	 && Name( pnt ) == "node" ){
+      KWargs atts = getAttributes( pnt );
+      string epos = atts["end"];
+      if ( epos == pos ){
+	string bpos = atts["begin"];
+	int start = stringTo<int>( bpos );
+	int finish = stringTo<int>( epos );
+	//	cerr << "begin = " << start << ", end=" << finish << endl;
+	if ( start + 1 == finish ){
+	  result = pnt;
+	}
+	else {
+	  result = getAlpWord( pnt, pos );
+	}
+      }
+      else {
+	result = getAlpWord( pnt, pos );
+      }
+    }
+    if ( result )
+      return result;
+    pnt = pnt->next;
+  }
+  return result;
+}
+
+vector< xmlNode*> getSibblings( xmlNode *node ){
+  vector<xmlNode *> result;
+  xmlNode *pnt = node->prev;
+  while ( pnt ){
+    if ( pnt->prev )
+      pnt = pnt->prev;
+    else
+      break;
+  }
+  if ( !pnt )
+    pnt = node;
+  while ( pnt ){
+    if ( pnt->type == XML_ELEMENT_NODE )
+      result.push_back( pnt );
+    pnt = pnt->next;
+  }
+  return result;
+}
+
+xmlNode *node_search( const xmlNode* node,
+		      const string& att,
+		      const string& val ){
+  xmlNode *pnt = node->children;
+  while ( pnt ){
+    if ( pnt->type == XML_ELEMENT_NODE ){
+      KWargs atts = getAttributes( pnt );
+      if ( atts[att] == val ){
+	return pnt;
+      }
+      else if ( atts["root"] == "" ){
+	xmlNode *tmp = node_search( pnt, att, val );
+	if ( tmp )
+	  return tmp;
+      }
+    }
+    pnt = pnt->next;;
+  }
+  return 0;
+}
+
+xmlNode *node_search( const xmlNode* node,
+		      const string& att,
+		      const set<string>& values ){
+  xmlNode *pnt = node->children;
+  while ( pnt ){
+    if ( pnt->type == XML_ELEMENT_NODE ){
+      KWargs atts = getAttributes( pnt );
+      if ( values.find(atts[att]) != values.end() ){
+	return pnt;
+      }
+      else if ( atts["root"] == "" ){
+	xmlNode *tmp = node_search( pnt, att, values );
+	if ( tmp )
+	  return tmp;
+      }
+    }
+    pnt = pnt->next;;
+  }
+  return 0;
+}
+
+const string modalA[] = { "kunnen", "moeten", "hoeven", "behoeven", "mogen",
+			  "willen", "blijken", "lijken", "schijnen", "heten" };
+
+const string koppelA[] = { "zijn", "worden", "blijven", "lijken", "schijnen",
+			   "heten", "dunken", "voorkomen" };
+
+set<string> modals = set<string>( modalA, modalA + 10 );
+set<string> koppels = set<string>( koppelA, koppelA + 8 );
+
+string classifyVerb( Word *w, xmlDoc *alp ){
+  string id = w->id();
+  string::size_type ppos = id.find_last_of( '.' );
+  string posS = id.substr( ppos + 1 );
+  if ( posS.empty() ){
+    cerr << "unable to extract a word index from " << id << endl;
+  }
+  else {
+    xmlNode *root = xmlDocGetRootElement( alp );
+    xmlNode *wnode = getAlpWord( root, posS );
+    if ( wnode ){
+      vector< xmlNode *> siblinglist = getSibblings( wnode );
+      string pos = w->pos();
+      string lemma = w->lemma();
+      if ( lemma == "zijn" || lemma == "worden" ){
+	xmlNode *obj_node = 0;
+	xmlNode *su_node = 0;
+	for ( size_t i=0; i < siblinglist.size(); ++i ){
+	  KWargs atts = getAttributes( siblinglist[i] );
+	  if ( atts["rel"] == "su" ){
+	    su_node = siblinglist[i];
+	    //	    cerr << "Found a SU node!" << su_node << endl;
+	  }
+	}
+	for ( size_t i=0; i < siblinglist.size(); ++i ){
+	  KWargs atts = getAttributes( siblinglist[i] );
+	  if ( atts["rel"] == "vc" && atts["cat"] == "ppart" ){
+	    obj_node = node_search( siblinglist[i], "rel", "obj1" );
+	    if ( obj_node ){
+	      //	      cerr << "found an obj node! " << obj_node << endl;
+	      KWargs atts = getAttributes( obj_node );
+	      string index = atts["index"];
+	      if ( !index.empty() ){
+		KWargs atts = getAttributes( su_node );
+		if ( atts["index"] == index ){
+		  return "passiefww";
+		}
+	      }
+	    }
+	  }
+	}
+      }
+      if ( koppels.find( lemma ) != koppels.end() ){
+	for ( size_t i=0; i < siblinglist.size(); ++i ){
+	  KWargs atts = getAttributes( siblinglist[i] );
+	  if ( atts["rel"] == "predc" )
+	    return "passiefww";
+	}
+      }
+      if ( lemma == "schijnen" ){
+	for ( size_t i=0; i < siblinglist.size(); ++i ){
+	  KWargs atts = getAttributes( siblinglist[i] );
+	  if ( atts["rel"] == "su" ){
+	    static string schijn_words[] = { "zon", "ster", "maan", "lamp", "licht" };
+	    static set<string> sws( schijn_words, schijn_words+5 );
+	    xmlNode *node = node_search( siblinglist[i], 
+					 "root", sws );
+	    if ( node )
+	      return "hoofdww";
+	  }
+	}
+      }
+      string data = XmlContent( wnode->children );
+      if ( data == "zul" || data == "zal" 
+	   || data == "zullen" || data == "zult" ) {
+	return "tijdww";
+      }
+      if ( modals.find( lemma ) != modals.end() ){
+	return "modaalww";
+      }      
+      if ( lemma == "hebben" ){
+	for ( size_t i=0; i < siblinglist.size(); ++i ){
+	  KWargs atts = getAttributes( siblinglist[i] );
+	  if ( atts["rel"] == "vc" && atts["cat"] == "ppart" )
+	    return "tijdww";
+	}
+	return "hoofdww";
+      }
+      if ( lemma == "zijn" ){
+	return "tijdww";
+      }
+    }
+    return "hoofdww";
+  }
+  return "none";
+}
+
 
 xmlDoc *AlpinoParse( folia::Sentence *s ){
   string txt = folia::UnicodeToUTF8(s->toktext());
