@@ -379,10 +379,18 @@ xmlDoc *AlpinoParse( folia::Sentence *s ){
   int res = stat( "/tmp/alpino", &sbuf );
   if ( !S_ISDIR(sbuf.st_mode) ){
     res = mkdir( "/tmp/alpino/", S_IRWXU|S_IRWXG );
+    if ( res ){
+      cerr << "problem: " << res << endl;
+      exit( EXIT_FAILURE );
+    }
   }
   res = stat( "/tmp/alpino/parses", &sbuf );
   if ( !S_ISDIR(sbuf.st_mode) ){
     res = mkdir( "/tmp/alpino/parses",  S_IRWXU|S_IRWXG );
+    if ( res ){
+      cerr << "problem: " << res << endl;
+      exit( EXIT_FAILURE );
+    }
   }
   ofstream os( "/tmp/alpino/tempparse.txt" );
   os << txt;

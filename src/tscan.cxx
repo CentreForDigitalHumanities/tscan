@@ -48,15 +48,20 @@ using namespace folia;
 
 #define LOG cerr
 
+const double NA = -123456789;
+
 struct settingData {
   void init( const Configuration& );
   bool doAlpino;
   int rarityLevel;
+  double polarity_threshold;
   map <string, string> adj_sem;
   map <string, string> noun_sem;
   map <string, string> verb_sem;
   map <string, double> pol_lex;
 };
+
+settingData settings;
 
 bool fill( map<string,string>& m, istream& is ){
   string line;
@@ -116,6 +121,9 @@ bool fill( map<string,double>& m, istream& is ){
       continue;
     }
     double value = stringTo<double>( parts[1] );
+    if ( abs(value) < settings.polarity_threshold ){
+      value = 0;
+    }
     // parts[0] is something like "sympathiek a"
     // is't not quite clear if there is exactly 1 space
     // also there is "dolce far niente n"
@@ -175,14 +183,19 @@ void settingData::init( const Configuration& cf ){
     if ( !fill( verb_sem, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
+  val = cf.lookUp( "polarity_threshold" );
+  if ( val.empty() ){
+    polarity_threshold = 0.01;
+  }
+  else if ( !Timbl::stringTo( val, polarity_threshold ) ){ 
+    cerr << "invalid value for 'polarity_threshold' in config file" << endl;
+  }
   val = cf.lookUp( "polarity_lex" );
   if ( !val.empty() ){
     if ( !fill( pol_lex, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
 }
-
-settingData settings;
 
 inline void usage(){
   cerr << "usage:  tscan" << endl;
@@ -343,6 +356,7 @@ struct wordStats : public basicStats {
   bool checkContent() const;
   bool checkNominal( Word *, xmlDoc * ) const;
   WordProp checkProps( const PosAnnotation* );
+  double checkPolarity( );
   string word;
   string pos;
   string posHead;
@@ -352,6 +366,7 @@ struct wordStats : public basicStats {
   bool archaic;
   bool isContent;
   bool isNominal;
+  double polarity;
   WordProp prop;
   vector<string> morphemes;
 };
@@ -476,11 +491,27 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
   return prop;
 }
 
+double wordStats::checkPolarity( ) {
+  string key = word+":";
+  if ( posHead == "N" )
+    key += "n";
+  else if ( posHead == "ADJ" )
+    key += "a";
+  else if ( posHead == "WW" )
+    key += "v";
+  else
+    return NA;
+  map<string,double>::const_iterator it = settings.pol_lex.find( key );
+  if ( it != settings.pol_lex.end() ){
+    return it->second;
+  }
+  return NA;
+}
 
 wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   basicStats( "WORD" ), 
   isPronRef(false), archaic(false), isContent(false), isNominal(false),
-  prop(JUSTAWORD) 
+  polarity(NA), prop(JUSTAWORD) 
 {
   word = UnicodeToUTF8( w->text() );
   wordLen = w->text().length();
@@ -518,6 +549,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
     }
     isNominal = checkNominal( w, alpDoc );
   }
+  polarity = checkPolarity();
   addMetrics( w );
 }
 
@@ -539,6 +571,9 @@ void wordStats::addMetrics( FoliaElement *el ) const {
   if ( isNominal )
     addOneMetric( el->doc(), el, 
 		  "nomalization", "true" );
+  if ( polarity != NA  )
+    addOneMetric( el->doc(), el, 
+		  "polarity", toString(polarity) );
   if ( !wwform.empty() )
     addOneMetric( el->doc(), el, 
 		  "ww_form", wwform );
@@ -583,6 +618,9 @@ void wordStats::print( ostream& os ) const {
     os << " (" << wwform << ")";  
   if ( isNominal )
     os << " nominalisatie";  
+  if ( polarity != NA ){
+    os << ", Polariteit=" << polarity << endl;
+  }
 }
 
 enum NerProp { NONER, LOC_B, LOC_I, EVE_B, EVE_I, ORG_B, ORG_I, 
@@ -629,7 +667,8 @@ struct structStats: public basicStats {
 				    pron1Cnt(0), pron2Cnt(0), pron3Cnt(0), 
 				    pronRefCnt(0), archaicsCnt(0),
 				    contentCnt(0),
-				    nominalCnt(0) {};
+				    nominalCnt(0),
+				    polarity(NA) {};
   ~structStats();
   virtual void print(  ostream& ) const;
   void addMetrics( FoliaElement *el ) const;
@@ -650,6 +689,7 @@ struct structStats: public basicStats {
   int archaicsCnt;
   int contentCnt;
   int nominalCnt;
+  double polarity;
   vector<basicStats *> sv;
   map<string,int> heads;
   map<string,int> unique_words;
@@ -678,6 +718,12 @@ void structStats::merge( structStats *ss ){
   archaicsCnt += ss->archaicsCnt;
   contentCnt += ss->contentCnt;
   nominalCnt += ss->nominalCnt;
+  if ( ss->polarity != NA ){
+    if ( polarity == NA )
+      polarity = ss->polarity;
+    else
+      polarity += ss->polarity;
+  }
   presentCnt += ss->presentCnt;
   pastCnt += ss->pastCnt;
   pron1Cnt += ss->pron1Cnt;
@@ -709,6 +755,13 @@ void structStats::print( ostream& os ) const {
      << " gemiddeld: " << archaicsCnt/double(wordCnt) << endl;
   os << "#Content woorden " << contentCnt
      << " gemiddeld: " << contentCnt/double(wordCnt) << endl;
+  if ( polarity != NA ){
+    os << "#Polariteit:" << polarity
+       << " gemiddeld: " << polarity/double(wordCnt) << endl;
+  }
+  else {
+    os << "#Polariteit: NA" << endl;
+  }
   os << "#Nominalizaties " << nominalCnt
      << " gemiddeld: " << nominalCnt/double(wordCnt) << endl;
   os << "#Persoonsvorm (TW) " << presentCnt
@@ -757,6 +810,8 @@ void structStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( doc, el, "archaic_count", toString(archaicsCnt) );
   addOneMetric( doc, el, "content_count", toString(contentCnt) );
   addOneMetric( doc, el, "nominal_count", toString(nominalCnt) );
+  if ( polarity != NA )
+    addOneMetric( doc, el, "polarity", toString(polarity) );
   addOneMetric( doc, el, "pronoun_tw_count", toString(presentCnt) );
   addOneMetric( doc, el, "pronoun_verl_count", toString(pastCnt) );
   addOneMetric( doc, el, "pronoun_ref_count", toString(pronRefCnt) );
@@ -908,6 +963,12 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
 	contentCnt++;
       if ( ws->isNominal )
 	nominalCnt++;
+      if ( ws->polarity != NA ){
+	if ( polarity == NA )
+	  polarity = ws->polarity;
+	else
+	  polarity += ws->polarity;
+      }
     }
   }
   addMetrics( s );
