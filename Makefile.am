@@ -3,7 +3,7 @@
 
 ACLOCAL_AMFLAGS =-I m4 --install
 
-SUBDIRS = src include docs
+SUBDIRS = src include docs data
 
 EXTRA_DIST = bootstrap AUTHORS TODO NEWS
 
