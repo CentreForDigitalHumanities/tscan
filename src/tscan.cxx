@@ -55,6 +55,7 @@ struct settingData {
   map <string, string> adj_sem;
   map <string, string> noun_sem;
   map <string, string> verb_sem;
+  map <string, double> pol_lex;
 };
 
 bool fill( map<string,string>& m, istream& is ){
@@ -104,6 +105,48 @@ bool fill( map<string,string>& m, const string& filename ){
   return false;
 }
 
+bool fill( map<string,double>& m, istream& is ){
+  string line;
+  while( getline( is, line ) ){
+    vector<string> parts;
+    size_t n = split_at( line, parts, "\t" ); // split at tab
+    if ( n != 2 ){
+      cerr << "skip line: " << line << " (expected 2 values, got " 
+	   << n << ")" << endl;
+      continue;
+    }
+    double value = stringTo<double>( parts[1] );
+    // parts[0] is something like "sympathiek a"
+    // is't not quite clear if there is exactly 1 space
+    // also there is "dolce far niente n"
+    // so we split again, and reconstruct using a colon before the pos.
+    vector<string> vals;
+    n = split_at( parts[0], vals, " " ); // split at space(s)
+    if ( n < 2 ){
+      cerr << "skip line: " << line << " (expected at least 2 values, got " 
+	   << n << ")" << endl;
+      continue;
+    }
+    string key;
+    for ( size_t i=0; i < n-1; ++i )
+      key += vals[i];
+    key += ":" + vals[n-1];
+    m[key] = value;
+  }
+  return true;
+}
+
+bool fill( map<string,double>& m, const string& filename ){
+  ifstream is( filename.c_str() );
+  if ( is ){
+    return fill( m, is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
 void settingData::init( const Configuration& cf ){
   string val = cf.lookUp( "useAlpino" );
   doAlpino = false;
@@ -130,6 +173,11 @@ void settingData::init( const Configuration& cf ){
   val = cf.lookUp( "verb_semtypes" );
   if ( !val.empty() ){
     if ( !fill( verb_sem, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "polarity_lex" );
+  if ( !val.empty() ){
+    if ( !fill( pol_lex, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
 }
