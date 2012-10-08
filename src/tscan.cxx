@@ -52,7 +52,57 @@ struct settingData {
   void init( const Configuration& );
   bool doAlpino;
   int rarityLevel;
+  map <string, string> adj_sem;
+  map <string, string> noun_sem;
+  map <string, string> verb_sem;
 };
+
+bool fill( map<string,string>& m, istream& is ){
+  string line;
+  while( getline( is, line ) ){
+    vector<string> parts;
+    int n = split_at( line, parts, "\t" ); // split at tab
+    if ( n != 2 ){
+      cerr << "skip line: " << line << " (expected 2 values, got " 
+	   << n << ")" << endl;
+      continue;
+    }
+    vector<string> vals;
+    n = split_at( parts[1], vals, "," ); // split at ,
+    if ( n == 1 ){
+      m[parts[0]] = vals[0];
+    }
+    else if ( n == 0 ){
+      cerr << "skip line: " << line << " (expected some values, got none."
+	   << endl;
+      continue;
+    }
+    else {
+      map<string,int> stats;
+      int max = 0;
+      string topval;
+      for ( size_t i=0; i< vals.size(); ++i ){
+	if ( ++stats[vals[i]] > max ){
+	  max = stats[vals[i]];
+	  topval = vals[i];
+	}
+      }
+      m[parts[0]] = topval;
+    }
+  }
+  return true;
+}
+
+bool fill( map<string,string>& m, const string& filename ){
+  ifstream is( filename.c_str() );
+  if ( is ){
+    return fill( m, is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
 
 void settingData::init( const Configuration& cf ){
   string val = cf.lookUp( "useAlpino" );
@@ -66,6 +116,21 @@ void settingData::init( const Configuration& cf ){
   }
   else if ( !Timbl::stringTo( val, rarityLevel ) ){ 
     cerr << "invalid value for 'rarityLevel' in config file" << endl;
+  }
+  val = cf.lookUp( "adj_semtypes" );
+  if ( !val.empty() ){
+    if ( !fill( adj_sem, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "noun_semtypes" );
+  if ( !val.empty() ){
+    if ( !fill( noun_sem, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "verb_semtypes" );
+  if ( !val.empty() ){
+    if ( !fill( verb_sem, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
   }
 }
 
