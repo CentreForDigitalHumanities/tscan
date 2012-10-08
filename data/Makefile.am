@@ -1,7 +1,7 @@
 # $Id $
 # $URL$
 config_DATA = adjs_semtype.data  nouns_semtype.data \
-	full_lexicon.data  verbs_semtype.data
+	polarity_lexicon.data  verbs_semtype.data
 
 configdir = $(sysconfdir)/tscan
 
