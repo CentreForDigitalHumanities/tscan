@@ -323,6 +323,9 @@ enum WordProp { ISNAME, ISPUNCT,
 		ISPPRON1, ISPPRON2, ISPPRON3,
 		JUSTAWORD };
 
+enum SemType { UNFOUND, CONCRETE, CONCRETE_HUMAN, ABSTRACT, BROAD, 
+	       STATE, ACTION, PROCESS, WEIRD };
+
 struct basicStats {
   basicStats( const string& cat ): category( cat ), 
 				   wordLen(0),wordLenExNames(0),
@@ -356,7 +359,8 @@ struct wordStats : public basicStats {
   bool checkContent() const;
   bool checkNominal( Word *, xmlDoc * ) const;
   WordProp checkProps( const PosAnnotation* );
-  double checkPolarity( );
+  double checkPolarity( ) const;
+  SemType checkSemProps( ) const;
   string word;
   string pos;
   string posHead;
@@ -368,6 +372,7 @@ struct wordStats : public basicStats {
   bool isNominal;
   double polarity;
   WordProp prop;
+  SemType sem_type;
   vector<string> morphemes;
 };
 
@@ -491,7 +496,7 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
   return prop;
 }
 
-double wordStats::checkPolarity( ) {
+double wordStats::checkPolarity( ) const {
   string key = word+":";
   if ( posHead == "N" )
     key += "n";
@@ -508,10 +513,60 @@ double wordStats::checkPolarity( ) {
   return NA;
 }
 
+SemType get_sem_type( const string& lemma, const string& pos ){
+  if ( pos == "N" ){
+    map<string,string>::const_iterator it = settings.noun_sem.find( lemma );
+    if ( it != settings.noun_sem.end() ){
+      string type = it->second;
+      if ( type == "human" )
+	return CONCRETE_HUMAN;
+      else if ( type == "concrother" || type == "substance" 
+		|| type == "artefact" || type == "nonhuman" )
+	return CONCRETE;
+      else if ( type == "dynamic" || type == "nondynamic" )
+	return ABSTRACT;
+      else 
+	return BROAD;
+    }
+  }
+  else if ( pos == "ADJ" ) {
+    map<string,string>::const_iterator it = settings.adj_sem.find( lemma );
+    if ( it != settings.adj_sem.end() ){
+      string type = it->second;
+      if ( type == "phyper" || type == "stuff" || type == "colour" )
+	return CONCRETE;
+      else if ( type == "abstract" )
+	return ABSTRACT;
+      else 
+	return BROAD;
+    }
+  }
+  else if ( pos == "WW" ) {
+    map<string,string>::const_iterator it = settings.verb_sem.find( lemma );
+    if ( it != settings.verb_sem.end() ){
+      string type = it->second;
+      if ( type == "state" )
+	return STATE;
+      else if ( type == "action" )
+	return ACTION;
+      else if ( type == "process" )
+	return PROCESS;
+      else
+	return WEIRD;
+    }
+  }
+  return UNFOUND;
+}
+  
+SemType wordStats::checkSemProps( ) const {
+  SemType type = get_sem_type( lemma, posHead );
+  return type;
+}
+
 wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   basicStats( "WORD" ), 
   isPronRef(false), archaic(false), isContent(false), isNominal(false),
-  polarity(NA), prop(JUSTAWORD) 
+  polarity(NA), prop(JUSTAWORD), sem_type(UNFOUND)
 {
   word = UnicodeToUTF8( w->text() );
   wordLen = w->text().length();
@@ -548,8 +603,9 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
       morphLenExNames = max;
     }
     isNominal = checkNominal( w, alpDoc );
+    polarity = checkPolarity();
+    sem_type = checkSemProps();
   }
-  polarity = checkPolarity();
   addMetrics( w );
 }
 
@@ -668,7 +724,17 @@ struct structStats: public basicStats {
 				    pronRefCnt(0), archaicsCnt(0),
 				    contentCnt(0),
 				    nominalCnt(0),
-				    polarity(NA) {};
+				    polarity(NA),
+				    broadConcreteCnt(0),
+				    strictConcreteCnt(0),
+				    broadAbstractCnt(0),
+				    strictAbstractCnt(0),
+				    stateCnt(0),
+				    actionCnt(0),
+				    processCnt(0),
+				    weirdCnt(0),
+				    humanCnt(0)
+ {};
   ~structStats();
   virtual void print(  ostream& ) const;
   void addMetrics( FoliaElement *el ) const;
@@ -690,6 +756,15 @@ struct structStats: public basicStats {
   int contentCnt;
   int nominalCnt;
   double polarity;
+  int broadConcreteCnt;
+  int strictConcreteCnt;
+  int broadAbstractCnt;
+  int strictAbstractCnt;
+  int stateCnt;
+  int actionCnt;
+  int processCnt;
+  int weirdCnt;
+  int humanCnt;
   vector<basicStats *> sv;
   map<string,int> heads;
   map<string,int> unique_words;
@@ -730,6 +805,15 @@ void structStats::merge( structStats *ss ){
   pron2Cnt += ss->pron2Cnt;
   pron3Cnt += ss->pron3Cnt;
   pronRefCnt += ss->pronRefCnt;
+  strictAbstractCnt += ss->strictAbstractCnt;
+  broadAbstractCnt += ss->broadAbstractCnt;
+  strictConcreteCnt += ss->strictConcreteCnt;
+  broadConcreteCnt += ss->broadConcreteCnt;
+  stateCnt += ss->stateCnt;
+  actionCnt += ss->actionCnt;
+  processCnt += ss->processCnt;
+  weirdCnt += ss->weirdCnt;
+  humanCnt += ss->humanCnt;
   sv.push_back( ss );
   aggregate( heads, ss->heads );
   aggregate( unique_words, ss->unique_words );
@@ -822,6 +906,15 @@ void structStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( doc, el, "character_sum_no_names", toString(wordLenExNames) );
   addOneMetric( doc, el, "morph_count", toString(morphLen) );
   addOneMetric( doc, el, "morph_count_no_names", toString(morphLenExNames) );
+  addOneMetric( doc, el, "concrete_strict", toString(strictConcreteCnt) );
+  addOneMetric( doc, el, "concrete_broad", toString(broadConcreteCnt) );
+  addOneMetric( doc, el, "abstract_strict", toString(strictAbstractCnt) );
+  addOneMetric( doc, el, "abstract_broad", toString(broadAbstractCnt) );
+  addOneMetric( doc, el, "state count", toString(stateCnt) );
+  addOneMetric( doc, el, "action count", toString(actionCnt) );
+  addOneMetric( doc, el, "process count", toString(processCnt) );
+  addOneMetric( doc, el, "weird count", toString(weirdCnt) );
+  addOneMetric( doc, el, "human count", toString(humanCnt) );
 
   /*
   os << category << " Named Entities ";
@@ -968,6 +1061,37 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
 	  polarity = ws->polarity;
 	else
 	  polarity += ws->polarity;
+      }
+      switch ( ws->sem_type ){
+      case CONCRETE_HUMAN:
+	humanCnt++;
+	// fall throug
+      case CONCRETE:
+	strictConcreteCnt++;
+	broadConcreteCnt++;
+	break;
+      case ABSTRACT:
+	strictAbstractCnt++;
+	broadAbstractCnt++;
+	break;
+      case BROAD:
+	broadConcreteCnt++;
+	broadAbstractCnt++;
+	break;
+      case STATE:
+	stateCnt++;
+	break;
+      case ACTION:
+	actionCnt++;
+	break;
+      case PROCESS:
+	processCnt++;
+	break;
+      case WEIRD:
+	weirdCnt++;
+	break;
+      default:
+	;
       }
     }
   }
