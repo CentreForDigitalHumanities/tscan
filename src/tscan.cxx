@@ -626,13 +626,16 @@ void wordStats::addMetrics( FoliaElement *el ) const {
 		  "archaic", "true" );
   if ( isNominal )
     addOneMetric( el->doc(), el, 
-		  "nomalization", "true" );
+		  "nominalization", "true" );
   if ( polarity != NA  )
     addOneMetric( el->doc(), el, 
 		  "polarity", toString(polarity) );
-  if ( !wwform.empty() )
-    addOneMetric( el->doc(), el, 
-		  "ww_form", wwform );
+  if ( !wwform.empty() ){
+    KWargs args;
+    args["set"] = "tscan-set";
+    args["class"] = "wwform(" + wwform + ")";
+    PosAnnotation *pos = el->addPosAnnotation( args );
+  }
 }
 
 void wordStats::print( ostream& os ) const {
@@ -1160,6 +1163,9 @@ docStats::docStats( Document *doc ):
 {
   doc->declare( AnnotationType::METRIC, 
 		"metricset", 
+		"annotator='tscan'" );
+  doc->declare( AnnotationType::POS, 
+		"tscan-set", 
 		"annotator='tscan'" );
   vector<Paragraph*> pars = doc->paragraphs();
   for ( size_t i=0; i != pars.size(); ++i ){
