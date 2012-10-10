@@ -50,6 +50,11 @@ using namespace folia;
 
 const double NA = -123456789;
 
+struct cf_data {
+  long int count;
+  double freq;
+};
+
 struct settingData {
   void init( const Configuration& );
   bool doAlpino;
@@ -59,6 +64,7 @@ struct settingData {
   map <string, string> noun_sem;
   map <string, string> verb_sem;
   map <string, double> pol_lex;
+  map<string, cf_data> freq_lex;
 };
 
 settingData settings;
@@ -155,6 +161,35 @@ bool fill( map<string,double>& m, const string& filename ){
   return false;
 }
 
+bool fill( map<string,cf_data>& m, istream& is ){
+  string line;
+  while( getline( is, line ) ){
+    vector<string> parts;
+    size_t n = split_at( line, parts, "\t" ); // split at tabs
+    if ( n != 4 ){
+      cerr << "skip line: " << line << " (expected 4 values, got " 
+	   << n << ")" << endl;
+      continue;
+    }
+    cf_data data;
+    data.count = stringTo<long int>( parts[1] );
+    data.freq = stringTo<double>( parts[3] );
+    m[parts[0]] = data;
+  }
+  return true;
+}
+
+bool fill( map<string,cf_data>& m, const string& filename ){
+  ifstream is( filename.c_str() );
+  if ( is ){
+    return fill( m, is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
 void settingData::init( const Configuration& cf ){
   string val = cf.lookUp( "useAlpino" );
   doAlpino = false;
@@ -193,6 +228,11 @@ void settingData::init( const Configuration& cf ){
   val = cf.lookUp( "polarity_lex" );
   if ( !val.empty() ){
     if ( !fill( pol_lex, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "freq_lex" );
+  if ( !val.empty() ){
+    if ( !fill( freq_lex, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
 }
@@ -361,6 +401,7 @@ struct wordStats : public basicStats {
   WordProp checkProps( const PosAnnotation* );
   double checkPolarity( ) const;
   SemType checkSemProps( ) const;
+  void freqLookup();
   string word;
   string pos;
   string posHead;
@@ -370,6 +411,12 @@ struct wordStats : public basicStats {
   bool archaic;
   bool isContent;
   bool isNominal;
+  bool f50;
+  bool f65;
+  bool f77;
+  bool f80;
+  int wfreq;
+  double lwfreq;
   double polarity;
   WordProp prop;
   SemType sem_type;
@@ -497,7 +544,7 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
 }
 
 double wordStats::checkPolarity( ) const {
-  string key = word+":";
+  string key = lowercase(word)+":";
   if ( posHead == "N" )
     key += "n";
   else if ( posHead == "ADJ" )
@@ -563,9 +610,27 @@ SemType wordStats::checkSemProps( ) const {
   return type;
 }
 
+void wordStats::freqLookup(){
+  map<string,cf_data>::const_iterator it = settings.freq_lex.find( lowercase(word) );
+  if ( it != settings.freq_lex.end() ){
+    wfreq = it->second.count;
+    lwfreq = log(wfreq);
+    double freq = it->second.freq;
+    if ( freq <= 50 )
+      f50 = true;
+    if ( freq <= 65 )
+      f65 = true;
+    if ( freq <= 77 )
+      f77 = true;
+    if ( freq <= 80 )
+      f80 = true;
+  }
+}
+
 wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   basicStats( "WORD" ), 
   isPronRef(false), archaic(false), isContent(false), isNominal(false),
+  f50(false), f65(false), f77(false), f80(false),  wfreq(0), lwfreq(0),
   polarity(NA), prop(JUSTAWORD), sem_type(UNFOUND)
 {
   word = UnicodeToUTF8( w->text() );
@@ -605,6 +670,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
     isNominal = checkNominal( w, alpDoc );
     polarity = checkPolarity();
     sem_type = checkSemProps();
+    freqLookup();
   }
   addMetrics( w );
 }
@@ -630,11 +696,13 @@ void wordStats::addMetrics( FoliaElement *el ) const {
   if ( polarity != NA  )
     addOneMetric( el->doc(), el, 
 		  "polarity", toString(polarity) );
+  addOneMetric( el->doc(), el, 
+		"word_freq", toString(lwfreq) );
   if ( !wwform.empty() ){
     KWargs args;
     args["set"] = "tscan-set";
     args["class"] = "wwform(" + wwform + ")";
-    PosAnnotation *pos = el->addPosAnnotation( args );
+    el->addPosAnnotation( args );
   }
 }
 
@@ -727,6 +795,14 @@ struct structStats: public basicStats {
 				    pronRefCnt(0), archaicsCnt(0),
 				    contentCnt(0),
 				    nominalCnt(0),
+				    f50Cnt(0),
+				    f65Cnt(0),
+				    f77Cnt(0),
+				    f80Cnt(0),
+				    wfreq(0),
+				    wfreq_n(0),
+				    lwfreq(0),
+				    lwfreq_n(0),
 				    polarity(NA),
 				    broadConcreteCnt(0),
 				    strictConcreteCnt(0),
@@ -758,6 +834,14 @@ struct structStats: public basicStats {
   int archaicsCnt;
   int contentCnt;
   int nominalCnt;
+  int f50Cnt;
+  int f65Cnt;
+  int f77Cnt;
+  int f80Cnt;
+  int wfreq; 
+  int wfreq_n; 
+  double lwfreq; 
+  double lwfreq_n;
   double polarity;
   int broadConcreteCnt;
   int strictConcreteCnt;
@@ -796,6 +880,12 @@ void structStats::merge( structStats *ss ){
   archaicsCnt += ss->archaicsCnt;
   contentCnt += ss->contentCnt;
   nominalCnt += ss->nominalCnt;
+  f50Cnt += ss->f50Cnt;
+  f65Cnt += ss->f65Cnt;
+  f77Cnt += ss->f77Cnt;
+  f80Cnt += ss->f80Cnt;
+  wfreq += ss->wfreq;
+  wfreq_n += ss->wfreq_n;
   if ( ss->polarity != NA ){
     if ( polarity == NA )
       polarity = ss->polarity;
@@ -899,6 +989,12 @@ void structStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( doc, el, "nominal_count", toString(nominalCnt) );
   if ( polarity != NA )
     addOneMetric( doc, el, "polarity", toString(polarity) );
+  addOneMetric( doc, el, "word_freq", toString(lwfreq) );
+  addOneMetric( doc, el, "word_freq_nonames", toString(lwfreq_n) );
+  addOneMetric( doc, el, "freq50", toString(f50Cnt) );
+  addOneMetric( doc, el, "freq65", toString(f65Cnt) );
+  addOneMetric( doc, el, "freq77", toString(f77Cnt) );
+  addOneMetric( doc, el, "freq80", toString(f80Cnt) );
   addOneMetric( doc, el, "pronoun_tw_count", toString(presentCnt) );
   addOneMetric( doc, el, "pronoun_verl_count", toString(pastCnt) );
   addOneMetric( doc, el, "pronoun_ref_count", toString(pronRefCnt) );
@@ -1023,6 +1119,9 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
       unique_words[lowercase(ws->word)] += 1;
       unique_lemmas[ws->lemma] += 1;
       sv.push_back( ws );
+      wfreq += ws->wfreq;
+      if ( ws->prop != ISNAME )
+	wfreq_n += ws->wfreq;
       switch ( ws->prop ){
       case ISNAME:
 	nameCnt++;
@@ -1059,6 +1158,14 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
 	contentCnt++;
       if ( ws->isNominal )
 	nominalCnt++;
+      if ( ws->f50 )
+	f50Cnt++;
+      if ( ws->f65 )
+	f65Cnt++;
+      if ( ws->f77 )
+	f77Cnt++;
+      if ( ws->f80 )
+	f80Cnt++;
       if ( ws->polarity != NA ){
 	if ( polarity == NA )
 	  polarity = ws->polarity;
@@ -1098,6 +1205,8 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
       }
     }
   }
+  lwfreq = log( wfreq / w.size() );
+  lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
   addMetrics( s );
 }
 
@@ -1137,6 +1246,8 @@ parStats::parStats( Paragraph *p ):
     merge( ss );
     sentCnt++;
   }
+  lwfreq = log( wfreq / sents.size() );
+  lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
   addMetrics( p );
 }
 
@@ -1173,6 +1284,8 @@ docStats::docStats( Document *doc ):
     merge( ps );
     sentCnt += ps->sentCnt;
   }
+  lwfreq = log( wfreq / pars.size() );
+  lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
   addMetrics( pars[0]->parent() );
 }
 
