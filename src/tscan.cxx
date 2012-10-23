@@ -386,7 +386,7 @@ ostream& operator<<( ostream& os, const basicStats& b ){
 }
 
 void basicStats::print( ostream& os ) const {
-  os << "BASICTATS PRINT" << endl;
+  os << "BASICSTATS PRINT" << endl;
   os << category << endl;
   os << " lengte=" << wordLen << ", aantal morphemen=" << morphLen << endl;
   os << " lengte zonder namem =" << wordLenExNames << ", aantal morphemen zonder namen=" << morphLenExNames << endl;
@@ -401,16 +401,23 @@ struct wordStats : public basicStats {
   WordProp checkProps( const PosAnnotation* );
   double checkPolarity( ) const;
   SemType checkSemProps( ) const;
+  bool checkPropNeg() const;
+  bool checkMorphNeg() const;
   void freqLookup();
   string word;
   string pos;
   string posHead;
   string lemma;
   string wwform;
+  bool isPassive;
   bool isPronRef;
   bool archaic;
   bool isContent;
   bool isNominal;
+  bool isOnder;
+  bool isBetr;
+  bool isPropNeg;
+  bool isMorphNeg;
   bool f50;
   bool f65;
   bool f77;
@@ -510,35 +517,42 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
       exit(3);
     }
   }
-  else if ( posHead == "VNW" && lowercase( word ) != "men" ){
-    string cas = pa->feat("case");
-    archaic = ( cas == "gen" || cas == "dat" );
+  else if ( posHead == "VNW" ){
     string vwtype = pa->feat("vwtype");
-    if ( vwtype == "pers" || vwtype == "refl" 
-	 || vwtype == "pr" || vwtype == "bez" ) {
-      string persoon = pa->feat("persoon");
-      if ( !persoon.empty() ){
-	if ( persoon[0] == '1' )
-	  prop = ISPPRON1;
-	else if ( persoon[0] == '2' )
-	  prop = ISPPRON2;
-	else if ( persoon[0] == '3' ){
-	  prop = ISPPRON3;
-	  isPronRef = ( vwtype == "pers" || vwtype == "bez" );
-	}
-	else {
-	  cerr << "PANIEK: een onverwachte PRONOUN persoon : " << persoon 
-	       << " for word " << word << endl;
-	  exit(3);
+    isBetr = vwtype == "betr";
+    if ( lowercase( word ) != "men" ){
+      string cas = pa->feat("case");
+      archaic = ( cas == "gen" || cas == "dat" );
+      if ( vwtype == "pers" || vwtype == "refl" 
+	   || vwtype == "pr" || vwtype == "bez" ) {
+	string persoon = pa->feat("persoon");
+	if ( !persoon.empty() ){
+	  if ( persoon[0] == '1' )
+	    prop = ISPPRON1;
+	  else if ( persoon[0] == '2' )
+	    prop = ISPPRON2;
+	  else if ( persoon[0] == '3' ){
+	    prop = ISPPRON3;
+	    isPronRef = ( vwtype == "pers" || vwtype == "bez" );
+	  }
+	  else {
+	    cerr << "PANIEK: een onverwachte PRONOUN persoon : " << persoon 
+		 << " for word " << word << endl;
+	    exit(3);
+	  }
 	}
       }
+      else if ( vwtype == "aanw" )
+	isPronRef = true;
     }
-    if ( vwtype == "aanw" )
-      isPronRef = true;
   }
   else if ( posHead == "LID" ) {
     string cas = pa->feat("case");
     archaic = ( cas == "gen" || cas == "dat" );
+  }
+  else if ( posHead == "VG" ) {
+    string cp = pa->feat("conjtype");
+    isOnder = cp == "onder";
   }
   return prop;
 }
@@ -627,9 +641,59 @@ void wordStats::freqLookup(){
   }
 }
 
+const string negativesA[] = { "geeneens", "geenszins", "kwijt", "nergens",
+			      "niet", "niets", "nooit", "allerminst",
+			      "allesbehalve", "amper", "behalve", "contra",
+			      "evenmin", "geen", "generlei", "nauwelijks",
+			      "niemand", "niemendal", "nihil", "niks", "nimmer",
+			      "nimmermeer", "noch", "ongeacht", "slechts",
+			      "tenzij", "ternauwernood", "uitgezonderd",
+			      "weinig", "zelden", "zeldzaam", "zonder" };
+set<string> negatives = set<string>( negativesA, negativesA + 32 );
+
+bool wordStats::checkPropNeg() const {
+  string lword = lowercase( word );
+  if ( negatives.find( lword ) != negatives.end() ){
+    return true;
+  }
+  else if ( posHead == "BW" &&
+	    ( lword == "moeilijk" || lword == "weg" ) ){
+    return true;
+  }
+  return false;
+}
+
+const string negmorphA[] = { "mis", "de", "non", "on" };
+set<string> negmorphs = set<string>( negmorphA, negmorphA + 4 );
+
+const string negminusA[] = { "mis-", "non-", "niet-", "anti-",
+			     "ex-", "on-", "oud-" };
+vector<string> negminus = vector<string>( negminusA, negminusA + 7 );
+
+bool wordStats::checkMorphNeg() const {
+  string m1 = morphemes[0];
+  string m2;
+  if ( morphemes.size() > 1 ){
+    m2 = morphemes[1];
+  }
+  if ( negmorphs.find( m1 ) != negmorphs.end() && m2 != "en" ){
+    return true;
+  }
+  else {
+    string lword = lowercase( word );
+    for ( size_t i=0; i < negminus.size(); ++i ){
+      if ( word.find( negminus[i] ) != string::npos )
+	return true;
+    }
+  }
+  return false;
+}
+
 wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   basicStats( "WORD" ), 
-  isPronRef(false), archaic(false), isContent(false), isNominal(false),
+  isPassive(false), isPronRef(false),
+  archaic(false), isContent(false), isNominal(false),
+  isOnder(false), isBetr(false), isPropNeg(false), isMorphNeg(false),
   f50(false), f65(false), f77(false), f80(false),  wfreq(0), lwfreq(0),
   polarity(NA), prop(JUSTAWORD), sem_type(UNFOUND)
 {
@@ -643,8 +707,12 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   posHead = pa->feat("head");
   lemma = w->lemma();
   prop = checkProps( pa );
-  if ( posHead == "WW"  && alpDoc )
-    wwform = classifyVerb( w, alpDoc );
+  if ( posHead == "WW" ){
+    if ( alpDoc ){
+      wwform = classifyVerb( w, alpDoc );
+      isPassive = ( wwform == "passiefww" );
+    }
+  }
   isContent = checkContent();
   if ( prop != ISPUNCT ){
     size_t max = 0;
@@ -653,7 +721,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
     for ( size_t q=0; q < ml.size(); ++q ){
       vector<Morpheme*> m = ml[q]->select<Morpheme>();
       if ( m.size() > max ){
-	// a hack we assume first the longest morpheme list to 
+	// a hack: we assume the longest morpheme list to 
 	// be the best choice. 
 	morphemeV = m;
 	max = m.size();
@@ -662,6 +730,8 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
     for ( size_t q=0; q < morphemeV.size(); ++q ){
       morphemes.push_back( morphemeV[q]->str() );
     }
+    isPropNeg = checkPropNeg();
+    isMorphNeg = checkMorphNeg();
     morphLen = max;
     if ( prop != ISNAME ){
       wordLenExNames = wordLen;
@@ -693,6 +763,18 @@ void wordStats::addMetrics( FoliaElement *el ) const {
   if ( isNominal )
     addOneMetric( el->doc(), el, 
 		  "nominalization", "true" );
+  if ( isOnder )
+    addOneMetric( el->doc(), el, 
+		  "subordinate", "true" );
+  if ( isBetr )
+    addOneMetric( el->doc(), el, 
+		  "betrekkelijk", "true" );
+  if ( isPropNeg )
+    addOneMetric( el->doc(), el, 
+		  "proper_negative", "true" );
+  if ( isMorphNeg )
+    addOneMetric( el->doc(), el, 
+		  "morph_negative", "true" );
   if ( polarity != NA  )
     addOneMetric( el->doc(), el, 
 		  "polarity", toString(polarity) );
@@ -745,6 +827,12 @@ void wordStats::print( ostream& os ) const {
     os << " (" << wwform << ")";  
   if ( isNominal )
     os << " nominalisatie";  
+  if ( isOnder )
+    os << " ondergeschikt";  
+  if ( isBetr )
+    os << " betrekkelijk";  
+  if ( isPropNeg || isMorphNeg )
+    os << " negatief";  
   if ( polarity != NA ){
     os << ", Polariteit=" << polarity << endl;
   }
@@ -792,9 +880,14 @@ struct structStats: public basicStats {
 				    infCnt(0), presentCnt(0), pastCnt(0),
 				    nameCnt(0),
 				    pron1Cnt(0), pron2Cnt(0), pron3Cnt(0), 
+				    passiveCnt(0),
 				    pronRefCnt(0), archaicsCnt(0),
 				    contentCnt(0),
 				    nominalCnt(0),
+				    onderCnt(0),
+				    betrCnt(0),
+				    propNegCnt(0),
+				    morphNegCnt(0),
 				    f50Cnt(0),
 				    f65Cnt(0),
 				    f77Cnt(0),
@@ -812,7 +905,9 @@ struct structStats: public basicStats {
 				    actionCnt(0),
 				    processCnt(0),
 				    weirdCnt(0),
-				    humanCnt(0)
+				    humanCnt(0),
+				    npCnt(0),
+				    npSize(0)
  {};
   ~structStats();
   virtual void print(  ostream& ) const;
@@ -830,10 +925,15 @@ struct structStats: public basicStats {
   int pron1Cnt;
   int pron2Cnt;
   int pron3Cnt;
+  int passiveCnt;
   int pronRefCnt;
   int archaicsCnt;
   int contentCnt;
   int nominalCnt;
+  int onderCnt;
+  int betrCnt;
+  int propNegCnt;
+  int morphNegCnt;
   int f50Cnt;
   int f65Cnt;
   int f77Cnt;
@@ -852,6 +952,8 @@ struct structStats: public basicStats {
   int processCnt;
   int weirdCnt;
   int humanCnt;
+  int npCnt;
+  int npSize;
   vector<basicStats *> sv;
   map<string,int> heads;
   map<string,int> unique_words;
@@ -877,9 +979,14 @@ void structStats::merge( structStats *ss ){
   vdCnt += ss->vdCnt;
   odCnt += ss->odCnt;
   infCnt += ss->infCnt;
+  passiveCnt += ss->passiveCnt;
   archaicsCnt += ss->archaicsCnt;
   contentCnt += ss->contentCnt;
   nominalCnt += ss->nominalCnt;
+  onderCnt += ss->onderCnt;
+  betrCnt += ss->betrCnt;
+  propNegCnt += ss->propNegCnt;
+  morphNegCnt += ss->morphNegCnt;
   f50Cnt += ss->f50Cnt;
   f65Cnt += ss->f65Cnt;
   f77Cnt += ss->f77Cnt;
@@ -907,6 +1014,8 @@ void structStats::merge( structStats *ss ){
   processCnt += ss->processCnt;
   weirdCnt += ss->weirdCnt;
   humanCnt += ss->humanCnt;
+  npCnt += ss->npCnt;
+  npSize += ss->npSize;
   sv.push_back( ss );
   aggregate( heads, ss->heads );
   aggregate( unique_words, ss->unique_words );
@@ -932,6 +1041,8 @@ void structStats::print( ostream& os ) const {
      << " gemiddeld: " << archaicsCnt/double(wordCnt) << endl;
   os << "#Content woorden " << contentCnt
      << " gemiddeld: " << contentCnt/double(wordCnt) << endl;
+  os << "#NP's " << npCnt << " met in totaal " << npSize
+     << " woorden, gemiddeld: " << npSize/npCnt << endl;
   if ( polarity != NA ){
     os << "#Polariteit:" << polarity
        << " gemiddeld: " << polarity/double(wordCnt) << endl;
@@ -945,6 +1056,10 @@ void structStats::print( ostream& os ) const {
      << " gemiddeld: " << presentCnt/double(wordCnt) << endl;
   os << "#Persoonsvorm (VERL) " << pastCnt
      << " gemiddeld: " << pastCnt/double(wordCnt) << endl;
+  os << "#Clauses " << pastCnt+presentCnt
+     << " gemiddeld: " << (pastCnt+presentCnt)/double(wordCnt) << endl;  
+  os << "#passief constructies " << passiveCnt 
+     << " gemiddeld: " << passiveCnt/double(wordCnt) << endl;
   os << "#PersoonLijke Voornaamwoorden terugverwijzend " << pronRefCnt
      << " gemiddeld: " << pronRefCnt/double(wordCnt) << endl;
   os << "#PersoonLijke Voornaamwoorden 1-ste persoon " << pron1Cnt
@@ -960,6 +1075,10 @@ void structStats::print( ostream& os ) const {
   os << category << " gemiddelde woordlengte zonder Namen " << wordLenExNames/double(wordCnt - nameCnt) << endl;
   os << category << " gemiddelde aantal morphemen " << morphLen/double(wordCnt) << endl;
   os << category << " gemiddelde aantal morphemen zonder Namen " << morphLenExNames/double(wordCnt-nameCnt) << endl;
+  os << category << " aantal ondergeschikte bijzinnen " << onderCnt
+     << " dichtheid " << onderCnt/double(wordCnt) << endl;
+  os << category << " aantal betrekkelijke bijzinnen " << betrCnt
+     << " dichtheid " << betrCnt/double(wordCnt) << endl;
   os << category << " aantal Namen " << nameCnt << endl;
   os << category << " Named Entities ";
   for ( map<NerProp,int>::const_iterator it = ners.begin();
@@ -987,6 +1106,8 @@ void structStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( doc, el, "archaic_count", toString(archaicsCnt) );
   addOneMetric( doc, el, "content_count", toString(contentCnt) );
   addOneMetric( doc, el, "nominal_count", toString(nominalCnt) );
+  addOneMetric( doc, el, "subordinate_cnt", toString(onderCnt) );
+  addOneMetric( doc, el, "relative_cnt", toString(betrCnt) );
   if ( polarity != NA )
     addOneMetric( doc, el, "polarity", toString(polarity) );
   addOneMetric( doc, el, "word_freq", toString(lwfreq) );
@@ -1009,11 +1130,13 @@ void structStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( doc, el, "concrete_broad", toString(broadConcreteCnt) );
   addOneMetric( doc, el, "abstract_strict", toString(strictAbstractCnt) );
   addOneMetric( doc, el, "abstract_broad", toString(broadAbstractCnt) );
-  addOneMetric( doc, el, "state count", toString(stateCnt) );
-  addOneMetric( doc, el, "action count", toString(actionCnt) );
-  addOneMetric( doc, el, "process count", toString(processCnt) );
-  addOneMetric( doc, el, "weird count", toString(weirdCnt) );
-  addOneMetric( doc, el, "human count", toString(humanCnt) );
+  addOneMetric( doc, el, "state_count", toString(stateCnt) );
+  addOneMetric( doc, el, "action_count", toString(actionCnt) );
+  addOneMetric( doc, el, "process_count", toString(processCnt) );
+  addOneMetric( doc, el, "weird_count", toString(weirdCnt) );
+  addOneMetric( doc, el, "human_count", toString(humanCnt) );
+  addOneMetric( doc, el, "np_count", toString(npCnt) );
+  addOneMetric( doc, el, "np_size", toString(npSize) );
 
   /*
   os << category << " Named Entities ";
@@ -1086,6 +1209,22 @@ NerProp lookupNer( const Word *w, const Sentence * s ){
   return result;
 }
 
+void np_length( Sentence *s, int& count, int& size ) {
+  vector<Chunk *> cv = s->select<Chunk>();
+  size = 0 ;
+  for( size_t i=0; i < cv.size(); ++i ){
+    if ( cv[i]->cls() == "NP" ){
+      ++count;
+      size += cv[i]->size();
+    }
+  }
+}
+
+const string neg_longA[] = { "afgezien van", 
+			     "zomin als",
+			     "met uitzondering van"};
+set<string> negatives_long = set<string>( neg_longA, neg_longA + 3 );
+
 sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
   id = s->id();
   text = UnicodeToUTF8( s->toktext() );
@@ -1118,7 +1257,6 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
       morphLenExNames += ws->morphLenExNames;
       unique_words[lowercase(ws->word)] += 1;
       unique_lemmas[ws->lemma] += 1;
-      sv.push_back( ws );
       wfreq += ws->wfreq;
       if ( ws->prop != ISNAME )
 	wfreq_n += ws->wfreq;
@@ -1150,6 +1288,8 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
       default:
 	;// ignore
       }
+      if ( ws->isPassive )
+	passiveCnt++;
       if ( ws->isPronRef )
 	pronRefCnt++;
       if ( ws->archaic )
@@ -1158,6 +1298,14 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
 	contentCnt++;
       if ( ws->isNominal )
 	nominalCnt++;
+      if ( ws->isOnder )
+	onderCnt++;
+      if ( ws->isBetr )
+	betrCnt++;
+      if ( ws->isPropNeg )
+	propNegCnt++;
+      if ( ws->isMorphNeg )
+	morphNegCnt++;
       if ( ws->f50 )
 	f50Cnt++;
       if ( ws->f65 )
@@ -1203,15 +1351,42 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
       default:
 	;
       }
+      sv.push_back( ws );
+    }
+  }
+  if ( w.size() > 1 ){
+    for ( size_t i=0; i < sv.size()-2; ++i ){
+      string multiword2 = lowercase( UnicodeToUTF8( w[i]->text() ) )
+	+ lowercase( UnicodeToUTF8( w[i+1]->text() ) );
+      if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
+	propNegCnt++;
+      }
+      else {
+	string multiword3 = multiword2 
+	  + lowercase( UnicodeToUTF8( w[i+2]->text() ) );
+	if ( negatives_long.find( multiword3 ) != negatives_long.end() )
+	  propNegCnt++;
+      }
+    }
+    string multiword2 = lowercase( UnicodeToUTF8( w[w.size()-2]->text() ) )
+      + lowercase( UnicodeToUTF8( w[w.size()-1]->text() ) );
+    if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
+      propNegCnt++;
     }
   }
   lwfreq = log( wfreq / w.size() );
   lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
+  np_length( s, npCnt, npSize );
   addMetrics( s );
 }
 
 void sentStats::print( ostream& os ) const {
   os << category << "[" << text << "]" << endl;
+  os << category << " er zijn " << propNegCnt << " negatieve woorden en " 
+     << morphNegCnt << " negatieve morphemen gevonden";
+  if ( propNegCnt + morphNegCnt > 1 )
+    os << " er is dus een dubbele ontkenning! ";
+  os << endl;
   structStats::print( os );
 }
 

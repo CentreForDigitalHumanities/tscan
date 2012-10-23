@@ -330,7 +330,7 @@ string classifyVerb( Word *w, xmlDoc *alp ){
       for ( size_t i=0; i < siblinglist.size(); ++i ){
 	KWargs atts = getAttributes( siblinglist[i] );
 	if ( atts["rel"] == "predc" )
-	  return "passiefww";
+	  return "koppelww";
       }
     }
     if ( lemma == "schijnen" ){
