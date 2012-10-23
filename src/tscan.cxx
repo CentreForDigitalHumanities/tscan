@@ -676,7 +676,7 @@ bool wordStats::checkMorphNeg() const {
   if ( morphemes.size() > 1 ){
     m2 = morphemes[1];
   }
-  if ( negmorphs.find( m1 ) != negmorphs.end() && m2 != "en" ){
+  if ( negmorphs.find( m1 ) != negmorphs.end() && m2 != "en" && !m2.empty() ){
     return true;
   }
   else {
@@ -907,7 +907,8 @@ struct structStats: public basicStats {
 				    weirdCnt(0),
 				    humanCnt(0),
 				    npCnt(0),
-				    npSize(0)
+				    npSize(0),
+				    dLevel(-1)
  {};
   ~structStats();
   virtual void print(  ostream& ) const;
@@ -954,6 +955,7 @@ struct structStats: public basicStats {
   int humanCnt;
   int npCnt;
   int npSize;
+  int dLevel;
   vector<basicStats *> sv;
   map<string,int> heads;
   map<string,int> unique_words;
@@ -1016,6 +1018,8 @@ void structStats::merge( structStats *ss ){
   humanCnt += ss->humanCnt;
   npCnt += ss->npCnt;
   npSize += ss->npSize;
+  if ( ss->dLevel > 0 )
+    dLevel += ss->dLevel;
   sv.push_back( ss );
   aggregate( heads, ss->heads );
   aggregate( unique_words, ss->unique_words );
@@ -1043,6 +1047,7 @@ void structStats::print( ostream& os ) const {
      << " gemiddeld: " << contentCnt/double(wordCnt) << endl;
   os << "#NP's " << npCnt << " met in totaal " << npSize
      << " woorden, gemiddeld: " << npSize/npCnt << endl;
+  os << "D LEVEL=" << dLevel << endl;
   if ( polarity != NA ){
     os << "#Polariteit:" << polarity
        << " gemiddeld: " << polarity/double(wordCnt) << endl;
@@ -1137,6 +1142,8 @@ void structStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( doc, el, "human_count", toString(humanCnt) );
   addOneMetric( doc, el, "np_count", toString(npCnt) );
   addOneMetric( doc, el, "np_size", toString(npSize) );
+  if ( dLevel >= 0 )
+    addOneMetric( doc, el, "d_level", toString(dLevel) );
 
   /*
   os << category << " Named Entities ";
@@ -1377,6 +1384,8 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
   lwfreq = log( wfreq / w.size() );
   lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
   np_length( s, npCnt, npSize );
+  if ( alpDoc )
+    dLevel = get_d_level( s, alpDoc );
   addMetrics( s );
 }
 

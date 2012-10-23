@@ -40,143 +40,6 @@
 using namespace std;
 using namespace folia;
 
-#ifdef OLD_STUFF
-void addSU( xmlNode *n, vector<Word*>& words, FoliaElement *s ){
-  if ( Name( n ) == "node" ){
-    KWargs atts = getAttributes( n );
-    string cls = atts["cat"];
-    bool leaf = false;
-    if ( cls.empty() ){
-      cls = atts["lcat"];
-      leaf = true;
-    }
-    if ( !cls.empty() ){
-      FoliaElement *e = 
-	s->append( new SyntacticUnit( s->doc(), "cls='" + cls + "'" ) );
-      if ( leaf ){
-	string posS = atts["begin"];
-	int start = stringTo<int>( posS );
-	e->append( words[start] );
-      }
-      else {
-	xmlNode *pnt = n->children;
-	while ( pnt ){
-	  addSU( pnt, words, e );
-	  pnt = pnt->next;
-	}
-      }
-    }
-  }
-}
-
-void extractSyntax( xmlNode *node, Sentence *s ){
-  Document *doc = s->doc();
-  doc->declare( AnnotationType::SYNTAX, 
-		"mysyntaxset", 
-		"annotator='alpino'" );
-  vector<Word*> words = s->words();
-  FoliaElement *layer = s->append( new SyntaxLayer( doc ) );
-  FoliaElement *sent = layer->append( new SyntacticUnit( doc, "cls='s'" ) );
-  xmlNode *pnt = node->children;
-  while ( pnt ){
-    addSU( pnt, words, sent );
-    pnt = pnt->next;
-  }
-}
-
-xmlNode *findSubHead( xmlNode *node ){
-  xmlNode *pnt = node->children;
-  while ( pnt ){
-    KWargs atts = getAttributes( pnt );
-    string rel = atts["rel"];
-    if ( rel == "hd" ){
-      return pnt;
-      break;
-    }
-    pnt = pnt->next;
-  }
-  return 0;
-}
-
-void addDep( xmlNode *node, vector<Word*>& words, FoliaElement *layer ){
-  KWargs atts = getAttributes( node );
-  xmlNode *hd = 0;
-  xmlNode *pnt = node->children;
-  while ( pnt ){
-    KWargs atts = getAttributes( pnt );
-    string rel = atts["rel"];
-    if ( rel == "hd" ){
-      hd = pnt;
-      break;
-    }
-    pnt = pnt->next;
-  }
-  if ( hd ){
-    KWargs atts = getAttributes( hd );
-    string posH = atts["begin"];
-    int headStart = stringTo<int>( posH );
-    pnt = node->children;
-    while ( pnt ){
-      if ( pnt != hd ){
-	KWargs atts = getAttributes( pnt );
-	string rel = atts["rel"];
-	FoliaElement *dep = layer->append( new Dependency( layer->doc(),
-							   "class='" + rel + "'" ) );
-	FoliaElement *h = dep->append( new Headwords() );
-	h->append( words[headStart] );
-	xmlNode *sub = findSubHead( pnt );
-	if ( !sub ){
-	  string posD = atts["begin"];
-	  int start = stringTo<int>( posD );
-	  FoliaElement *d = dep->append( new DependencyDependent() );
-	  d->append( words[start] );
-	}
-	else {
-	  KWargs atts = getAttributes( sub );
-	  string posD = atts["begin"];
-	  int start = stringTo<int>( posD );
-	  FoliaElement *d = dep->append( new DependencyDependent() );
-	  d->append( words[start] );
-	  addDep( pnt, words, layer );
-	}
-      }
-      pnt = pnt->next;
-    }
-  }
-  else {
-    xmlNode *pnt = node->children;
-    while ( pnt ){
-      addDep( pnt, words, layer );
-      pnt = pnt->next;
-    }
-  }
-}
-
-void extractDependency( xmlNode *node, folia::Sentence *s ){
-  Document *doc = s->doc();
-  doc->declare( AnnotationType::DEPENDENCY, 
-		"mysdepset", 
-		"annotator='alpino'" );
-  vector<Word*> words = s->words();
-  FoliaElement *layer = s->append( new DependenciesLayer( doc ) );
-  addDep( node, words, layer );
-}
-
-void extractAndAppendParse( xmlDoc *doc, folia::Sentence *s ){
-  xmlNode *root = xmlDocGetRootElement( doc );
-  xmlNode *pnt = root->children;
-  while ( pnt ){
-    if ( folia::Name( pnt ) == "node" ){
-      // 1 top node i hope
-      extractSyntax( pnt, s );
-      extractDependency( pnt, s );
-      break;
-    }
-    pnt = pnt->next;
-  }
-}
-#endif // OLD_STUFF
-
 xmlNode *getAlpWord( xmlNode *node, const string& pos ){
   xmlNode *result = 0;
   xmlNode *pnt = node->children;
@@ -371,6 +234,128 @@ string classifyVerb( Word *w, xmlDoc *alp ){
     return "none";
 }
 
+
+void getNodes( xmlNode *pnt, vector<xmlNode*>& result ){
+  while ( pnt ){
+    if ( pnt->type == XML_ELEMENT_NODE && Name(pnt) == "node" ){
+      result.push_back( pnt );
+      getNodes( pnt->children, result );
+    }
+    pnt = pnt->next;
+  }
+}
+
+vector<xmlNode *> getNodes( xmlDoc *doc ){
+  xmlNode *pnt = xmlDocGetRootElement( doc );
+  vector<xmlNode*> result;
+  getNodes( pnt, result );
+  return result;
+}
+
+int get_d_level( Sentence *s, xmlDoc *alp ){
+  vector<PosAnnotation*> poslist;
+  vector<Word*> wordlist = s->words();
+  int pc_counter = 0;
+  int neven_counter = 0;
+  for ( size_t i=0; i < wordlist.size(); ++i ){
+    Word *w = wordlist[i];
+    vector<PosAnnotation*> posV = w->select<PosAnnotation>("http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn");
+    if ( posV.size() != 1 )
+      throw ValueError( "word doesn't have POS tag info" );
+    PosAnnotation *pa = posV[0];
+    string pos = pa->feat("head");
+    poslist.push_back( pa );
+    if ( pos == "WW" ){
+      string wvorm = pa->feat("wform");
+      if( wvorm == "pv" )
+	++pc_counter;
+    }
+    if ( pos == "VG" ){
+      string cp = pa->feat("conjtype");
+      if ( cp == "neven" )
+	++neven_counter;
+    }
+  }
+  if ( pc_counter - neven_counter > 2 ){
+    // op niveau 7 staan zinnen met meerdere bijzinnen, maar deelzinnen die 
+    // in nevenschikking staan tellen hiervoor niet mee
+    return 7;
+  }
+
+  // < 7
+  vector<xmlNode *> nodelist = getNodes( alp );
+  for ( size_t i=0; i < nodelist.size(); ++i ){  
+    xmlNode *node = nodelist[i];
+    KWargs atts = getAttributes( node );
+    if ( atts["rel"] == "mod" && atts["cat"] == "rel" ){
+      KWargs attsp = getAttributes( node->parent );
+      if ( attsp["rel"] == "su" )
+	return 6;
+    }
+    else if ( atts["rel"] == "su" && 
+	      ( atts["cat"] == "cp" || atts["cat"] == "whsub"
+		|| atts["cat"] == "ti"  || atts["cat"] == "oti" 
+		|| atts["cat"] == "inf" ) ){
+      return 6;
+    }
+    else if ( atts["pos"] == "verb" ){
+      KWargs attsp = getAttributes( node->parent );
+      if ( attsp["rel"] == "su" && attsp["cat"] == "np" )
+	return 6;
+    }
+  }
+  
+  // < 6
+  for ( size_t i=0; i < poslist.size(); ++i ){
+    string pos = poslist[i]->feat("head");
+    if ( pos == "VG" ){
+      string cp = poslist[i]->feat("conjtype");
+      if ( cp == "onder" ){
+	if ( poslist[i]->parent()->text() != "dat" )
+	  return 5;
+      }
+    }
+  }
+
+  // < 5
+  for ( size_t i=0; i < nodelist.size(); ++i ){  
+    KWargs atts = getAttributes( nodelist[i] );
+    if ( atts["rel"] == "obcomp" )
+      return 4;
+  }  
+  vector<xmlNode*> vcnodes;
+  for ( size_t i=0; i < nodelist.size(); ++i ){  
+    KWargs atts = getAttributes( nodelist[i] );
+    if ( atts["rel"] == "vc" )
+      vcnodes.push_back( nodelist[i] );
+  }  
+  bool found4 = false;
+  for ( size_t i=0; i < vcnodes.size(); ++i ){  
+    xmlNode *node = vcnodes[i];
+    xmlNode *pnt = node->children;
+    string index;
+    while ( pnt ){
+      if ( pnt->type == XML_ELEMENT_NODE ){
+	KWargs atts = getAttributes( pnt );
+	string index = atts["index"];
+	if ( !index.empty() && atts["rel"] == "su" ){
+	  found4 = true;
+	  break;
+	}
+      }
+      pnt = pnt->next;
+    }
+    if ( found4 ){
+      vector< xmlNode *> siblinglist = getSibblings( node );
+      for ( size_t i=0; i < siblinglist.size(); ++i ){
+	KWargs atts = getAttributes( siblinglist[i] );
+	if ( atts["index"] == index && atts["rel"] == "obj" )
+	  return 4;
+      }
+    }
+  }
+  return -1;
+}
 
 xmlDoc *AlpinoParse( folia::Sentence *s ){
   string txt = folia::UnicodeToUTF8(s->toktext());
