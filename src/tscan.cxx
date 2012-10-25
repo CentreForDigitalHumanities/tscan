@@ -38,6 +38,7 @@
 #include "ticcutils/StringOps.h"
 #include "tscan/TscanServer.h"
 #include "tscan/Alpino.h"
+#include "tscan/decomp.h"
 
 using namespace std;
 using namespace TiCC;
@@ -422,6 +423,7 @@ struct wordStats : public basicStats {
   bool f65;
   bool f77;
   bool f80;
+  int compLen;
   int wfreq;
   double lwfreq;
   double polarity;
@@ -694,7 +696,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   isPassive(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),
   isOnder(false), isBetr(false), isPropNeg(false), isMorphNeg(false),
-  f50(false), f65(false), f77(false), f80(false),  wfreq(0), lwfreq(0),
+  f50(false), f65(false), f77(false), f80(false),  compLen(0), wfreq(0), lwfreq(0),
   polarity(NA), prop(JUSTAWORD), sem_type(UNFOUND)
 {
   word = UnicodeToUTF8( w->text() );
@@ -741,6 +743,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
     polarity = checkPolarity();
     sem_type = checkSemProps();
     freqLookup();
+    //    compLen = runDecompoundWord(word);
   }
   addMetrics( w );
 }
@@ -778,6 +781,10 @@ void wordStats::addMetrics( FoliaElement *el ) const {
   if ( polarity != NA  )
     addOneMetric( el->doc(), el, 
 		  "polarity", toString(polarity) );
+  if ( compLen > 0 )
+    addOneMetric( el->doc(), el, 
+		  "compound_len", toString(compLen) );
+
   addOneMetric( el->doc(), el, 
 		"word_freq", toString(lwfreq) );
   if ( !wwform.empty() ){
@@ -892,6 +899,8 @@ struct structStats: public basicStats {
 				    f65Cnt(0),
 				    f77Cnt(0),
 				    f80Cnt(0),
+				    compCnt(0),
+				    compLen(0),
 				    wfreq(0),
 				    wfreq_n(0),
 				    lwfreq(0),
@@ -939,6 +948,8 @@ struct structStats: public basicStats {
   int f65Cnt;
   int f77Cnt;
   int f80Cnt;
+  int compCnt;
+  int compLen;
   int wfreq; 
   int wfreq_n; 
   double lwfreq; 
@@ -993,6 +1004,8 @@ void structStats::merge( structStats *ss ){
   f65Cnt += ss->f65Cnt;
   f77Cnt += ss->f77Cnt;
   f80Cnt += ss->f80Cnt;
+  compCnt += ss->compCnt;
+  compLen += ss->compLen;
   wfreq += ss->wfreq;
   wfreq_n += ss->wfreq_n;
   if ( ss->polarity != NA ){
@@ -1119,6 +1132,8 @@ void structStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( doc, el, "relative_cnt", toString(betrCnt) );
   if ( polarity != NA )
     addOneMetric( doc, el, "polarity", toString(polarity) );
+  addOneMetric( doc, el, "compound_count", toString(compCnt) );
+  addOneMetric( doc, el, "compound_len", toString(compLen) );
   addOneMetric( doc, el, "word_freq", toString(lwfreq) );
   addOneMetric( doc, el, "word_freq_nonames", toString(lwfreq_n) );
   addOneMetric( doc, el, "freq50", toString(f50Cnt) );
@@ -1268,6 +1283,9 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
       morphLenExNames += ws->morphLenExNames;
       unique_words[lowercase(ws->word)] += 1;
       unique_lemmas[ws->lemma] += 1;
+      if ( ws->compLen > 0 )
+	++compCnt;
+      compLen += ws->compLen;
       wfreq += ws->wfreq;
       if ( ws->prop != ISNAME )
 	wfreq_n += ws->wfreq;
