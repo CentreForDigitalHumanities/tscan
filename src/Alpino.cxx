@@ -35,10 +35,12 @@
 #include "config.h"
 #include "libfolia/folia.h"
 #include "libfolia/document.h"
+#include "ticcutils/PrettyPrint.h"
 #include "tscan/Alpino.h"
 
 using namespace std;
 using namespace folia;
+using namespace TiCC;
 
 xmlNode *getAlpWord( xmlNode *node, const string& pos ){
   xmlNode *result = 0;
@@ -248,14 +250,14 @@ void getNodes( xmlNode *pnt, vector<xmlNode*>& result ){
 vector<xmlNode *> getNodes( xmlDoc *doc ){
   xmlNode *pnt = xmlDocGetRootElement( doc );
   vector<xmlNode*> result;
-  getNodes( pnt, result );
+  getNodes( pnt->children, result );
   return result;
 }
 
 int get_d_level( Sentence *s, xmlDoc *alp ){
   vector<PosAnnotation*> poslist;
   vector<Word*> wordlist = s->words();
-  int pc_counter = 0;
+  int pv_counter = 0;
   int neven_counter = 0;
   for ( size_t i=0; i < wordlist.size(); ++i ){
     Word *w = wordlist[i];
@@ -266,17 +268,21 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
     string pos = pa->feat("head");
     poslist.push_back( pa );
     if ( pos == "WW" ){
-      string wvorm = pa->feat("wform");
+      //      cerr << "WW " << pa->xmlstring() << endl;
+      string wvorm = pa->feat("wvorm");
       if( wvorm == "pv" )
-	++pc_counter;
+	++pv_counter;
+      //      cerr << "pv_counter= " << pv_counter << endl;
     }
     if ( pos == "VG" ){
+      //      cerr << "VG " << pa->xmlstring() << endl;
       string cp = pa->feat("conjtype");
       if ( cp == "neven" )
 	++neven_counter;
+      //      cerr << "neven_counter= " << neven_counter << endl;
     }
   }
-  if ( pc_counter - neven_counter > 2 ){
+  if ( pv_counter - neven_counter > 2 ){
     // op niveau 7 staan zinnen met meerdere bijzinnen, maar deelzinnen die 
     // in nevenschikking staan tellen hiervoor niet mee
     return 7;
@@ -288,7 +294,9 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
     xmlNode *node = nodelist[i];
     KWargs atts = getAttributes( node );
     if ( atts["rel"] == "mod" && atts["cat"] == "rel" ){
+      //      cerr << "HIT MOD node " << atts << endl;
       KWargs attsp = getAttributes( node->parent );
+      //      cerr << "parent: " << attsp << endl;
       if ( attsp["rel"] == "su" )
 	return 6;
     }
@@ -296,10 +304,13 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
 	      ( atts["cat"] == "cp" || atts["cat"] == "whsub"
 		|| atts["cat"] == "ti"  || atts["cat"] == "oti" 
 		|| atts["cat"] == "inf" ) ){
+      //      cerr << "HIT SU node " << atts << endl;
       return 6;
     }
     else if ( atts["pos"] == "verb" ){
+      //      cerr << "HIT verb node " << atts << endl;
       KWargs attsp = getAttributes( node->parent );
+      //      cerr << "parent: " << attsp << endl;
       if ( attsp["rel"] == "su" && attsp["cat"] == "np" )
 	return 6;
     }
@@ -354,6 +365,64 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
       }
     }
   }
+
+  // < 4
+  for ( size_t i=0; i < nodelist.size(); ++i ){  
+    KWargs atts = getAttributes( nodelist[i] );
+    if ( atts["rel"] == "mod" && atts["cat"] == "rel" ){
+      KWargs attsp = getAttributes( nodelist[i]->parent );
+      if ( attsp["rel"] == "obj1" )
+	return 3;
+    }
+    else if ( atts["pos"] == "verb" ){
+      KWargs attsp = getAttributes( nodelist[i]->parent );
+      if ( attsp["rel"] == "obj1" && attsp["cat"] == "np" )
+	return 3;
+    }
+    else if ( atts["rel"] == "vc" && 
+	      ( atts["cat"] == "rel" || atts["cat"] == "whsub" ) ){
+      return 3;
+    }
+    else if ( atts["rel"] == "sup" ){
+      return 3;
+    }
+  }
+
+  // < 3 
+  for ( size_t i=0; i < poslist.size(); ++i ){
+    string pos = poslist[i]->feat("head");
+    if ( pos == "VG" ){
+      string cp = poslist[i]->feat("conjtype");
+      if ( cp == "neven" )
+	return 2;
+    }
+  }
+  
+  // < 2
+  for ( size_t i=0; i < nodelist.size(); ++i ){ 
+    KWargs atts = getAttributes( nodelist[i] );
+    if ( atts["rel"] == "vc" ){
+      cerr << "VC node " << atts << endl;
+      if ( atts["cat"] == "ti" 
+	   || atts["cat"] == "oti"
+	   || atts["cat"] == "inf" ){
+	string node_index = atts["index"];
+	cerr << "node index = '" << node_index << "'" << endl;
+	xmlNode *su_node = node_search( nodelist[i], "rel", "su" );
+	if ( su_node ){
+	  KWargs attss = getAttributes( su_node );
+	  cerr << "SU  node " << atts << endl;
+	  cerr << "SU index = '" << attss["index"] << "'" << endl;
+	  if ( attss["index"] == node_index )
+	    return 1;
+	}
+      }
+    }
+  }
+  
+  // < 1
+  if ( pv_counter <= 1 )
+    return 0;
   return -1;
 }
 

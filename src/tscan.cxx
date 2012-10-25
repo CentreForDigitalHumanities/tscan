@@ -1018,8 +1018,12 @@ void structStats::merge( structStats *ss ){
   humanCnt += ss->humanCnt;
   npCnt += ss->npCnt;
   npSize += ss->npSize;
-  if ( ss->dLevel > 0 )
-    dLevel += ss->dLevel;
+  if ( ss->dLevel > 0 ){
+    if ( dLevel < 0 )
+      dLevel = ss->dLevel;
+    else
+      dLevel += ss->dLevel;
+  }
   sv.push_back( ss );
   aggregate( heads, ss->heads );
   aggregate( unique_words, ss->unique_words );
