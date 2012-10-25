@@ -402,17 +402,17 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
   for ( size_t i=0; i < nodelist.size(); ++i ){ 
     KWargs atts = getAttributes( nodelist[i] );
     if ( atts["rel"] == "vc" ){
-      cerr << "VC node " << atts << endl;
+      //      cerr << "VC node " << atts << endl;
       if ( atts["cat"] == "ti" 
 	   || atts["cat"] == "oti"
 	   || atts["cat"] == "inf" ){
 	string node_index = atts["index"];
-	cerr << "node index = '" << node_index << "'" << endl;
+	//	cerr << "node index = '" << node_index << "'" << endl;
 	xmlNode *su_node = node_search( nodelist[i], "rel", "su" );
 	if ( su_node ){
 	  KWargs attss = getAttributes( su_node );
-	  cerr << "SU  node " << atts << endl;
-	  cerr << "SU index = '" << attss["index"] << "'" << endl;
+	  //	  cerr << "SU  node " << atts << endl;
+	  //	  cerr << "SU index = '" << attss["index"] << "'" << endl;
 	  if ( attss["index"] == node_index )
 	    return 1;
 	}
