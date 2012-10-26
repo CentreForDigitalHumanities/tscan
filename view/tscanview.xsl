@@ -290,7 +290,7 @@
 		    				s += "<tr><th>" + label + "<span class=\"description\">" + desc + "</span></th><td>" + metrics[i][cls] + "</td></tr>"; 
 		    		}
         		}
-        		s += "</table>";
+        		s += "<tr></tr></table>";
         		$(target).html(s);
         	}
         	
@@ -517,6 +517,7 @@
 					<td><xsl:value-of select="@value" /></td>
 				</tr>
 			</xsl:for-each>
+			<tr></tr>
 		</table>
 	</div>
 	
