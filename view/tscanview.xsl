@@ -69,6 +69,7 @@
 					text-align: left;
 					background: white;
 					border: 2px solid black;
+					min-height: 500px;
 				}
 
 				div.div {
@@ -94,6 +95,16 @@
 					text-align: left;
 				}
 				
+				#footer {
+					margin-top: 100px;
+					width: 80%;
+					margin-left: auto;
+					margin-right: auto;
+					font-family: monospace;
+					font-size: 10px;
+					font-style: italic;
+					text-align: center;	
+				}
 
 				#text {
 					border: 1px solid #628f8b;
@@ -343,6 +354,10 @@
 			</div>
 			<![endif]]]></xsl:comment>       
 		    <xsl:apply-templates />
+		    
+		    <div id="footer">
+		    	<strong>T-scan</strong> is ontworpen en ontwikkeld door <strong>Rogier Kraf</strong> (Universiteit Utrecht) &amp; <strong>Ko van der Sloot</strong> (Universiteit Tilburg), interface door Maarten van Gompel (Radboud Universiteit Nijmegen). Supervisie door Antal van den Bosch (Radboud Universiteit Nijmegen) en Henk Pander Maat (Universiteit Utrecht). Dit maakt deel uit van het NWO-project Leesbaarheidsindex Nederlands (LIN). Alle eigen software is gelicenseerd onder de <a href="http://www.gnu.org/licenses/gpl.html">GNU Publieke Licentie v3</a>. 
+		    </div>
         </div>
         
         <div id="metrics">
