@@ -480,14 +480,7 @@
 	<h2>Zinskenmerken</h2>
 	
 	<div id="sentencemetrics" class="metricslist">
-		<table>
-			<xsl:for-each select="//folia:text/folia:metric">
-				<tr>
-					<th><xsl:value-of select="@class" /></th>
-					<td><xsl:value-of select="@value" /></td>
-				</tr>
-			</xsl:for-each>
-		</table>	
+
 	</div>
 	
 	<h2>Woordkenmerken</h2>
