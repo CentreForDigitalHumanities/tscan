@@ -156,6 +156,10 @@
 					z-index: 24;
 				}
 
+				th {
+					text-align: left;
+					padding-left: 6px;
+				}
 				th .description {
 					display:none;
 				}
