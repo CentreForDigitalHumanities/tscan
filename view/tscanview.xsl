@@ -108,7 +108,6 @@
 					color: #222;
 				}
 				.s {
-					background: white;
 					display: inline;
 					border-left: 1px white solid;
 					border-right: 1px white solid;
@@ -155,6 +154,21 @@
 					display: inline;
 					text-decoration: none;
 					z-index: 24;
+				}
+
+				th .description {
+					display:none;
+				}
+				th:hover .description {
+					background: #eee;
+					border: 1px #999 solid;
+					padding: 10px;
+					position: absolute;
+					display: block;
+					margin-left: 100px;
+					font-weight: normal;
+					text-align: left;
+					opacity: 0.9;
 				}
 
 				.word>.attributes { display: none; font-size: 12px; font-weight: normal; }
@@ -241,6 +255,10 @@
 					overflow-y: scroll;
 					font-family: monospace;
 				}
+				
+				p.selected {
+					background: #eee;
+				}
         </style>
         <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.1/themes/base/jquery-ui.css" />
         <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
@@ -249,15 +267,24 @@
         	<![CDATA[
         	selectedword = null;
         	selectedsentence = null;
+        	selectedpar = null;
         	
         	function setmetrics(target, metrics) {        		
         		var s = "<table>";
-        		for (var i in metrics) {        
-        			for (var key in metrics[i]) {
-		    			if (metrics[i][key]) {
-		    				s += "<tr><th>" + key + "</th><td>" + metrics[i][key] + "</td></tr>"; 
-		    			}
+        		for (var i in metrics) {
+        			var label = "";
+        			var cls = "";        
+        			for (key in metrics[i]) {
+        				if (key == "label") {
+        					label = metrics[i][key]
+        				} else {
+        					cls = key;
+        				}
         			}
+        			if (label == "") label = cls; 
+        			if (metrics[i][cls]) {
+		    				s += "<tr><th>" + label + "</th><td>" + metrics[i][cls] + "</td></tr>"; 
+		    		}
         		}
         		s += "</table>";
         		$(target).html(s);
@@ -278,6 +305,14 @@
         		selectedsentence = o;
         		$(selectedsentence).addClass('selected');
         	}        	
+
+  			function selectpar(o) {
+        		if (selectedpar) {
+        			$(selectedpar).removeClass('selected');
+        		}
+        		selectedpar = o;
+        		$(selectedpar).addClass('selected');
+        	}               	
         	
         	$(document).ready(function(){
         		$('#globalmetrics').resizable();
@@ -323,6 +358,10 @@
 
 <xsl:template match="folia:p">
  <p id="{@xml:id}">
+   <xsl:attribute name="onclick">
+  	selectpar(this);
+  	setmetrics('#parmetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />','label':'<xsl:call-template name="metriclabel" />'},</xsl:for-each>]);  	
+  </xsl:attribute>
   <xsl:apply-templates />
  </p>
 </xsl:template>
@@ -384,7 +423,7 @@
  <span id="{@xml:id}" class="s">
   <xsl:attribute name="onclick">
   	selectsentence(this);
-  	setmetrics('#sentencemetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />'},</xsl:for-each>]);  	
+  	setmetrics('#sentencemetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />','label':'<xsl:call-template name="metriclabel" />'},</xsl:for-each>]);  	
   </xsl:attribute>
   <xsl:apply-templates select=".//folia:w|folia:whitespace|folia:br" />
  </span>
@@ -392,7 +431,7 @@
 
 <xsl:template match="folia:w">
 <xsl:if test="not(ancestor::folia:original) and not(ancestor::folia:suggestion) and not(ancestor::folia:alternative)">
-<span id="{@xml:id}" class="word"><xsl:attribute name="onclick">selectword(this); setmetrics('#wordmetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />'},</xsl:for-each>]);</xsl:attribute><span class="t"><xsl:value-of select=".//folia:t[1]"/></span><xsl:call-template name="tokenannotations" /></span>
+<span id="{@xml:id}" class="word"><xsl:attribute name="onclick">selectword(this); setmetrics('#wordmetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />','label':'<xsl:call-template name="metriclabel" />'},</xsl:for-each>]);</xsl:attribute><span class="t"><xsl:value-of select=".//folia:t[1]"/></span><xsl:call-template name="tokenannotations" /></span>
 <xsl:choose>
    <xsl:when test="@space = 'no'"></xsl:when>
    <xsl:otherwise>
@@ -470,11 +509,17 @@
 		<table>
 			<xsl:for-each select="//folia:text/folia:metric">
 				<tr>
-					<th><xsl:value-of select="@class" /></th>
+					<th><xsl:call-template name="metriclabel" /><span class="description"><xsl:call-template name="metricdescription" /></span></th>
 					<td><xsl:value-of select="@value" /></td>
 				</tr>
 			</xsl:for-each>
 		</table>
+	</div>
+	
+	<h2>Paragraafkenmerken</h2>
+	
+	<div id="parmetrics" class="metricslist">
+
 	</div>
 	
 	<h2>Zinskenmerken</h2>
@@ -490,6 +535,32 @@
 	</div>
 
 	
+</xsl:template>
+
+
+<xsl:template name="metriclabel">
+	<xsl:choose>
+	  <!-- BEGIN PRESENTATION ( geen ' gebruiken in de eigenlijke tekst, gebruik &quot; !!) -->
+	  <xsl:when test="@class='word_count'">Number of words</xsl:when>
+	  <xsl:when test="@class='name_count'">Number of names</xsl:when>
+	  <!-- END PRESENTATION -->
+	  <xsl:otherwise>
+		<xsl:value-of select="@class" />
+	  </xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
+
+
+<xsl:template name="metricdescription">
+	<xsl:choose>
+	  <!-- BEGIN PRESENTATION ( geen " of ' gebruiken in de eigenlijke tekst, gebruik &quot; !!) -->
+	  <xsl:when test="@class='word_count'">The Number of words blah</xsl:when>
+	  <xsl:when test="@class='name_count'">The Number of names blah blah</xsl:when>
+	  <!-- END PRESENTATION -->
+	  <xsl:otherwise>
+		<xsl:value-of select="@class" />
+	  </xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 </xsl:stylesheet>
