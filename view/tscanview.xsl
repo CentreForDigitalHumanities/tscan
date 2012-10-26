@@ -273,17 +273,21 @@
         		var s = "<table>";
         		for (var i in metrics) {
         			var label = "";
-        			var cls = "";        
+        			var cls = "";
+        			var desc = "";                
         			for (key in metrics[i]) {
         				if (key == "label") {
         					label = metrics[i][key]
+        				} else if (key == "desc") {
+        					desc = metrics[i][key]
         				} else {
         					cls = key;
         				}
         			}
-        			if (label == "") label = cls; 
+        			if (label == "") label = cls;
+        			if (desc == "") desc = cls;  
         			if (metrics[i][cls]) {
-		    				s += "<tr><th>" + label + "</th><td>" + metrics[i][cls] + "</td></tr>"; 
+		    				s += "<tr><th>" + label + "<span class=\"description\">" + desc + "</span></th><td>" + metrics[i][cls] + "</td></tr>"; 
 		    		}
         		}
         		s += "</table>";
@@ -360,7 +364,7 @@
  <p id="{@xml:id}">
    <xsl:attribute name="onclick">
   	selectpar(this);
-  	setmetrics('#parmetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />','label':'<xsl:call-template name="metriclabel" />'},</xsl:for-each>]);  	
+  	setmetrics('#parmetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />','label':'<xsl:call-template name="metriclabel" />','desc':'<xsl:call-template name="metricdescription" />'},</xsl:for-each>]);  	
   </xsl:attribute>
   <xsl:apply-templates />
  </p>
@@ -423,7 +427,7 @@
  <span id="{@xml:id}" class="s">
   <xsl:attribute name="onclick">
   	selectsentence(this);
-  	setmetrics('#sentencemetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />','label':'<xsl:call-template name="metriclabel" />'},</xsl:for-each>]);  	
+  	setmetrics('#sentencemetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />','label':'<xsl:call-template name="metriclabel" />','desc':'<xsl:call-template name="metricdescription" />'},</xsl:for-each>]);  	
   </xsl:attribute>
   <xsl:apply-templates select=".//folia:w|folia:whitespace|folia:br" />
  </span>
@@ -431,7 +435,7 @@
 
 <xsl:template match="folia:w">
 <xsl:if test="not(ancestor::folia:original) and not(ancestor::folia:suggestion) and not(ancestor::folia:alternative)">
-<span id="{@xml:id}" class="word"><xsl:attribute name="onclick">selectword(this); setmetrics('#wordmetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />','label':'<xsl:call-template name="metriclabel" />'},</xsl:for-each>]);</xsl:attribute><span class="t"><xsl:value-of select=".//folia:t[1]"/></span><xsl:call-template name="tokenannotations" /></span>
+<span id="{@xml:id}" class="word"><xsl:attribute name="onclick">selectword(this); setmetrics('#wordmetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />','label':'<xsl:call-template name="metriclabel" />','desc':'<xsl:call-template name="metricdescription" />' },</xsl:for-each>]);</xsl:attribute><span class="t"><xsl:value-of select=".//folia:t[1]"/></span><xsl:call-template name="tokenannotations" /></span>
 <xsl:choose>
    <xsl:when test="@space = 'no'"></xsl:when>
    <xsl:otherwise>
