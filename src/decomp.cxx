@@ -42,7 +42,7 @@ using namespace std;
 using namespace folia;
 using namespace TiCC;
 
-int runDecompoundWord( const std::string& word ){
+int runDecompoundWord( const string& word, const string& path ){
   struct stat sbuf;
   int res = stat( "/tmp/decomp", &sbuf );
   if ( !S_ISDIR(sbuf.st_mode) ){
@@ -55,10 +55,11 @@ int runDecompoundWord( const std::string& word ){
   ofstream os( "/tmp/decomp/decomp.in" );
   os << word << endl;
   os.close();
-  string cmd = "/home/sloot/svn/decompounder/decompound.sh /tmp/decomp/decomp.in /tmp/decomp/decomp.out";
+  string cmd = path + "decompound.sh /tmp/decomp/decomp.in /tmp/decomp/decomp.out";
   res = system( cmd.c_str() );
   if ( res ){
     cerr << "RES = " << res << endl;
+    cerr << "failed command: " << cmd << endl;
   }
   remove( "/tmp/decomp/decomp.in" );
   ifstream is( "/tmp/decomp/decomp.out" );

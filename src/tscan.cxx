@@ -59,6 +59,8 @@ struct cf_data {
 struct settingData {
   void init( const Configuration& );
   bool doAlpino;
+  bool doDecompound;
+  string decompounderPath;
   int rarityLevel;
   double polarity_threshold;
   map <string, string> adj_sem;
@@ -196,6 +198,19 @@ void settingData::init( const Configuration& cf ){
   doAlpino = false;
   if( !Timbl::stringTo( val, doAlpino ) ){
     cerr << "invalid value for 'useAlpino' in config file" << endl;
+  }
+  val = cf.lookUp( "useDecompounder" );
+  doDecompound = false;
+  if( !Timbl::stringTo( val, doDecompound ) ){
+    cerr << "invalid value for 'useDecompounder' in config file" << endl;
+  }
+  if ( doDecompound ){
+    val = cf.lookUp( "decompounderPath" );
+    if( val.empty() ){
+      cerr << "missing value for 'decompounderPath' in config file" << endl;
+      exit( EXIT_FAILURE );
+    }
+    decompounderPath = val;
   }
   val = cf.lookUp( "rarityLevel" );
   if ( val.empty() ){
@@ -743,7 +758,8 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
     polarity = checkPolarity();
     sem_type = checkSemProps();
     freqLookup();
-    //    compLen = runDecompoundWord(word);
+    if ( settings.doDecompound )
+      compLen = runDecompoundWord(word, settings.decompounderPath );
   }
   addMetrics( w );
 }
