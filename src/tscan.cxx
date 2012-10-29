@@ -199,18 +199,11 @@ void settingData::init( const Configuration& cf ){
   if( !Timbl::stringTo( val, doAlpino ) ){
     cerr << "invalid value for 'useAlpino' in config file" << endl;
   }
-  val = cf.lookUp( "useDecompounder" );
   doDecompound = false;
-  if( !Timbl::stringTo( val, doDecompound ) ){
-    cerr << "invalid value for 'useDecompounder' in config file" << endl;
-  }
-  if ( doDecompound ){
-    val = cf.lookUp( "decompounderPath" );
-    if( val.empty() ){
-      cerr << "missing value for 'decompounderPath' in config file" << endl;
-      exit( EXIT_FAILURE );
-    }
+  val = cf.lookUp( "decompounderPath" );
+  if( !val.empty() ){
     decompounderPath = val;
+    doDecompound = true;
   }
   val = cf.lookUp( "rarityLevel" );
   if ( val.empty() ){
