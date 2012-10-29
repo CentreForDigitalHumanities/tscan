@@ -61,6 +61,7 @@ struct settingData {
   bool doAlpino;
   bool doDecompound;
   string decompounderPath;
+  string style;
   int rarityLevel;
   double polarity_threshold;
   map <string, string> adj_sem;
@@ -204,6 +205,10 @@ void settingData::init( const Configuration& cf ){
   if( !val.empty() ){
     decompounderPath = val + "/";
     doDecompound = true;
+  }
+  val = cf.lookUp( "styleSheet" );
+  if( !val.empty() ){
+    style = val;
   }
   val = cf.lookUp( "rarityLevel" );
   if ( val.empty() ){
@@ -1493,6 +1498,9 @@ docStats::docStats( Document *doc ):
   doc->declare( AnnotationType::POS, 
 		"tscan-set", 
 		"annotator='tscan'" );
+  if ( !settings.style.empty() ){
+    doc->addStyle( "type=\"text/xsl\" href=\"" + settings.style + "\"" );
+  }
   vector<Paragraph*> pars = doc->paragraphs();
   for ( size_t i=0; i != pars.size(); ++i ){
     parStats *ps = new parStats( pars[i] );
