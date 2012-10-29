@@ -202,7 +202,7 @@ void settingData::init( const Configuration& cf ){
   doDecompound = false;
   val = cf.lookUp( "decompounderPath" );
   if( !val.empty() ){
-    decompounderPath = val;
+    decompounderPath = val + "/";
     doDecompound = true;
   }
   val = cf.lookUp( "rarityLevel" );
