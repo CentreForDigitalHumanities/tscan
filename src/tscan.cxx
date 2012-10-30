@@ -1499,7 +1499,7 @@ docStats::docStats( Document *doc ):
 		"tscan-set", 
 		"annotator='tscan'" );
   if ( !settings.style.empty() ){
-    doc->addStyle( "type=\"text/xsl\" href=\"" + settings.style + "\"" );
+    doc->replaceStyle( "text/xsl", settings.style );
   }
   vector<Paragraph*> pars = doc->paragraphs();
   for ( size_t i=0; i != pars.size(); ++i ){
