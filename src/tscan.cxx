@@ -32,11 +32,11 @@
 #include <cstdio> // for remove()
 #include "config.h"
 #include "timblserver/TimblServerAPI.h"
-#include "timblserver/FdStream.h"
 #include "libfolia/folia.h"
 #include "libfolia/document.h"
 #include "ticcutils/StringOps.h"
-#include "tscan/Tscan.h"
+#include "ticcutils/LogStream.h"
+#include "tscan/Configuration.h"
 #include "tscan/Alpino.h"
 #include "tscan/decomp.h"
 
@@ -50,6 +50,9 @@ TiCC::LogStream cur_log( "T-scan", StampMessage );
 #define DBG (*Dbg(cur_log))
 
 const double NA = -123456789;
+
+string configFile = "tscan.cfg";
+Configuration config;
 
 struct cf_data {
   long int count;
@@ -253,51 +256,6 @@ void settingData::init( const Configuration& cf ){
 
 inline void usage(){
   cerr << "usage:  tscan" << endl;
-}
-
-TscanClass::TscanClass( Timbl::TimblOpts& opts ){
-  string val;
-  bool mood;
-  if ( opts.Find( "config", val, mood ) ){
-    configFile = val;
-    opts.Delete( "config" );
-  }
-  else {
-    cerr << "missing --config=<file> option" << endl;
-    usage();
-    exit( EXIT_FAILURE );
-  }
-  if ( !configFile.empty() &&
-       config.fill( configFile ) ){
-    settings.init( config );
-  }
-  else {
-    cerr << "invalid configuration" << endl;
-    exit( EXIT_FAILURE );
-  }
-  if ( opts.Find( 'D', val, mood ) ){
-    if ( val == "Normal" )
-      cur_log.setlevel( LogNormal );
-    else if ( val == "Debug" )
-      cur_log.setlevel( LogDebug );
-    else if ( val == "Heavy" )
-      cur_log.setlevel( LogHeavy );
-    else if ( val == "Extreme" )
-      cur_log.setlevel( LogExtreme );
-    else {
-      cerr << "Unknown Debug mode! (-D " << val << ")" << endl;
-    }
-    opts.Delete( 'D' );
-  }
-  if ( opts.Find( 't', val, mood ) ){
-    exec( val, cout );
-  }
-  else {
-    cerr << "missing input file (-t option) " << endl;
-  }
-}
-
-TscanClass::~TscanClass(){
 }
 
 template <class M>
@@ -1490,7 +1448,7 @@ void docStats::print( ostream& os ) const {
   structStats::print( os );
 }
 
-Document *TscanClass::getFrogResult( istream& is ){
+Document *getFrogResult( istream& is ){
   string host = config.lookUp( "host", "frog" );
   string port = config.lookUp( "port", "frog" );
   Sockets::ClientSocket client;
@@ -1530,7 +1488,7 @@ Document *TscanClass::getFrogResult( istream& is ){
   return doc;
 }
 
-void TscanClass::exec( const string& file, ostream& os ){
+void exec( const string& file, ostream& os ){
   cerr << "TScan " << VERSION << endl;
   LOG << "try file ='" << file << "'" << endl;
   ifstream is( file.c_str() );
@@ -1566,7 +1524,40 @@ int main(int argc, char *argv[]) {
        opts.Find( "version", val, mood ) ){
     exit( EXIT_SUCCESS );
   }
-  TscanClass tscan( opts );
+
+  if ( opts.Find( "config", val, mood ) ){
+    configFile = val;
+    opts.Delete( "config" );
+  }
+  if ( !configFile.empty() &&
+       config.fill( configFile ) ){
+    settings.init( config );
+  }
+  else {
+    cerr << "invalid configuration" << endl;
+    exit( EXIT_FAILURE );
+  }
+  if ( opts.Find( 'D', val, mood ) ){
+    if ( val == "Normal" )
+      cur_log.setlevel( LogNormal );
+    else if ( val == "Debug" )
+      cur_log.setlevel( LogDebug );
+    else if ( val == "Heavy" )
+      cur_log.setlevel( LogHeavy );
+    else if ( val == "Extreme" )
+      cur_log.setlevel( LogExtreme );
+    else {
+      cerr << "Unknown Debug mode! (-D " << val << ")" << endl;
+    }
+    opts.Delete( 'D' );
+  }
+  if ( opts.Find( 't', val, mood ) ){
+    exec( val, cout );
+  }
+  else {
+    cerr << "missing input file (-t option) " << endl;
+  }
+
   exit(EXIT_SUCCESS);
 }
 
