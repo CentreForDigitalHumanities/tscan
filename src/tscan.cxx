@@ -373,10 +373,10 @@ bool match_tail( const string& word, const string& tail ){
 }
 
 bool wordStats::checkNominal( Word *w, xmlDoc *alpDoc ) const {
-  static string morphList[] = { "ing", "sel", "(e)nis", "heid", "te", "schap",
-				"dom", "sie", "iek", "iteit", "age", "esse",
-				"name" };
-  static set<string> morphs( morphList, morphList + 13 );
+  static string morphList[] = { "ing", "sel", "nis", "enis", "heid", "te", 
+				"schap", "dom", "sie", "iek", "iteit", "age",
+				"esse",	"name" };
+  static set<string> morphs( morphList, morphList + 14 );
   if ( posHead == "N" && morphemes.size() > 1 
        && morphs.find( morphemes[morphemes.size()-1] ) != morphs.end() ){
     return true;
