@@ -11,7 +11,6 @@
       <entity-annotation annotator="frog-mwu-1.0" annotatortype="auto" set="http://ilk.uvt.nl/folia/sets/frog-mwu-nl"/>
       <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
       <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
-      <dependency-annotation annotator="frog-depparse-1.0" annotatortype="auto" set="http://ilk.uvt.nl/folia/sets/frog-depparse-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
     </annotations>
   </metadata>
@@ -68,7 +67,7 @@
               <t offset="0">wees</t>
             </morpheme>
           </morphology>
-          <alt xml:id="tscan.p.1.s.1.w.3.alt.1" auth="no">
+          <alt auth="no">
             <morphology>
               <morpheme>
                 <t offset="0">zijn</t>
@@ -180,64 +179,6 @@
           </chunk>
         </chunking>
         <entities/>
-        <dependencies>
-          <dependency class="det">
-            <hd>
-              <wref id="tscan.p.1.s.1.w.2" t="moederschap"/>
-            </hd>
-            <dep>
-              <wref id="tscan.p.1.s.1.w.1" t="Het"/>
-            </dep>
-          </dependency>
-          <dependency class="su">
-            <hd>
-              <wref id="tscan.p.1.s.1.w.3" t="was"/>
-            </hd>
-            <dep>
-              <wref id="tscan.p.1.s.1.w.2" t="moederschap"/>
-            </dep>
-          </dependency>
-          <dependency class="det">
-            <hd>
-              <wref id="tscan.p.1.s.1.w.5" t="verrassing"/>
-            </hd>
-            <dep>
-              <wref id="tscan.p.1.s.1.w.4" t="een"/>
-            </dep>
-          </dependency>
-          <dependency class="predc">
-            <hd>
-              <wref id="tscan.p.1.s.1.w.3" t="was"/>
-            </hd>
-            <dep>
-              <wref id="tscan.p.1.s.1.w.5" t="verrassing"/>
-            </dep>
-          </dependency>
-          <dependency class="mod">
-            <hd>
-              <wref id="tscan.p.1.s.1.w.5" t="verrassing"/>
-            </hd>
-            <dep>
-              <wref id="tscan.p.1.s.1.w.6" t="voor"/>
-            </dep>
-          </dependency>
-          <dependency class="obj1">
-            <hd>
-              <wref id="tscan.p.1.s.1.w.6" t="voor"/>
-            </hd>
-            <dep>
-              <wref id="tscan.p.1.s.1.w.7" t="haar"/>
-            </dep>
-          </dependency>
-          <dependency class="punct">
-            <hd>
-              <wref id="tscan.p.1.s.1.w.7" t="haar"/>
-            </hd>
-            <dep>
-              <wref id="tscan.p.1.s.1.w.8" t="."/>
-            </dep>
-          </dependency>
-        </dependencies>
         <metric class="word_count" value="7"/>
         <metric class="name_count" value="0"/>
         <metric class="vd_count" value="0"/>
