@@ -406,15 +406,22 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
       if ( atts["cat"] == "ti" 
 	   || atts["cat"] == "oti"
 	   || atts["cat"] == "inf" ){
-	string node_index = atts["index"];
-	//	cerr << "node index = '" << node_index << "'" << endl;
 	xmlNode *su_node = node_search( nodelist[i], "rel", "su" );
 	if ( su_node ){
-	  KWargs attss = getAttributes( su_node );
-	  //	  cerr << "SU  node " << atts << endl;
-	  //	  cerr << "SU index = '" << attss["index"] << "'" << endl;
-	  if ( attss["index"] == node_index )
-	    return 1;
+	  KWargs atts1 = getAttributes( su_node );
+	  //	  cerr << "su node 1 " << atts1 << endl;
+	  string node_index = atts1["index"];
+	  if ( !node_index.empty() ){
+	    vector< xmlNode *> siblinglist = getSibblings( nodelist[i] );
+	    for ( size_t i=0; i < siblinglist.size(); ++i ){
+	      KWargs atts2 = getAttributes( siblinglist[i] );
+	      if ( atts2["rel"] == "su" ){
+		//		cerr << "su node 2 " << atts2 << endl;
+		if ( atts2["index"] == node_index )
+		  return 1;
+	      }
+	    }
+	  }
 	}
       }
     }
