@@ -1,0 +1,15 @@
+# /bin/sh
+
+\rm -f *.diff
+\rm -f *.tmp
+\rm -f *.out*
+
+if [ "$tscan_bin" = "" ];
+then echo "tscan_bin not set";
+     exit;
+fi
+
+for file in *.example
+do ./testone.sh $file
+done
+
