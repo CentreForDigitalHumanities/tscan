@@ -379,6 +379,7 @@ bool wordStats::checkNominal( Word *w, xmlDoc *alpDoc ) const {
   static set<string> morphs( morphList, morphList + 14 );
   if ( posHead == "N" && morphemes.size() > 1 
        && morphs.find( morphemes[morphemes.size()-1] ) != morphs.end() ){
+    // morphemes.size() > 1 check mijdt false hits voor "dom", "schap".
     return true;
   }
   bool matched = match_tail( word, "ose" ) ||
@@ -394,6 +395,9 @@ bool wordStats::checkNominal( Word *w, xmlDoc *alpDoc ) const {
     if ( node ){
       KWargs args = getAttributes( node );
       if ( args["pos"] == "verb" ){
+	// Alpino heeft de voor dit feature prettige eigenschap dat het nogal
+	// eens nominalisaties wil taggen als werkwoord dat onder een 
+	// NP knoop hangt 
 	node = node->parent;
 	KWargs args = getAttributes( node );
 	if ( args["cat"] == "np" )
@@ -574,6 +578,8 @@ bool wordStats::checkPropNeg() const {
   }
   else if ( posHead == "BW" &&
 	    ( lword == "moeilijk" || lword == "weg" ) ){
+    // "moeilijk" en "weg" mochten kennelijk alleen als bijwoord worden 
+    // meegeteld (in het geval van weg natuurlijk duidelijk ivm "de weg")
     return true;
   }
   return false;
@@ -593,6 +599,7 @@ bool wordStats::checkMorphNeg() const {
     m2 = morphemes[1];
   }
   if ( negmorphs.find( m1 ) != negmorphs.end() && m2 != "en" && !m2.empty() ){
+    // dit om gevallen als "nonnen" niet mee te rekenen
     return true;
   }
   else {

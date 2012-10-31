@@ -291,6 +291,11 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
   // < 7
   vector<xmlNode *> nodelist = getNodes( alp );
   for ( size_t i=0; i < nodelist.size(); ++i ){  
+    // we kijken of het om een level 6 zin gaat:
+    // Zinnen met een betrekkelijke bijzin die het subject modificeert 
+    //    ("De man, die erg op Pietje leek, zette het op een lopen.")
+    // Het onderwerp van de zin is genominaliseerd 
+    //    ("Het weigeren van Pietje was voor Jantje reden om ermee te stoppen.")
     xmlNode *node = nodelist[i];
     KWargs atts = getAttributes( node );
     if ( atts["rel"] == "mod" && atts["cat"] == "rel" ){
@@ -318,6 +323,9 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
   
   // < 6
   for ( size_t i=0; i < poslist.size(); ++i ){
+    // we kijken of het om een level 5 zin gaat
+    // Zinnen met ondergeschikte bijzinnen 
+    //     ("Pietje wilde naar huis, omdat het regende.")
     string pos = poslist[i]->feat("head");
     if ( pos == "VG" ){
       string cp = poslist[i]->feat("conjtype");
@@ -330,6 +338,10 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
 
   // < 5
   for ( size_t i=0; i < nodelist.size(); ++i ){  
+    // we kijken of het om een level 4 zin gaat
+    //  "Non-finite complement with its own understood subject". Kan ik even geen voorbeeld van bedenken :p
+    // comparatieven met een object van vergelijking 
+    //    ("Pietje is groter dan Jantje.")                           
     KWargs atts = getAttributes( nodelist[i] );
     if ( atts["rel"] == "obcomp" )
       return 4;
@@ -367,7 +379,16 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
   }
 
   // < 4
-  for ( size_t i=0; i < nodelist.size(); ++i ){  
+  for ( size_t i=0; i < nodelist.size(); ++i ){ 
+    // we kijken of het om een level 3 zin gaat
+    // Zinnen met een objectsmodificerende betrekkelijke bijzin: 
+    //    "Ik keek naar de man die de straat overstak."
+    // Bijzin als object van het hoofdww: 
+    //     "Ik wist dat hij boos was"
+    // Subject extraposition: zinnen met een uitgesteld onderwerp 
+    //     "Het verbaast me dat je dat weet."
+    //   Kun je in Alpino detecteren met aan het 'sup' label voor een 
+    //   voorlopig onderwerp 
     KWargs atts = getAttributes( nodelist[i] );
     if ( atts["rel"] == "mod" && atts["cat"] == "rel" ){
       KWargs attsp = getAttributes( nodelist[i]->parent );
@@ -390,6 +411,8 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
 
   // < 3 
   for ( size_t i=0; i < poslist.size(); ++i ){
+    // we kijken of het om een level 2 zin gaat
+    // zinnen met nevenschikkingen
     string pos = poslist[i]->feat("head");
     if ( pos == "VG" ){
       string cp = poslist[i]->feat("conjtype");
@@ -400,6 +423,10 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
   
   // < 2
   for ( size_t i=0; i < nodelist.size(); ++i ){ 
+    // we kijken of het om een level 1 zin gaat
+    // Zinnen met een infinitief waarbij infinitief en persoonsvorm hetzelfde
+    // onderwerp hebben 
+    //     ("Pietje vergat zijn haar te kammen.")
     KWargs atts = getAttributes( nodelist[i] );
     if ( atts["rel"] == "vc" ){
       //      cerr << "VC node " << atts << endl;
