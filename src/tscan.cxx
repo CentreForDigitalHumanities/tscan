@@ -1054,6 +1054,8 @@ void structStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( doc, el, "relative_cnt", toString(betrCnt) );
   if ( polarity != NA )
     addOneMetric( doc, el, "polarity", toString(polarity) );
+  addOneMetric( doc, el, "proper_negative_count", toString(propNegCnt) );
+  addOneMetric( doc, el, "morph_negative_count", toString(morphNegCnt) );
   addOneMetric( doc, el, "compound_count", toString(compCnt) );
   addOneMetric( doc, el, "compound_len", toString(compLen) );
   addOneMetric( doc, el, "word_freq", toString(lwfreq) );
@@ -1308,19 +1310,22 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
   if ( w.size() > 1 ){
     for ( size_t i=0; i < sv.size()-2; ++i ){
       string multiword2 = lowercase( UnicodeToUTF8( w[i]->text() ) )
-	+ lowercase( UnicodeToUTF8( w[i+1]->text() ) );
+	+ " " + lowercase( UnicodeToUTF8( w[i+1]->text() ) );
+      //      cerr << "zoek op " << multiword2 << endl;
       if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
 	propNegCnt++;
       }
       else {
-	string multiword3 = multiword2 
+	string multiword3 = multiword2 + " "
 	  + lowercase( UnicodeToUTF8( w[i+2]->text() ) );
+	//	cerr << "zoek op " << multiword3 << endl;
 	if ( negatives_long.find( multiword3 ) != negatives_long.end() )
 	  propNegCnt++;
       }
     }
     string multiword2 = lowercase( UnicodeToUTF8( w[w.size()-2]->text() ) )
-      + lowercase( UnicodeToUTF8( w[w.size()-1]->text() ) );
+      + " " + lowercase( UnicodeToUTF8( w[w.size()-1]->text() ) );
+    //    cerr << "zoek op " << multiword2 << endl;
     if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
       propNegCnt++;
     }
