@@ -41,10 +41,10 @@ DATE=\p{N}{1,2}-\p{N}{1,2}-\p{N}{2,4}
 DATE-REVERSE=\p{N}{4}-\p{N}{1,2}-\p{N}{1,2}
 
 #numberstring like 20jarige
-NUMBER-STRING=\p{N}+(?:\p{L}+)
+NUMBER-STRING=\p{N}+(?:\p{Pd}?)(?:\p{L}+)
 
 #combinations like A50, a1 
-LET-NUMBER=\p{L}{1}\p{N}+
+LET-NUMBER=\p{L}{1}\p{Pd}?\p{N}+
 
 NUMBER-YEAR=(['`’]\p{N}{2})(?:\P{N}|\z)
 #NUMBER-YEAR=('\p{N}{2})\P{N}
