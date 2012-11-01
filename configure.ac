@@ -102,5 +102,6 @@ AC_CONFIG_FILES([Makefile
                  include/tscan/Makefile
                  src/Makefile
 		 data/Makefile
+		 config/Makefile
                  docs/Makefile])
 AC_OUTPUT
