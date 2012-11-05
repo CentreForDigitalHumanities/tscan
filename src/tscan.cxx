@@ -278,6 +278,25 @@ enum WordProp { ISNAME, ISPUNCT,
 		ISPPRON1, ISPPRON2, ISPPRON3,
 		JUSTAWORD };
 
+enum ConnType { NOCONN, TEMPOREEL, REEKS, CONTRASTIEF, COMPARATIEF, CAUSAAL }; 
+
+string toString( const ConnType& c ){
+  if ( c == NOCONN )
+    return "Not_a_connector";
+  else if ( c == TEMPOREEL )
+    return "temporeel";
+  else if ( c == REEKS )
+    return "reeks";
+  else if ( c == CONTRASTIEF )
+    return "contrastief";
+  else if ( c == COMPARATIEF )
+    return "comparatief";
+  else if ( c == CAUSAAL )
+    return "causaal";
+  else 
+    throw "no translation for ConnType";
+}
+
 enum SemType { UNFOUND, CONCRETE, CONCRETE_HUMAN, ABSTRACT, BROAD, 
 	       STATE, ACTION, PROCESS, WEIRD };
 
@@ -312,6 +331,7 @@ struct wordStats : public basicStats {
   void print( ostream& ) const;
   void addMetrics( FoliaElement * ) const;
   bool checkContent() const;
+  ConnType checkConnective( ) const;
   bool checkNominal( Word *, xmlDoc * ) const;
   WordProp checkProps( const PosAnnotation* );
   double checkPolarity( ) const;
@@ -333,6 +353,7 @@ struct wordStats : public basicStats {
   bool isBetr;
   bool isPropNeg;
   bool isMorphNeg;
+  ConnType connType;
   bool f50;
   bool f65;
   bool f77;
@@ -345,6 +366,151 @@ struct wordStats : public basicStats {
   SemType sem_type;
   vector<string> morphemes;
 };
+
+ConnType wordStats::checkConnective() const {
+  static string temporalList[] = 
+    { "aanstonds", "achtereenvolgens", "alvast", "alvorens", "anno", 
+      "bijtijds", "binnenkort", "daarnet", "daarstraks", "daartussendoor",
+      "dadelijk", "destijds", "eensklaps", "eer", "eerdaags", 
+      "eergisteren", "eerlang", "eerst", "eertijds", "eindelijk", 
+      "ertussendoor", "gisteren", "heden", "hedenavond", "hedenmiddag", 
+      "hedenmorgen", "hedennacht", "hedenochtend", "hoelang", "indertijd", 
+      "ineens", "ingaande", "inmiddels", "medio", "meer", "meestal", 
+      "meteen", "morgen", "morgenavond", "morgenmiddag", "morgennacht", 
+      "morgenochtend", "morgenvroeg", "na", "nadat", "naderhand", 
+      "nadezen", "nadien", "net", "nooit", "olim", "omstreeks", 
+      "onderwijl", "onlangs", "ooit", "opeens", "overdag", "overmorgen", 
+      "pardoes", "pas", "plotsklaps", "recentelijk", "reeds", "sedert", 
+      "sedert", "sedertdien", "sinds", "sinds", "sindsdien", "steeds", 
+      "strakjes", "straks", "subiet", "tegelijk", "tegelijkertijd", 
+      "terstond", "tevoren", "tezelfdertijd", "thans", "toen", "toenmaals", 
+      "toentertijd", "totdat", "uiterlijk", "vanavond", "vandaag", 
+      "vanmiddag", "vanmorgen", "vannacht", "vanochtend", "vervolgens",
+      "vooraf", "vooraleer", "vooralsnog", "voordat", "voorheen", "weldra", 
+      "weleer", "zodra", "zo-even", "zojuist", "zonet", "zopas" };
+  static set<string> temporals( temporalList, 
+				temporalList + sizeof(temporalList)/sizeof(string) );
+
+  static string reeksList[] = 
+    {"alsmede", "alsook", "annex", "bovendien", "buitendien", "daarenboven",
+     "daarnaast", "en", "evenals", "eveneens", "evenmin", "hetzij", 
+     "hierenboven", "noch", "of", "ofwel", "ook", "respectievelijk", 
+     "tevens", "vooral", "waarnaast"};
+  static set<string> reeks( reeksList, 
+			    reeksList + sizeof(reeksList)/sizeof(string) );
+
+  static string contrastList[] = 
+    { "al", "alhoewel", "althans", "anderzijds", "behalve", "behoudens",
+      "daarentegen", "desondanks", "doch", "echter", "evengoed", "evenwel", 
+      "hoewel", "hoezeer", "integendeel", "maar", "niettegenstaande", 
+      "niettemin", "nochtans", "ofschoon", "ondanks", "ondertussen", 
+      "ongeacht", "tenzij", "uitgezonderd", "weliswaar", "enerzijds"  };
+  static set<string> contrastief( contrastList, 
+				  contrastList + sizeof(contrastList)/sizeof(string) );
+  
+  static string comparList[] = {
+    "als", "alsof", "dan", "meer", "meest", "minder", "minst", "naargelang", "naarmate", "zoals" };
+  static set<string> comparatief( comparList, 
+				  comparList + sizeof(comparList)/sizeof(string) );
+
+  static string causesList[] = 
+    { "aangezien", "als", "bijgevolg", "daar", "daardoor", "daarmee", 
+      "daarom", "daartoe", "daarvoor", "dankzij", "derhalve", "dientengevolge",
+      "doordat", "dus", "dus", "ergo", "ermee", "erom", "ertoe", "getuige", 
+      "gezien", "hierdoor", "hiermee", "hierom", "hiertoe", "hiervoor", 
+      "immers", "indien", "ingeval", "ingevolge", "krachtens", "middels", 
+      "mits", "namelijk", "nu", "om", "om", "omdat", "opdat", "teneinde", 
+      "vanwege", "vermits", "waardoor", "waarmee", "waarom", "waartoe",
+      "waartoe", "wanneer", "want", "wegens", "zodat", "zodoende", "zolang" };
+  static set<string> causuals( causesList, 
+			       causesList + sizeof(causesList)/sizeof(string) );
+  if ( posHead == "VG" ){
+    string lword = lowercase( word );
+    if ( temporals.find( lword ) != temporals.end() )
+      return TEMPOREEL;
+    else if ( reeks.find( lword ) != reeks.end() )
+      return REEKS;
+    else if ( contrastief.find( lword ) != contrastief.end() )
+      return CONTRASTIEF;
+    else if ( comparatief.find( lword ) != comparatief.end() )
+      return COMPARATIEF;
+    else if ( causuals.find( lword ) != causuals.end() )
+      return CAUSAAL;
+  }
+  return NOCONN;
+}
+
+ConnType check2Connectives( const string& mword ){
+  static string temporal2List[] = {"de dato", "na dato"};
+  static set<string> temporals_2( temporal2List, 
+				  temporal2List + sizeof(temporal2List)/sizeof(string) );
+
+  static string reeks2List[] = 
+    { "bovenal ", "daarbij komt", "dan wel", "evenmin als", "ten derde", 
+      "ten eerste", "ten tweede", "ten vierde", 
+      "verder ", "voornamelijk ", "voorts ", "zomin als", "zowel als" }; 
+  static set<string> reeks_2( reeks2List, 
+			      reeks2List + sizeof(reeks2List)/sizeof(string) );
+
+  static string contrast2List[] = { "ook al", "zij het" };
+  static set<string> contrastief_2( contrast2List, 
+				    contrast2List + sizeof(contrast2List)/sizeof(string) );
+
+  static string compar2List[] = { "net als" };
+  static set<string> comparatief_2( compar2List, 
+				    compar2List + sizeof(compar2List)/sizeof(string) );
+
+  static string causes2List[] = 
+    { "dan ook", "tengevolge van", "vandaar dat", "zo ja", 
+      "zo nee", "zo niet" };
+  static set<string> causuals_2( causes2List, 
+				 causes2List + sizeof(causes2List)/sizeof(string) );
+  if ( temporals_2.find( mword ) != temporals_2.end() )
+    return TEMPOREEL;
+  else if ( reeks_2.find( mword ) != reeks_2.end() )
+    return REEKS;
+  else if ( contrastief_2.find( mword ) != contrastief_2.end() )
+    return CONTRASTIEF;
+  else if ( comparatief_2.find( mword ) != comparatief_2.end() )
+    return COMPARATIEF;
+  else if ( causuals_2.find( mword ) != causuals_2.end() )
+    return CAUSAAL;
+  return NOCONN;
+}
+
+ConnType check3Connectives( const string& mword ){
+  static string temporal3List[] = {"a la minute", "hic et nunc"};
+  static set<string> temporals_3( temporal3List, 
+				  temporal3List + sizeof(temporal3List)/sizeof(string) );
+
+  static string reeks3List[] = { "om te beginnen" };
+  static set<string> reeks_3( reeks3List, 
+			      reeks3List + sizeof(reeks3List)/sizeof(string) );
+
+  static string contrast3List[] = 
+    { "in plaats daarvan", "in tegenstelling tot", "zij het dat" };
+  static set<string> contrastief_3( contrast3List, 
+				    contrast3List + sizeof(contrast3List)/sizeof(string) );
+  
+  static string compar3List[] = { "net zo als" };
+  static set<string> comparatief_3( compar3List, 
+				    compar3List + sizeof(compar3List)/sizeof(string) );
+
+  static string causes3List[] = { "met behulp van" };
+  static set<string> causuals_3( causes3List, 
+				 causes3List + sizeof(causes3List)/sizeof(string) );
+  if ( temporals_3.find( mword ) != temporals_3.end() )
+    return TEMPOREEL;
+  else if ( reeks_3.find( mword ) != reeks_3.end() )
+    return REEKS;
+  else if ( contrastief_3.find( mword ) != contrastief_3.end() )
+    return CONTRASTIEF;
+  else if ( comparatief_3.find( mword ) != comparatief_3.end() )
+    return COMPARATIEF;
+  else if ( causuals_3.find( mword ) != causuals_3.end() )
+    return CAUSAAL;
+  return NOCONN;
+}
 
 bool wordStats::checkContent() const {
   if ( posHead == "WW" ){
@@ -376,7 +542,8 @@ bool wordStats::checkNominal( Word *w, xmlDoc *alpDoc ) const {
   static string morphList[] = { "ing", "sel", "nis", "enis", "heid", "te", 
 				"schap", "dom", "sie", "iek", "iteit", "age",
 				"esse",	"name" };
-  static set<string> morphs( morphList, morphList + 14 );
+  static set<string> morphs( morphList, 
+			     morphList + sizeof(morphList)/sizeof(string) );
   if ( posHead == "N" && morphemes.size() > 1 
        && morphs.find( morphemes[morphemes.size()-1] ) != morphs.end() ){
     // morphemes.size() > 1 check mijdt false hits voor "dom", "schap".
@@ -569,7 +736,8 @@ const string negativesA[] = { "geeneens", "geenszins", "kwijt", "nergens",
 			      "nimmermeer", "noch", "ongeacht", "slechts",
 			      "tenzij", "ternauwernood", "uitgezonderd",
 			      "weinig", "zelden", "zeldzaam", "zonder" };
-set<string> negatives = set<string>( negativesA, negativesA + 32 );
+set<string> negatives = set<string>( negativesA, 
+				     negativesA + sizeof(negativesA)/sizeof(string) );
 
 bool wordStats::checkPropNeg() const {
   string lword = lowercase( word );
@@ -586,11 +754,13 @@ bool wordStats::checkPropNeg() const {
 }
 
 const string negmorphA[] = { "mis", "de", "non", "on" };
-set<string> negmorphs = set<string>( negmorphA, negmorphA + 4 );
+set<string> negmorphs = set<string>( negmorphA, 
+				     negmorphA + sizeof(negmorphA)/sizeof(string) );
 
 const string negminusA[] = { "mis-", "non-", "niet-", "anti-",
 			     "ex-", "on-", "oud-" };
-vector<string> negminus = vector<string>( negminusA, negminusA + 7 );
+vector<string> negminus = vector<string>( negminusA, 
+					  negminusA + sizeof(negminusA)/sizeof(string) );
 
 bool wordStats::checkMorphNeg() const {
   string m1 = morphemes[0];
@@ -615,8 +785,8 @@ bool wordStats::checkMorphNeg() const {
 wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   basicStats( "WORD" ), 
   isPassive(false), isPronRef(false),
-  archaic(false), isContent(false), isNominal(false),
-  isOnder(false), isBetr(false), isPropNeg(false), isMorphNeg(false),
+  archaic(false), isContent(false), isNominal(false), isOnder(false), 
+  isBetr(false), isPropNeg(false), isMorphNeg(false), connType(NOCONN),
   f50(false), f65(false), f77(false), f80(false),  compLen(0), wfreq(0), lwfreq(0),
   polarity(NA), prop(JUSTAWORD), sem_type(UNFOUND)
 {
@@ -655,6 +825,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
     }
     isPropNeg = checkPropNeg();
     isMorphNeg = checkMorphNeg();
+    connType = checkConnective();
     morphLen = max;
     if ( prop != ISNAME ){
       wordLenExNames = wordLen;
@@ -680,35 +851,27 @@ void addOneMetric( Document *doc, FoliaElement *parent,
 
 void wordStats::addMetrics( FoliaElement *el ) const {
   if ( isContent )
-    addOneMetric( el->doc(), el, 
-		  "content_word", "true" );
+    addOneMetric( el->doc(), el, "content_word", "true" );
   if ( archaic )
-    addOneMetric( el->doc(), el, 
-		  "archaic", "true" );
+    addOneMetric( el->doc(), el, "archaic", "true" );
   if ( isNominal )
-    addOneMetric( el->doc(), el, 
-		  "nominalization", "true" );
+    addOneMetric( el->doc(), el, "nominalization", "true" );
   if ( isOnder )
-    addOneMetric( el->doc(), el, 
-		  "subordinate", "true" );
+    addOneMetric( el->doc(), el, "subordinate", "true" );
   if ( isBetr )
-    addOneMetric( el->doc(), el, 
-		  "betrekkelijk", "true" );
+    addOneMetric( el->doc(), el, "betrekkelijk", "true" );
   if ( isPropNeg )
-    addOneMetric( el->doc(), el, 
-		  "proper_negative", "true" );
+    addOneMetric( el->doc(), el, "proper_negative", "true" );
   if ( isMorphNeg )
-    addOneMetric( el->doc(), el, 
-		  "morph_negative", "true" );
+    addOneMetric( el->doc(), el, "morph_negative", "true" );
+  if ( connType != NOCONN )
+    addOneMetric( el->doc(), el, "connective", toString(connType) );
   if ( polarity != NA  )
-    addOneMetric( el->doc(), el, 
-		  "polarity", toString(polarity) );
+    addOneMetric( el->doc(), el, "polarity", toString(polarity) );
   if ( compLen > 0 )
-    addOneMetric( el->doc(), el, 
-		  "compound_len", toString(compLen) );
+    addOneMetric( el->doc(), el, "compound_len", toString(compLen) );
 
-  addOneMetric( el->doc(), el, 
-		"word_freq", toString(lwfreq) );
+  addOneMetric( el->doc(), el, "word_freq", toString(lwfreq) );
   if ( !wwform.empty() ){
     KWargs args;
     args["set"] = "tscan-set";
@@ -815,6 +978,11 @@ struct structStats: public basicStats {
 				    nominalCnt(0),
 				    onderCnt(0),
 				    betrCnt(0),
+				    tempConnCnt(0),
+				    reeksConnCnt(0),
+				    contConnCnt(0),
+				    compConnCnt(0),
+				    causeConnCnt(0),
 				    propNegCnt(0),
 				    morphNegCnt(0),
 				    f50Cnt(0),
@@ -864,6 +1032,11 @@ struct structStats: public basicStats {
   int nominalCnt;
   int onderCnt;
   int betrCnt;
+  int tempConnCnt;
+  int reeksConnCnt;
+  int contConnCnt;
+  int compConnCnt;
+  int causeConnCnt;
   int propNegCnt;
   int morphNegCnt;
   int f50Cnt;
@@ -920,6 +1093,11 @@ void structStats::merge( structStats *ss ){
   nominalCnt += ss->nominalCnt;
   onderCnt += ss->onderCnt;
   betrCnt += ss->betrCnt;
+  tempConnCnt += ss->tempConnCnt;
+  reeksConnCnt += ss->reeksConnCnt;
+  contConnCnt += ss->contConnCnt;
+  compConnCnt += ss->compConnCnt;
+  causeConnCnt += ss->causeConnCnt;
   propNegCnt += ss->propNegCnt;
   morphNegCnt += ss->morphNegCnt;
   f50Cnt += ss->f50Cnt;
@@ -1051,6 +1229,11 @@ void structStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( doc, el, "content_count", toString(contentCnt) );
   addOneMetric( doc, el, "nominal_count", toString(nominalCnt) );
   addOneMetric( doc, el, "subordinate_cnt", toString(onderCnt) );
+  addOneMetric( doc, el, "temporeel_connective_cnt", toString(tempConnCnt) );
+  addOneMetric( doc, el, "reeks_connective_cnt", toString(reeksConnCnt) );
+  addOneMetric( doc, el, "contrastief_connective_cnt", toString(contConnCnt) );
+  addOneMetric( doc, el, "comparatief_connective_cnt", toString(compConnCnt) );
+  addOneMetric( doc, el, "causaal_connective_cnt", toString(causeConnCnt) );
   addOneMetric( doc, el, "relative_cnt", toString(betrCnt) );
   if ( polarity != NA )
     addOneMetric( doc, el, "polarity", toString(polarity) );
@@ -1173,7 +1356,8 @@ void np_length( Sentence *s, int& count, int& size ) {
 const string neg_longA[] = { "afgezien van", 
 			     "zomin als",
 			     "met uitzondering van"};
-set<string> negatives_long = set<string>( neg_longA, neg_longA + 3 );
+set<string> negatives_long = set<string>( neg_longA, 
+					  neg_longA + sizeof(neg_longA)/sizeof(string) );
 
 sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
   id = s->id();
@@ -1259,6 +1443,25 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
 	propNegCnt++;
       if ( ws->isMorphNeg )
 	morphNegCnt++;
+      switch( ws->connType ){
+      case TEMPOREEL:
+	tempConnCnt++;
+	break;
+      case REEKS:
+	reeksConnCnt++;
+	break;
+      case CONTRASTIEF:
+	contConnCnt++;
+	break;
+      case COMPARATIEF:
+	compConnCnt++;
+	break;
+      case CAUSAAL:
+	causeConnCnt++;
+	break;
+      default:
+	break;
+      }
       if ( ws->f50 )
 	f50Cnt++;
       if ( ws->f65 )
@@ -1312,20 +1515,78 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
       string multiword2 = lowercase( UnicodeToUTF8( w[i]->text() ) )
 	+ " " + lowercase( UnicodeToUTF8( w[i+1]->text() ) );
       //      cerr << "zoek op " << multiword2 << endl;
+      ConnType conn = check2Connectives( multiword2 );
+      switch( conn ){
+      case TEMPOREEL:
+	tempConnCnt++;
+	break;
+      case REEKS:
+	reeksConnCnt++;
+	break;
+      case CONTRASTIEF:
+	contConnCnt++;
+	break;
+      case COMPARATIEF:
+	compConnCnt++;
+	break;
+      case CAUSAAL:
+	causeConnCnt++;
+	break;
+      default:
+	break;
+      }
       if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
 	propNegCnt++;
       }
-      else {
-	string multiword3 = multiword2 + " "
-	  + lowercase( UnicodeToUTF8( w[i+2]->text() ) );
-	//	cerr << "zoek op " << multiword3 << endl;
-	if ( negatives_long.find( multiword3 ) != negatives_long.end() )
-	  propNegCnt++;
+      string multiword3 = multiword2 + " "
+	+ lowercase( UnicodeToUTF8( w[i+2]->text() ) );
+      //	cerr << "zoek op " << multiword3 << endl;
+      conn = check3Connectives( multiword3 );
+      switch( conn ){
+      case TEMPOREEL:
+	tempConnCnt++;
+	break;
+      case REEKS:
+	reeksConnCnt++;
+	break;
+      case CONTRASTIEF:
+	contConnCnt++;
+	break;
+      case COMPARATIEF:
+	compConnCnt++;
+	break;
+      case CAUSAAL:
+	causeConnCnt++;
+	break;
+      default:
+	break;
       }
+      if ( negatives_long.find( multiword3 ) != negatives_long.end() )
+	propNegCnt++;
     }
     string multiword2 = lowercase( UnicodeToUTF8( w[w.size()-2]->text() ) )
       + " " + lowercase( UnicodeToUTF8( w[w.size()-1]->text() ) );
     //    cerr << "zoek op " << multiword2 << endl;
+    ConnType conn = check2Connectives( multiword2 );
+    switch( conn ){
+    case TEMPOREEL:
+      tempConnCnt++;
+      break;
+    case REEKS:
+      reeksConnCnt++;
+      break;
+    case CONTRASTIEF:
+	contConnCnt++;
+	break;
+    case COMPARATIEF:
+      compConnCnt++;
+      break;
+    case CAUSAAL:
+      causeConnCnt++;
+      break;
+    default:
+      break;
+    }
     if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
       propNegCnt++;
     }
