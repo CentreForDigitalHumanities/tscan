@@ -307,6 +307,8 @@ struct basicStats {
   virtual ~basicStats(){};
   virtual void print( ostream& ) const = 0;
   virtual void addMetrics( FoliaElement *el ) const = 0;
+  virtual string text() const { return ""; };
+  virtual ConnType getConnType() const { return NOCONN; };
   string category;
   int wordLen;
   int wordLenExNames;
@@ -329,6 +331,8 @@ void basicStats::print( ostream& os ) const {
 struct wordStats : public basicStats {
   wordStats( Word *, xmlDoc * );
   void print( ostream& ) const;
+  string text() const { return word; };
+  ConnType getConnType() const { return connType; };
   void addMetrics( FoliaElement * ) const;
   bool checkContent() const;
   ConnType checkConnective( ) const;
@@ -1510,11 +1514,71 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
       sv.push_back( ws );
     }
   }
-  if ( w.size() > 1 ){
+  if ( sv.size() > 1 ){
     for ( size_t i=0; i < sv.size()-2; ++i ){
-      string multiword2 = lowercase( UnicodeToUTF8( w[i]->text() ) )
-	+ " " + lowercase( UnicodeToUTF8( w[i+1]->text() ) );
+      string multiword2 = lowercase( sv[i]->text() )
+	+ " " + lowercase( sv[i+1]->text() );
       //      cerr << "zoek op " << multiword2 << endl;
+      if ( sv[i+1]->getConnType() == NOCONN ){
+	// no result yet
+	ConnType conn = check2Connectives( multiword2 );
+	switch( conn ){
+	case TEMPOREEL:
+	  tempConnCnt++;
+	  break;
+	case REEKS:
+	  reeksConnCnt++;
+	  break;
+	case CONTRASTIEF:
+	contConnCnt++;
+	break;
+	case COMPARATIEF:
+	  compConnCnt++;
+	  break;
+	case CAUSAAL:
+	causeConnCnt++;
+	break;
+	default:
+	  break;
+	}
+      }
+      if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
+	propNegCnt++;
+      }
+      string multiword3 = multiword2 + " "
+	+ lowercase( sv[i+2]->text() );
+      //	cerr << "zoek op " << multiword3 << endl;
+      if ( sv[sv.size()-1]->getConnType() == NOCONN ){
+	// no result yet
+	ConnType conn = check3Connectives( multiword3 );
+	switch( conn ){
+	case TEMPOREEL:
+	  tempConnCnt++;
+	  break;
+	case REEKS:
+	  reeksConnCnt++;
+	  break;
+	case CONTRASTIEF:
+	  contConnCnt++;
+	  break;
+	case COMPARATIEF:
+	  compConnCnt++;
+	  break;
+	case CAUSAAL:
+	  causeConnCnt++;
+	  break;
+	default:
+	  break;
+	}
+      }
+      if ( negatives_long.find( multiword3 ) != negatives_long.end() )
+	propNegCnt++;
+    }
+    string multiword2 = lowercase( sv[sv.size()-2]->text() )
+    + " " + lowercase( sv[sv.size()-1]->text() );
+    //    cerr << "zoek op " << multiword2 << endl;
+    if ( sv[sv.size()-1]->getConnType() == NOCONN ){
+      // no result yet
       ConnType conn = check2Connectives( multiword2 );
       switch( conn ){
       case TEMPOREEL:
@@ -1535,57 +1599,6 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
       default:
 	break;
       }
-      if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
-	propNegCnt++;
-      }
-      string multiword3 = multiword2 + " "
-	+ lowercase( UnicodeToUTF8( w[i+2]->text() ) );
-      //	cerr << "zoek op " << multiword3 << endl;
-      conn = check3Connectives( multiword3 );
-      switch( conn ){
-      case TEMPOREEL:
-	tempConnCnt++;
-	break;
-      case REEKS:
-	reeksConnCnt++;
-	break;
-      case CONTRASTIEF:
-	contConnCnt++;
-	break;
-      case COMPARATIEF:
-	compConnCnt++;
-	break;
-      case CAUSAAL:
-	causeConnCnt++;
-	break;
-      default:
-	break;
-      }
-      if ( negatives_long.find( multiword3 ) != negatives_long.end() )
-	propNegCnt++;
-    }
-    string multiword2 = lowercase( UnicodeToUTF8( w[w.size()-2]->text() ) )
-      + " " + lowercase( UnicodeToUTF8( w[w.size()-1]->text() ) );
-    //    cerr << "zoek op " << multiword2 << endl;
-    ConnType conn = check2Connectives( multiword2 );
-    switch( conn ){
-    case TEMPOREEL:
-      tempConnCnt++;
-      break;
-    case REEKS:
-      reeksConnCnt++;
-      break;
-    case CONTRASTIEF:
-	contConnCnt++;
-	break;
-    case COMPARATIEF:
-      compConnCnt++;
-      break;
-    case CAUSAAL:
-      causeConnCnt++;
-      break;
-    default:
-      break;
     }
     if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
       propNegCnt++;
