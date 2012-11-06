@@ -796,9 +796,9 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
 {
   word = UnicodeToUTF8( w->text() );
   wordLen = w->text().length();
-  vector<PosAnnotation*> posV = w->select<PosAnnotation>();
+  vector<PosAnnotation*> posV = w->select<PosAnnotation>("http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn");
   if ( posV.size() != 1 )
-    throw ValueError( "word doesn't have POS tag info" );
+    throw ValueError( "word doesn't have Frog POS tag info" );
   PosAnnotation *pa = posV[0];
   pos = pa->cls();
   posHead = pa->feat("head");
@@ -1010,6 +1010,7 @@ struct structStats: public basicStats {
 				    weirdCnt(0),
 				    humanCnt(0),
 				    npCnt(0),
+				    indefNpCnt(0),
 				    npSize(0),
 				    dLevel(-1)
  {};
@@ -1064,6 +1065,7 @@ struct structStats: public basicStats {
   int weirdCnt;
   int humanCnt;
   int npCnt;
+  int indefNpCnt;
   int npSize;
   int dLevel;
   vector<basicStats *> sv;
@@ -1134,6 +1136,7 @@ void structStats::merge( structStats *ss ){
   weirdCnt += ss->weirdCnt;
   humanCnt += ss->humanCnt;
   npCnt += ss->npCnt;
+  indefNpCnt += ss->indefNpCnt;
   npSize += ss->npSize;
   if ( ss->dLevel > 0 ){
     if ( dLevel < 0 )
@@ -1270,6 +1273,7 @@ void structStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( doc, el, "process_count", toString(processCnt) );
   addOneMetric( doc, el, "weird_count", toString(weirdCnt) );
   addOneMetric( doc, el, "human_count", toString(humanCnt) );
+  addOneMetric( doc, el, "indef_np_count", toString(indefNpCnt) );
   addOneMetric( doc, el, "np_count", toString(npCnt) );
   addOneMetric( doc, el, "np_size", toString(npSize) );
   if ( dLevel >= 0 )
@@ -1346,13 +1350,23 @@ NerProp lookupNer( const Word *w, const Sentence * s ){
   return result;
 }
 
-void np_length( Sentence *s, int& count, int& size ) {
+void np_length( Sentence *s, int& npcount, int& indefcount, int& size ) {
   vector<Chunk *> cv = s->select<Chunk>();
   size = 0 ;
   for( size_t i=0; i < cv.size(); ++i ){
     if ( cv[i]->cls() == "NP" ){
-      ++count;
+      ++npcount;
       size += cv[i]->size();
+      FoliaElement *det = cv[i]->index(0);
+      if ( det ){
+	vector<PosAnnotation*> posV = det->select<PosAnnotation>("http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn");
+	if ( posV.size() != 1 )
+	  throw ValueError( "word doesn't have Frog POS tag info" );
+	if ( posV[0]->feat("head") == "LID" ){
+	  if ( det->text() == "een" )
+	    ++indefcount;
+	}
+      }
     }
   }
 }
@@ -1547,7 +1561,7 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
       }
       string multiword3 = multiword2 + " "
 	+ lowercase( sv[i+2]->text() );
-      //	cerr << "zoek op " << multiword3 << endl;
+      //      cerr << "zoek op " << multiword3 << endl;
       if ( sv[sv.size()-1]->getConnType() == NOCONN ){
 	// no result yet
 	ConnType conn = check3Connectives( multiword3 );
@@ -1606,9 +1620,10 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
   }
   lwfreq = log( wfreq / w.size() );
   lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
-  np_length( s, npCnt, npSize );
-  if ( alpDoc )
+  np_length( s, npCnt, indefNpCnt, npSize );
+  if ( alpDoc ){
     dLevel = get_d_level( s, alpDoc );
+  }
   addMetrics( s );
 }
 

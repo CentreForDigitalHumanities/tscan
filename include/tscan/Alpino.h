@@ -28,8 +28,9 @@
 #ifndef ALPINO_H
 #define ALPINO_H
 xmlDoc *AlpinoParse( folia::Sentence * );
+xmlNode *getAlpWord( xmlDoc *, const folia::Word * );
 std::string classifyVerb( folia::Word *, xmlDoc * );
 int get_d_level( folia::Sentence *s, xmlDoc *alp );
-xmlNode *getAlpWord( xmlDoc *, const folia::Word * );
+int indef_npcount( xmlDoc *alp );
 
 #endif // ALPINO_H

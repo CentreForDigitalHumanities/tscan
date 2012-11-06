@@ -460,6 +460,25 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
   return -1;
 }
 
+int indef_npcount( xmlDoc *alp ){
+  // not used
+  // we count the NP's in the FoliA chunks
+  vector<xmlNode *> nodelist = getNodes( alp );
+  int cnt = 0;
+  for( size_t i=0; i < nodelist.size(); ++i ){
+    KWargs atts = getAttributes( nodelist[i] );
+    if ( atts["cat"] == "np" ){
+      xmlNode *child = nodelist[i]->children;
+      if ( child ){
+	KWargs atts2 = getAttributes( child );
+	if ( atts2["pos"] == "det" && atts2["root"] == "een" )
+	  ++cnt;
+      }
+    }
+  }
+  return cnt;
+}
+
 xmlDoc *AlpinoParse( folia::Sentence *s ){
   string txt = folia::UnicodeToUTF8(s->toktext());
   //  cerr << "parse line: " << txt << endl;
