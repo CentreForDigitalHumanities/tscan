@@ -841,7 +841,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
       wordLenExNames = wordLen;
       morphLenExNames = max;
     }
-    isNominal = checkNominal( w, alpDoc );
+    if (alpDoc) isNominal = checkNominal( w, alpDoc );
     polarity = checkPolarity();
     sem_type = checkSemProps();
     freqLookup();
