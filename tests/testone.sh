@@ -17,9 +17,11 @@ do if test -e $file
 	\rm -f $file.diff
 	\rm -f $file.err
 	\rm -f $file.out
+	\rm -f $file.tscan.xml
 	echo -n "Tscanning  $file "
 	$comm -t $file > $file.out 2> $file.err
-	xmldiff /tmp/folia.2.xml $file.ok >& $file.diff
+	#xmldiff /tmp/folia.2.xml $file.ok >& $file.diff
+	diff -w $file.tscan.xml $file.ok >& $file.diff
 	if [ $? -ne 0 ];
 	then 
 	    echo -e $FAIL;	

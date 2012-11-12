@@ -1296,8 +1296,10 @@ void structStats::addMetrics( FoliaElement *el ) const {
 
 }
 
-void argument_overlap( const Word* w, vector<string>& buffer, 
+void argument_overlap( const string w_or_l, vector<string>& buffer, 
 		       int& arg_cnt, int& arg_overlap_cnt ){
+  // calculate the overlap of teh Word or Lemma with the buffer
+
   static string vnw_1sA[] = {"ik","mij","me","mijn"};
   static set<string> vnw_1s = set<string>( vnw_1sA, 
 					   vnw_1sA + sizeof(vnw_1sA)/sizeof(string) );
@@ -1319,50 +1321,43 @@ void argument_overlap( const Word* w, vector<string>& buffer,
   static string vnw_3pA[] = {"zij","ze","hen","hun"};
   static set<string> vnw_3p = set<string>( vnw_3pA, 
 					   vnw_3pA + sizeof(vnw_3pA)/sizeof(string) );
-  string word = UnicodeToUTF8( w->text() );
-  vector<PosAnnotation*> posV = w->select<PosAnnotation>("http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn");
-  if ( posV.size() != 1 )
-    throw ValueError( "word doesn't have Frog POS tag info" );
-  string head = posV[0]->feat("head");
-  if ( ( head == "VNW" && posV[0]->feat( "vwtype" ) != "aanw" ) ||
-       ( head == "N" ) ||
-       ( w->pos() == "SPEC(deeleigen)" ) ){
-    ++arg_cnt; // we tellen ook het totaal aantal (mogelijke) argumenten om 
-    // later op te kunnen delen 
-    // (aantal overlappende argumenten op totaal aantal argumenten)
-    for( size_t i=0; i < buffer.size(); ++i ){
-      if ( word == buffer[i] )
-	++arg_overlap_cnt;
-      else if ( vnw_1s.find( word ) != vnw_1s.end() &&
-		vnw_1s.find( buffer[i] ) != vnw_1s.end() )
-	++arg_overlap_cnt;
-      else if ( vnw_2s.find( word ) != vnw_2s.end() &&
-		vnw_2s.find( buffer[i] ) != vnw_2s.end() )
-	++arg_overlap_cnt;	
-      else if ( vnw_3sm.find( word ) != vnw_3sm.end() &&
-		vnw_3sm.find( buffer[i] ) != vnw_3sm.end() )
-	++arg_overlap_cnt;
-      else if ( vnw_3sf.find( word ) != vnw_3sf.end() &&
-		vnw_3sf.find( buffer[i] ) != vnw_3sf.end() )
-	++arg_overlap_cnt;	
-      else if ( vnw_1p.find( word ) != vnw_1p.end() &&
-		vnw_1p.find( buffer[i] ) != vnw_1p.end() )
-	++arg_overlap_cnt;
-      else if ( vnw_2p.find( word ) != vnw_2p.end() &&
-		vnw_2p.find( buffer[i] ) != vnw_2p.end() )
-	++arg_overlap_cnt;	
-      else if ( vnw_3p.find( word ) != vnw_3p.end() &&
-		vnw_3p.find( buffer[i] ) != vnw_3p.end() )
-	++arg_overlap_cnt;	
-    }
-    buffer.erase(buffer.begin());
-    buffer.push_back( word );
+
+  ++arg_cnt; // we tellen ook het totaal aantal (mogelijke) argumenten om 
+  // later op te kunnen delen 
+  // (aantal overlappende argumenten op totaal aantal argumenten)
+  for( size_t i=0; i < buffer.size(); ++i ){
+    if ( w_or_l == buffer[i] )
+      ++arg_overlap_cnt;
+    else if ( vnw_1s.find( w_or_l ) != vnw_1s.end() &&
+	      vnw_1s.find( buffer[i] ) != vnw_1s.end() )
+      ++arg_overlap_cnt;
+    else if ( vnw_2s.find( w_or_l ) != vnw_2s.end() &&
+	      vnw_2s.find( buffer[i] ) != vnw_2s.end() )
+      ++arg_overlap_cnt;	
+    else if ( vnw_3sm.find( w_or_l ) != vnw_3sm.end() &&
+	      vnw_3sm.find( buffer[i] ) != vnw_3sm.end() )
+      ++arg_overlap_cnt;
+    else if ( vnw_3sf.find( w_or_l ) != vnw_3sf.end() &&
+	      vnw_3sf.find( buffer[i] ) != vnw_3sf.end() )
+      ++arg_overlap_cnt;	
+    else if ( vnw_1p.find( w_or_l ) != vnw_1p.end() &&
+	      vnw_1p.find( buffer[i] ) != vnw_1p.end() )
+      ++arg_overlap_cnt;
+    else if ( vnw_2p.find( w_or_l ) != vnw_2p.end() &&
+	      vnw_2p.find( buffer[i] ) != vnw_2p.end() )
+      ++arg_overlap_cnt;	
+    else if ( vnw_3p.find( w_or_l ) != vnw_3p.end() &&
+	      vnw_3p.find( buffer[i] ) != vnw_3p.end() )
+      ++arg_overlap_cnt;	
   }
+  buffer.erase(buffer.begin());
+  buffer.push_back( w_or_l );
 }
 
 struct sentStats : public structStats {
   sentStats( Sentence *, xmlDoc * );
   virtual void print( ostream& ) const;
+  void resolveConnectives();
   void addMetrics( FoliaElement *el ) const;
 };
 
@@ -1437,6 +1432,99 @@ void np_length( Sentence *s, int& npcount, int& indefcount, int& size ) {
 	    ++indefcount;
 	}
       }
+    }
+  }
+}
+
+void sentStats::resolveConnectives(){
+  if ( sv.size() > 1 ){
+    for ( size_t i=0; i < sv.size()-2; ++i ){
+      string multiword2 = lowercase( sv[i]->text() )
+	+ " " + lowercase( sv[i+1]->text() );
+      //      cerr << "zoek op " << multiword2 << endl;
+      if ( sv[i+1]->getConnType() == NOCONN ){
+	// no result yet
+	ConnType conn = check2Connectives( multiword2 );
+	switch( conn ){
+	case TEMPOREEL:
+	  tempConnCnt++;
+	  break;
+	case REEKS:
+	  reeksConnCnt++;
+	  break;
+	case CONTRASTIEF:
+	contConnCnt++;
+	break;
+	case COMPARATIEF:
+	  compConnCnt++;
+	  break;
+	case CAUSAAL:
+	causeConnCnt++;
+	break;
+	default:
+	  break;
+	}
+      }
+      if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
+	propNegCnt++;
+      }
+      string multiword3 = multiword2 + " "
+	+ lowercase( sv[i+2]->text() );
+      //      cerr << "zoek op " << multiword3 << endl;
+      if ( sv[sv.size()-1]->getConnType() == NOCONN ){
+	// no result yet
+	ConnType conn = check3Connectives( multiword3 );
+	switch( conn ){
+	case TEMPOREEL:
+	  tempConnCnt++;
+	  break;
+	case REEKS:
+	  reeksConnCnt++;
+	  break;
+	case CONTRASTIEF:
+	  contConnCnt++;
+	  break;
+	case COMPARATIEF:
+	  compConnCnt++;
+	  break;
+	case CAUSAAL:
+	  causeConnCnt++;
+	  break;
+	default:
+	  break;
+	}
+      }
+      if ( negatives_long.find( multiword3 ) != negatives_long.end() )
+	propNegCnt++;
+    }
+    string multiword2 = lowercase( sv[sv.size()-2]->text() )
+    + " " + lowercase( sv[sv.size()-1]->text() );
+    //    cerr << "zoek op " << multiword2 << endl;
+    if ( sv[sv.size()-1]->getConnType() == NOCONN ){
+      // no result yet
+      ConnType conn = check2Connectives( multiword2 );
+      switch( conn ){
+      case TEMPOREEL:
+	tempConnCnt++;
+	break;
+      case REEKS:
+	reeksConnCnt++;
+	break;
+      case CONTRASTIEF:
+	contConnCnt++;
+	break;
+      case COMPARATIEF:
+	compConnCnt++;
+	break;
+      case CAUSAAL:
+	causeConnCnt++;
+	break;
+      default:
+	break;
+      }
+    }
+    if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
+      propNegCnt++;
     }
   }
 }
@@ -1592,96 +1680,7 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
       sv.push_back( ws );
     }
   }
-  if ( sv.size() > 1 ){
-    for ( size_t i=0; i < sv.size()-2; ++i ){
-      string multiword2 = lowercase( sv[i]->text() )
-	+ " " + lowercase( sv[i+1]->text() );
-      //      cerr << "zoek op " << multiword2 << endl;
-      if ( sv[i+1]->getConnType() == NOCONN ){
-	// no result yet
-	ConnType conn = check2Connectives( multiword2 );
-	switch( conn ){
-	case TEMPOREEL:
-	  tempConnCnt++;
-	  break;
-	case REEKS:
-	  reeksConnCnt++;
-	  break;
-	case CONTRASTIEF:
-	contConnCnt++;
-	break;
-	case COMPARATIEF:
-	  compConnCnt++;
-	  break;
-	case CAUSAAL:
-	causeConnCnt++;
-	break;
-	default:
-	  break;
-	}
-      }
-      if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
-	propNegCnt++;
-      }
-      string multiword3 = multiword2 + " "
-	+ lowercase( sv[i+2]->text() );
-      //      cerr << "zoek op " << multiword3 << endl;
-      if ( sv[sv.size()-1]->getConnType() == NOCONN ){
-	// no result yet
-	ConnType conn = check3Connectives( multiword3 );
-	switch( conn ){
-	case TEMPOREEL:
-	  tempConnCnt++;
-	  break;
-	case REEKS:
-	  reeksConnCnt++;
-	  break;
-	case CONTRASTIEF:
-	  contConnCnt++;
-	  break;
-	case COMPARATIEF:
-	  compConnCnt++;
-	  break;
-	case CAUSAAL:
-	  causeConnCnt++;
-	  break;
-	default:
-	  break;
-	}
-      }
-      if ( negatives_long.find( multiword3 ) != negatives_long.end() )
-	propNegCnt++;
-    }
-    string multiword2 = lowercase( sv[sv.size()-2]->text() )
-    + " " + lowercase( sv[sv.size()-1]->text() );
-    //    cerr << "zoek op " << multiword2 << endl;
-    if ( sv[sv.size()-1]->getConnType() == NOCONN ){
-      // no result yet
-      ConnType conn = check2Connectives( multiword2 );
-      switch( conn ){
-      case TEMPOREEL:
-	tempConnCnt++;
-	break;
-      case REEKS:
-	reeksConnCnt++;
-	break;
-      case CONTRASTIEF:
-	contConnCnt++;
-	break;
-      case COMPARATIEF:
-	compConnCnt++;
-	break;
-      case CAUSAAL:
-	causeConnCnt++;
-	break;
-      default:
-	break;
-      }
-    }
-    if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
-      propNegCnt++;
-    }
-  }
+  resolveConnectives();
   lwfreq = log( wfreq / w.size() );
   lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
   np_length( s, npCnt, indefNpCnt, npSize );
@@ -1753,12 +1752,15 @@ struct docStats : public structStats {
   void print( ostream& ) const;
   void addMetrics( FoliaElement *el ) const;
   int sentCnt;
-  int argCnt;
-  int overlapCnt;
+  int word_argCnt;
+  int word_overlapCnt;
+  int lemma_argCnt;
+  int lemma_overlapCnt;
 };
 
 docStats::docStats( Document *doc ):
-  structStats( "DOCUMENT" ), sentCnt(0), argCnt(0), overlapCnt(0) 
+  structStats( "DOCUMENT" ), sentCnt(0), word_argCnt(0), word_overlapCnt(0),
+  lemma_argCnt(0), lemma_overlapCnt(0) 
 {
   doc->declare( AnnotationType::METRIC, 
 		"metricset", 
@@ -1779,11 +1781,26 @@ docStats::docStats( Document *doc ):
   lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
   vector<Word*> wv = doc->words();
   vector<string> wordbuffer(50);
+  vector<string> lemmabuffer(50);
   for ( size_t w=0; w < wv.size() && w < 50; ++w ){
     wordbuffer[w] = UnicodeToUTF8( wv[w]->text() );
+    lemmabuffer[w] = wv[w]->lemma();
+    // "http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn");
   }
   for ( size_t i=50; i < wv.size(); ++i ){
-    argument_overlap( wv[i], wordbuffer, argCnt, overlapCnt );
+    vector<PosAnnotation*> posV = wv[i]->select<PosAnnotation>("http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn");
+    if ( posV.size() != 1 )
+      throw ValueError( "word doesn't have Frog POS tag info" );
+    string head = posV[0]->feat("head");
+    if ( ( head == "VNW" && posV[0]->feat( "vwtype" ) != "aanw" ) ||
+	 ( head == "N" ) ||
+	 ( wv[i]->pos() == "SPEC(deeleigen)" ) ){
+      argument_overlap( UnicodeToUTF8(wv[i]->text()),
+			wordbuffer, word_argCnt, word_overlapCnt );
+      argument_overlap( wv[i]->lemma(),
+			//"http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"),
+			lemmabuffer, lemma_argCnt, lemma_overlapCnt );
+    }
   }
   addMetrics( pars[0]->parent() );
 }
@@ -1812,9 +1829,13 @@ void docStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( el->doc(), el, 
 		"rarity", toString( rarity( this, settings.rarityLevel ) ) );
   addOneMetric( el->doc(), el, 
-		"argument_count", toString( argCnt ) );
+		"word_argument_count", toString( word_argCnt ) );
   addOneMetric( el->doc(), el, 
-		"argument_overlap_count", toString( overlapCnt ) );
+		"word_argument_overlap_count", toString( word_overlapCnt ) );
+  addOneMetric( el->doc(), el, 
+		"lemma_argument_count", toString( lemma_argCnt ) );
+  addOneMetric( el->doc(), el, 
+		"lemma_argument_overlap_count", toString( lemma_overlapCnt ) );
 }
 
 void docStats::print( ostream& os ) const {
@@ -1867,29 +1888,6 @@ Document *getFrogResult( istream& is ){
   return doc;
 }
 
-void exec( const string& file, ostream& os ){
-  cerr << "TScan " << VERSION << endl;
-  LOG << "try file ='" << file << "'" << endl;
-  ifstream is( file.c_str() );
-  if ( !is ){
-    os << "failed to open file '" << file << "'" << endl;
-  }
-  else {
-    os << "opened file " << file << endl;
-    Document *doc = getFrogResult( is );
-    if ( !doc ){
-      os << "big trouble: no FoLiA document created " << endl;
-    }
-    else {
-      doc->save( "/tmp/folia.1.xml" );
-      docStats result( doc );
-      doc->save( "/tmp/folia.2.xml" );
-      delete doc;
-      os << result << endl;
-    }
-  }
-}
-  
 int main(int argc, char *argv[]) {
   Timbl::TimblOpts opts( argc, argv );
   string val;
@@ -1930,13 +1928,44 @@ int main(int argc, char *argv[]) {
     }
     opts.Delete( 'D' );
   }
+  string inName;
+  string outName;
   if ( opts.Find( 't', val, mood ) ){
-    exec( val, cout );
+    inName = val;
   }
   else {
     cerr << "missing input file (-t option) " << endl;
+    exit(EXIT_FAILURE);
   }
-
+  if ( opts.Find( 'o', val, mood ) ){
+    outName = val;
+  }
+  else {
+    outName = inName + ".tscan.xml";
+  }
+  cerr << "TScan " << VERSION << endl;
+  ifstream is( inName.c_str() );
+  if ( !is ){
+    cerr << "failed to open file '" << inName << "'" << endl;
+    exit(EXIT_FAILURE);
+  }
+  else {
+    LOG << "opened file " <<  inName << endl;
+    Document *doc = getFrogResult( is );
+    if ( !doc ){
+      cerr << "big trouble: no FoLiA document created " << endl;
+      exit(EXIT_FAILURE);
+    }
+    else {
+      //      doc->save( "/tmp/folia.1.xml" );
+      docStats analyse( doc );
+      doc->save( outName );
+      delete doc;
+      LOG << "saved outut in " << outName << endl;
+      // cerr << analyse << endl;
+    }
+  }
+  
   exit(EXIT_SUCCESS);
 }
 
