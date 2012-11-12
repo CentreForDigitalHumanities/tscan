@@ -338,7 +338,7 @@ void basicStats::print( ostream& os ) const {
 }
 
 struct wordStats : public basicStats {
-  wordStats( Word *, xmlDoc * );
+  wordStats( Word *, xmlDoc *, double );
   void print( ostream& ) const;
   string text() const { return word; };
   ConnType getConnType() const { return connType; };
@@ -375,6 +375,7 @@ struct wordStats : public basicStats {
   int wfreq;
   double lwfreq;
   double polarity;
+  double surprisal;
   WordProp prop;
   SemType sem_type;
   vector<string> morphemes;
@@ -801,13 +802,13 @@ bool wordStats::checkMorphNeg() const {
   return false;
 }
 
-wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
+wordStats::wordStats( Word *w, xmlDoc *alpDoc, double surp ):
   basicStats( "WORD" ), 
   isPassive(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false), isOnder(false), 
   isBetr(false), isPropNeg(false), isMorphNeg(false), connType(NOCONN),
   f50(false), f65(false), f77(false), f80(false),  compLen(0), wfreq(0), lwfreq(0),
-  polarity(NA), prop(JUSTAWORD), sem_type(UNFOUND)
+  polarity(NA), surprisal(surp), prop(JUSTAWORD), sem_type(UNFOUND)
 {
   word = UnicodeToUTF8( w->text() );
   wordLen = w->text().length();
@@ -887,6 +888,8 @@ void wordStats::addMetrics( FoliaElement *el ) const {
     addOneMetric( el->doc(), el, "connective", toString(connType) );
   if ( polarity != NA  )
     addOneMetric( el->doc(), el, "polarity", toString(polarity) );
+  if ( surprisal != NA  )
+    addOneMetric( el->doc(), el, "surprisal", toString(surprisal) );
   if ( compLen > 0 )
     addOneMetric( el->doc(), el, "compound_len", toString(compLen) );
 
@@ -1015,6 +1018,7 @@ struct structStats: public basicStats {
 				    lwfreq(0),
 				    lwfreq_n(0),
 				    polarity(NA),
+				    surprisal(NA),
 				    broadConcreteCnt(0),
 				    strictConcreteCnt(0),
 				    broadAbstractCnt(0),
@@ -1070,6 +1074,7 @@ struct structStats: public basicStats {
   double lwfreq; 
   double lwfreq_n;
   double polarity;
+  double surprisal;
   int broadConcreteCnt;
   int strictConcreteCnt;
   int broadAbstractCnt;
@@ -1134,6 +1139,12 @@ void structStats::merge( structStats *ss ){
       polarity = ss->polarity;
     else
       polarity += ss->polarity;
+  }
+  if ( ss->surprisal != NA ){
+    if ( surprisal == NA )
+      surprisal = ss->surprisal;
+    else
+      surprisal += ss->surprisal;
   }
   presentCnt += ss->presentCnt;
   pastCnt += ss->pastCnt;
@@ -1259,6 +1270,8 @@ void structStats::addMetrics( FoliaElement *el ) const {
   addOneMetric( doc, el, "relative_cnt", toString(betrCnt) );
   if ( polarity != NA )
     addOneMetric( doc, el, "polarity", toString(polarity) );
+  if ( surprisal != NA )
+    addOneMetric( doc, el, "surprisal", toString(surprisal) );
   addOneMetric( doc, el, "proper_negative_count", toString(propNegCnt) );
   addOneMetric( doc, el, "morph_negative_count", toString(morphNegCnt) );
   addOneMetric( doc, el, "compound_count", toString(compCnt) );
@@ -1542,13 +1555,27 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
   id = s->id();
   text = UnicodeToUTF8( s->toktext() );
   vector<Word*> w = s->words();
+  vector<double> surprisalV(w.size(),NA);
+  if ( settings.doSurprisal ){
+    surprisalV = runSurprisal( s, settings.surprisalPath );
+    if ( surprisalV.size() != w.size() ){
+      cerr << "MISMATCH! " << surprisalV.size() << " != " <<  w.size()<< endl;
+      exit(-9);
+    }
+  }
   for ( size_t i=0; i < w.size(); ++i ){
-    wordStats *ws = new wordStats( w[i], alpDoc );
+    wordStats *ws = new wordStats( w[i], alpDoc, surprisalV[i] );
     if ( ws->prop == ISPUNCT ){
       delete ws;
       continue;
     }
     else {
+      if ( settings.doSurprisal ){
+	if ( surprisal == NA )
+	  surprisal = ws->surprisal;
+	else
+	  surprisal += ws->surprisal;
+      }
       NerProp ner = lookupNer( w[i], s );
       switch( ner ){
       case LOC_B:
@@ -1689,8 +1716,6 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
       sv.push_back( ws );
     }
   }
-  if ( settings.doSurprisal )
-    runSurprisal( s, settings.surprisalPath );
   resolveConnectives();
   lwfreq = log( wfreq / w.size() );
   lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );

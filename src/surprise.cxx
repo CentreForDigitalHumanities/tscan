@@ -90,7 +90,7 @@ string translatePos( const Word *w ){
     return head;
 }
 
-void runSurprisal( Sentence* sent, const string& path ){
+vector<double> runSurprisal( Sentence* sent, const string& path ){
   struct stat sbuf;
   int res = stat( "/tmp/surprise", &sbuf );
   if ( !S_ISDIR(sbuf.st_mode) ){
@@ -118,7 +118,7 @@ void runSurprisal( Sentence* sent, const string& path ){
   while( is ){
     string line;
     getline( is, line );
-    if ( line.find( "***" ) == string::npos )
+    if ( line.empty() || line.find( "***" ) != string::npos )
       continue;
     vector<string> v;
     int n = split_at( line, v, "\t" );
@@ -127,5 +127,6 @@ void runSurprisal( Sentence* sent, const string& path ){
       results.push_back( surp );
     }
   }
+  return results;
 }
 
