@@ -39,6 +39,7 @@
 #include "tscan/Configuration.h"
 #include "tscan/Alpino.h"
 #include "tscan/decomp.h"
+#include "tscan/surprise.h"
 
 using namespace std;
 using namespace TiCC;
@@ -63,7 +64,9 @@ struct settingData {
   void init( const Configuration& );
   bool doAlpino;
   bool doDecompound;
+  bool doSurprisal;
   string decompounderPath;
+  string surprisalPath;
   string style;
   int rarityLevel;
   double polarity_threshold;
@@ -208,6 +211,12 @@ void settingData::init( const Configuration& cf ){
   if( !val.empty() ){
     decompounderPath = val + "/";
     doDecompound = true;
+  }
+  doSurprisal = false;
+  val = cf.lookUp( "surprisalPath" );
+  if( !val.empty() ){
+    surprisalPath = val + "/";
+    doSurprisal = true;
   }
   val = cf.lookUp( "styleSheet" );
   if( !val.empty() ){
@@ -1680,6 +1689,8 @@ sentStats::sentStats( Sentence *s, xmlDoc *alpDoc ): structStats("ZIN" ){
       sv.push_back( ws );
     }
   }
+  if ( settings.doSurprisal )
+    runSurprisal( s, settings.surprisalPath );
   resolveConnectives();
   lwfreq = log( wfreq / w.size() );
   lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
