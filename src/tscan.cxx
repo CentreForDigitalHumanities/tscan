@@ -255,7 +255,7 @@ void settingData::init( const Configuration& cf ){
 }
 
 inline void usage(){
-  cerr << "usage:  tscan" << endl;
+  cerr << "usage:  tscan -t <inputfile> [-o <outputfile>]" << endl;
 }
 
 template <class M>
