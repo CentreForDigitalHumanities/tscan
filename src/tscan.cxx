@@ -51,6 +51,9 @@ TiCC::LogStream cur_log( "T-scan", StampMessage );
 #define DBG (*Dbg(cur_log))
 
 const double NA = -123456789;
+const string frog_pos_set = "http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn";
+const string frog_lemma_set = "http://ilk.uvt.nl/folia/sets/frog-mblem-nl";
+const string frog_ner_set = "http://ilk.uvt.nl/folia/sets/frog-ner-nl";
 
 string configFile = "tscan.cfg";
 Configuration config;
@@ -812,13 +815,13 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, double surp ):
 {
   word = UnicodeToUTF8( w->text() );
   wordLen = w->text().length();
-  vector<PosAnnotation*> posV = w->select<PosAnnotation>("http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn");
+  vector<PosAnnotation*> posV = w->select<PosAnnotation>(frog_pos_set);
   if ( posV.size() != 1 )
     throw ValueError( "word doesn't have Frog POS tag info" );
   PosAnnotation *pa = posV[0];
   pos = pa->cls();
   posHead = pa->feat("head");
-  lemma = w->lemma();
+  lemma = w->lemma( frog_lemma_set );
   prop = checkProps( pa );
   if ( posHead == "WW" ){
     if ( alpDoc ){
@@ -1385,7 +1388,7 @@ struct sentStats : public structStats {
 
 NerProp lookupNer( const Word *w, const Sentence * s ){
   NerProp result = NONER;
-  vector<Entity*> v = s->select<Entity>("http://ilk.uvt.nl/folia/sets/frog-ner-nl");
+  vector<Entity*> v = s->select<Entity>(frog_ner_set);
   for ( size_t i=0; i < v.size(); ++i ){
     FoliaElement *e = v[i];
     for ( size_t j=0; j < e->size(); ++j ){
@@ -1446,7 +1449,7 @@ void np_length( Sentence *s, int& npcount, int& indefcount, int& size ) {
       size += cv[i]->size();
       FoliaElement *det = cv[i]->index(0);
       if ( det ){
-	vector<PosAnnotation*> posV = det->select<PosAnnotation>("http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn");
+	vector<PosAnnotation*> posV = det->select<PosAnnotation>(frog_pos_set);
 	if ( posV.size() != 1 )
 	  throw ValueError( "word doesn't have Frog POS tag info" );
 	if ( posV[0]->feat("head") == "LID" ){
@@ -1820,21 +1823,19 @@ docStats::docStats( Document *doc ):
   vector<string> lemmabuffer(50);
   for ( size_t w=0; w < wv.size() && w < 50; ++w ){
     wordbuffer[w] = UnicodeToUTF8( wv[w]->text() );
-    lemmabuffer[w] = wv[w]->lemma();
-    // "http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn");
+    lemmabuffer[w] = wv[w]->lemma( frog_lemma_set );
   }
   for ( size_t i=50; i < wv.size(); ++i ){
-    vector<PosAnnotation*> posV = wv[i]->select<PosAnnotation>("http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn");
+    vector<PosAnnotation*> posV = wv[i]->select<PosAnnotation>(frog_pos_set);
     if ( posV.size() != 1 )
       throw ValueError( "word doesn't have Frog POS tag info" );
     string head = posV[0]->feat("head");
     if ( ( head == "VNW" && posV[0]->feat( "vwtype" ) != "aanw" ) ||
 	 ( head == "N" ) ||
-	 ( wv[i]->pos() == "SPEC(deeleigen)" ) ){
+	 ( wv[i]->pos( frog_pos_set ) == "SPEC(deeleigen)" ) ){
       argument_overlap( UnicodeToUTF8(wv[i]->text()),
 			wordbuffer, word_argCnt, word_overlapCnt );
-      argument_overlap( wv[i]->lemma(),
-			//"http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"),
+      argument_overlap( wv[i]->lemma( frog_lemma_set ),
 			lemmabuffer, lemma_argCnt, lemma_overlapCnt );
     }
   }
@@ -1997,7 +1998,7 @@ int main(int argc, char *argv[]) {
       docStats analyse( doc );
       doc->save( outName );
       delete doc;
-      LOG << "saved outut in " << outName << endl;
+      LOG << "saved output in " << outName << endl;
       // cerr << analyse << endl;
     }
   }
