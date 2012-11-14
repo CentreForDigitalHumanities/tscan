@@ -72,6 +72,7 @@ struct settingData {
   string surprisalPath;
   string style;
   int rarityLevel;
+  int overlapSize;
   double polarity_threshold;
   map <string, string> adj_sem;
   map <string, string> noun_sem;
@@ -231,6 +232,13 @@ void settingData::init( const Configuration& cf ){
   }
   else if ( !Timbl::stringTo( val, rarityLevel ) ){ 
     cerr << "invalid value for 'rarityLevel' in config file" << endl;
+  }
+  val = cf.lookUp( "overlapSize" );
+  if ( val.empty() ){
+    overlapSize = 50;
+  }
+  else if ( !Timbl::stringTo( val, overlapSize ) ){ 
+    cerr << "invalid value for 'overlapSize' in config file" << endl;
   }
   val = cf.lookUp( "adj_semtypes" );
   if ( !val.empty() ){
@@ -1892,13 +1900,13 @@ docStats::docStats( Document *doc ):
   lwfreq = log( wfreq / pars.size() );
   lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
   vector<Word*> wv = doc->words();
-  vector<string> wordbuffer(50);
-  vector<string> lemmabuffer(50);
-  for ( size_t w=0; w < wv.size() && w < 50; ++w ){
+  vector<string> wordbuffer(settings.overlapSize);
+  vector<string> lemmabuffer(settings.overlapSize);
+  for ( size_t w=0; w < wv.size() && w < settings.overlapSize; ++w ){
     wordbuffer[w] = lowercase(UnicodeToUTF8( wv[w]->text() ));
     lemmabuffer[w] = wv[w]->lemma( frog_lemma_set );
   }
-  for ( size_t i=50; i < wv.size(); ++i ){
+  for ( size_t i=settings.overlapSize; i < wv.size(); ++i ){
     vector<PosAnnotation*> posV = wv[i]->select<PosAnnotation>(frog_pos_set);
     if ( posV.size() != 1 )
       throw ValueError( "word doesn't have Frog POS tag info" );
