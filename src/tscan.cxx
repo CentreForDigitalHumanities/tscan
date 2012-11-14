@@ -313,14 +313,18 @@ enum SemType { UNFOUND, CONCRETE, CONCRETE_HUMAN, ABSTRACT, BROAD,
 	       STATE, ACTION, PROCESS, WEIRD };
 
 struct basicStats {
-  basicStats( const string& cat ): category( cat ), 
-				   wordLen(0),wordLenExNames(0),
-				   morphLen(0), morphLenExNames(0) {};
+  basicStats( FoliaElement *el, const string& cat ): 
+    folia_node( el ),
+    category( cat ), 
+    wordLen(0),wordLenExNames(0),
+    morphLen(0), morphLenExNames(0)
+  {};
   virtual ~basicStats(){};
   virtual void print( ostream& ) const = 0;
-  virtual void addMetrics( FoliaElement *el ) const = 0;
+  virtual void addMetrics( ) const = 0;
   virtual string text() const { return ""; };
   virtual ConnType getConnType() const { return NOCONN; };
+  FoliaElement *folia_node;
   string category;
   int wordLen;
   int wordLenExNames;
@@ -346,7 +350,7 @@ struct wordStats : public basicStats {
   void print( ostream& ) const;
   string text() const { return word; };
   ConnType getConnType() const { return connType; };
-  void addMetrics( FoliaElement * ) const;
+  void addMetrics( ) const;
   bool checkContent() const;
   ConnType checkConnective( ) const;
   bool checkNominal( Word *, xmlDoc * ) const;
@@ -872,7 +876,7 @@ void argument_overlap( const string w_or_l,
 wordStats::wordStats( Word *w, xmlDoc *alpDoc, double surp,
  		      const vector<string>& wordbuffer,
 		      const vector<string>& lemmabuffer ):
-  basicStats( "WORD" ), 
+  basicStats( w, "WORD" ), 
   isPassive(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false), isOnder(false), 
   isBetr(false), isPropNeg(false), isMorphNeg(false), connType(NOCONN),
@@ -934,7 +938,6 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, double surp,
     if ( settings.doDecompound )
       compLen = runDecompoundWord(word, settings.decompounderPath );
   }
-  addMetrics( w );
 }
 
 void addOneMetric( Document *doc, FoliaElement *parent,
@@ -945,7 +948,8 @@ void addOneMetric( Document *doc, FoliaElement *parent,
   parent->append( m );
 }
 
-void wordStats::addMetrics( FoliaElement *el ) const {
+void wordStats::addMetrics( ) const {
+  FoliaElement *el = folia_node;
   Document *doc = el->doc();
   if ( isContent )
     addOneMetric( doc, el, "content_word", "true" );
@@ -1073,58 +1077,59 @@ ostream& operator<<( ostream& os, const NerProp& n ){
 }
 
 struct structStats: public basicStats {
-  structStats( const string& cat ): basicStats( cat ),
-				    wordCnt(0),
-				    vdCnt(0),odCnt(0),
-				    infCnt(0), presentCnt(0), pastCnt(0),
-				    nameCnt(0),
-				    pron1Cnt(0), pron2Cnt(0), pron3Cnt(0), 
-				    passiveCnt(0),
-				    pronRefCnt(0), archaicsCnt(0),
-				    contentCnt(0),
-				    nominalCnt(0),
-				    onderCnt(0),
-				    betrCnt(0),
-				    tempConnCnt(0),
-				    reeksConnCnt(0),
-				    contConnCnt(0),
-				    compConnCnt(0),
-				    causeConnCnt(0),
-				    propNegCnt(0),
-				    morphNegCnt(0),
-				    wordRepeatCnt(0),
-				    wordOverlapCnt(0),
-				    lemmaRepeatCnt(0),
-				    lemmaOverlapCnt(0),
-				    f50Cnt(0),
-				    f65Cnt(0),
-				    f77Cnt(0),
-				    f80Cnt(0),
-				    compCnt(0),
-				    compLen(0),
-				    wfreq(0),
-				    wfreq_n(0),
-				    lwfreq(0),
-				    lwfreq_n(0),
-				    polarity(NA),
-				    surprisal(NA),
-				    broadConcreteCnt(0),
-				    strictConcreteCnt(0),
-				    broadAbstractCnt(0),
-				    strictAbstractCnt(0),
-				    stateCnt(0),
-				    actionCnt(0),
-				    processCnt(0),
-				    weirdCnt(0),
-				    humanCnt(0),
-				    npCnt(0),
-				    indefNpCnt(0),
-				    npSize(0),
-				    dLevel(-1)
+  structStats( FoliaElement *el, const string& cat ): 
+    basicStats( el, cat ),
+    wordCnt(0),
+    vdCnt(0),odCnt(0),
+    infCnt(0), presentCnt(0), pastCnt(0),
+    nameCnt(0),
+    pron1Cnt(0), pron2Cnt(0), pron3Cnt(0), 
+    passiveCnt(0),
+    pronRefCnt(0), archaicsCnt(0),
+    contentCnt(0),
+    nominalCnt(0),
+    onderCnt(0),
+    betrCnt(0),
+    tempConnCnt(0),
+    reeksConnCnt(0),
+    contConnCnt(0),
+    compConnCnt(0),
+    causeConnCnt(0),
+    propNegCnt(0),
+    morphNegCnt(0),
+    wordRepeatCnt(0),
+    wordOverlapCnt(0),
+    lemmaRepeatCnt(0),
+    lemmaOverlapCnt(0),
+    f50Cnt(0),
+    f65Cnt(0),
+    f77Cnt(0),
+    f80Cnt(0),
+    compCnt(0),
+    compLen(0),
+    wfreq(0),
+    wfreq_n(0),
+    lwfreq(0),
+    lwfreq_n(0),
+    polarity(NA),
+    surprisal(NA),
+    broadConcreteCnt(0),
+    strictConcreteCnt(0),
+    broadAbstractCnt(0),
+    strictAbstractCnt(0),
+    stateCnt(0),
+    actionCnt(0),
+    processCnt(0),
+    weirdCnt(0),
+    humanCnt(0),
+    npCnt(0),
+    indefNpCnt(0),
+    npSize(0),
+    dLevel(-1)
  {};
   ~structStats();
   virtual void print(  ostream& ) const;
-  void addMetrics( FoliaElement *el ) const;
+  void addMetrics( ) const;
   void merge( structStats * );
   string id;
   string text;
@@ -1348,7 +1353,8 @@ void structStats::print( ostream& os ) const {
   }
 }
 
-void structStats::addMetrics( FoliaElement *el ) const {
+void structStats::addMetrics( ) const {
+  FoliaElement *el = folia_node;
   Document *doc = el->doc();
   addOneMetric( doc, el, "word_count", toString(wordCnt) );
   addOneMetric( doc, el, "name_count", toString(nameCnt) );
@@ -1420,7 +1426,9 @@ void structStats::addMetrics( FoliaElement *el ) const {
   }
   os << endl;
   */
-
+  for ( size_t i=0; i < sv.size(); ++i ){
+    sv[i]->addMetrics();
+  }
 }
 
 struct sentStats : public structStats {
@@ -1428,7 +1436,7 @@ struct sentStats : public structStats {
 	     const vector<string>&, xmlDoc * );
   virtual void print( ostream& ) const;
   void resolveConnectives();
-  void addMetrics( FoliaElement *el ) const;
+  void addMetrics( ) const;
 };
 
 NerProp lookupNer( const Word *w, const Sentence * s ){
@@ -1602,7 +1610,7 @@ void sentStats::resolveConnectives(){
 sentStats::sentStats( Sentence *s, 
 		      const vector<string>& wordbuffer,
 		      const vector<string>& lemmabuffer,
-		      xmlDoc *alpDoc ): structStats("ZIN" ){
+		      xmlDoc *alpDoc ): structStats( s, "ZIN" ){
   id = s->id();
   text = UnicodeToUTF8( s->toktext() );
   vector<Word*> w = s->words();
@@ -1611,13 +1619,13 @@ sentStats::sentStats( Sentence *s,
     surprisalV = runSurprisal( s, settings.surprisalPath );
     if ( surprisalV.size() != w.size() ){
       cerr << "MISMATCH! " << surprisalV.size() << " != " <<  w.size()<< endl;
-      exit(-9);
+      surprisalV.clear();
     }
   }
   for ( size_t i=0; i < w.size(); ++i ){
     wordStats *ws = new wordStats( w[i], alpDoc, surprisalV[i], wordbuffer, lemmabuffer );
     if ( ws->prop == ISPUNCT ){
-      delete ws;
+      sv.push_back( ws );
       continue;
     }
     else {
@@ -1779,7 +1787,6 @@ sentStats::sentStats( Sentence *s,
   if ( alpDoc ){
     dLevel = get_d_level( s, alpDoc );
   }
-  addMetrics( s );
 }
 
 void sentStats::print( ostream& os ) const {
@@ -1792,19 +1799,19 @@ void sentStats::print( ostream& os ) const {
   structStats::print( os );
 }
 
-void sentStats::addMetrics( FoliaElement *el ) const {
-  structStats::addMetrics( el );
+void sentStats::addMetrics( ) const {
+  structStats::addMetrics( );
 }
 
 struct parStats: public structStats {
   parStats( Paragraph * );
   void print( ostream& ) const;
-  void addMetrics( FoliaElement *el ) const;
+  void addMetrics( ) const;
   int sentCnt;
 };
 
 parStats::parStats( Paragraph *p ): 
-  structStats( "PARAGRAAF" ), 
+  structStats( p, "PARAGRAAF" ), 
   sentCnt(0) 
 {
   id = p->id();
@@ -1835,7 +1842,6 @@ parStats::parStats( Paragraph *p ):
   }
   lwfreq = log( wfreq / sents.size() );
   lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
-  addMetrics( p );
 }
 
 void parStats::print( ostream& os ) const {
@@ -1843,8 +1849,9 @@ void parStats::print( ostream& os ) const {
   structStats::print( os );
 }
 
-void parStats::addMetrics( FoliaElement *el ) const {
-  structStats::addMetrics( el );
+void parStats::addMetrics( ) const {
+  FoliaElement *el = folia_node;
+  structStats::addMetrics( );
   addOneMetric( el->doc(), el, 
 		"sentence_count", toString(sentCnt) );
 }
@@ -1852,7 +1859,7 @@ void parStats::addMetrics( FoliaElement *el ) const {
 struct docStats : public structStats {
   docStats( Document * );
   void print( ostream& ) const;
-  void addMetrics( FoliaElement *el ) const;
+  void addMetrics( ) const;
   int sentCnt;
   int doc_word_argCnt;
   int doc_word_overlapCnt;
@@ -1861,7 +1868,7 @@ struct docStats : public structStats {
 };
 
 docStats::docStats( Document *doc ):
-  structStats( "DOCUMENT" ), sentCnt(0), 
+  structStats( 0, "DOCUMENT" ), sentCnt(0), 
   doc_word_argCnt(0), doc_word_overlapCnt(0),
   doc_lemma_argCnt(0), doc_lemma_overlapCnt(0) 
 {
@@ -1875,6 +1882,8 @@ docStats::docStats( Document *doc ):
     doc->replaceStyle( "text/xsl", settings.style );
   }
   vector<Paragraph*> pars = doc->paragraphs();
+  if ( pars.size() > 0 )
+    folia_node = pars[0]->parent();
   for ( size_t i=0; i != pars.size(); ++i ){
     parStats *ps = new parStats( pars[i] );
     merge( ps );
@@ -1909,7 +1918,6 @@ docStats::docStats( Document *doc ):
       lemmabuffer.push_back( lemma );
     }
   }
-  addMetrics( pars[0]->parent() );
 }
 
 double rarity( const docStats *d, double level ){
@@ -1923,8 +1931,9 @@ double rarity( const docStats *d, double level ){
   return rare/double( d->unique_lemmas.size() );
 }
 
-void docStats::addMetrics( FoliaElement *el ) const {
-  structStats::addMetrics( el );
+void docStats::addMetrics( ) const {
+  FoliaElement *el = folia_node;
+  structStats::addMetrics( );
   addOneMetric( el->doc(), el, 
 		"sentence_count", toString( sentCnt ) );
   addOneMetric( el->doc(), el, 
@@ -2066,6 +2075,7 @@ int main(int argc, char *argv[]) {
     else {
       //      doc->save( "/tmp/folia.1.xml" );
       docStats analyse( doc );
+      analyse.addMetrics(); // add metrics info to doc
       doc->save( outName );
       delete doc;
       LOG << "saved output in " << outName << endl;
