@@ -72,7 +72,7 @@ struct settingData {
   string surprisalPath;
   string style;
   int rarityLevel;
-  int overlapSize;
+  unsigned int overlapSize;
   double polarity_threshold;
   map <string, string> adj_sem;
   map <string, string> noun_sem;
@@ -295,7 +295,7 @@ void aggregate( M& out, const M& in ){
 
 enum WordProp { ISNAME, ISPUNCT, 
 		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL,
-		ISPPRON1, ISPPRON2, ISPPRON3,
+		ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
 		JUSTAWORD };
 
 enum ConnType { NOCONN, TEMPOREEL, REEKS, CONTRASTIEF, COMPARATIEF, CAUSAAL }; 
@@ -663,8 +663,10 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
 	  }
 	}
       }
-      else if ( vwtype == "aanw" )
+      else if ( vwtype == "aanw" ){
+	prop = ISAANW;
 	isPronRef = true;
+      }
     }
   }
   else if ( posHead == "LID" ) {
@@ -856,7 +858,6 @@ void argument_overlap( const string w_or_l,
   // later op te kunnen delen 
   // (aantal overlappende argumenten op totaal aantal argumenten)
   for( size_t i=0; i < buffer.size(); ++i ){
-    int tmp = arg_overlap_cnt;
     if ( w_or_l == buffer[i] )
       ++arg_overlap_cnt;
     else if ( vnw_1s.find( w_or_l ) != vnw_1s.end() &&
@@ -889,7 +890,9 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   isPassive(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false), isOnder(false), 
   isBetr(false), isPropNeg(false), isMorphNeg(false), connType(NOCONN),
-  f50(false), f65(false), f77(false), f80(false),  compLen(0), wfreq(0), lwfreq(0), argRepeatCnt(0), wordOverlapCnt(0), lemmaRepeatCnt(0), lemmaOverlapCnt(0),
+  f50(false), f65(false), f77(false), f80(false),  compLen(0), wfreq(0),
+  argRepeatCnt(0), wordOverlapCnt(0), lemmaRepeatCnt(0), lemmaOverlapCnt(0),
+  lwfreq(0),
   polarity(NA), surprisal(NA), prop(JUSTAWORD), sem_type(UNFOUND)
 {
   word = UnicodeToUTF8( w->text() );
@@ -953,7 +956,7 @@ void addOneMetric( Document *doc, FoliaElement *parent,
 
 void wordStats::getSentenceOverlap( const Sentence *prev ){
   if ( prev &&
-       ( ( posHead == "VNW" && pos.find("aanw") == string::npos ) ||
+       ( ( posHead == "VNW" && prop != ISAANW ) ||
 	 ( posHead == "N" ) ||
 	 ( pos == "SPEC(deeleigen)" ) ) ){
     vector<string> wordbuffer;
@@ -1061,6 +1064,9 @@ void wordStats::print( ostream& os ) const {
     break;
   case ISPPRON3:
     os << " (3-de persoon)";
+    break;
+  case ISAANW:
+    os << " (aanwijzend)";
     break;
   case ISNAME:
     os << " (Name)";
@@ -1738,7 +1744,7 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
       case ISPPRON3:
 	pron3Cnt++;
       default:
-	;// ignore
+	;// ignore JUSTAWORD and ISAANW
       }
       if ( ws->isPassive )
 	passiveCnt++;
@@ -1984,13 +1990,13 @@ void docStats::addMetrics( ) const {
   addOneMetric( el->doc(), el, 
 		"rarity", toString( rarity( this, settings.rarityLevel ) ) );
   addOneMetric( el->doc(), el, 
-		"word_argument_count", toString( doc_word_argCnt ) );
+		"document_word_argument_count", toString( doc_word_argCnt ) );
   addOneMetric( el->doc(), el, 
-		"word_argument_overlap_count", toString( doc_word_overlapCnt ) );
+		"document_word_argument_overlap_count", toString( doc_word_overlapCnt ) );
   addOneMetric( el->doc(), el, 
-		"lemma_argument_count", toString( doc_lemma_argCnt ) );
+		"document_lemma_argument_count", toString( doc_lemma_argCnt ) );
   addOneMetric( el->doc(), el, 
-		"lemma_argument_overlap_count", toString( doc_lemma_overlapCnt ) );
+		"document_lemma_argument_overlap_count", toString( doc_lemma_overlapCnt ) );
 }
 
 void docStats::print( ostream& os ) const {
