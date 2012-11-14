@@ -893,7 +893,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, double surp,
   if ( ( posHead == "VNW" && prop != isPronRef ) ||
        ( posHead == "N" ) ||
        ( pos == "SPEC(deeleigen)" ) ){
-    argument_overlap( word, wordbuffer, wordRepeatCnt, wordOverlapCnt );
+    argument_overlap( lowercase(word), wordbuffer, wordRepeatCnt, wordOverlapCnt );
     argument_overlap( lemma, lemmabuffer, lemmaRepeatCnt, lemmaOverlapCnt );
   }
   if ( posHead == "WW" ){
@@ -1824,7 +1824,7 @@ parStats::parStats( Paragraph *p ):
       // store the words and lemmas' of the previous sentence
       vector<Word*> wv = sents[i-1]->words();
       for ( size_t w=0; w < wv.size(); ++w ){
-	wordbuffer.push_back( UnicodeToUTF8( wv[w]->text() ) );
+	wordbuffer.push_back( lowercase( UnicodeToUTF8( wv[w]->text() ) ) );
 	lemmabuffer.push_back( wv[w]->lemma( frog_lemma_set ) );
       }
     }
@@ -1886,7 +1886,7 @@ docStats::docStats( Document *doc ):
   vector<string> wordbuffer(50);
   vector<string> lemmabuffer(50);
   for ( size_t w=0; w < wv.size() && w < 50; ++w ){
-    wordbuffer[w] = UnicodeToUTF8( wv[w]->text() );
+    wordbuffer[w] = lowercase(UnicodeToUTF8( wv[w]->text() ));
     lemmabuffer[w] = wv[w]->lemma( frog_lemma_set );
   }
   for ( size_t i=50; i < wv.size(); ++i ){
@@ -1898,7 +1898,7 @@ docStats::docStats( Document *doc ):
 	 ( head == "N" ) ||
 	 ( wv[i]->pos( frog_pos_set ) == "SPEC(deeleigen)" ) ){
       string word = UnicodeToUTF8(wv[i]->text()); 
-      argument_overlap( word, wordbuffer, 
+      argument_overlap( lowercase(word), wordbuffer, 
 			doc_word_argCnt, doc_word_overlapCnt );
       wordbuffer.erase(wordbuffer.begin());
       wordbuffer.push_back( word );
