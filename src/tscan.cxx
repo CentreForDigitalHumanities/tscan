@@ -1413,19 +1413,20 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "archaic_count", toString(archaicsCnt) );
   addOneMetric( doc, el, "content_count", toString(contentCnt) );
   addOneMetric( doc, el, "nominal_count", toString(nominalCnt) );
-  addOneMetric( doc, el, "subordinate_cnt", toString(onderCnt) );
-  addOneMetric( doc, el, "temporeel_connective_cnt", toString(tempConnCnt) );
-  addOneMetric( doc, el, "reeks_connective_cnt", toString(reeksConnCnt) );
-  addOneMetric( doc, el, "contrastief_connective_cnt", toString(contConnCnt) );
-  addOneMetric( doc, el, "comparatief_connective_cnt", toString(compConnCnt) );
-  addOneMetric( doc, el, "causaal_connective_cnt", toString(causeConnCnt) );
-  addOneMetric( doc, el, "relative_cnt", toString(betrCnt) );
+  addOneMetric( doc, el, "subord_count", toString(onderCnt) );
+  addOneMetric( doc, el, "rel_count", toString(betrCnt) );
+  addOneMetric( doc, el, "passive_count", toString(passiveCnt) );
+  addOneMetric( doc, el, "temporals_count", toString(tempConnCnt) );
+  addOneMetric( doc, el, "reeks_count", toString(reeksConnCnt) );
+  addOneMetric( doc, el, "contrast_count", toString(contConnCnt) );
+  addOneMetric( doc, el, "comparatief_count", toString(compConnCnt) );
+  addOneMetric( doc, el, "causaal_count", toString(causeConnCnt) );
   if ( polarity != NA )
     addOneMetric( doc, el, "polarity", toString(polarity) );
   if ( surprisal != NA )
     addOneMetric( doc, el, "surprisal", toString(surprisal) );
-  addOneMetric( doc, el, "proper_negative_count", toString(propNegCnt) );
-  addOneMetric( doc, el, "morph_negative_count", toString(morphNegCnt) );
+  addOneMetric( doc, el, "prop_neg_count", toString(propNegCnt) );
+  addOneMetric( doc, el, "morph_neg_count", toString(morphNegCnt) );
   addOneMetric( doc, el, "compound_count", toString(compCnt) );
   addOneMetric( doc, el, "compound_length", toString(compLen) );
   addOneMetric( doc, el, 
@@ -1442,12 +1443,12 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "freq65", toString(f65Cnt) );
   addOneMetric( doc, el, "freq77", toString(f77Cnt) );
   addOneMetric( doc, el, "freq80", toString(f80Cnt) );
-  addOneMetric( doc, el, "pronoun_tw_count", toString(presentCnt) );
-  addOneMetric( doc, el, "pronoun_verl_count", toString(pastCnt) );
-  addOneMetric( doc, el, "pronoun_ref_count", toString(pronRefCnt) );
-  addOneMetric( doc, el, "pronoun_1_count", toString(pron1Cnt) );
-  addOneMetric( doc, el, "pronoun_2_count", toString(pron2Cnt) );
-  addOneMetric( doc, el, "pronoun_3_count", toString(pron3Cnt) );
+  addOneMetric( doc, el, "present_verb_count", toString(presentCnt) );
+  addOneMetric( doc, el, "past_verb_count", toString(pastCnt) );
+  addOneMetric( doc, el, "referential_pron_count", toString(pronRefCnt) );
+  addOneMetric( doc, el, "pers_pron_1_count", toString(pron1Cnt) );
+  addOneMetric( doc, el, "pers_pron_2_count", toString(pron2Cnt) );
+  addOneMetric( doc, el, "pres_pron_3_count", toString(pron3Cnt) );
   addOneMetric( doc, el, "character_count", toString(wordLen) );
   addOneMetric( doc, el, "character_count_min_names", toString(wordLenExNames) );
   addOneMetric( doc, el, "morpheme_count", toString(morphLen) );
@@ -1460,7 +1461,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "action_count", toString(actionCnt) );
   addOneMetric( doc, el, "process_count", toString(processCnt) );
   addOneMetric( doc, el, "weird_count", toString(weirdCnt) );
-  addOneMetric( doc, el, "human_count", toString(humanCnt) );
+  addOneMetric( doc, el, "human_nouns_count", toString(humanCnt) );
   addOneMetric( doc, el, "indef_np_count", toString(indefNpCnt) );
   addOneMetric( doc, el, "np_count", toString(npCnt) );
   addOneMetric( doc, el, "np_size", toString(npSize) );
@@ -1984,11 +1985,11 @@ void docStats::addMetrics( ) const {
   addOneMetric( el->doc(), el, 
 		"paragraph_count", toString( sv.size() ) );
   addOneMetric( el->doc(), el, 
-		"TTW", toString( unique_words.size()/double(wordCnt) ) );
+		"word_ttr", toString( unique_words.size()/double(wordCnt) ) );
   addOneMetric( el->doc(), el, 
-		"TTL", toString( unique_lemmas.size()/double(wordCnt) ) );
+		"lemma_ttr", toString( unique_lemmas.size()/double(wordCnt) ) );
   addOneMetric( el->doc(), el, 
-		"rarity", toString( rarity( this, settings.rarityLevel ) ) );
+		"rar_index", toString( rarity( this, settings.rarityLevel ) ) );
   addOneMetric( el->doc(), el, 
 		"document_word_argument_count", toString( doc_word_argCnt ) );
   addOneMetric( el->doc(), el, 
