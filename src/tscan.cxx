@@ -1448,10 +1448,10 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "pronoun_1_count", toString(pron1Cnt) );
   addOneMetric( doc, el, "pronoun_2_count", toString(pron2Cnt) );
   addOneMetric( doc, el, "pronoun_3_count", toString(pron3Cnt) );
-  addOneMetric( doc, el, "character_sum", toString(wordLen) );
-  addOneMetric( doc, el, "character_sum_no_names", toString(wordLenExNames) );
-  addOneMetric( doc, el, "morph_count", toString(morphLen) );
-  addOneMetric( doc, el, "morph_count_no_names", toString(morphLenExNames) );
+  addOneMetric( doc, el, "character_count", toString(wordLen) );
+  addOneMetric( doc, el, "character_count_min_names", toString(wordLenExNames) );
+  addOneMetric( doc, el, "morpheme_count", toString(morphLen) );
+  addOneMetric( doc, el, "morpheme_count_min_names", toString(morphLenExNames) );
   addOneMetric( doc, el, "concrete_strict", toString(strictConcreteCnt) );
   addOneMetric( doc, el, "concrete_broad", toString(broadConcreteCnt) );
   addOneMetric( doc, el, "abstract_strict", toString(strictAbstractCnt) );
