@@ -36,7 +36,7 @@
 #include "libfolia/document.h"
 #include "ticcutils/StringOps.h"
 #include "ticcutils/LogStream.h"
-#include "tscan/Configuration.h"
+#include "ticcutils/Configuration.h"
 #include "tscan/Alpino.h"
 #include "tscan/decomp.h"
 #include "tscan/surprise.h"
