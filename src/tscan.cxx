@@ -751,7 +751,7 @@ void wordStats::freqLookup(){
   map<string,cf_data>::const_iterator it = settings.freq_lex.find( lowercase(word) );
   if ( it != settings.freq_lex.end() ){
     wfreq = it->second.count;
-    lwfreq = log(wfreq);
+    lwfreq = log10(wfreq);
     double freq = it->second.freq;
     if ( freq <= 50 )
       f50 = true;
@@ -1018,7 +1018,7 @@ void wordStats::addMetrics( ) const {
   if ( surprisal != NA  )
     addOneMetric( doc, el, "surprisal", toString(surprisal) );
   if ( compLen > 0 )
-    addOneMetric( doc, el, "compound_len", toString(compLen) );
+    addOneMetric( doc, el, "compound_length", toString(compLen) );
   addOneMetric( doc, el, 
 		"argument_repeat_count", toString( argRepeatCnt ) );
   addOneMetric( doc, el, 
@@ -1028,7 +1028,7 @@ void wordStats::addMetrics( ) const {
   addOneMetric( doc, el, 
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
 
-  addOneMetric( doc, el, "word_freq", toString(lwfreq) );
+  addOneMetric( doc, el, "average_log_wfreq", toString(lwfreq) );
   if ( !wwform.empty() ){
     KWargs args;
     args["set"] = "tscan-set";
@@ -1427,7 +1427,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "proper_negative_count", toString(propNegCnt) );
   addOneMetric( doc, el, "morph_negative_count", toString(morphNegCnt) );
   addOneMetric( doc, el, "compound_count", toString(compCnt) );
-  addOneMetric( doc, el, "compound_len", toString(compLen) );
+  addOneMetric( doc, el, "compound_length", toString(compLen) );
   addOneMetric( doc, el, 
 		"argument_repeat_count", toString( argRepeatCnt ) );
   addOneMetric( doc, el, 
@@ -1436,8 +1436,8 @@ void structStats::addMetrics( ) const {
 		"lemma_argument_repeat_count", toString( lemmaRepeatCnt ) );
   addOneMetric( doc, el, 
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
-  addOneMetric( doc, el, "word_freq", toString(lwfreq) );
-  addOneMetric( doc, el, "word_freq_nonames", toString(lwfreq_n) );
+  addOneMetric( doc, el, "average_log_wfreq", toString(lwfreq) );
+  addOneMetric( doc, el, "average_log_wfreq_min_names", toString(lwfreq_n) );
   addOneMetric( doc, el, "freq50", toString(f50Cnt) );
   addOneMetric( doc, el, "freq65", toString(f65Cnt) );
   addOneMetric( doc, el, "freq77", toString(f77Cnt) );
@@ -1832,8 +1832,8 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
     }
   }
   resolveConnectives();
-  lwfreq = log( wfreq / w.size() );
-  lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
+  lwfreq = log10( wfreq / w.size() );
+  lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
   np_length( s, npCnt, indefNpCnt, npSize );
   if ( alpDoc ){
     dLevel = get_d_level( s, alpDoc );
@@ -1885,8 +1885,8 @@ parStats::parStats( Paragraph *p ):
     merge( ss );
     sentCnt++;
   }
-  lwfreq = log( wfreq / sents.size() );
-  lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
+  lwfreq = log10( wfreq / sents.size() );
+  lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
 }
 
 void parStats::print( ostream& os ) const {
@@ -1934,8 +1934,8 @@ docStats::docStats( Document *doc ):
     merge( ps );
     sentCnt += ps->sentCnt;
   }
-  lwfreq = log( wfreq / pars.size() );
-  lwfreq_n = log( wfreq_n / (wordCnt-nameCnt) );
+  lwfreq = log10( wfreq / pars.size() );
+  lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
   vector<Word*> wv = doc->words();
   vector<string> wordbuffer(settings.overlapSize);
   vector<string> lemmabuffer(settings.overlapSize);
