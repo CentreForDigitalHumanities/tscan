@@ -306,7 +306,8 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
 	return 6;
     }
     else if ( atts["rel"] == "su" && 
-	      ( atts["cat"] == "cp" || atts["cat"] == "whsub"
+	      ( atts["cat"] == "cp" 
+		|| atts["cat"] == "whsub" || atts["cat"] == "whrel"
 		|| atts["cat"] == "ti"  || atts["cat"] == "oti" 
 		|| atts["cat"] == "inf" ) ){
       //      cerr << "HIT SU node " << atts << endl;
@@ -407,10 +408,13 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
 	return 3;
     }
     else if ( atts["rel"] == "vc" && 
-	      ( atts["cat"] == "cp" || atts["cat"] == "whsub" ) ){
+	      ( atts["cat"] == "cp" || 
+		atts["cat"] == "whsub" ) ){
+      //      cerr << "case VC" << endl;
       return 3;
     }
     else if ( atts["rel"] == "sup" ){
+      //      cerr << "case sup" << endl;
       return 3;
     }
   }
