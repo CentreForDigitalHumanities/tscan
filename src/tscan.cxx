@@ -1315,7 +1315,7 @@ void structStats::merge( structStats *ss ){
   npCnt += ss->npCnt;
   indefNpCnt += ss->indefNpCnt;
   npSize += ss->npSize;
-  if ( ss->dLevel > 0 ){
+  if ( ss->dLevel >= 0 ){
     if ( dLevel < 0 )
       dLevel = ss->dLevel;
     else
@@ -1467,6 +1467,8 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "np_size", toString(npSize) );
   if ( dLevel >= 0 )
     addOneMetric( doc, el, "d_level", toString(dLevel) );
+  else
+    addOneMetric( doc, el, "d_level", "missing" );
 
   /*
   os << category << " Named Entities ";

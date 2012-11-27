@@ -379,6 +379,7 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
   }
 
   // < 4
+  //  cerr << "DLEVEL < 4 " << endl;
   for ( size_t i=0; i < nodelist.size(); ++i ){ 
     // we kijken of het om een level 3 zin gaat
     // Zinnen met een objectsmodificerende betrekkelijke bijzin: 
@@ -390,29 +391,37 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
     //   Kun je in Alpino detecteren met aan het 'sup' label voor een 
     //   voorlopig onderwerp 
     KWargs atts = getAttributes( nodelist[i] );
+    //    cerr << "bekijk " << atts << endl;
     if ( atts["rel"] == "mod" && atts["cat"] == "rel" ){
+      //      cerr << "case mod/rel " << endl;
       KWargs attsp = getAttributes( nodelist[i]->parent );
+      //      cerr << "bekijk " << attsp << endl;
       if ( attsp["rel"] == "obj1" )
 	return 3;
     }
     else if ( atts["pos"] == "verb" ){
+      //      cerr << "case VERB " << endl;
       KWargs attsp = getAttributes( nodelist[i]->parent );
+      //      cerr << "bekijk " << attsp << endl;
       if ( attsp["rel"] == "obj1" && attsp["cat"] == "np" )
 	return 3;
     }
     else if ( atts["rel"] == "vc" && 
-	      ( atts["cat"] == "rel" || atts["cat"] == "whsub" ) ){
+	      ( atts["cat"] == "cp" || atts["cat"] == "whsub" ) ){
       return 3;
     }
     else if ( atts["rel"] == "sup" ){
       return 3;
     }
   }
-
+  
   // < 3 
   for ( size_t i=0; i < poslist.size(); ++i ){
     // we kijken of het om een level 2 zin gaat
     // zinnen met nevenschikkingen
+    cerr << "bekijk " << poslist[i] << endl;
+    cerr << "head=" << poslist[i]->feat("head") << endl;
+    cerr << "head=" << poslist[i]->feat("headfeature") << endl;
     string pos = poslist[i]->feat("head");
     if ( pos == "VG" ){
       string cp = poslist[i]->feat("conjtype");
@@ -455,9 +464,7 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
   }
   
   // < 1
-  if ( pv_counter <= 1 )
-    return 0;
-  return -1;
+  return 0;
 }
 
 xmlDoc *AlpinoParse( folia::Sentence *s ){
