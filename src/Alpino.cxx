@@ -199,8 +199,8 @@ string toString( const DD_type& t ){
   case OBJ2_VERB:
     result = "lijdend-verb";
     break;
-  case PP_VERB:
-    result = "pp-verb";
+  case VERB_PP:
+    result = "verb-pp";
     break;
   case VERB_VC:
     result = "verb-vc";
@@ -395,6 +395,12 @@ vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
 	  xmlNode *res = node_search( *it, "rel", "cmp" );
 	  if ( res ){
 	    store_result( result, VERB_COMP, head_node, res );
+	  }
+	}
+	if ( args["cat"] == "pp" ){
+	  xmlNode *res = node_search( *it, "rel", "hd" );
+	  if ( res ){
+	    store_result( result, VERB_PP, head_node, res );
 	  }
 	}
       }

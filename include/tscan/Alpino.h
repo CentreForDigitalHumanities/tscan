@@ -31,7 +31,7 @@ xmlDoc *AlpinoParse( folia::Sentence * );
 xmlNode *getAlpWord( xmlDoc *, const folia::Word * );
 std::string classifyVerb( folia::Word *, xmlDoc * );
 
-enum DD_type { SUB_VERB, OBJ1_VERB, OBJ2_VERB, PP_VERB, VERB_VC,
+enum DD_type { SUB_VERB, OBJ1_VERB, OBJ2_VERB, VERB_PP, VERB_VC,
 	       VERB_COMP, NOUN_DET, PREP_OBJ1, CRD_CNJ, COMP_BODY, NOUN_VC };
 struct ddinfo {
 ddinfo( DD_type _t, int _d ):type(_t),dist(_d){};
