@@ -391,13 +391,13 @@ vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
 	    store_result( result, VERB_VC, head_node, res );
 	  }
 	}
-	else if ( args["rel"] == "cp" ){
+	if ( args["cat"] == "cp" ){
 	  xmlNode *res = node_search( *it, "rel", "cmp" );
 	  if ( res ){
 	    store_result( result, VERB_COMP, head_node, res );
 	  }
 	}
-	if ( args["cat"] == "pp" ){
+	else if ( args["cat"] == "pp" ){
 	  xmlNode *res = node_search( *it, "rel", "hd" );
 	  if ( res ){
 	    store_result( result, VERB_PP, head_node, res );
@@ -433,8 +433,7 @@ vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
 	    }
 	  }
 	}
-	if ( args["rel"] == "vc" 
-	     && getAttribute( head_node->parent, "cat" ) == "np" ){
+	if ( args["rel"] == "vc" ){
 	  xmlNode *res = node_search( *it, "rel", "hd" );
 	  if ( res ){
 	    store_result( result, NOUN_VC, head_node, res );
