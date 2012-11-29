@@ -111,12 +111,19 @@ xmlNode *node_search( const xmlNode* node,
 		      const string& val ){
   xmlNode *pnt = node->children;
   while ( pnt ){
+    // breath first search
     if ( pnt->type == XML_ELEMENT_NODE ){
-      KWargs atts = getAttributes( pnt );
-      if ( atts[att] == val ){
+      if ( getAttribute( pnt, att ) == val ){
 	return pnt;
       }
-      else if ( atts["root"] == "" ){
+    }
+    pnt = pnt->next;;
+  }
+  // no luck, so get down the non-root nodes
+  pnt = node->children;
+  while ( pnt ){
+    if ( pnt->type == XML_ELEMENT_NODE ){
+      if ( getAttribute( pnt, "root" ) == "" ){
 	xmlNode *tmp = node_search( pnt, att, val );
 	if ( tmp )
 	  return tmp;
@@ -132,12 +139,20 @@ xmlNode *node_search( const xmlNode* node,
 		      const set<string>& values ){
   xmlNode *pnt = node->children;
   while ( pnt ){
+    // breath first search
     if ( pnt->type == XML_ELEMENT_NODE ){
-      KWargs atts = getAttributes( pnt );
-      if ( values.find(atts[att]) != values.end() ){
+      string aval = getAttribute( pnt, att );
+      if ( values.find( aval ) != values.end() )
 	return pnt;
-      }
-      else if ( atts["root"] == "" ){
+    }
+    pnt = pnt->next;;
+  }
+  pnt = node->children;
+  // no luck, so get down the non-root nodes
+  pnt = node->children;
+  while ( pnt ){
+    if ( pnt->type == XML_ELEMENT_NODE ){
+      if ( getAttribute( pnt, "root" ) == "" ){
 	xmlNode *tmp = node_search( pnt, att, values );
 	if ( tmp )
 	  return tmp;
@@ -533,11 +548,10 @@ string classifyVerb( Word *w, xmlDoc *alp ){
 	  obj_node = node_search( siblinglist[i], "rel", "obj1" );
 	  if ( obj_node ){
 	    //	      cerr << "found an obj node! " << obj_node << endl;
-	    KWargs atts = getAttributes( obj_node );
-	    string index = atts["index"];
-	    if ( !index.empty() ){
-	      KWargs atts = getAttributes( su_node );
-	      if ( atts["index"] == index ){
+	    string oindex = getAttribute( obj_node, "index" );
+	    if ( !oindex.empty() ){
+	      string sindex = getAttribute( su_node, "index" );
+	      if ( sindex == oindex ){
 		return "passiefww";
 	      }
 	    }
