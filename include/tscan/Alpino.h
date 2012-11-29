@@ -30,6 +30,27 @@
 xmlDoc *AlpinoParse( folia::Sentence * );
 xmlNode *getAlpWord( xmlDoc *, const folia::Word * );
 std::string classifyVerb( folia::Word *, xmlDoc * );
+
+enum DD_type { SUB_VERB, OBJ1_VERB, OBJ2_VERB, PP_VERB, VERB_VC,
+	       VERB_COMP, NOUN_DET, PREP_OBJ1, CRD_CNJ, COMP_BODY, NOUN_VC };
+struct ddinfo {
+ddinfo( DD_type _t, int _d ):type(_t),dist(_d){};
+  DD_type type;
+  int dist;
+};
+std::string toString( const DD_type& );
+
+inline std::ostream& operator<< (std::ostream&os, const DD_type& t ){
+  os << toString( t );
+  return os;
+}
+
+inline std::ostream& operator<< (std::ostream&os, const ddinfo& i ){
+  os << toString( i.type ) << ":" << i.dist;
+  return os;
+}
+
+std::vector<ddinfo> getDependencyDist( folia::Word *, xmlDoc * );
 int get_d_level( folia::Sentence *s, xmlDoc *alp );
 int indef_npcount( xmlDoc *alp );
 

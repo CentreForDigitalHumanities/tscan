@@ -148,6 +148,31 @@ xmlNode *node_search( const xmlNode* node,
   return 0;
 }
 
+void get_index_nodes( const xmlNode* node, vector<xmlNode*>& result ){
+  xmlNode *pnt = node->children;
+  while ( pnt ){
+    if ( pnt->type == XML_ELEMENT_NODE ){
+      KWargs atts = getAttributes( pnt );
+      if ( atts["index"] != "" &&
+	   !(atts["pos"] == "" && atts["cat"] == "" ) ){
+	result.push_back( pnt );
+      }
+      else if ( atts["root"] == "" ){
+	get_index_nodes( pnt, result );
+      }
+    }
+    pnt = pnt->next;;
+  }
+}
+
+vector<xmlNode *> getIndexNodes( xmlDoc *doc ){
+  xmlNode *pnt = xmlDocGetRootElement( doc );
+  vector<xmlNode*> result;
+  get_index_nodes( pnt->children, result );
+  return result;
+}
+
+
 const string modalA[] = { "kunnen", "moeten", "hoeven", "behoeven", "mogen",
 			  "willen", "blijken", "lijken", "schijnen", "heten" };
 
@@ -157,11 +182,335 @@ const string koppelA[] = { "zijn", "worden", "blijven", "lijken", "schijnen",
 set<string> modals = set<string>( modalA, modalA + 10 );
 set<string> koppels = set<string>( koppelA, koppelA + 8 );
 
+int get_begin( xmlNode *n ){
+  string bpos = getAttribute( n, "begin" );
+  return stringTo<int>( bpos );
+}
+
+string toString( const DD_type& t ){
+  string result;
+  switch ( t ){
+  case SUB_VERB:
+    result = "subject-verb";
+    break;
+  case OBJ1_VERB:
+    result = "object-verb";
+    break;
+  case OBJ2_VERB:
+    result = "lijdend-verb";
+    break;
+  case PP_VERB:
+    result = "pp-verb";
+    break;
+  case VERB_VC:
+    result = "verb-vc";
+    break;
+  case VERB_COMP:
+    result = "verb-comp";
+    break;
+  case NOUN_DET:
+    result = "noun-det";
+    break;
+  case PREP_OBJ1:
+    result = "prep-obj1";
+    break;
+  case CRD_CNJ:
+    result = "crd-cnj";
+    break;
+  case COMP_BODY:
+    result = "comp-body";
+    break;
+  case NOUN_VC:
+    result = "noun-vc";
+    break;
+  default:
+    result = "ERROR unknown translation for DD_type(" + toString(t ) + ")";
+  }
+  return result;
+}
+  
+void store_result( vector<ddinfo>& result, DD_type type, 
+		   xmlNode *n1, xmlNode*n2 ){
+  int pos1 = get_begin( n1 );
+  int pos2 = get_begin( n2 );
+  cerr << "store " << type << "(" << pos1 << "," << pos2 << ")" << endl;
+  result.push_back( ddinfo( SUB_VERB, abs( pos1-pos2) ) );
+}
+
+vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
+  vector<ddinfo> result;
+  xmlNode *head_node = getAlpWord( alp, w );
+  if ( head_node ){
+    KWargs atts = getAttributes( head_node );
+    string head_rel = atts["rel"];
+    string head_cat = atts["cat"];
+    string head_pos = atts["pos"];
+    if ( head_rel == "hd" && head_pos == "verb" ){
+      vector< xmlNode *> head_siblings = getSibblings( head_node );
+      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin(); 
+	    it != head_siblings.end(); 
+	    ++it ){
+	KWargs args = getAttributes( *it );
+	//	cerr << "bekijk " << args << endl;
+	if ( args["rel"] == "su" || args["rel"] == "sup" ){
+	  if ( !(*it)->children ){
+	    //	    cerr << "geval 1 " << endl;
+	    xmlNode *target = *it;
+	    if ( args["index"] != "" &&
+		 args["pos"] == "" && args["cat"] == "" ){
+	      //	      cerr << "geval 2 " << endl;
+	      vector<xmlNode*> inodes = getIndexNodes( alp );
+	      for ( size_t i=0; i < inodes.size(); ++i ){
+		KWargs iatts = getAttributes(inodes[i]);
+		if ( iatts["index"] == args["index"] ){
+		  target = inodes[i];
+		  break;
+		}
+	      }
+	      if ( target->children ){
+		xmlNode *res = node_search( target , "rel", "cnj" );
+		if ( res ){
+		  //		  cerr << "geval 3 " << endl;
+		  string root = getAttribute( res, "root" );
+		  if ( !root.empty() ){
+		    //		    cerr << "geval 3A " << endl;
+		    target = res; 
+		  }
+		}
+		else {
+		  //		  cerr << "geval 4 " << endl;
+		  xmlNode *res = node_search( target , "rel", "hd" );
+		  if ( res ){
+		    //		    cerr << "geval 4A " << endl;
+		    target = res;
+		  }
+		}
+	      }
+	    }
+	    store_result( result, SUB_VERB, head_node, target );
+	  }
+	  else {
+	    //	    cerr << "geval 6 " << endl;
+	    xmlNode *res = node_search( *it, "rel", "hd" );
+	    if ( res ){
+	      store_result( result, SUB_VERB, head_node, res );
+	    }
+	    res = node_search( *it, "rel", "cnj" );
+	    if ( res ){
+	      store_result( result, SUB_VERB, head_node, res );
+	    }
+	  }
+	}
+	else if ( args["rel"] == "obj1" ){
+	  if ( !(*it)->children ){
+	    xmlNode *target = *it;
+	    if ( args["index"] != "" &&
+		 args["pos"] == "" && args["cat"] == "" ){
+	      vector<xmlNode*> inodes = getIndexNodes( alp );
+	      for ( size_t i=0; i < inodes.size(); ++i ){
+		string myindex = getAttribute( inodes[i], "index" );
+		if ( args["index"] == myindex ){
+		  target = inodes[i];
+		  break;
+		}
+	      }
+	      if ( target->children ){
+		xmlNode *res = node_search( target , "rel", "cnj" );
+		if ( res ){
+		  string root = getAttribute( res, "root" );
+		  if ( !root.empty() ){
+		    target = res; 
+		  }
+		}
+		else {
+		  xmlNode *res = node_search( target , "rel", "hd" );
+		  if ( res ){
+		    target = res;
+		  }
+		}
+	      }
+	    }
+	    store_result( result, OBJ1_VERB, head_node, target );
+	  }
+	  else {
+	    xmlNode *res = node_search( *it, "rel", "hd" );
+	    if ( res ){
+	      store_result( result, OBJ1_VERB, head_node, res );
+	    }
+	    res = node_search( *it, "rel", "cnj" );
+	    if ( res ){
+	      store_result( result, OBJ1_VERB, head_node, res );
+	    }
+	  }
+	}
+	else if ( args["rel"] == "obj2" ){
+	  if ( !(*it)->children ){
+	    xmlNode *target = *it;
+	    if ( args["index"] != "" &&
+		 args["pos"] == "" && args["cat"] == "" ){
+	      vector<xmlNode*> inodes = getIndexNodes( alp );
+	      for ( size_t i=0; i < inodes.size(); ++i ){
+		string myindex = getAttribute( inodes[i], "index" );
+		if ( args["index"] == myindex ){
+		  target = inodes[i];
+		  break;
+		}
+	      }
+	      if ( target->children ){
+		xmlNode *res = node_search( target , "rel", "cnj" );
+		if ( res ){
+		  string root = getAttribute( res, "root" );
+		  if ( !root.empty() ){
+		    target = res; 
+		  }
+		}
+		else {
+		  xmlNode *res = node_search( target , "rel", "hd" );
+		  if ( res ){
+		    target = res;
+		  }
+		}
+	      }
+	    }
+	    store_result( result, OBJ2_VERB, head_node, target );
+	  }
+	  else {
+	    xmlNode *res = node_search( *it, "rel", "hd" );
+	    if ( res ){
+	      store_result( result, OBJ2_VERB, head_node, res );
+	    }
+	    res = node_search( *it, "rel", "cnj" );
+	    if ( res ){
+	      store_result( result, OBJ2_VERB, head_node, res );
+	    }
+	  }
+	}
+	else if ( args["rel"] == "vc" ){
+	  xmlNode *res = node_search( *it, "rel", "hd" );
+	  if ( res ){
+	    store_result( result, VERB_VC, head_node, res );
+	  }
+	}
+	else if ( args["rel"] == "cp" ){
+	  xmlNode *res = node_search( *it, "rel", "cmp" );
+	  if ( res ){
+	    store_result( result, VERB_COMP, head_node, res );
+	  }
+	}
+      }
+    }
+    else if ( head_rel == "hd" && head_pos == "noun" &&
+	      getAttribute( head_node->parent, "cat" ) == "np" ){
+      vector< xmlNode *> head_siblings = getSibblings( head_node );
+      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin(); 
+	    it != head_siblings.end(); 
+	    ++it ){
+	KWargs args = getAttributes( *it );
+	//	cerr << "bekijk " << args << endl;
+	if ( args["rel"] == "det" ){
+	  if ( !(*it)->children ){
+	    store_result( result, NOUN_DET, head_node, *it );
+	  }
+	  else {
+	    xmlNode *res = node_search( *it, "rel", "hd" );
+	    if ( res ){
+	      store_result( result, NOUN_DET, head_node, res );
+	    }
+	    res = node_search( *it, "rel", "mpw" );
+	    // determiners kunnen voor Alpino net als een onderwerp of lijdend 
+	    // voorwerp samengesteld zijn uit meerdere woorden... 
+	    // weet alleen even geen voorbeeld... 
+	    if ( res ){
+	      string root = getAttribute( *it, "root" );
+	      if ( !root.empty() )
+		store_result( result, NOUN_DET, head_node, res );
+	    }
+	  }
+	}
+	if ( args["rel"] == "vc" 
+	     && getAttribute( head_node->parent, "cat" ) == "np" ){
+	  xmlNode *res = node_search( *it, "rel", "hd" );
+	  if ( res ){
+	    store_result( result, NOUN_VC, head_node, res );
+	  }
+	}
+      }
+    }
+    else if ( head_rel == "hd" && head_pos == "prep" 
+	      && getAttribute( head_node->parent, "cat" ) == "pp" ){
+      vector< xmlNode *> head_siblings = getSibblings( head_node );
+      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin(); 
+	    it != head_siblings.end(); 
+	    ++it ){
+	KWargs args = getAttributes( *it );
+	//	cerr << "bekijk " << args << endl;
+	if ( args["rel"] == "obj1" ){
+	  if ( !(*it)->children ){
+	    store_result( result, PREP_OBJ1, head_node, *it );
+	  }
+	  else {
+	    xmlNode *res = node_search( *it, "rel", "hd" );
+	    if ( res ){
+	      store_result( result, PREP_OBJ1, head_node, res );
+	    }
+	    res = node_search( *it, "rel", "cnj" );
+	    if ( res ){
+	      if ( getAttribute( res, "root" ) != "" )
+		store_result( result, NOUN_DET, head_node, res );
+	    }
+	  }
+	}
+      }
+    }
+    else if ( head_rel == "crd" ){
+      vector< xmlNode *> head_siblings = getSibblings( head_node );
+      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin(); 
+	    it != head_siblings.end(); 
+	    ++it ){
+	KWargs args = getAttributes( *it );
+	//	cerr << "bekijk " << args << endl;
+	if ( args["rel"] == "cnj" ){
+	  if ( !(*it)->children ){
+	    store_result( result, CRD_CNJ, head_node, *it );
+	  }
+	  else {
+	    xmlNode *res = node_search( *it, "rel", "hd" );
+	    if ( res ){
+	      store_result( result, CRD_CNJ, head_node, res );
+	    }
+	  }
+	}
+      }
+    }
+    else if ( head_rel == "cmp" &&
+	      ( head_pos == "comp" || head_pos == "comparative" ) ){
+      vector< xmlNode *> head_siblings = getSibblings( head_node );
+      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin(); 
+	    it != head_siblings.end(); 
+	    ++it ){
+	KWargs args = getAttributes( *it );
+	//	cerr << "bekijk " << args << endl;
+	if ( args["rel"] == "body" ){
+	  xmlNode *res = node_search( *it, "rel", "hd" );
+	  if ( res ){
+	    store_result( result, COMP_BODY, head_node, res );
+	  }
+	  res = node_search( *it, "rel", "cnj" );
+	  if ( res ){
+	    store_result( result, COMP_BODY, head_node, res );
+	  }
+	}
+      }
+    }
+
+  }
+  return result;
+}
+
 string classifyVerb( Word *w, xmlDoc *alp ){
   xmlNode *wnode = getAlpWord( alp, w );
   if ( wnode ){
     vector< xmlNode *> siblinglist = getSibblings( wnode );
-    string pos = w->pos();
     string lemma = w->lemma();
     if ( lemma == "zijn" || lemma == "worden" ){
       xmlNode *obj_node = 0;
@@ -423,9 +772,9 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
   for ( size_t i=0; i < poslist.size(); ++i ){
     // we kijken of het om een level 2 zin gaat
     // zinnen met nevenschikkingen
-    cerr << "bekijk " << poslist[i] << endl;
-    cerr << "head=" << poslist[i]->feat("head") << endl;
-    cerr << "head=" << poslist[i]->feat("headfeature") << endl;
+    // cerr << "bekijk " << poslist[i] << endl;
+    // cerr << "head=" << poslist[i]->feat("head") << endl;
+    // cerr << "head=" << poslist[i]->feat("headfeature") << endl;
     string pos = poslist[i]->feat("head");
     if ( pos == "VG" ){
       string cp = poslist[i]->feat("conjtype");

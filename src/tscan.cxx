@@ -399,6 +399,7 @@ struct wordStats : public basicStats {
   WordProp prop;
   SemType sem_type;
   vector<string> morphemes;
+  vector<ddinfo> ddvec;
 };
 
 ConnType wordStats::checkConnective() const {
@@ -906,11 +907,12 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   posHead = pa->feat("head");
   lemma = w->lemma( frog_lemma_set );
   prop = checkProps( pa );
-  if ( posHead == "WW" ){
-    if ( alpDoc ){
+  if ( alpDoc ){
+    if ( posHead == "WW" ){
       wwform = classifyVerb( w, alpDoc );
       isPassive = ( wwform == "passiefww" );
     }
+    ddvec = getDependencyDist( w, alpDoc );
   }
   isContent = checkContent();
   if ( prop != ISPUNCT ){
