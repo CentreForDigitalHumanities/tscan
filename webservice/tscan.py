@@ -177,9 +177,9 @@ COMMAND = TSCANDIR + "/webservice/tscanwrapper.py $DATAFILE $STATUSFILE $OUTPUTD
 
 PARAMETERS =  [ 
     ('Parameters', [ 
-        IntegerParameter(id='rarityLevel',name='Rarity Level',description='Rarity level'),
-        IntegerParameter(id='overlapSize',name='Overlap Size',description='Overlap Size'),
-        IntegerParameter(id='polarity_threshold',name='Polarity Threshold',description='Polarity Threshold'),
+        IntegerParameter(id='rarityLevel',name='Rarity Level',description='Rarity level',default=4),
+        IntegerParameter(id='overlapSize',name='Overlap Size',description='Overlap Size',default=50),
+        FloatParameter(id='polarity_threshold',name='Polarity Threshold',description='Polarity Threshold',0.01),
         #BooleanParameter(id='createlexicon',name='Create Lexicon',description='Generate a separate overall lexicon?'),
         #ChoiceParameter(id='casesensitive',name='Case Sensitivity',description='Enable case sensitive behaviour?', choices=['yes','no'],default='no'),
         #StringParameter(id='author',name='Author',description='Sign output metadata with the specified author name',maxlength=255),
