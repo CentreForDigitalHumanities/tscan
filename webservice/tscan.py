@@ -20,7 +20,9 @@ from clam.common.viewers import *
 from clam.common.data import *
 from clam.common.digestauth import pwhash
 import sys
-from os import uname
+from os import uname, environ
+from base64 import b64decode as D
+
 
 REQUIRE_VERSION = 0.8
 
