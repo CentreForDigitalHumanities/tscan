@@ -560,17 +560,23 @@ bool wordStats::checkContent() const {
 }
 
 bool match_tail( const string& word, const string& tail ){
-  if ( tail.size() > word.size() )
+  //  cerr << "match tail " << word << " tail=" << tail << endl;
+  if ( tail.size() > word.size() ){
+    //    cerr << "match tail failed" << endl;
     return false;
+  }
   string::const_reverse_iterator wir = word.rbegin();
   string::const_reverse_iterator tir = tail.rbegin();
   while ( tir != tail.rend() ){
-    if ( *tir != *wir )
+    if ( *tir != *wir ){
+      //      cerr << "match tail failed" << endl;
       return false;
+    }
     ++tir;
     ++wir;
   }
-  return false;
+  //  cerr << "match tail succes" << endl;
+  return true;
 }
 
 bool wordStats::checkNominal( Word *w, xmlDoc *alpDoc ) const {
@@ -579,10 +585,17 @@ bool wordStats::checkNominal( Word *w, xmlDoc *alpDoc ) const {
 				"esse",	"name" };
   static set<string> morphs( morphList, 
 			     morphList + sizeof(morphList)/sizeof(string) );
-  if ( posHead == "N" && morphemes.size() > 1 
-       && morphs.find( morphemes[morphemes.size()-1] ) != morphs.end() ){
-    // morphemes.size() > 1 check mijdt false hits voor "dom", "schap".
-    return true;
+  //  cerr << "check Nominal. morphemes=" << morphemes << endl;
+  if ( posHead == "N" && morphemes.size() > 1 ){
+    string last_morph = morphemes[morphemes.size()-1];
+    if ( ( last_morph == "en" || last_morph == "s" ) 
+	 && morphemes.size() > 2 )
+      last_morph =  morphemes[morphemes.size()-2];
+    if ( morphs.find( last_morph ) != morphs.end() ){
+      // morphemes.size() > 1 check mijdt false hits voor "dom", "schap".
+      //      cerr << "check Nominal, MATCHED morheme " << last_morph << endl;
+      return true;
+    }
   }
   bool matched = match_tail( word, "ose" ) ||
     match_tail( word, "ase" ) ||
@@ -590,8 +603,10 @@ bool wordStats::checkNominal( Word *w, xmlDoc *alpDoc ) const {
     match_tail( word, "isme" ) ||
     match_tail( word, "sie" ) ||
     match_tail( word, "tie" );
-  if ( matched )
+  if ( matched ){
+    //    cerr << "check Nominal, MATCHED tail " <<  word << endl;    
     return true;
+  }
   else {
     xmlNode *node = getAlpWord( alpDoc, w );
     if ( node ){
