@@ -26,6 +26,7 @@ import os
 import codecs
 import re
 import string
+import shutil
 
 #import CLAM-specific modules. The CLAM API makes a lot of stuff easily accessible.
 import clam.common.data
@@ -80,11 +81,13 @@ f.close()
 
 for inputfile in clamdata.inputfiles('textinput'):    
    inputtemplate = inputfile.metadata.inputtemplate
-   clam.common.status.write(statusfile, "Processing " + os.path.basename(str(inputfile)),50) # status update
+   clam.common.status.write(statusfile, "Processing " + os.path.basename(str(inputfile)),50) # status update   
    ref = os.system('tscan --config=' + outputdir + '/tscan.cfg -t ' + str(inputfile) + ' -o ' + outputdir + '/' + os.path.basename(str(inputfile).replace('.txt','') + '.xml') )
    if ref != 0:
         clam.common.status.write(statusfile, "Failed",50) # status update
    
+   
+shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
 
 #A nice status message to indicate we're done
 clam.common.status.write(statusfile, "Done",100) # status update
