@@ -137,6 +137,7 @@ PROFILES = [
             #CharEncodingConverter(id='latin1',label='Convert from Latin-1',charset='iso-8859-1'),
             #PDFtoTextConverter(id='pdfconv',label='Convert from PDF Document'),
             #MSWordConverter(id='docconv',label='Convert from MS Word Document'),
+            XSLTViewer(file=TSCANDIR + '/view/tscanview.xsl'),
             extension='.txt',
             #filename='filename.txt',
             #unique=True #set unique=True if the user may only upload a file for this input template once. Set multi=True if you the user may upload multiple of such files
