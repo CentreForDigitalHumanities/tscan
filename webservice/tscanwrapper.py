@@ -57,9 +57,9 @@ f.write("surprisalPath=\"" + TSCANDIR + "\"\n")
 f.write("styleSheet=\"tscanview.xsl\"\n")
 
 
-f.write("rarityLevel="  + clamdata['rarityLevel'] + "\n")
-f.write("overlapSize="  + clamdata['overlapSize'] + "\n")
-f.write("polarity_threshold="  + clamdata['polarity_threshold'] + "\n")
+f.write("rarityLevel="  + str(clamdata['rarityLevel']) + "\n")
+f.write("overlapSize="  + str(clamdata['overlapSize']) + "\n")
+f.write("polarity_threshold="  + str(clamdata['polarity_threshold']) + "\n")
 
 f.write("configDir=data\n")
 f.write("adj_semtypes=\"adjs_semtype.data\"\n")
