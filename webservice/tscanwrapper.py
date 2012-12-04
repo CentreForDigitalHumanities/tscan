@@ -61,7 +61,7 @@ f.write("rarityLevel="  + str(clamdata['rarityLevel']) + "\n")
 f.write("overlapSize="  + str(clamdata['overlapSize']) + "\n")
 f.write("polarity_threshold="  + str(clamdata['polarity_threshold']) + "\n")
 
-f.write("configDir=data\n")
+f.write("configDir="+ TSCANDIR + "/data\n")
 f.write("adj_semtypes=\"adjs_semtype.data\"\n")
 f.write("verb_semtypes=\"verbs_semtype.data\"\n")
 f.write("noun_semtypes=\"nouns_semtype.data\"\n")
