@@ -82,7 +82,7 @@ f.close()
 for inputfile in clamdata.inputfiles('textinput'):    
    inputtemplate = inputfile.metadata.inputtemplate
    clam.common.status.write(statusfile, "Processing " + os.path.basename(str(inputfile)),50) # status update   
-   ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg -t ' + str(inputfile) + ' -o ' + outputdir + '/' + os.path.basename(str(inputfile).replace('.txt','') + '.xml', shell=True) )
+   ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg -t ' + str(inputfile) + ' -o ' + outputdir + '/' + os.path.basename(str(inputfile).replace('.txt','') + '.xml'), shell=True )
    if ref != 0:
         clam.common.status.write(statusfile, "Failed",50) # status update
    
