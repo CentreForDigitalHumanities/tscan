@@ -81,7 +81,7 @@ f.close()
 for inputfile in clamdata.inputfiles('textinput'):    
    inputtemplate = inputfile.metadata.inputtemplate
    clam.common.status.write(statusfile, "Processing " + os.path.basename(str(inputfile)),50) # status update
-   ret = os.system('tscan --config=' + outputdir + '/tscan.cfg -t ' + str(inputfile) + ' -o ' + str(inputfile).replace('.txt','') + '.xml' )
+   ref = os.system('tscan --config=' + outputdir + '/tscan.cfg -t ' + str(inputfile) + ' -o ' + str(inputfile).replace('.txt','') + '.xml' )
    if ref != 0:
         clam.common.status.write(statusfile, "Failed",50) # status update
    
