@@ -145,6 +145,7 @@ PROFILES = [
         ),
         #------------------------------------------------------------------------------------------------------------------------
         OutputTemplate('foliaout',FoLiAXMLFormat,'Output analysis',            
+            removeextension='.txt', #remove prior to adding
             extension='.xml',
             multi=True
         ),
