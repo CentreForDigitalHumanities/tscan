@@ -78,7 +78,7 @@ f.close()
     
 #-- Iterate over all input files? -- 
 
-for inputfile in clamdata.inputtemplates('textinput'):    
+for inputfile in clamdata.inputfiles('textinput'):    
    inputtemplate = inputfile.metadata.inputtemplate
    clam.common.status.write(statusfile, "Processing " + os.path.basename(str(inputfile)),50) # status update
    ret = os.system('tscan --config=' + outputdir + '/tscan.cfg -t ' + str(inputfile) + ' -o ' + str(inputfile).replace('.txt','') + '.xml' )
