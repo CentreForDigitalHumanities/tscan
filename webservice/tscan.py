@@ -149,6 +149,10 @@ PROFILES = [
             extension='.xml',
             multi=True
         ),
+        OutputTemplate('foliaout',XMLStyleSheet,'Stylesheet for Visualisation',            
+            filename='tscanview.xsl',
+            unique=True
+        ),        
     ) 
 ]
 
