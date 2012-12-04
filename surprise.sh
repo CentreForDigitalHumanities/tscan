@@ -1,4 +1,4 @@
-# /bin/sh
+#!/bin/bash
 
 if [[ `hostname` == "applejack" ]]; then
 	cd /scratch2/www/webservices-lst/live/repo/tscan/HumDep3.0/Code
