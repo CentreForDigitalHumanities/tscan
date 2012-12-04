@@ -23,6 +23,7 @@ import sys
 from os import uname, environ
 from base64 import b64decode as D
 
+#DEBUG = True
 
 REQUIRE_VERSION = 0.8
 
@@ -129,7 +130,7 @@ CUSTOM_FORMATS_MODULE = None
 PROFILES = [ 
     Profile(
         InputTemplate('textinput', PlainTextFormat,"Text Input",  
-            #StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file', value='utf-8'),  
+            StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file', value='utf-8'),  
             #ChoiceParameter(id='language',name='Language',description='The language the text is in', choices=[('en','English'),('nl','Dutch'),('fr','French')]),
             #StringParameter(id='author',name='Author',description="The author's name", maxlength=100),
             #InputSource(id='sampledoc', label="Sample Document", path=ROOT+'/inputsources/sampledoc.txt', metadata=PlainTextFormat(None, encoding='utf-8',language='en')),
