@@ -379,6 +379,7 @@ struct wordStats : public basicStats {
   bool isContent;
   bool isNominal;
   bool isOnder;
+  bool isImperative;
   bool isBetr;
   bool isPropNeg;
   bool isMorphNeg;
@@ -904,7 +905,7 @@ void argument_overlap( const string w_or_l,
 wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
   basicStats( w, "WORD" ), 
   isPassive(false), isPronRef(false),
-  archaic(false), isContent(false), isNominal(false), isOnder(false), 
+  archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false), connType(NOCONN),
   f50(false), f65(false), f77(false), f80(false),  compLen(0), wfreq(0),
   argRepeatCnt(0), wordOverlapCnt(0), lemmaRepeatCnt(0), lemmaOverlapCnt(0),
@@ -926,6 +927,11 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
     if ( posHead == "WW" ){
       wwform = classifyVerb( w, alpDoc );
       isPassive = ( wwform == "passiefww" );
+      if ( prop == ISPVTGW || prop == ISPVVERL ){
+	//	cerr << "check IMP voor " << pos << " en lemma " << lemma << endl;
+	isImperative = checkImp( w, alpDoc );
+	//	cerr << "isImperative =" << isImperative << endl;
+      }
     }
     ddvec = getDependencyDist( w, alpDoc );
   }
@@ -1191,7 +1197,9 @@ struct structStats: public basicStats {
     npCnt(0),
     indefNpCnt(0),
     npSize(0),
-    dLevel(-1)
+    dLevel(-1),
+    impCnt(0),
+    questCnt(0)
  {};
   ~structStats();
   virtual void print(  ostream& ) const;
@@ -1252,6 +1260,8 @@ struct structStats: public basicStats {
   int indefNpCnt;
   int npSize;
   int dLevel;
+  int impCnt;
+  int questCnt;
   vector<basicStats *> sv;
   map<string,int> heads;
   map<string,int> unique_words;
@@ -1338,6 +1348,8 @@ void structStats::merge( structStats *ss ){
     else
       dLevel += ss->dLevel;
   }
+  impCnt += ss->impCnt;
+  questCnt += ss->questCnt;
   sv.push_back( ss );
   aggregate( heads, ss->heads );
   aggregate( unique_words, ss->unique_words );
@@ -1486,7 +1498,10 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "d_level", toString(dLevel) );
   else
     addOneMetric( doc, el, "d_level", "missing" );
-
+  if ( questCnt > 0 )
+    addOneMetric( doc, el, "question_count", toString(questCnt) );
+  if ( impCnt > 0 )
+    addOneMetric( doc, el, "imperative_count", toString(impCnt) );
   /*
   os << category << " Named Entities ";
   for ( map<NerProp,int>::const_iterator it = ners.begin();
@@ -1688,12 +1703,16 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
       surprisalV.clear();
     }
   }
-  
+
+  bool question = false;
   for ( size_t i=0; i < w.size(); ++i ){
     wordStats *ws = new wordStats( w[i], alpDoc );
     ws->surprisal = surprisalV[i];
     if ( prev ){
       ws->getSentenceOverlap( prev );
+    }
+    if ( ws->lemma == "?" ){
+      question = true;
     }
     if ( ws->prop == ISPUNCT ){
       sv.push_back( ws );
@@ -1778,6 +1797,8 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
 	nominalCnt++;
       if ( ws->isOnder )
 	onderCnt++;
+      if ( ws->isImperative )
+	impCnt++;
       if ( ws->isBetr )
 	betrCnt++;
       if ( ws->isPropNeg )
@@ -1851,6 +1872,8 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
       sv.push_back( ws );
     }
   }
+  if ( question )
+    questCnt = 1;
   resolveConnectives();
   lwfreq = log10( wfreq / w.size() );
   lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
@@ -1872,6 +1895,14 @@ void sentStats::print( ostream& os ) const {
 
 void sentStats::addMetrics( ) const {
   structStats::addMetrics( );
+  FoliaElement *el = folia_node;
+  Document *doc = el->doc();
+  if ( passiveCnt > 0 )
+    addOneMetric( doc, el, "isPassive", "true" );
+  if ( questCnt > 0 )
+    addOneMetric( doc, el, "isQuestion", "true" );
+  if ( impCnt > 0 )
+    addOneMetric( doc, el, "isImperative", "true" );
 }
 
 struct parStats: public structStats {

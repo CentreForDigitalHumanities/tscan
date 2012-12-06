@@ -852,6 +852,18 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
   return 0;
 }
 
+bool checkImp( Word *pv, xmlDoc *alp ){
+  xmlNode *alp_node = getAlpWord( alp, pv );
+  vector< xmlNode *> siblings = getSibblings( alp_node );
+  bool su_found = false;
+  for ( size_t i=0; i < siblings.size(); ++i ){
+    string rel = getAttribute( siblings[i], "rel" );
+    if ( rel == "su" || rel == "sup" )
+      su_found = true;
+  }
+  return !su_found;
+}
+
 xmlDoc *AlpinoParse( folia::Sentence *s ){
   string txt = folia::UnicodeToUTF8(s->toktext());
   //  cerr << "parse line: " << txt << endl;
