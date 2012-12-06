@@ -192,10 +192,10 @@ const string modalA[] = { "kunnen", "moeten", "hoeven", "behoeven", "mogen",
 			  "willen", "blijken", "lijken", "schijnen", "heten" };
 
 const string koppelA[] = { "zijn", "worden", "blijven", "lijken", "schijnen",
-			   "heten", "dunken", "voorkomen" };
+			   "heten", "blijken", "dunken", "voorkomen" };
 
 set<string> modals = set<string>( modalA, modalA + 10 );
-set<string> koppels = set<string>( koppelA, koppelA + 8 );
+set<string> koppels = set<string>( koppelA, koppelA + 9 );
 
 int get_begin( xmlNode *n ){
   string bpos = getAttribute( n, "begin" );
@@ -529,9 +529,11 @@ vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
 
 string classifyVerb( Word *w, xmlDoc *alp ){
   xmlNode *wnode = getAlpWord( alp, w );
+  //  cerr << "classify VERB " << w->text() << endl;
   if ( wnode ){
     vector< xmlNode *> siblinglist = getSibblings( wnode );
     string lemma = w->lemma();
+    //    cerr << "classify VERB lemma=" << lemma << endl;
     if ( lemma == "zijn" || lemma == "worden" ){
       xmlNode *obj_node = 0;
       xmlNode *su_node = 0;
@@ -552,6 +554,7 @@ string classifyVerb( Word *w, xmlDoc *alp ){
 	    if ( !oindex.empty() ){
 	      string sindex = getAttribute( su_node, "index" );
 	      if ( sindex == oindex ){
+		//		cerr << "resultaat = passiefww" << endl;
 		return "passiefww";
 	      }
 	    }
@@ -562,8 +565,10 @@ string classifyVerb( Word *w, xmlDoc *alp ){
     if ( koppels.find( lemma ) != koppels.end() ){
       for ( size_t i=0; i < siblinglist.size(); ++i ){
 	KWargs atts = getAttributes( siblinglist[i] );
-	if ( atts["rel"] == "predc" )
+	if ( atts["rel"] == "predc" ){
+	  //	  cerr << "resultaat = koppelww" << endl;
 	  return "koppelww";
+	}
       }
     }
     if ( lemma == "schijnen" ){
@@ -574,34 +579,42 @@ string classifyVerb( Word *w, xmlDoc *alp ){
 	  static set<string> sws( schijn_words, schijn_words+5 );
 	  xmlNode *node = node_search( siblinglist[i], 
 				       "root", sws );
-	  if ( node )
+	  if ( node ){
+	    //	    cerr << "resultaat 1 = hoofdww" << endl;
 	    return "hoofdww";
+	  }
 	}
       }
     }
-    string data = XmlContent( wnode->children );
-    if ( data == "zul" || data == "zal" 
-	 || data == "zullen" || data == "zult" ) {
+    if ( lemma == "zullen" ){
       return "tijdww";
     }
     if ( modals.find( lemma ) != modals.end() ){
+      //      cerr << "resultaat = modaalww" << endl;
       return "modaalww";
     }      
     if ( lemma == "hebben" ){
       for ( size_t i=0; i < siblinglist.size(); ++i ){
 	KWargs atts = getAttributes( siblinglist[i] );
-	if ( atts["rel"] == "vc" && atts["cat"] == "ppart" )
+	if ( atts["rel"] == "vc" && (atts["cat"] == "ppart" || atts["cat"] == "inf" ) ){
+	  //	  cerr << "resultaat = tijdww" << endl;
 	  return "tijdww";
+	}
       }
+      //      cerr << "resultaat 2 = hoofdww" << endl;
       return "hoofdww";
     }
     if ( lemma == "zijn" ){
+      //      cerr << "resultaat = tijdww" << endl;
       return "tijdww";
     }
+    //    cerr << "resultaat 3 = hoofdww" << endl;
     return "hoofdww";
   }
-  else
+  else {
+    //    cerr << "resultaat = NONE" << endl;
     return "none";
+  }
 }
 
 
