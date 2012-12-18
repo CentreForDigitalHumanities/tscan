@@ -44,25 +44,29 @@ using namespace TiCC;
 
 int runDecompoundWord( const string& word, const string& path ){
   struct stat sbuf;
-  int res = stat( "/tmp/decomp", &sbuf );
-  if ( !S_ISDIR(sbuf.st_mode) ){
-    res = mkdir( "/tmp/decomp/", S_IRWXU|S_IRWXG );
+  pid_t pid = getpid();
+  string dirname = "/tmp/tscan-" + toString( pid ) + "/";
+  int res = stat( dirname.c_str(), &sbuf );
+  if ( res == -1 || !S_ISDIR(sbuf.st_mode) ){
+    res = mkdir( dirname.c_str(), S_IRWXU|S_IRWXG );
     if ( res ){
       cerr << "problem: " << res << endl;
       exit( EXIT_FAILURE );
     }
   }
-  ofstream os( "/tmp/decomp/decomp.in" );
+  string infile = dirname + "decomp.in";
+  string outfile = dirname + "decomp.out";
+  ofstream os( infile.c_str() );
   os << word << endl;
   os.close();
-  string cmd = path + "decompound.sh /tmp/decomp/decomp.in /tmp/decomp/decomp.out";
+  string cmd = path + "decompound.sh " + infile + " " + outfile;
   res = system( cmd.c_str() );
   if ( res ){
     cerr << "RES = " << res << endl;
     cerr << "failed command: " << cmd << endl;
   }
-  remove( "/tmp/decomp/decomp.in" );
-  ifstream is( "/tmp/decomp/decomp.out" );
+  remove( infile.c_str() );
+  ifstream is( outfile.c_str() );
   if( is ){
     string line;
     getline( is, line );

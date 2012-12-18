@@ -529,11 +529,11 @@ vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
 
 string classifyVerb( Word *w, xmlDoc *alp ){
   xmlNode *wnode = getAlpWord( alp, w );
-  //  cerr << "classify VERB " << w->text() << endl;
+  cerr << "classify VERB " << w->text() << endl;
   if ( wnode ){
     vector< xmlNode *> siblinglist = getSibblings( wnode );
     string lemma = w->lemma();
-    //    cerr << "classify VERB lemma=" << lemma << endl;
+    cerr << "classify VERB lemma=" << lemma << endl;
     if ( lemma == "zijn" || lemma == "worden" ){
       xmlNode *obj_node = 0;
       xmlNode *su_node = 0;
@@ -541,7 +541,7 @@ string classifyVerb( Word *w, xmlDoc *alp ){
 	KWargs atts = getAttributes( siblinglist[i] );
 	if ( atts["rel"] == "su" ){
 	  su_node = siblinglist[i];
-	  //	    cerr << "Found a SU node!" << su_node << endl;
+	  cerr << "Found a SU node!" << getAttributes(su_node) << endl;
 	}
       }
       for ( size_t i=0; i < siblinglist.size(); ++i ){
@@ -549,12 +549,12 @@ string classifyVerb( Word *w, xmlDoc *alp ){
 	if ( atts["rel"] == "vc" && atts["cat"] == "ppart" ){
 	  obj_node = node_search( siblinglist[i], "rel", "obj1" );
 	  if ( obj_node ){
-	    //	      cerr << "found an obj node! " << obj_node << endl;
+	    cerr << "found an obj node! " << getAttributes(obj_node) << endl;
 	    string oindex = getAttribute( obj_node, "index" );
 	    if ( !oindex.empty() ){
 	      string sindex = getAttribute( su_node, "index" );
 	      if ( sindex == oindex ){
-		//		cerr << "resultaat = passiefww" << endl;
+		cerr << "resultaat = passiefww" << endl;
 		return "passiefww";
 	      }
 	    }
@@ -864,39 +864,50 @@ bool checkImp( Word *pv, xmlDoc *alp ){
   return !su_found;
 }
 
+void countCrdCnj( xmlDoc *doc, int& crdCnt, int& cnjCnt, int& reeksCnt ){
+  vector<xmlNode*> nodes = getNodes( doc );
+  for ( size_t i=0; i < nodes.size(); ++i ){
+    string rel = getAttribute( nodes[i], "rel" );
+    if ( rel == "cnj" ){
+      //      cerr << "found CNJ " << getAttributes( nodes[i] ) << endl;
+      ++cnjCnt;
+    }
+    else if ( rel == "crd" ){
+      //      cerr << "found CRD " << getAttributes( nodes[i] ) << endl;
+      ++crdCnt;
+    }
+  }
+}
+
 xmlDoc *AlpinoParse( folia::Sentence *s ){
   string txt = folia::UnicodeToUTF8(s->toktext());
   //  cerr << "parse line: " << txt << endl;
   struct stat sbuf;
-  int res = stat( "/tmp/alpino", &sbuf );
-  if ( !S_ISDIR(sbuf.st_mode) ){
-    res = mkdir( "/tmp/alpino/", S_IRWXU|S_IRWXG );
+  pid_t pid = getpid();
+  string dirname = "/tmp/tscan-" + toString( pid ) + "/";
+  int res = stat( dirname.c_str(), &sbuf );
+  if ( res == -1 || !S_ISDIR(sbuf.st_mode) ){
+    res = mkdir( dirname.c_str(), S_IRWXU|S_IRWXG );
     if ( res ){
       cerr << "problem: " << res << endl;
       exit( EXIT_FAILURE );
     }
   }
-  res = stat( "/tmp/alpino/parses", &sbuf );
-  if ( !S_ISDIR(sbuf.st_mode) ){
-    res = mkdir( "/tmp/alpino/parses",  S_IRWXU|S_IRWXG );
-    if ( res ){
-      cerr << "problem: " << res << endl;
-      exit( EXIT_FAILURE );
-    }
-  }
-  ofstream os( "/tmp/alpino/tempparse.txt" );
+  string txtfile = dirname + "parse.txt";
+  ofstream os( txtfile.c_str() );
   os << txt;
   os.close();
-  string parseCmd = "Alpino -fast -flag treebank /tmp/alpino/parses end_hook=xml -parse < /tmp/alpino/tempparse.txt -notk > /dev/null 2>&1";
+  string parseCmd = "Alpino -fast -flag treebank " + dirname + 
+    " end_hook=xml -parse < " + txtfile + " -notk > /dev/null 2>&1";
+  // cerr << "run: " << parseCmd << endl;
   res = system( parseCmd.c_str() );
   if ( res ){
-    cerr << "RES = " << res << endl;
+    cerr << "Aplino failed: RES = " << res << endl;
   }
-  remove( "/tmp/alpino/tempparse.txt" );
-  xmlDoc *xmldoc = xmlReadFile( "/tmp/alpino/parses/1.xml", 0, XML_PARSE_NOBLANKS );
+  remove( txtfile.c_str() );
+  string xmlfile = dirname + "1.xml";
+  xmlDoc *xmldoc = xmlReadFile( xmlfile.c_str(), 0, XML_PARSE_NOBLANKS );
   if ( xmldoc ){
-    // extractAndAppendParse( xmldoc, s );
-    // xmlFreeDoc( xmldoc );
     return xmldoc;
   }
   return 0;

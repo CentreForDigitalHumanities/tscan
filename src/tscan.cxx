@@ -55,6 +55,8 @@ const string frog_pos_set = "http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn";
 const string frog_lemma_set = "http://ilk.uvt.nl/folia/sets/frog-mblem-nl";
 const string frog_ner_set = "http://ilk.uvt.nl/folia/sets/frog-ner-nl";
 
+enum csvKind { DOC_CSV, PAR_CSV, SENT_CSV, WORD_CSV };
+
 string configFile = "tscan.cfg";
 Configuration config;
 
@@ -66,6 +68,7 @@ struct cf_data {
 struct settingData {
   void init( const Configuration& );
   bool doAlpino;
+  bool doAlpinoServer;
   bool doDecompound;
   bool doSurprisal;
   string decompounderPath;
@@ -205,10 +208,20 @@ bool fill( map<string,cf_data>& m, const string& filename ){
 }
 
 void settingData::init( const Configuration& cf ){
-  string val = cf.lookUp( "useAlpino" );
-  doAlpino = false;
-  if( !Timbl::stringTo( val, doAlpino ) ){
-    cerr << "invalid value for 'useAlpino' in config file" << endl;
+  string val = cf.lookUp( "useAlpinoServer" );
+  doAlpinoServer = false;
+  if ( !val.empty() ){
+    if ( !Timbl::stringTo( val, doAlpinoServer ) ){
+      cerr << "invalid value for 'useAlpinoServer' in config file" << endl;
+      exit( EXIT_FAILURE );
+    }
+  }
+  if ( !doAlpinoServer ){
+    val = cf.lookUp( "useAlpino" );
+    if( !Timbl::stringTo( val, doAlpino ) ){
+      cerr << "invalid value for 'useAlpino' in config file" << endl;
+      exit( EXIT_FAILURE );
+    }
   }
   doDecompound = false;
   val = cf.lookUp( "decompounderPath" );
@@ -329,6 +342,7 @@ struct basicStats {
   {};
   virtual ~basicStats(){};
   virtual void print( ostream& ) const = 0;
+  virtual void toCSV( ostream&, int ) const =0;
   virtual void addMetrics( ) const = 0;
   virtual string text() const { return ""; };
   virtual ConnType getConnType() const { return NOCONN; };
@@ -338,6 +352,7 @@ struct basicStats {
   int wordLenExNames;
   int morphLen;
   int morphLenExNames;
+  vector<basicStats *> sv;
 };
 
 ostream& operator<<( ostream& os, const basicStats& b ){
@@ -355,6 +370,7 @@ void basicStats::print( ostream& os ) const {
 struct wordStats : public basicStats {
   wordStats( Word *, xmlDoc * );
   void print( ostream& ) const;
+  void toCSV( ostream&, int ) const;
   string text() const { return word; };
   ConnType getConnType() const { return connType; };
   void addMetrics( ) const;
@@ -1113,6 +1129,10 @@ void wordStats::print( ostream& os ) const {
   }
 }
 
+void wordStats::toCSV( ostream& os, int ) const {
+  os << word << "," << wordLen << endl;
+}
+
 enum NerProp { NONER, LOC_B, LOC_I, EVE_B, EVE_I, ORG_B, ORG_I, 
 	       MISC_B, MISC_I, PER_B, PER_I, PRO_B, PRO_I };
 
@@ -1162,6 +1182,9 @@ struct structStats: public basicStats {
     nominalCnt(0),
     onderCnt(0),
     betrCnt(0),
+    reeksCnt(0),
+    cnjCnt(0),
+    crdCnt(0),
     tempConnCnt(0),
     reeksConnCnt(0),
     contConnCnt(0),
@@ -1224,6 +1247,9 @@ struct structStats: public basicStats {
   int nominalCnt;
   int onderCnt;
   int betrCnt;
+  int reeksCnt;
+  int cnjCnt;
+  int crdCnt;
   int tempConnCnt;
   int reeksConnCnt;
   int contConnCnt;
@@ -1262,7 +1288,6 @@ struct structStats: public basicStats {
   int dLevel;
   int impCnt;
   int questCnt;
-  vector<basicStats *> sv;
   map<string,int> heads;
   map<string,int> unique_words;
   map<string,int> unique_lemmas;
@@ -1293,6 +1318,9 @@ void structStats::merge( structStats *ss ){
   nominalCnt += ss->nominalCnt;
   onderCnt += ss->onderCnt;
   betrCnt += ss->betrCnt;
+  reeksCnt += ss->reeksCnt;
+  cnjCnt += ss->cnjCnt;
+  crdCnt += ss->crdCnt;
   tempConnCnt += ss->tempConnCnt;
   reeksConnCnt += ss->reeksConnCnt;
   contConnCnt += ss->contConnCnt;
@@ -1444,9 +1472,12 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "nominal_count", toString(nominalCnt) );
   addOneMetric( doc, el, "subord_count", toString(onderCnt) );
   addOneMetric( doc, el, "rel_count", toString(betrCnt) );
+  addOneMetric( doc, el, "cnj_count", toString(cnjCnt) );
+  addOneMetric( doc, el, "crd_count", toString(crdCnt) );
   addOneMetric( doc, el, "passive_count", toString(passiveCnt) );
   addOneMetric( doc, el, "temporals_count", toString(tempConnCnt) );
-  addOneMetric( doc, el, "reeks_count", toString(reeksConnCnt) );
+  addOneMetric( doc, el, "reeks_count", toString(reeksCnt) );
+  addOneMetric( doc, el, "reeks_connector_count", toString(reeksConnCnt) );
   addOneMetric( doc, el, "contrast_count", toString(contConnCnt) );
   addOneMetric( doc, el, "comparatief_count", toString(compConnCnt) );
   addOneMetric( doc, el, "causaal_count", toString(causeConnCnt) );
@@ -1518,6 +1549,7 @@ void structStats::addMetrics( ) const {
 struct sentStats : public structStats {
   sentStats( Sentence *, Sentence *, xmlDoc * );
   virtual void print( ostream& ) const;
+  void toCSV( ostream&, int ) const;
   void resolveConnectives();
   void addMetrics( ) const;
 };
@@ -1880,6 +1912,7 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
   np_length( s, npCnt, indefNpCnt, npSize );
   if ( alpDoc ){
     dLevel = get_d_level( s, alpDoc );
+    countCrdCnj( alpDoc, crdCnt, cnjCnt, reeksCnt );
   }
 }
 
@@ -1891,6 +1924,11 @@ void sentStats::print( ostream& os ) const {
     os << " er is dus een dubbele ontkenning! ";
   os << endl;
   structStats::print( os );
+}
+
+void sentStats::toCSV( ostream& os, int ) const {
+  os << text << "," << sv.size() << "," << dLevel << ","
+     << (propNegCnt + morphNegCnt > 1?"true":"false") << endl;
 }
 
 void sentStats::addMetrics( ) const {
@@ -1908,9 +1946,12 @@ void sentStats::addMetrics( ) const {
 struct parStats: public structStats {
   parStats( Paragraph * );
   void print( ostream& ) const;
+  void toCSV( ostream&, int ) const;
   void addMetrics( ) const;
   int sentCnt;
 };
+
+xmlDoc *AlpinoServerParse( Sentence *);
 
 parStats::parStats( Paragraph *p ): 
   structStats( p, "PARAGRAAF" ), 
@@ -1920,7 +1961,14 @@ parStats::parStats( Paragraph *p ):
   vector<Sentence*> sents = p->sentences();
   for ( size_t i=0; i < sents.size(); ++i ){
     xmlDoc *alpDoc = 0;
-    if ( settings.doAlpino ){
+    if ( settings.doAlpinoServer ){
+      cerr << "calling Alpino Server" << endl;
+      alpDoc = AlpinoServerParse( sents[i] );
+      if ( !alpDoc ){
+	cerr << "alpino parser failed!" << endl;
+      }
+    }
+    else if ( settings.doAlpino ){
       cerr << "calling Alpino parser" << endl;
       alpDoc = AlpinoParse( sents[i] );
       if ( !alpDoc ){
@@ -1945,6 +1993,10 @@ void parStats::print( ostream& os ) const {
   structStats::print( os );
 }
 
+void parStats::toCSV( ostream& os, int ) const {
+  os << sentCnt << "," << (double)dLevel/sentCnt << endl;
+}
+
 void parStats::addMetrics( ) const {
   FoliaElement *el = folia_node;
   structStats::addMetrics( );
@@ -1955,6 +2007,8 @@ void parStats::addMetrics( ) const {
 struct docStats : public structStats {
   docStats( Document * );
   void print( ostream& ) const;
+  void toCSV( const string&, csvKind ) const;
+  void toCSV( ostream&, int ) const;
   void addMetrics( ) const;
   int sentCnt;
   int doc_word_argCnt;
@@ -2060,6 +2114,80 @@ void docStats::print( ostream& os ) const {
   structStats::print( os );
 }
 
+void docStats::toCSV( const string& name, csvKind what ) const {
+  if ( what == DOC_CSV ){
+    string fname = name + ".document.csv";
+    ofstream out( fname.c_str() );
+    if ( out ){
+      out << "file,paragraphs,sentences,words,TTW,TTL,avg dLevel" << endl;
+      out << name << ",";
+      toCSV( out, 1 );
+      cout << "stored document statistics in " << fname << endl;
+    }
+    else {
+      cout << "storing document statistics in " << fname << " FAILED!" << endl;
+    }
+  }
+  else if ( what == PAR_CSV ){
+    string fname = name + ".paragraphs.csv";
+    ofstream out( fname.c_str() );
+    if ( out ){
+      out << "file,foliaID,number of sentences,avg dLevel" << endl;
+      for ( size_t par=0; par < sv.size(); ++par ){
+	out << name << "," << sv[par]->folia_node->id() << ",";
+	sv[par]->toCSV( out, 1 );
+      }
+      cout << "stored paragraph statistics in " << fname << endl;
+    }
+    else {
+      cout << "storing paragraph statistics in " << fname << " FAILED!" << endl;
+    }
+  }
+  else if ( what == SENT_CSV ){
+    string fname = name + ".sentences.csv";
+    ofstream out( fname.c_str() );
+    if ( out ){
+      out << "file,foliaID,aantal woorden,avg dLevel,dubbele ontkenning" << endl;
+      for ( size_t par=0; par < sv.size(); ++par ){
+	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
+	  out << name << "," << sv[par]->sv[sent]->folia_node->id() << ",";
+	  sv[par]->sv[sent]->toCSV( out, 1 );
+	}
+      }
+      cout << "stored sentence statistics in " << fname << endl;
+    }
+    else {
+      cout << "storing sentence statistics in " << fname << " FAILED!" << endl;
+    }
+  }
+  else if ( what == WORD_CSV ){
+    string fname = name + ".words.csv";
+    ofstream out( fname.c_str() );
+    if ( out ){
+      out << "file,woord,wordlength" << endl;
+      for ( size_t par=0; par < sv.size(); ++par ){
+	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
+	  for ( size_t word=0; word < sv[par]->sv[sent]->sv.size(); ++word ){
+	    out << name << ",";
+	    sv[par]->sv[sent]->sv[word]->toCSV( out, 1 );
+	  }
+	}
+      }
+      cout << "stored word statistics in " << fname << endl;
+    }
+    else {
+      cout << "storing word statistics in " << fname << " FAILED!" << endl;
+    }
+  }
+}
+
+void docStats::toCSV( ostream& os, int ) const {
+  os << sv.size() << "," << sentCnt << "," << wordCnt << "," 
+     << unique_words.size()/double(wordCnt) << ","
+     << unique_lemmas.size()/double(wordCnt) << ","
+     << (double)dLevel/sentCnt << endl;
+}
+
 Document *getFrogResult( istream& is ){
   string host = config.lookUp( "host", "frog" );
   string port = config.lookUp( "port", "frog" );
@@ -2097,6 +2225,31 @@ Document *getFrogResult( istream& is ){
 	   << e.what() << endl;	  
     }
   }
+  return doc;
+}
+
+xmlDoc *AlpinoServerParse( Sentence *sent ){
+  string host = config.lookUp( "host", "alpino" );
+  string port = config.lookUp( "port", "alpino" );
+  Sockets::ClientSocket client;
+  if ( !client.connect( host, port ) ){
+    LOG << "failed to open Alpino connection: "<< host << ":" << port << endl;
+    LOG << "Reason: " << client.getMessage() << endl;
+    exit( EXIT_FAILURE );
+  }
+  DBG << "start input loop" << endl;
+  string txt = folia::UnicodeToUTF8(sent->toktext());
+  client.write( txt + "\n\n" );
+  string result;
+  string s;
+  while ( client.read(s) ){
+    if ( s == "READY" )
+      break;
+    result += s + "\n";
+  }
+  DBG << "received data [" << result << "]" << endl;
+  xmlDoc *doc = xmlReadMemory( result.c_str(), result.length(), 
+			       0, 0, XML_PARSE_NOBLANKS );
   return doc;
 }
 
@@ -2169,10 +2322,13 @@ int main(int argc, char *argv[]) {
       exit(EXIT_FAILURE);
     }
     else {
-      //      doc->save( "/tmp/folia.1.xml" );
       docStats analyse( doc );
       analyse.addMetrics(); // add metrics info to doc
       doc->save( outName );
+      analyse.toCSV( inName, DOC_CSV );
+      analyse.toCSV( inName, PAR_CSV );
+      analyse.toCSV( inName, SENT_CSV );
+      analyse.toCSV( inName, WORD_CSV );
       delete doc;
       LOG << "saved output in " << outName << endl;
       // cerr << analyse << endl;

@@ -92,28 +92,32 @@ string translatePos( const Word *w ){
 
 vector<double> runSurprisal( Sentence* sent, const string& path ){
   struct stat sbuf;
-  int res = stat( "/tmp/surprise", &sbuf );
-  if ( !S_ISDIR(sbuf.st_mode) ){
-    res = mkdir( "/tmp/surprise/", S_IRWXU|S_IRWXG );
+  pid_t pid = getpid();
+  string dirname = "/tmp/tscan-" + toString( pid ) + "/";
+  int res = stat( dirname.c_str(), &sbuf );
+  if ( res == -1 || !S_ISDIR(sbuf.st_mode) ){
+    res = mkdir( dirname.c_str(), S_IRWXU|S_IRWXG );
     if ( res ){
       cerr << "problem: " << res << endl;
       exit( EXIT_FAILURE );
     }
   }
-  ofstream os( "/tmp/surprise/surprise.in" );
+  string infile = dirname + "surprise.in";
+  string outfile = dirname + "surprise.out";
+  ofstream os( infile.c_str() );
   vector<Word*> words = sent->words();
   for ( size_t i=0; i < words.size(); ++i ){
     os << words[i]->text () << "\t" << translatePos( words[i] ) << endl;
   }
   os.close();
-  string cmd = path + "surprise.sh /tmp/surprise/surprise.in /tmp/surprise/surprise.out";
+  string cmd = path + "surprise.sh " + infile + " " + outfile;
   res = system( cmd.c_str() );
   if ( res ){
     cerr << "RES = " << res << endl;
     cerr << "failed command: " << cmd << endl;
   }
-  remove( "/tmp/surprise/surpise.in" );
-  ifstream is( "/tmp/surprise/surprise.out" );
+  remove( infile.c_str() );
+  ifstream is( outfile.c_str() );
   vector<double> results;
   while( is ){
     string line;
