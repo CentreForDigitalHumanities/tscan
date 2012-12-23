@@ -140,6 +140,7 @@ PROFILES = [
             extension='.txt',
             #filename='filename.txt',
             #unique=True #set unique=True if the user may only upload a file for this input template once. Set multi=True if you the user may upload multiple of such files
+            acceptarchive=True,
             multi=True
         ),
         #------------------------------------------------------------------------------------------------------------------------
