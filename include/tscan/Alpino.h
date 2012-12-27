@@ -29,6 +29,8 @@
 #define ALPINO_H
 xmlDoc *AlpinoParse( folia::Sentence * );
 xmlNode *getAlpWord( xmlDoc *, const folia::Word * );
+bool checkImp( folia::Word *, xmlDoc * );
+void countCrdCnj( xmlDoc *, int&, int&, int& );
 std::string classifyVerb( folia::Word *, xmlDoc * );
 
 enum DD_type { SUB_VERB, OBJ1_VERB, OBJ2_VERB, VERB_PP, VERB_VC,
