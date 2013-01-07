@@ -1,6 +1,6 @@
 /*
-  $Id: decomp.h 15344 2012-10-29 13:41:03Z sloot $
-  $URL: https://ilk.uvt.nl/svn/sources/tscan/trunk/include/tscan/decomp.h $
+  $Id$
+  $URL$
 
   Copyright (c) 1998 - 2013
  
