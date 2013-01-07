@@ -25,11 +25,8 @@
       
 */
 
-#include <csignal>
-#include <cerrno>
 #include <string>
 #include <algorithm>
-#include <cstdio> // for remove()
 #include "config.h"
 #include "timblserver/TimblServerAPI.h"
 #include "libfolia/folia.h"
@@ -332,6 +329,40 @@ string toString( const ConnType& c ){
 
 enum SemType { UNFOUND, CONCRETE, CONCRETE_HUMAN, ABSTRACT, BROAD, 
 	       STATE, ACTION, PROCESS, WEIRD };
+
+string toString( const SemType st ){
+  switch ( st ){
+  case UNFOUND:
+    return "not_found";
+    break;
+  case CONCRETE:
+    return "concrete";
+    break;
+  case CONCRETE_HUMAN:
+    return "concrete_human";
+    break;
+  case ABSTRACT:
+    return "abstract";
+    break;
+  case BROAD:
+    return "broad";
+    break;
+  case STATE:
+    return "state";
+    break;
+  case ACTION:
+    return "action";
+    break;
+  case PROCESS:
+    return "process";
+    break;
+  case WEIRD:
+    return "weird";
+    break;
+  default:
+    return "invalid semtype value";
+  }
+}
 
 struct basicStats {
   basicStats( FoliaElement *el, const string& cat ): 
@@ -1056,6 +1087,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "polarity", toString(polarity) );
   if ( surprisal != NA  )
     addOneMetric( doc, el, "surprisal", toString(surprisal) );
+  if ( sem_type != UNFOUND )
+    addOneMetric( doc, el, "semtype", toString(sem_type) );
   if ( compLen > 0 )
     addOneMetric( doc, el, "compound_length", toString(compLen) );
   addOneMetric( doc, el, 
