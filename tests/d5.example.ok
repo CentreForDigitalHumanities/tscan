@@ -3,14 +3,13 @@
 <FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v0.10">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" set="tscan-tokconfig-nl"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2012-12-06T17:56:01" set="tscan-tokconfig-nl"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2012-12-06T17:56:01" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
       <pos-annotation annotator="tscan" set="tscan-set"/>
-      <lemma-annotation annotator="frog-mblem-1.0" annotatortype="auto" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-mwu-1.0" annotatortype="auto" set="http://ilk.uvt.nl/folia/sets/frog-mwu-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <lemma-annotation annotator="frog-mblem-1.0" annotatortype="auto" datetime="2012-12-06T17:56:01" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2012-12-06T17:56:01" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2012-12-06T17:56:01" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2012-12-06T17:56:01" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
     </annotations>
   </metadata>
@@ -821,6 +820,8 @@
         <metric class="np_count" value="8"/>
         <metric class="np_size" value="11"/>
         <metric class="d_level" value="5"/>
+        <metric class="imperative_count" value="1"/>
+        <metric class="isImperative" value="true"/>
       </s>
       <s xml:id="tscan.p.1.s.2">
         <w xml:id="tscan.p.1.s.2.w.1" class="WORD">
@@ -1020,18 +1021,21 @@
           <metric class="average_log_wfreq" value="0"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.10" class="WORD">
-          <t>woonder</t>
-          <pos class="WW(pv,tgw,ev)" confidence="1" head="WW" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
+          <t>woonden</t>
+          <pos class="WW(pv,verl,mv)" confidence="0.998744" head="WW" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="pv" subset="wvorm"/>
-            <feat class="tgw" subset="pvtijd"/>
-            <feat class="ev" subset="pvagr"/>
+            <feat class="verl" subset="pvtijd"/>
+            <feat class="mv" subset="pvagr"/>
           </pos>
           <morphology>
             <morpheme>
-              <t offset="0">woonder</t>
+              <t offset="0">woon</t>
+            </morpheme>
+            <morpheme>
+              <t offset="4">den</t>
             </morpheme>
           </morphology>
-          <lemma class="woonder"/>
+          <lemma class="wonen"/>
           <metric class="content_word" value="true"/>
           <metric class="surprisal" value="1.61449"/>
           <metric class="argument_repeat_count" value="0"/>
@@ -1202,10 +1206,10 @@
           <chunk class="VP" confidence="0.957307">
             <wref id="tscan.p.1.s.2.w.8" t="was"/>
           </chunk>
-          <chunk class="ADVP" confidence="0.458971">
-            <wref id="tscan.p.1.s.2.w.10" t="woonder"/>
+          <chunk class="VP" confidence="0.967532">
+            <wref id="tscan.p.1.s.2.w.10" t="woonden"/>
           </chunk>
-          <chunk class="ADVP" confidence="0.82419">
+          <chunk class="ADVP" confidence="0.8">
             <wref id="tscan.p.1.s.2.w.11" t="er"/>
           </chunk>
           <chunk class="NP" confidence="1">
@@ -1221,13 +1225,7 @@
           </chunk>
         </chunking>
         <entities>
-          <entity class="loc" confidence="0" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl">
-            <wref id="tscan.p.1.s.2.w.15" t="Lage"/>
-            <wref id="tscan.p.1.s.2.w.16" t="Landen"/>
-          </entity>
-        </entities>
-        <entities>
-          <entity set="http://ilk.uvt.nl/folia/sets/frog-mwu-nl">
+          <entity class="loc" confidence="0">
             <wref id="tscan.p.1.s.2.w.15" t="Lage"/>
             <wref id="tscan.p.1.s.2.w.16" t="Landen"/>
           </entity>
@@ -1264,21 +1262,21 @@
         <metric class="freq65" value="8"/>
         <metric class="freq77" value="8"/>
         <metric class="freq80" value="8"/>
-        <metric class="present_verb_count" value="1"/>
-        <metric class="past_verb_count" value="1"/>
+        <metric class="present_verb_count" value="0"/>
+        <metric class="past_verb_count" value="2"/>
         <metric class="referential_pron_count" value="1"/>
         <metric class="pers_pron_1_count" value="0"/>
         <metric class="pers_pron_2_count" value="0"/>
         <metric class="pres_pron_3_count" value="0"/>
         <metric class="character_count" value="68"/>
         <metric class="character_count_min_names" value="58"/>
-        <metric class="morpheme_count" value="18"/>
-        <metric class="morpheme_count_min_names" value="16"/>
+        <metric class="morpheme_count" value="19"/>
+        <metric class="morpheme_count_min_names" value="17"/>
         <metric class="concrete_strict" value="1"/>
         <metric class="concrete_broad" value="2"/>
         <metric class="abstract_strict" value="2"/>
         <metric class="abstract_broad" value="3"/>
-        <metric class="state_count" value="1"/>
+        <metric class="state_count" value="2"/>
         <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
         <metric class="weird_count" value="0"/>
@@ -1957,21 +1955,21 @@
       <metric class="freq65" value="35"/>
       <metric class="freq77" value="38"/>
       <metric class="freq80" value="39"/>
-      <metric class="present_verb_count" value="3"/>
-      <metric class="past_verb_count" value="4"/>
+      <metric class="present_verb_count" value="2"/>
+      <metric class="past_verb_count" value="5"/>
       <metric class="referential_pron_count" value="6"/>
       <metric class="pers_pron_1_count" value="0"/>
       <metric class="pers_pron_2_count" value="0"/>
       <metric class="pres_pron_3_count" value="2"/>
       <metric class="character_count" value="294"/>
       <metric class="character_count_min_names" value="284"/>
-      <metric class="morpheme_count" value="84"/>
-      <metric class="morpheme_count_min_names" value="82"/>
+      <metric class="morpheme_count" value="85"/>
+      <metric class="morpheme_count_min_names" value="83"/>
       <metric class="concrete_strict" value="5"/>
       <metric class="concrete_broad" value="7"/>
       <metric class="abstract_strict" value="9"/>
       <metric class="abstract_broad" value="11"/>
-      <metric class="state_count" value="7"/>
+      <metric class="state_count" value="8"/>
       <metric class="action_count" value="3"/>
       <metric class="process_count" value="0"/>
       <metric class="weird_count" value="0"/>
@@ -1980,6 +1978,7 @@
       <metric class="np_count" value="19"/>
       <metric class="np_size" value="30"/>
       <metric class="d_level" value="15"/>
+      <metric class="imperative_count" value="1"/>
       <metric class="sentence_count" value="3"/>
     </p>
     <metric class="word_count" value="63"/>
@@ -2014,21 +2013,21 @@
     <metric class="freq65" value="35"/>
     <metric class="freq77" value="38"/>
     <metric class="freq80" value="39"/>
-    <metric class="present_verb_count" value="3"/>
-    <metric class="past_verb_count" value="4"/>
+    <metric class="present_verb_count" value="2"/>
+    <metric class="past_verb_count" value="5"/>
     <metric class="referential_pron_count" value="6"/>
     <metric class="pers_pron_1_count" value="0"/>
     <metric class="pers_pron_2_count" value="0"/>
     <metric class="pres_pron_3_count" value="2"/>
     <metric class="character_count" value="294"/>
     <metric class="character_count_min_names" value="284"/>
-    <metric class="morpheme_count" value="84"/>
-    <metric class="morpheme_count_min_names" value="82"/>
+    <metric class="morpheme_count" value="85"/>
+    <metric class="morpheme_count_min_names" value="83"/>
     <metric class="concrete_strict" value="5"/>
     <metric class="concrete_broad" value="7"/>
     <metric class="abstract_strict" value="9"/>
     <metric class="abstract_broad" value="11"/>
-    <metric class="state_count" value="7"/>
+    <metric class="state_count" value="8"/>
     <metric class="action_count" value="3"/>
     <metric class="process_count" value="0"/>
     <metric class="weird_count" value="0"/>
@@ -2037,10 +2036,11 @@
     <metric class="np_count" value="19"/>
     <metric class="np_size" value="30"/>
     <metric class="d_level" value="15"/>
+    <metric class="imperative_count" value="1"/>
     <metric class="sentence_count" value="3"/>
     <metric class="paragraph_count" value="1"/>
     <metric class="word_ttr" value="0.873016"/>
-    <metric class="lemma_ttr" value="0.84127"/>
+    <metric class="lemma_ttr" value="0.825397"/>
     <metric class="rar_index" value="1"/>
     <metric class="document_word_argument_count" value="4"/>
     <metric class="document_word_argument_overlap_count" value="0"/>

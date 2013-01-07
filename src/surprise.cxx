@@ -2,7 +2,7 @@
   $Id: decomp.cxx 15344 2012-10-29 13:41:03Z sloot $
   $URL: https://ilk.uvt.nl/svn/sources/tscan/trunk/src/decomp.cxx $
 
-  Copyright (c) 1998 - 2012
+  Copyright (c) 1998 - 2013
  
   This file is part of tscan
 

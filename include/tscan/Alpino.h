@@ -2,7 +2,7 @@
   $Id$
   $URL$
 
-  Copyright (c) 1998 - 2012
+  Copyright (c) 1998 - 2013
  
   This file is part of tscan
 
@@ -32,6 +32,10 @@ xmlNode *getAlpWord( xmlDoc *, const folia::Word * );
 bool checkImp( folia::Word *, xmlDoc * );
 void countCrdCnj( xmlDoc *, int&, int&, int& );
 std::string classifyVerb( folia::Word *, xmlDoc * );
+
+void countCrdCnj( xmlDoc *, int& , int&, int& );
+
+bool checkImp( folia::Word *, xmlDoc * );
 
 enum DD_type { SUB_VERB, OBJ1_VERB, OBJ2_VERB, VERB_PP, VERB_VC,
 	       VERB_COMP, NOUN_DET, PREP_OBJ1, CRD_CNJ, COMP_BODY, NOUN_VC };
