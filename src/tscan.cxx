@@ -1941,7 +1941,10 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
     questCnt = 1;
   resolveConnectives();
   lwfreq = log10( wfreq / w.size() );
-  lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
+  if ( wordCnt == nameCnt )
+    lwfreq_n = 1;
+  else
+    lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
   np_length( s, npCnt, indefNpCnt, npSize );
   if ( alpDoc ){
     dLevel = get_d_level( s, alpDoc );
@@ -2018,7 +2021,10 @@ parStats::parStats( Paragraph *p ):
     sentCnt++;
   }
   lwfreq = log10( wfreq / sents.size() );
-  lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
+  if ( wordCnt == nameCnt )
+    lwfreq_n = 1;
+  else
+    lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
 }
 
 void parStats::print( ostream& os ) const {
@@ -2073,7 +2079,10 @@ docStats::docStats( Document *doc ):
     sentCnt += ps->sentCnt;
   }
   lwfreq = log10( wfreq / pars.size() );
-  lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
+  if ( wordCnt == nameCnt )
+    lwfreq_n = 1;
+  else
+    lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
   vector<Word*> wv = doc->words();
   vector<string> wordbuffer(settings.overlapSize);
   vector<string> lemmabuffer(settings.overlapSize);
