@@ -62,6 +62,8 @@ struct cf_data {
   double freq;
 };
 
+enum CalcType { AVERAGE, PROPORTIONAL, RATIO, DENSITY };
+
 struct settingData {
   void init( const Configuration& );
   bool doAlpino;
@@ -74,6 +76,7 @@ struct settingData {
   int rarityLevel;
   unsigned int overlapSize;
   double polarity_threshold;
+  CalcType calculations;
   map <string, string> adj_sem;
   map <string, string> noun_sem;
   map <string, string> verb_sem;
@@ -236,6 +239,23 @@ void settingData::init( const Configuration& cf ){
   if( !val.empty() ){
     style = val;
   }
+  calculations = AVERAGE;
+  val = cf.lookUp( "calculations" );
+  if( !val.empty() ){
+    string low = lowercase(val);
+    if ( low == "average" )
+      calculations = AVERAGE;
+    else if ( low == "proportional" )
+      calculations = PROPORTIONAL;
+    else if ( low == "ratio" )
+      calculations = RATIO;
+    else if ( low == "density" )
+      calculations = DENSITY;
+    else {
+      cerr << "invalid value for 'calculations' in config file" << endl;
+      exit( EXIT_FAILURE );
+    }
+  }
   val = cf.lookUp( "rarityLevel" );
   if ( val.empty() ){
     rarityLevel = 5;
@@ -249,6 +269,7 @@ void settingData::init( const Configuration& cf ){
   }
   else if ( !Timbl::stringTo( val, overlapSize ) ){ 
     cerr << "invalid value for 'overlapSize' in config file" << endl;
+    exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "adj_semtypes" );
   if ( !val.empty() ){
@@ -373,7 +394,7 @@ struct basicStats {
   {};
   virtual ~basicStats(){};
   virtual void print( ostream& ) const = 0;
-  virtual void toCSV( ostream&, int ) const =0;
+  virtual void toCSV( ostream&, CalcType ) const =0;
   virtual void addMetrics( ) const = 0;
   virtual string text() const { return ""; };
   virtual ConnType getConnType() const { return NOCONN; };
@@ -401,8 +422,8 @@ void basicStats::print( ostream& os ) const {
 struct wordStats : public basicStats {
   wordStats( Word *, xmlDoc * );
   void print( ostream& ) const;
-  static void CSVheader( ostream& os );
-  void toCSV( ostream&, int ) const;
+  static void CSVheader( ostream& os, CalcType );
+  void toCSV( ostream&, CalcType ) const;
   string text() const { return word; };
   ConnType getConnType() const { return connType; };
   void addMetrics( ) const;
@@ -1163,11 +1184,11 @@ void wordStats::print( ostream& os ) const {
   }
 }
  
-void wordStats::CSVheader( ostream& os ){
+void wordStats::CSVheader( ostream& os, CalcType ){
   os << "file,woord,wordlength" << endl;
 }
 
-void wordStats::toCSV( ostream& os, int ) const {
+void wordStats::toCSV( ostream& os, CalcType ) const {
   os << word << "," << wordLen << endl;
 }
 
@@ -1536,7 +1557,8 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, 
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
   addOneMetric( doc, el, "average_log_wfreq", toString(lwfreq) );
-  addOneMetric( doc, el, "average_log_wfreq_min_names", toString(lwfreq_n) );
+  if ( polarity != NA  )
+    addOneMetric( doc, el, "average_log_wfreq_min_names", toString(lwfreq_n) );
   addOneMetric( doc, el, "freq50", toString(f50Cnt) );
   addOneMetric( doc, el, "freq65", toString(f65Cnt) );
   addOneMetric( doc, el, "freq77", toString(f77Cnt) );
@@ -1587,8 +1609,8 @@ void structStats::addMetrics( ) const {
 struct sentStats : public structStats {
   sentStats( Sentence *, Sentence *, xmlDoc * );
   virtual void print( ostream& ) const;
-  static void CSVheader( ostream& os );
-  void toCSV( ostream&, int ) const;
+  static void CSVheader( ostream& os, CalcType );
+  void toCSV( ostream&, CalcType ) const;
   void resolveConnectives();
   void addMetrics( ) const;
 };
@@ -1948,7 +1970,7 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
   resolveConnectives();
   lwfreq = log10( wfreq / w.size() );
   if ( wordCnt == nameCnt )
-    lwfreq_n = 1;
+    lwfreq_n = NA;
   else
     lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
   np_length( s, npCnt, indefNpCnt, npSize );
@@ -1968,44 +1990,70 @@ void sentStats::print( ostream& os ) const {
   structStats::print( os );
 }
 
-void sentStats::CSVheader( ostream& os ){
-  os << "file,foliaID,#woorden,#namen,#voltooid,voltooid-avg,"
-    "#onvoltooid,onvoltooid-avg,#infinitieven,infinitieven-avg,"
-    "#archaics,archaics-avg,#content,content-avg,"
-    "#nominals,nominal-avg, polarity,surprisal,"
-    "f50,f65,f77,f80,dLevel,dLevel-avg,"
-    "passive,question,imperatief"
-    ",dubbele ontkenning" << endl;
+void sentStats::CSVheader( ostream& os, CalcType t ){
+  if ( t == AVERAGE ){
+    os << "file,foliaID,#woorden,#namen,#voltooid,voltooid-avg,"
+      "#onvoltooid,onvoltooid-avg,#infinitieven,infinitieven-avg,"
+      "#archaics,archaics-avg,#content,content-avg,"
+      "#nominals,nominal-avg, polarity,surprisal,"
+      "f50,f65,f77,f80,dLevel,dLevel-avg,"
+      "passive,question,imperatief,"
+      "argument-overlap-avg,lemma-argument-overlap-avg"
+      ",dubbele ontkenning" << endl;
+  }
+  else if ( t == PROPORTIONAL ){
+    os << "file,foliaID,argument-overlap-prop,lemma-argument-overlap-prop" << endl;
+  }
+  else {
+    os << "HEADER not implemented" << endl;
+  }
 }
 
-void sentStats::toCSV( ostream& os, int ) const {
-  os << wordCnt << "," 
-     << nameCnt << ","
-     << vdCnt << ","
-     << vdCnt/wordCnt << ","
-     << odCnt << ","
-     << odCnt/wordCnt << ","
-     << infCnt << ","
-     << infCnt/wordCnt << ","
-     << archaicsCnt << ","
-     << archaicsCnt/wordCnt << ","
-     << contentCnt << ","
-     << contentCnt/wordCnt << ","
-     << nominalCnt << ","
-     << nominalCnt/wordCnt << ","
-     << (polarity == NA?"NA":toString(polarity)) << ","
-     << (surprisal ==NA?"NA":toString(surprisal)) << ","
-     << f50Cnt << ","
-     << f65Cnt << ","
-     << f77Cnt << ","
-     << f80Cnt << ","
-     << dLevel << ","
-     << dLevel/wordCnt << ","
-     << (passiveCnt > 0?"true":"false") << ","
-     << (questCnt > 0?"true":"false") << ","
-     << (impCnt > 0?"true":"false") << ","
-     << (propNegCnt + morphNegCnt > 1?"true":"false") << endl;
-
+void sentStats::toCSV( ostream& os, CalcType t ) const {
+  if ( t == AVERAGE ){
+    os << wordCnt << "," 
+       << nameCnt << ","
+       << vdCnt << ","
+       << vdCnt/double(wordCnt) << ","
+       << odCnt << ","
+       << odCnt/double(wordCnt) << ","
+       << infCnt << ","
+       << infCnt/double(wordCnt) << ","
+       << archaicsCnt << ","
+       << archaicsCnt/double(wordCnt) << ","
+       << contentCnt << ","
+       << contentCnt/double(wordCnt) << ","
+       << nominalCnt << ","
+       << nominalCnt/double(wordCnt) << ","
+       << (polarity == NA?"NA":toString(polarity)) << ","
+       << (surprisal ==NA?"NA":toString(surprisal)) << ","
+       << f50Cnt << ","
+       << f65Cnt << ","
+       << f77Cnt << ","
+       << f80Cnt << ","
+       << dLevel << ","
+       << dLevel/double(wordCnt) << ","
+       << (passiveCnt > 0?"true":"false") << ","
+       << (questCnt > 0?"true":"false") << ","
+       << (impCnt > 0?"true":"false") << ",";
+    int clauseCnt = pastCnt + presentCnt;
+    if ( clauseCnt == 0 ){
+      os << "NA,NA,";
+    }
+    else {
+      os << wordOverlapCnt/double(clauseCnt) << ","
+	 << lemmaOverlapCnt/double(clauseCnt) << ",";
+    }
+    os << (propNegCnt + morphNegCnt > 1?"true":"false") << endl;
+  }
+  else if ( t == PROPORTIONAL ){ {
+      os << wordOverlapCnt/double(argRepeatCnt) << ",";
+      os << lemmaOverlapCnt/double(argRepeatCnt) << endl;
+    }
+  }
+  else {
+    os << "not implemented" << endl;
+  }
   /*
   addOneMetric( doc, el, "subord_count", toString(onderCnt) );
   addOneMetric( doc, el, "rel_count", toString(betrCnt) );
@@ -2071,8 +2119,8 @@ void sentStats::addMetrics( ) const {
 struct parStats: public structStats {
   parStats( Paragraph * );
   void print( ostream& ) const;
-  static void CSVheader( ostream& os );
-  void toCSV( ostream&, int ) const;
+  static void CSVheader( ostream& os, CalcType );
+  void toCSV( ostream&, CalcType ) const;
   void addMetrics( ) const;
   int sentCnt;
 };
@@ -2112,7 +2160,7 @@ parStats::parStats( Paragraph *p ):
   }
   lwfreq = log10( wfreq / sents.size() );
   if ( wordCnt == nameCnt )
-    lwfreq_n = 1;
+    lwfreq_n = NA;
   else
     lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
 }
@@ -2122,12 +2170,28 @@ void parStats::print( ostream& os ) const {
   structStats::print( os );
 }
 
-void parStats::CSVheader( ostream& os ){
-  os << "file,foliaID,number of sentences,avg dLevel" << endl;
+void parStats::CSVheader( ostream& os, CalcType t ){
+  if ( t == AVERAGE ){
+    os << "file,foliaID,number of sentences,dLevel-avg" << endl;
+  }
+  else if ( t == PROPORTIONAL ){
+    os << "file,foliaID,bla" << endl;
+  }
+  else {
+    os << "header not implemented yet" << endl;
+  }
 }
 
-void parStats::toCSV( ostream& os, int ) const {
-  os << sentCnt << "," << (double)dLevel/sentCnt << endl;
+void parStats::toCSV( ostream& os, CalcType t ) const {
+  if ( t == AVERAGE ){
+    os << sentCnt << "," << (double)dLevel/sentCnt << endl;
+  }
+  else if ( t == PROPORTIONAL ){
+    os << "uhhh" << endl;
+  }
+  else {
+    os << "to do " << endl;
+  }
 }
 
 void parStats::addMetrics( ) const {
@@ -2140,9 +2204,9 @@ void parStats::addMetrics( ) const {
 struct docStats : public structStats {
   docStats( Document * );
   void print( ostream& ) const;
-  static void CSVheader( ostream& os );
-  void toCSV( const string&, csvKind ) const;
-  void toCSV( ostream&, int ) const;
+  void toCSV( const string&, csvKind, CalcType ) const;
+  static void CSVheader( ostream& os, CalcType );
+  void toCSV( ostream&, CalcType ) const;
   void addMetrics( ) const;
   int sentCnt;
   int doc_word_argCnt;
@@ -2175,7 +2239,7 @@ docStats::docStats( Document *doc ):
   }
   lwfreq = log10( wfreq / pars.size() );
   if ( wordCnt == nameCnt )
-    lwfreq_n = 1;
+    lwfreq_n = NA;
   else
     lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
   vector<Word*> wv = doc->words();
@@ -2251,14 +2315,16 @@ void docStats::print( ostream& os ) const {
   structStats::print( os );
 }
 
-void docStats::toCSV( const string& name, csvKind what ) const {
+void docStats::toCSV( const string& name, 
+		      csvKind what, 
+		      CalcType calc_type ) const {
   if ( what == DOC_CSV ){
     string fname = name + ".document.csv";
     ofstream out( fname.c_str() );
     if ( out ){
-      docStats::CSVheader( out );
+      docStats::CSVheader( out, calc_type );
       out << name << ",";
-      toCSV( out, 1 );
+      toCSV( out, calc_type );
       cout << "stored document statistics in " << fname << endl;
     }
     else {
@@ -2269,10 +2335,10 @@ void docStats::toCSV( const string& name, csvKind what ) const {
     string fname = name + ".paragraphs.csv";
     ofstream out( fname.c_str() );
     if ( out ){
-      parStats::CSVheader( out );
+      parStats::CSVheader( out, calc_type );
       for ( size_t par=0; par < sv.size(); ++par ){
 	out << name << "," << sv[par]->folia_node->id() << ",";
-	sv[par]->toCSV( out, 1 );
+	sv[par]->toCSV( out, calc_type );
       }
       cout << "stored paragraph statistics in " << fname << endl;
     }
@@ -2284,11 +2350,11 @@ void docStats::toCSV( const string& name, csvKind what ) const {
     string fname = name + ".sentences.csv";
     ofstream out( fname.c_str() );
     if ( out ){
-      sentStats::CSVheader( out );
+      sentStats::CSVheader( out, calc_type );
       for ( size_t par=0; par < sv.size(); ++par ){
 	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
 	  out << name << "," << sv[par]->sv[sent]->folia_node->id() << ",";
-	  sv[par]->sv[sent]->toCSV( out, 1 );
+	  sv[par]->sv[sent]->toCSV( out, calc_type );
 	}
       }
       cout << "stored sentence statistics in " << fname << endl;
@@ -2301,12 +2367,12 @@ void docStats::toCSV( const string& name, csvKind what ) const {
     string fname = name + ".words.csv";
     ofstream out( fname.c_str() );
     if ( out ){
-      wordStats::CSVheader( out );
+      wordStats::CSVheader( out, calc_type );
       for ( size_t par=0; par < sv.size(); ++par ){
 	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
 	  for ( size_t word=0; word < sv[par]->sv[sent]->sv.size(); ++word ){
 	    out << name << ",";
-	    sv[par]->sv[sent]->sv[word]->toCSV( out, 1 );
+	    sv[par]->sv[sent]->sv[word]->toCSV( out, calc_type );
 	  }
 	}
       }
@@ -2318,15 +2384,52 @@ void docStats::toCSV( const string& name, csvKind what ) const {
   }
 }
 
-void docStats::CSVheader( ostream& os ){
-  os << "file,paragraphs,sentences,words,TTW,TTL,avg dLevel" << endl;
+void docStats::CSVheader( ostream& os, CalcType t ){
+  if ( t == AVERAGE ){
+    os << "file,paragraphs,sentences,words,TTW,TTL,dLevel-avg,argument-overlap-avg" << endl;
+  }
+  else if ( t == PROPORTIONAL ){ 
+    os << "file,argument-overlap-prop,lemma-argument-overlap-prop" << endl;
+  }
+  else if ( t == DENSITY ){ 
+    os << "file,argument-overlap-density,lemma-argument-overlap-density" << endl;
+  }
+  else {
+    os << "HEADER not implemented" << endl;
+  }
 }
 
-void docStats::toCSV( ostream& os, int ) const {
-  os << sv.size() << "," << sentCnt << "," << wordCnt << "," 
-     << unique_words.size()/double(wordCnt) << ","
-     << unique_lemmas.size()/double(wordCnt) << ","
-     << (double)dLevel/sentCnt << endl;
+void docStats::toCSV( ostream& os, CalcType t ) const {
+  if ( t == AVERAGE ){
+    os << sv.size() << "," << sentCnt << "," << wordCnt << "," 
+       << unique_words.size()/double(wordCnt) << ","
+       << unique_lemmas.size()/double(wordCnt) << ","
+       << (double)dLevel/sentCnt << "'"
+       << doc_word_overlapCnt/double(pastCnt+presentCnt) << endl;
+  }
+  else if ( t == PROPORTIONAL ){
+    if ( doc_word_overlapCnt == 0 )
+      os << "NA,";
+    else
+      os << doc_word_overlapCnt/double(doc_word_overlapCnt) << ",";
+    if ( doc_lemma_overlapCnt == 0 )
+      os << "NA" << endl;
+    else
+      os << doc_lemma_overlapCnt/double(doc_lemma_overlapCnt) << endl;
+  }
+  else if ( t == DENSITY ){
+    if ( doc_word_overlapCnt == 0 )
+      os << "NA,";
+    else
+      os << doc_word_overlapCnt/double(wordCnt) << ",";
+    if ( doc_lemma_overlapCnt == 0 )
+      os << "NA" << endl;
+    else
+      os << doc_lemma_overlapCnt/double(wordCnt) << endl;
+  }
+  else {
+    os << "not implemented" << endl;
+  }
 }
 
 Document *getFrogResult( istream& is ){
@@ -2466,10 +2569,10 @@ int main(int argc, char *argv[]) {
       docStats analyse( doc );
       analyse.addMetrics(); // add metrics info to doc
       doc->save( outName );
-      analyse.toCSV( inName, DOC_CSV );
-      analyse.toCSV( inName, PAR_CSV );
-      analyse.toCSV( inName, SENT_CSV );
-      analyse.toCSV( inName, WORD_CSV );
+      analyse.toCSV( inName, DOC_CSV, settings.calculations );
+      analyse.toCSV( inName, PAR_CSV, settings.calculations );
+      analyse.toCSV( inName, SENT_CSV, settings.calculations );
+      analyse.toCSV( inName, WORD_CSV, settings.calculations );
       delete doc;
       LOG << "saved output in " << outName << endl;
       // cerr << analyse << endl;
