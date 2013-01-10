@@ -1183,12 +1183,13 @@ void wordCSV( ostream& os, const wordStats& s ){
      << double(s.charCnt) << "," 
      << 1.0/double(s.charCnt) <<  ",";
   if ( s.prop == ISNAME ){
-    os << 0.0 << "," << 1.0 <<  ",";
+    os << "NA,NA,";
   }
   else {
     os << double(s.charCnt) << "," << 1.0/double(s.charCnt) <<  ",";
   }
   if ( s.morphCnt == 0 ){
+    // LET() zaken o.a.
     os << 1.0 << "," << 1.0 << ",";
   }
   else {
@@ -1196,7 +1197,7 @@ void wordCSV( ostream& os, const wordStats& s ){
        << 1.0/double(s.morphCnt) << ",";
   }
   if ( s.prop == ISNAME ){
-    os << 0.0 << "," << 1.0 <<  ",";
+    os << "NA,NA,";
   }
   else {
     if ( s.morphCnt == 0 ){
