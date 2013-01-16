@@ -337,7 +337,8 @@ string toString( const ConnType& c ){
     throw "no translation for ConnType";
 }
 
-enum SemType { UNFOUND, CONCRETE, CONCRETE_HUMAN, ABSTRACT, BROAD, 
+enum SemType { UNFOUND, CONCRETE_NOUN, CONCRETE_ADJ, CONCRETE_HUMAN, 
+	       ABSTRACT_NOUN, ABSTRACT_ADJ, BROAD_NOUN, BROAD_ADJ, 
 	       STATE, ACTION, PROCESS, WEIRD };
 
 string toString( const SemType st ){
@@ -345,17 +346,26 @@ string toString( const SemType st ){
   case UNFOUND:
     return "not_found";
     break;
-  case CONCRETE:
-    return "concrete";
+  case CONCRETE_NOUN:
+    return "concrete-noun";
+    break;
+  case CONCRETE_ADJ:
+    return "concrete-adj";
     break;
   case CONCRETE_HUMAN:
     return "concrete_human";
     break;
-  case ABSTRACT:
-    return "abstract";
+  case ABSTRACT_NOUN:
+    return "abstract-noun";
     break;
-  case BROAD:
-    return "broad";
+  case ABSTRACT_ADJ:
+    return "abstract-adj";
+    break;
+  case BROAD_NOUN:
+    return "broad-noun";
+    break;
+  case BROAD_ADJ:
+    return "broad-adj";
     break;
   case STATE:
     return "state";
@@ -387,6 +397,7 @@ struct basicStats {
   virtual void sentDifficultiesToCSV( ostream& ) const = 0;
   virtual void informationDensityToCSV( ostream& ) const = 0;
   virtual void coherenceToCSV( ostream& ) const = 0;
+  virtual void concreetToCSV( ostream& ) const = 0;
   virtual string rarity( int ) const { return "NA"; };
   virtual void toCSV( ostream& ) const =0;
   virtual void addMetrics( ) const = 0;
@@ -421,6 +432,7 @@ struct wordStats : public basicStats {
   void sentDifficultiesToCSV( ostream& ) const {};
   void informationDensityToCSV( ostream& ) const;
   void coherenceToCSV( ostream& ) const;
+  void concreetToCSV( ostream& ) const;
   void toCSV( ostream& ) const;
   string text() const { return word; };
   ConnType getConnType() const { return connType; };
@@ -790,11 +802,11 @@ SemType get_sem_type( const string& lemma, const string& pos ){
 	return CONCRETE_HUMAN;
       else if ( type == "concrother" || type == "substance" 
 		|| type == "artefact" || type == "nonhuman" )
-	return CONCRETE;
+	return CONCRETE_NOUN;
       else if ( type == "dynamic" || type == "nondynamic" )
-	return ABSTRACT;
+	return ABSTRACT_NOUN;
       else 
-	return BROAD;
+	return BROAD_NOUN;
     }
   }
   else if ( pos == "ADJ" ) {
@@ -802,11 +814,11 @@ SemType get_sem_type( const string& lemma, const string& pos ){
     if ( it != settings.adj_sem.end() ){
       string type = it->second;
       if ( type == "phyper" || type == "stuff" || type == "colour" )
-	return CONCRETE;
+	return CONCRETE_ADJ;
       else if ( type == "abstract" )
-	return ABSTRACT;
+	return ABSTRACT_ADJ;
       else 
-	return BROAD;
+	return BROAD_ADJ;
     }
   }
   else if ( pos == "WW" ) {
@@ -1209,13 +1221,21 @@ void coherenceHeader( ostream& os ){
      << "argument_overlap_d,argument_overlap_g,lem_argument_overlap_d,"
      << "lem_argument_overlap_g,wordbuffer_argument_overlap_g,"
      << "wordbuffer_argument_overlap_d,lemmabuffer_argument_overlap_d,"
-     << "lemmabuffer_argument_overlap_g,indef_nps_p,indef_nps_r,indef_nps_g";
+     << "lemmabuffer_argument_overlap_g,indef_nps_p,indef_nps_r,indef_nps_g,";
+}
+ 
+void concreetHeader( ostream& os ){
+  os << "noun_conc_strict_p,noun_conc_strict_r,noun_conc_strict_d,";
+  os << "noun_conc_broad_p,noun_conc_broad_r,noun_conc_broad_d,";
+  os << "adj_conc_strict_p,adj_conc_strict_r,adj_conc_strict_d,";
+  os << "adj_conc_broad_p,adj_conc_broad_r,adj_conc_broad_d,";
 }
  
 void wordStats::CSVheader( ostream& os ){
   os << "file,foliaID,woord,";
   wordHeader( os );
   coherenceHeader( os );
+  concreetHeader( os );
   os << endl;
 }
 
@@ -1276,6 +1296,24 @@ void wordStats::coherenceToCSV( ostream& os ) const {
      << "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,";
 }
 
+void wordStats::concreetToCSV( ostream& os ) const {
+  if ( sem_type == CONCRETE_HUMAN || sem_type == CONCRETE_NOUN ){
+    os << "1,1,1,0,0,0,0,0,0,0,0,0";
+  }
+  else if ( sem_type == BROAD_NOUN ){
+    os << "0,0,0,1,1,1,0,0,0,0,0,0,";
+  }
+  else if ( sem_type  == CONCRETE_ADJ ){
+    os << "0,0,0,0,0,0,1,1,1,0,0,0,";
+  }
+  else if ( sem_type == BROAD_ADJ ){
+    os << "0,0,0,0,0,0,0,0,0,1,1,1,";
+  }
+  else {
+    os << "0,0,0,0,0,0,0,0,0,0,0,0,";
+    } 
+}
+
 void wordStats::toCSV( ostream& os ) const {
   if ( word == "," )
     os << "&komma;";
@@ -1284,6 +1322,7 @@ void wordStats::toCSV( ostream& os ) const {
   os << ",";
   wordDifficultiesToCSV( os );
   coherenceToCSV( os );
+  concreetToCSV( os );
   os << endl;
 }
 
@@ -1335,6 +1374,8 @@ struct structStats: public basicStats {
     pronRefCnt(0), archaicsCnt(0),
     contentCnt(0),
     nominalCnt(0),
+    nounCnt(0),
+    adjCnt(0),
     onderCnt(0),
     betrCnt(0),
     reeksCnt(0),
@@ -1364,10 +1405,14 @@ struct structStats: public basicStats {
     lwfreq_n(NA),
     polarity(NA),
     surprisal(NA),
-    broadConcreteCnt(0),
-    strictConcreteCnt(0),
-    broadAbstractCnt(0),
-    strictAbstractCnt(0),
+    broadConcreteNounCnt(0),
+    strictConcreteNounCnt(0),
+    broadAbstractNounCnt(0),
+    strictAbstractNounCnt(0),
+    broadConcreteAdjCnt(0),
+    strictConcreteAdjCnt(0),
+    broadAbstractAdjCnt(0),
+    strictAbstractAdjCnt(0),
     stateCnt(0),
     actionCnt(0),
     processCnt(0),
@@ -1390,6 +1435,7 @@ struct structStats: public basicStats {
   void sentDifficultiesToCSV( ostream& ) const;
   void informationDensityToCSV( ostream& ) const;
   void coherenceToCSV( ostream& ) const;
+  void concreetToCSV( ostream& ) const;
   void merge( structStats * );
   virtual bool isSentence() const { return false; };
   virtual bool isDocument() const { return false; };
@@ -1413,6 +1459,8 @@ struct structStats: public basicStats {
   int archaicsCnt;
   int contentCnt;
   int nominalCnt;
+  int nounCnt;
+  int adjCnt;
   int onderCnt;
   int betrCnt;
   int reeksCnt;
@@ -1442,10 +1490,14 @@ struct structStats: public basicStats {
   double lwfreq_n;
   double polarity;
   double surprisal;
-  int broadConcreteCnt;
-  int strictConcreteCnt;
-  int broadAbstractCnt;
-  int strictAbstractCnt;
+  int broadConcreteNounCnt;
+  int strictConcreteNounCnt;
+  int broadAbstractNounCnt;
+  int strictAbstractNounCnt;
+  int broadConcreteAdjCnt;
+  int strictConcreteAdjCnt;
+  int broadAbstractAdjCnt;
+  int strictAbstractAdjCnt;
   int stateCnt;
   int actionCnt;
   int processCnt;
@@ -1490,6 +1542,8 @@ void structStats::merge( structStats *ss ){
   archaicsCnt += ss->archaicsCnt;
   contentCnt += ss->contentCnt;
   nominalCnt += ss->nominalCnt;
+  nounCnt += ss->nounCnt;
+  adjCnt += ss->adjCnt;
   onderCnt += ss->onderCnt;
   betrCnt += ss->betrCnt;
   reeksCnt += ss->reeksCnt;
@@ -1533,10 +1587,14 @@ void structStats::merge( structStats *ss ){
   pron2Cnt += ss->pron2Cnt;
   pron3Cnt += ss->pron3Cnt;
   pronRefCnt += ss->pronRefCnt;
-  strictAbstractCnt += ss->strictAbstractCnt;
-  broadAbstractCnt += ss->broadAbstractCnt;
-  strictConcreteCnt += ss->strictConcreteCnt;
-  broadConcreteCnt += ss->broadConcreteCnt;
+  strictAbstractNounCnt += ss->strictAbstractNounCnt;
+  broadAbstractNounCnt += ss->broadAbstractNounCnt;
+  strictConcreteNounCnt += ss->strictConcreteNounCnt;
+  broadConcreteNounCnt += ss->broadConcreteNounCnt;
+  strictAbstractAdjCnt += ss->strictAbstractAdjCnt;
+  broadAbstractAdjCnt += ss->broadAbstractAdjCnt;
+  strictConcreteAdjCnt += ss->strictConcreteAdjCnt;
+  broadConcreteAdjCnt += ss->broadConcreteAdjCnt;
   stateCnt += ss->stateCnt;
   actionCnt += ss->actionCnt;
   processCnt += ss->processCnt;
@@ -1649,6 +1707,8 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "archaic_count", toString(archaicsCnt) );
   addOneMetric( doc, el, "content_count", toString(contentCnt) );
   addOneMetric( doc, el, "nominal_count", toString(nominalCnt) );
+  addOneMetric( doc, el, "noun_count", toString(nounCnt) );
+  addOneMetric( doc, el, "adj_count", toString(adjCnt) );
   addOneMetric( doc, el, "subord_count", toString(onderCnt) );
   addOneMetric( doc, el, "rel_count", toString(betrCnt) );
   addOneMetric( doc, el, "cnj_count", toString(cnjCnt) );
@@ -1694,10 +1754,14 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "character_count_min_names", toString(charCntExNames) );
   addOneMetric( doc, el, "morpheme_count", toString(morphCnt) );
   addOneMetric( doc, el, "morpheme_count_min_names", toString(morphCntExNames) );
-  addOneMetric( doc, el, "concrete_strict", toString(strictConcreteCnt) );
-  addOneMetric( doc, el, "concrete_broad", toString(broadConcreteCnt) );
-  addOneMetric( doc, el, "abstract_strict", toString(strictAbstractCnt) );
-  addOneMetric( doc, el, "abstract_broad", toString(broadAbstractCnt) );
+  addOneMetric( doc, el, "concrete_strict_noun", toString(strictConcreteNounCnt) );
+  addOneMetric( doc, el, "concrete_broad_noun", toString(broadConcreteNounCnt) );
+  addOneMetric( doc, el, "abstract_strict_noun", toString(strictAbstractNounCnt) );
+  addOneMetric( doc, el, "abstract_broad_noun", toString(broadAbstractNounCnt) );
+  addOneMetric( doc, el, "concrete_strict_adj", toString(strictConcreteAdjCnt) );
+  addOneMetric( doc, el, "concrete_broad_adj", toString(broadConcreteAdjCnt) );
+  addOneMetric( doc, el, "abstract_strict_adj", toString(strictAbstractAdjCnt) );
+  addOneMetric( doc, el, "abstract_broad_adj", toString(broadAbstractAdjCnt) );
   addOneMetric( doc, el, "state_count", toString(stateCnt) );
   addOneMetric( doc, el, "action_count", toString(actionCnt) );
   addOneMetric( doc, el, "process_count", toString(processCnt) );
@@ -1898,6 +1962,61 @@ void structStats::coherenceToCSV( ostream& os ) const {
   os << indefNpCnt/double(npCnt) << ","
      << indefNpCnt/double(npCnt - indefNpCnt) << ","
      << (indefNpCnt/double(wordCnt)) * 1000 << ",";
+}
+
+void structStats::concreetToCSV( ostream& os ) const {
+  if ( nounCnt == 0 ){
+    os << "NA,";
+  }
+  else {
+    os << strictConcreteNounCnt/double(nounCnt) << ",";
+  }
+  if ( broadAbstractNounCnt == 0 ){
+    os << "NA,";
+  }
+  else {
+    os << strictConcreteNounCnt/double(broadAbstractNounCnt) << ",";
+  }
+  os << (strictConcreteNounCnt/double(wordCnt)) * 1000 << ",";
+  if ( nounCnt == 0 ){
+    os << "NA,";
+  }
+  else {
+    os << broadConcreteNounCnt/double(nounCnt) << ",";
+  }
+  if ( broadAbstractNounCnt == 0 ){
+    os << "NA,";
+  }
+  else {
+    os << broadConcreteNounCnt/double(broadAbstractNounCnt) << ",";
+  }
+  os << (broadConcreteNounCnt/double(wordCnt)) * 1000 << ",";
+  if ( adjCnt == 0 ){
+    os << "NA,";
+  }
+  else {
+    os << strictConcreteAdjCnt/double(adjCnt) << ",";
+  }
+  if ( broadAbstractAdjCnt == 0 ){
+    os << "NA,";
+  }
+  else {
+    os << strictConcreteAdjCnt/double(broadAbstractAdjCnt) << ",";
+  }
+  os << (strictConcreteAdjCnt/double(wordCnt)) * 1000 << ",";
+  if ( adjCnt == 0 ){
+    os << "NA,";
+  }
+  else {
+    os << broadConcreteAdjCnt/double(adjCnt) << ",";
+  }
+  if ( broadAbstractAdjCnt == 0 ){
+    os << "NA,";
+  }
+  else {
+    os << broadConcreteAdjCnt/double(broadAbstractAdjCnt) << ",";
+  }
+  os << (broadConcreteAdjCnt/double(wordCnt)) * 1000 << ",";
 }
 
 struct sentStats : public structStats {
@@ -2197,6 +2316,10 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
 	contentCnt++;
       if ( ws->isNominal )
 	nominalCnt++;
+      if ( ws->posHead == "N" )
+	nounCnt++;
+      else if ( ws->posHead == "ADJ" )
+	adjCnt++;
       if ( ws->isOnder )
 	onderCnt++;
       if ( ws->isImperative )
@@ -2244,17 +2367,29 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
       case CONCRETE_HUMAN:
 	humanCnt++;
 	// fall throug
-      case CONCRETE:
-	strictConcreteCnt++;
-	broadConcreteCnt++;
+      case CONCRETE_NOUN:
+	strictConcreteNounCnt++;
+	broadConcreteNounCnt++;
 	break;
-      case ABSTRACT:
-	strictAbstractCnt++;
-	broadAbstractCnt++;
+      case CONCRETE_ADJ:
+	strictConcreteAdjCnt++;
+	broadConcreteAdjCnt++;
 	break;
-      case BROAD:
-	broadConcreteCnt++;
-	broadAbstractCnt++;
+      case ABSTRACT_NOUN:
+	strictAbstractNounCnt++;
+	broadAbstractNounCnt++;
+	break;
+      case ABSTRACT_ADJ:
+	strictAbstractAdjCnt++;
+	broadAbstractAdjCnt++;
+	break;
+      case BROAD_NOUN:
+	broadConcreteNounCnt++;
+	broadAbstractNounCnt++;
+	break;
+      case BROAD_ADJ:
+	broadConcreteAdjCnt++;
+	broadAbstractAdjCnt++;
 	break;
       case STATE:
 	stateCnt++;
@@ -2314,6 +2449,7 @@ void sentStats::CSVheader( ostream& os ){
   sentHeader( os );
   infoHeader( os );
   coherenceHeader( os );
+  concreetHeader( os );
   os << endl;
 }
 
@@ -2322,6 +2458,7 @@ void sentStats::toCSV( ostream& os ) const {
   sentDifficultiesToCSV( os );
   informationDensityToCSV( os );
   coherenceToCSV( os );
+  concreetToCSV( os );
   os << endl;
 }
 
@@ -2399,6 +2536,7 @@ void parStats::CSVheader( ostream& os ){
   sentHeader( os );
   infoHeader( os );
   coherenceHeader( os );
+  concreetHeader( os );
   os << endl;
 }
 
@@ -2407,6 +2545,7 @@ void parStats::toCSV( ostream& os ) const {
   sentDifficultiesToCSV( os );
   informationDensityToCSV( os );
   coherenceToCSV( os );
+  concreetToCSV( os );
   os << endl;
 }
 
@@ -2613,6 +2752,7 @@ void docStats::CSVheader( ostream& os ){
   sentHeader(os);
   infoHeader( os );
   coherenceHeader( os );
+  concreetHeader( os );
   os << endl;
 }
 
@@ -2621,6 +2761,7 @@ void docStats::toCSV( ostream& os ) const {
   sentDifficultiesToCSV( os );
   informationDensityToCSV( os );
   coherenceToCSV( os );
+  concreetToCSV( os );
   os << endl;
 }
 
