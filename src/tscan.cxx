@@ -238,7 +238,7 @@ void settingData::init( const Configuration& cf ){
   }
   val = cf.lookUp( "rarityLevel" );
   if ( val.empty() ){
-    rarityLevel = 5;
+    rarityLevel = 10;
   }
   else if ( !Timbl::stringTo( val, rarityLevel ) ){ 
     cerr << "invalid value for 'rarityLevel' in config file" << endl;
@@ -300,6 +300,15 @@ void aggregate( M& out, const M& in ){
     else {
       oi->second += ii->second;
     }
+    ++ii;
+  }
+}
+
+void aggregate( multimap<DD_type,int>& out, 
+		const multimap<DD_type,int>& in ){
+  multimap<DD_type,int>::const_iterator ii = in.begin();
+  while ( ii != in.end() ){
+    out.insert( make_pair(ii->first, ii->second ) );
     ++ii;
   }
 }
@@ -375,6 +384,9 @@ struct basicStats {
   virtual ~basicStats(){};
   virtual void print( ostream& ) const = 0;
   virtual void wordDifficultiesToCSV( ostream& ) const = 0;
+  virtual void sentDifficultiesToCSV( ostream& ) const = 0;
+  virtual void informationDensityToCSV( ostream& ) const = 0;
+  virtual string rarity( int ) const { return "NA"; };
   virtual void toCSV( ostream& ) const =0;
   virtual void addMetrics( ) const = 0;
   virtual string text() const { return ""; };
@@ -401,10 +413,12 @@ void basicStats::print( ostream& os ) const {
 }
 
 struct wordStats : public basicStats {
-  wordStats( Word *, xmlDoc * );
+  wordStats( Word *, xmlDoc *, const set<size_t>& );
   void print( ostream& ) const;
   static void CSVheader( ostream& os );
   void wordDifficultiesToCSV( ostream& ) const;
+  void sentDifficultiesToCSV( ostream& ) const {};
+  void informationDensityToCSV( ostream& ) const;
   void toCSV( ostream& ) const;
   string text() const { return word; };
   ConnType getConnType() const { return connType; };
@@ -451,7 +465,7 @@ struct wordStats : public basicStats {
   WordProp prop;
   SemType sem_type;
   vector<string> morphemes;
-  vector<ddinfo> ddvec;
+  multimap<DD_type,int> distances;
 };
 
 ConnType wordStats::checkConnective() const {
@@ -953,7 +967,7 @@ void argument_overlap( const string w_or_l,
 }
 
 
-wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
+wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
   basicStats( w, "WORD" ), 
   isPassive(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
@@ -984,7 +998,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc ):
 	//	cerr << "isImperative =" << isImperative << endl;
       }
     }
-    ddvec = getDependencyDist( w, alpDoc );
+    distances = getDependencyDist( w, alpDoc, puncts);
   }
   isContent = checkContent();
   if ( prop != ISPUNCT ){
@@ -1170,12 +1184,28 @@ void wordHeader( ostream& os ){
   os << "lpw,wpl,lpwzn,wplzn,mpw,wpm,mpwzn,wpmzn,"
      << "sdpw,sdens,freq50,freq65,freq77,freq80,"
      << "wfreq_log,wfreq_log_zn,"
-     << "lemfreq_log,lemfreq_log_zn";
+     << "lemfreq_log,lemfreq_log_zn,";
+}
+
+void sentHeader( ostream& os ){
+  os << "wpz,pzw,wnp,subord_clause,rel_clause,clauses_d,clauses_g,"
+     << "dlevel,dlevel_gt4_prop,dlevel_gt4_r,"
+     << "nom,lv_d,lv_g,prop_negs,morph_negs,total_negs,multiple_negs,"
+     << "deplen_subverb,deplen_dirobverb,deplen_indirobverb,deplen_verbpp,"
+     << "deplen_noundet,deplen_prepobj,deplen_verbvc,"
+     << "deplen_compbody,deplen_crdcnj,deplen_verbcp,deplen_noun_vc,"
+     << "deplen,deplen_max,";
+}
+
+void infoHeader( ostream& os ){
+  os << "word_ttr,lemma_ttr,content_words_r,content_words_d,content_words_g,"
+     << "rar_index,vc_mods_d,vc_mods_g,np_mods_d,np_mods_g,np_dens,conjuncts";
 }
  
 void wordStats::CSVheader( ostream& os ){
   os << "file,foliaID,woord,";
   wordHeader( os );
+  infoHeader( os );
   os << endl;
 }
 
@@ -1221,6 +1251,9 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
   else
     os << lwfreq << ",";
   os << "not implemented,not implemented,";
+}
+
+void wordStats::informationDensityToCSV( ostream& os ) const {
 }
 
 void wordStats::toCSV( ostream& os ) const {
@@ -1272,6 +1305,7 @@ struct structStats: public basicStats {
   structStats( FoliaElement *el, const string& cat ): 
     basicStats( el, cat ),
     wordCnt(0),
+    sentCnt(0),
     vdCnt(0),odCnt(0),
     infCnt(0), presentCnt(0), pastCnt(0),
     nameCnt(0),
@@ -1292,6 +1326,7 @@ struct structStats: public basicStats {
     causeConnCnt(0),
     propNegCnt(0),
     morphNegCnt(0),
+    multiNegCnt(0),
     argRepeatCnt(0),
     wordOverlapCnt(0),
     lemmaRepeatCnt(0),
@@ -1320,7 +1355,10 @@ struct structStats: public basicStats {
     npCnt(0),
     indefNpCnt(0),
     npSize(0),
+    vcModCnt(0),
+    npModCnt(0),
     dLevel(-1),
+    dLevel_gt4(0),
     impCnt(0),
     questCnt(0)
  {};
@@ -1328,10 +1366,13 @@ struct structStats: public basicStats {
   virtual void print(  ostream& ) const;
   void addMetrics( ) const;
   void wordDifficultiesToCSV( ostream& ) const;
+  void sentDifficultiesToCSV( ostream& ) const;
+  void informationDensityToCSV( ostream& ) const;
   void merge( structStats * );
   string id;
   string text;
   int wordCnt;
+  int sentCnt;
   int vdCnt;
   int odCnt;
   int infCnt;
@@ -1358,6 +1399,7 @@ struct structStats: public basicStats {
   int causeConnCnt;
   int propNegCnt;
   int morphNegCnt;
+  int multiNegCnt;
   int argRepeatCnt;
   int wordOverlapCnt;
   int lemmaRepeatCnt;
@@ -1386,13 +1428,17 @@ struct structStats: public basicStats {
   int npCnt;
   int indefNpCnt;
   int npSize;
+  int vcModCnt;
+  int npModCnt;
   int dLevel;
+  int dLevel_gt4;
   int impCnt;
   int questCnt;
   map<string,int> heads;
   map<string,int> unique_words;
   map<string,int> unique_lemmas;
   map<NerProp, int> ners;
+  multimap<DD_type,int> distances;
 };
 
 structStats::~structStats(){
@@ -1405,6 +1451,7 @@ structStats::~structStats(){
 
 void structStats::merge( structStats *ss ){
   wordCnt += ss->wordCnt;
+  sentCnt += ss->sentCnt;
   charCnt += ss->charCnt;
   charCntExNames += ss->charCntExNames;
   morphCnt += ss->morphCnt;
@@ -1429,6 +1476,7 @@ void structStats::merge( structStats *ss ){
   causeConnCnt += ss->causeConnCnt;
   propNegCnt += ss->propNegCnt;
   morphNegCnt += ss->morphNegCnt;
+  multiNegCnt += ss->multiNegCnt;
   argRepeatCnt += ss->argRepeatCnt;
   wordOverlapCnt += ss->wordOverlapCnt;
   lemmaRepeatCnt += ss->lemmaRepeatCnt;
@@ -1471,12 +1519,15 @@ void structStats::merge( structStats *ss ){
   npCnt += ss->npCnt;
   indefNpCnt += ss->indefNpCnt;
   npSize += ss->npSize;
+  vcModCnt += ss->vcModCnt;
+  npModCnt += ss->npModCnt;
   if ( ss->dLevel >= 0 ){
     if ( dLevel < 0 )
       dLevel = ss->dLevel;
     else
       dLevel += ss->dLevel;
   }
+  dLevel_gt4 += ss->dLevel_gt4;
   impCnt += ss->impCnt;
   questCnt += ss->questCnt;
   sv.push_back( ss );
@@ -1484,6 +1535,7 @@ void structStats::merge( structStats *ss ){
   aggregate( unique_words, ss->unique_words );
   aggregate( unique_lemmas, ss->unique_lemmas );
   aggregate( ners, ss->ners );
+  aggregate( distances, ss->distances );
 }
 
 void structStats::print( ostream& os ) const {
@@ -1681,8 +1733,114 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
     os << "NA" << ",";
   else
     os << lwfreq_n/double(wordCnt-nameCnt) << ",";
-  os << "not implemented,not implemented," << endl;
+  os << "not implemented,not implemented,";
+}
 
+ostream& displayMM( ostream&os, const multimap<DD_type, int>& mm, DD_type t ){
+  size_t len = mm.count(t);
+  if ( len > 0 ){
+    int result = 0;
+    for( multimap<DD_type, int>::const_iterator pos = mm.lower_bound(t); 
+	 pos != mm.upper_bound(t); 
+	 ++pos ){
+      result += pos->second;
+    }
+    os << result/double(len);
+  }
+  else
+    os << "NA";
+  return os;
+}
+
+ostream& displayTotalMM( ostream&os, const multimap<DD_type, int>& mm ){
+  size_t len = mm.size();
+  if ( len > 0 ){
+    int result = 0;
+    for( multimap<DD_type, int>::const_iterator pos = mm.begin(); 
+	 pos != mm.end(); 
+	 ++pos ){
+      result += pos->second;
+    }
+    os << result/double(len);
+  }
+  else
+    os << "NA";
+  return os;
+}
+
+double getHighest( const multimap<DD_type, int>&mm ){
+  double result = 0.0;
+  for( multimap<DD_type, int>::const_iterator pos = mm.begin(); 
+       pos != mm.end();
+       ++pos ){
+    if ( pos->second > result )
+      result = pos->second;
+  }
+  return result;
+}
+
+void structStats::sentDifficultiesToCSV( ostream& os ) const {
+  os << wordCnt/double(sentCnt) << ","
+     << double(sentCnt)/wordCnt * 100.0 << ","
+     << wordCnt/double(npCnt) << ","
+     << onderCnt/double(wordCnt) * 1000 << ","
+     << betrCnt/double(wordCnt) * 1000 << ","
+     << (pastCnt + presentCnt)/double(wordCnt) * 1000 << ","
+     << (pastCnt + presentCnt)/double(sentCnt) << ","
+     << dLevel/double(sentCnt) << "," 
+     << dLevel_gt4/double(sentCnt) << ","
+     << dLevel_gt4/double(sentCnt - dLevel_gt4) << ","
+     << nominalCnt/double(wordCnt) * 1000 << ","
+     << passiveCnt/double(wordCnt) * 1000 << ",";
+  if ( (pastCnt+presentCnt) == 0 )
+    os << "NA,";
+  else
+    os << passiveCnt/double(pastCnt+presentCnt) << ",";
+  os << propNegCnt/double(wordCnt) * 1000 << ","
+     << morphNegCnt/double(wordCnt) * 1000 << ","
+     << (propNegCnt+morphNegCnt)/double(wordCnt) * 1000 << ","
+     << multiNegCnt/double(sentCnt) * 1000 << ",";
+  //  cerr << distances << endl;
+  displayMM( os, distances, SUB_VERB ) << ",";
+  displayMM( os, distances, OBJ1_VERB ) << ",";
+  displayMM( os, distances, OBJ2_VERB ) << ",";
+  displayMM( os, distances, VERB_PP ) << ",";
+  displayMM( os, distances, NOUN_DET ) << ",";
+  displayMM( os, distances, PREP_OBJ1 ) << ",";
+  displayMM( os, distances, VERB_VC ) << ",";
+  displayMM( os, distances, COMP_BODY ) << ",";
+  displayMM( os, distances, CRD_CNJ ) << ",";
+  displayMM( os, distances, VERB_COMP ) << ",";
+  displayMM( os, distances, NOUN_VC ) << ",";
+  displayTotalMM( os, distances ) << ",";
+  os << getHighest( distances )/sentCnt << ",";
+}
+
+void structStats::informationDensityToCSV( ostream& os ) const {
+  os << unique_words.size()/double(wordCnt) << ",";
+  os << unique_lemmas.size()/double(wordCnt) << ",";
+  os << contentCnt/double(wordCnt - contentCnt) << ",";
+  os << contentCnt/double(wordCnt) * 1000 << ",";
+  if ( (pastCnt + presentCnt) == 0 )
+    os << "NA,";
+  else
+    os << contentCnt/double(pastCnt + presentCnt) << ",";
+  os << rarity( settings.rarityLevel ) << ",";
+  os << vcModCnt/double(wordCnt) * 1000 << ",";
+  if ( (pastCnt + presentCnt) == 0 )
+    os << "NA,";
+  else
+    os << vcModCnt/double(pastCnt + presentCnt) << ",";
+  os << npModCnt/double(wordCnt) * 1000 << ",";
+  if ( (pastCnt + presentCnt) == 0 )
+    os << "NA,";
+  else
+    os << npModCnt/double(pastCnt + presentCnt) << ",";
+  os << npCnt/double(wordCnt) << ",";
+  if ( crdCnt == 0 )
+    os << "NA,";
+  else
+    os << (cnjCnt/double(crdCnt)) * 1000 << ",";
 }
 
 struct sentStats : public structStats {
@@ -1864,6 +2022,7 @@ void sentStats::resolveConnectives(){
 
 sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ): 
   structStats( s, "ZIN" ){
+  sentCnt = 1;
   id = s->id();
   text = UnicodeToUTF8( s->toktext() );
   vector<Word*> w = s->words();
@@ -1875,10 +2034,22 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
       surprisalV.clear();
     }
   }
-
+  set<size_t> puncts;
+  if ( alpDoc ){
+    for( size_t i=0; i < w.size(); ++i ){
+      vector<PosAnnotation*> posV = w[i]->select<PosAnnotation>(frog_pos_set);
+      if ( posV.size() != 1 )
+	throw ValueError( "word doesn't have Frog POS tag info" );
+      PosAnnotation *pa = posV[0];
+      string posHead = pa->feat("head");
+      if ( posHead == "LET" )
+	puncts.insert( i );
+    }
+  }
+  //  cerr << "PUNCTS " << puncts << endl;
   bool question = false;
   for ( size_t i=0; i < w.size(); ++i ){
-    wordStats *ws = new wordStats( w[i], alpDoc );
+    wordStats *ws = new wordStats( w[i], alpDoc, puncts );
     ws->surprisal = surprisalV[i];
     if ( prev ){
       ws->getSentenceOverlap( prev );
@@ -1923,6 +2094,7 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
       morphCntExNames += ws->morphCntExNames;
       unique_words[lowercase(ws->word)] += 1;
       unique_lemmas[ws->lemma] += 1;
+      aggregate( distances, ws->distances );
       if ( ws->compPartCnt > 0 )
 	++compCnt;
       compPartCnt += ws->compPartCnt;
@@ -2046,6 +2218,8 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
   }
   if ( question )
     questCnt = 1;
+  if ( (morphNegCnt + propNegCnt) > 1 )
+    multiNegCnt = 1;
   resolveConnectives();
   if ( wfreq == 0 )
     lwfreq = NA;
@@ -2058,7 +2232,11 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
   np_length( s, npCnt, indefNpCnt, npSize );
   if ( alpDoc ){
     dLevel = get_d_level( s, alpDoc );
+    if ( dLevel > 4 )
+      dLevel_gt4 = 1;
     countCrdCnj( alpDoc, crdCnt, cnjCnt, reeksCnt );
+    int np2Cnt;
+    mod_stats( alpDoc, vcModCnt, np2Cnt, npModCnt );
   }
 }
 
@@ -2066,7 +2244,7 @@ void sentStats::print( ostream& os ) const {
   os << category << "[" << text << "]" << endl;
   os << category << " er zijn " << propNegCnt << " negatieve woorden en " 
      << morphNegCnt << " negatieve morphemen gevonden";
-  if ( propNegCnt + morphNegCnt > 1 )
+  if ( multiNegCnt > 1 )
     os << " er is dus een dubbele ontkenning! ";
   os << endl;
   structStats::print( os );
@@ -2075,11 +2253,16 @@ void sentStats::print( ostream& os ) const {
 void sentStats::CSVheader( ostream& os ){
   os << "file,foliaID,";
   wordHeader( os );
+  sentHeader( os );
+  infoHeader( os );
   os << endl;
 }
 
 void sentStats::toCSV( ostream& os ) const {
   wordDifficultiesToCSV( os );
+  sentDifficultiesToCSV( os );
+  informationDensityToCSV( os );
+  os << endl;
 }
 
 void sentStats::addMetrics( ) const {
@@ -2100,15 +2283,14 @@ struct parStats: public structStats {
   static void CSVheader( ostream& os );
   void toCSV( ostream& ) const;
   void addMetrics( ) const;
-  int sentCnt;
 };
 
 xmlDoc *AlpinoServerParse( Sentence *);
 
 parStats::parStats( Paragraph *p ): 
-  structStats( p, "PARAGRAAF" ), 
-  sentCnt(0) 
+  structStats( p, "PARAGRAAF" )
 {
+  sentCnt = 0;
   id = p->id();
   vector<Sentence*> sents = p->sentences();
   for ( size_t i=0; i < sents.size(); ++i ){
@@ -2154,11 +2336,16 @@ void parStats::print( ostream& os ) const {
 void parStats::CSVheader( ostream& os ){
   os << "file,foliaID,";
   wordHeader( os );
+  sentHeader( os );
+  infoHeader( os );
   os << endl;
 }
 
 void parStats::toCSV( ostream& os ) const {
   wordDifficultiesToCSV( os );
+  sentDifficultiesToCSV( os );
+  informationDensityToCSV( os );
+  os << endl;
 }
 
 void parStats::addMetrics( ) const {
@@ -2174,8 +2361,8 @@ struct docStats : public structStats {
   void toCSV( const string&, csvKind ) const;
   static void CSVheader( ostream& os );
   void toCSV( ostream& ) const;
+  string rarity( int level ) const;
   void addMetrics( ) const;
-  int sentCnt;
   int doc_word_argCnt;
   int doc_word_overlapCnt;
   int doc_lemma_argCnt;
@@ -2183,10 +2370,11 @@ struct docStats : public structStats {
 };
 
 docStats::docStats( Document *doc ):
-  structStats( 0, "DOCUMENT" ), sentCnt(0), 
+  structStats( 0, "DOCUMENT" ),
   doc_word_argCnt(0), doc_word_overlapCnt(0),
   doc_lemma_argCnt(0), doc_lemma_overlapCnt(0) 
 {
+  sentCnt = 0;
   doc->declare( AnnotationType::METRIC, 
 		"metricset", 
 		"annotator='tscan'" );
@@ -2241,15 +2429,16 @@ docStats::docStats( Document *doc ):
   }
 }
 
-double rarity( const docStats *d, double level ){
-  map<string,int>::const_iterator it = d->unique_lemmas.begin();
+string docStats::rarity( int level ) const {
+  map<string,int>::const_iterator it = unique_lemmas.begin();
   int rare = 0;
-  while ( it != d->unique_lemmas.end() ){
+  while ( it != unique_lemmas.end() ){
     if ( it->second <= level )
       ++rare;
     ++it;
   }
-  return rare/double( d->unique_lemmas.size() );
+  double result = rare/double( unique_lemmas.size() );
+  return toString( result );
 }
 
 void docStats::addMetrics( ) const {
@@ -2264,7 +2453,7 @@ void docStats::addMetrics( ) const {
   addOneMetric( el->doc(), el, 
 		"lemma_ttr", toString( unique_lemmas.size()/double(wordCnt) ) );
   addOneMetric( el->doc(), el, 
-		"rar_index", toString( rarity( this, settings.rarityLevel ) ) );
+		"rar_index", rarity( settings.rarityLevel ) );
   addOneMetric( el->doc(), el, 
 		"document_word_argument_count", toString( doc_word_argCnt ) );
   addOneMetric( el->doc(), el, 
@@ -2281,7 +2470,7 @@ void docStats::print( ostream& os ) const {
   os << "TTW = " << unique_words.size()/double(wordCnt) << endl;
   os << "TTL = " << unique_lemmas.size()/double(wordCnt) << endl;
   os << "rarity(" << settings.rarityLevel << ")=" 
-     << rarity( this, settings.rarityLevel ) << endl;
+     << rarity( settings.rarityLevel ) << endl;
   structStats::print( os );
 }
 
@@ -2356,11 +2545,16 @@ void docStats::toCSV( const string& name,
 void docStats::CSVheader( ostream& os ){
   os << "file,";
   wordHeader(os);
+  sentHeader(os);
+  infoHeader( os );
   os << endl;
 }
 
 void docStats::toCSV( ostream& os ) const {
   wordDifficultiesToCSV( os );
+  sentDifficultiesToCSV( os );
+  informationDensityToCSV( os );
+  os << endl;
 }
 
 Document *getFrogResult( istream& is ){

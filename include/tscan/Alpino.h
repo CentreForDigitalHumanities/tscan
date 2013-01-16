@@ -34,16 +34,13 @@ void countCrdCnj( xmlDoc *, int&, int&, int& );
 std::string classifyVerb( folia::Word *, xmlDoc * );
 
 void countCrdCnj( xmlDoc *, int& , int&, int& );
+void mod_stats( xmlDoc *, int&, int&, int& );
 
 bool checkImp( folia::Word *, xmlDoc * );
 
 enum DD_type { SUB_VERB, OBJ1_VERB, OBJ2_VERB, VERB_PP, VERB_VC,
 	       VERB_COMP, NOUN_DET, PREP_OBJ1, CRD_CNJ, COMP_BODY, NOUN_VC };
-struct ddinfo {
-ddinfo( DD_type _t, int _d ):type(_t),dist(_d){};
-  DD_type type;
-  int dist;
-};
+
 std::string toString( const DD_type& );
 
 inline std::ostream& operator<< (std::ostream&os, const DD_type& t ){
@@ -51,12 +48,9 @@ inline std::ostream& operator<< (std::ostream&os, const DD_type& t ){
   return os;
 }
 
-inline std::ostream& operator<< (std::ostream&os, const ddinfo& i ){
-  os << toString( i.type ) << ":" << i.dist;
-  return os;
-}
 
-std::vector<ddinfo> getDependencyDist( folia::Word *, xmlDoc * );
+std::multimap<DD_type,int> getDependencyDist( folia::Word *, xmlDoc *, 
+					      const std::set<size_t>& );
 int get_d_level( folia::Sentence *s, xmlDoc *alp );
 int indef_npcount( xmlDoc *alp );
 

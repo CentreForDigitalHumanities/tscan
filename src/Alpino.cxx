@@ -117,7 +117,7 @@ xmlNode *node_search( const xmlNode* node,
 	return pnt;
       }
     }
-    pnt = pnt->next;;
+    pnt = pnt->next;
   }
   // no luck, so get down the non-root nodes
   pnt = node->children;
@@ -244,16 +244,23 @@ string toString( const DD_type& t ){
   return result;
 }
   
-void store_result( vector<ddinfo>& result, DD_type type, 
-		   xmlNode *n1, xmlNode*n2 ){
+void store_result( multimap<DD_type,int>& result, DD_type type, 
+		   xmlNode *n1, xmlNode*n2, const set<size_t>& puncts ){
   int pos1 = get_begin( n1 );
   int pos2 = get_begin( n2 );
-  cerr << "store " << type << "(" << pos1 << "," << pos2 << ")" << endl;
-  result.push_back( ddinfo( SUB_VERB, abs( pos1-pos2) ) );
+  if ( pos1 > pos2 )
+    swap( pos1, pos2 );
+  int dist = pos2-pos1;
+  for ( int i=pos1; i <= pos2; ++i )
+    if ( puncts.find( i ) != puncts.end() )
+      --dist;
+  //  cerr << "store " << type << "(" << pos1 << "," << pos2 << ")=" << dist << endl;
+  result.insert( make_pair( type, dist ) );
 }
 
-vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
-  vector<ddinfo> result;
+multimap<DD_type, int> getDependencyDist( Word *w, xmlDoc *alp, 
+					  const set<size_t>& puncts ){
+  multimap<DD_type,int> result;
   xmlNode *head_node = getAlpWord( alp, w );
   if ( head_node ){
     KWargs atts = getAttributes( head_node );
@@ -302,17 +309,17 @@ vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
 		}
 	      }
 	    }
-	    store_result( result, SUB_VERB, head_node, target );
+	    store_result( result, SUB_VERB, head_node, target, puncts );
 	  }
 	  else {
 	    //	    cerr << "geval 6 " << endl;
 	    xmlNode *res = node_search( *it, "rel", "hd" );
 	    if ( res ){
-	      store_result( result, SUB_VERB, head_node, res );
+	      store_result( result, SUB_VERB, head_node, res, puncts );
 	    }
 	    res = node_search( *it, "rel", "cnj" );
 	    if ( res ){
-	      store_result( result, SUB_VERB, head_node, res );
+	      store_result( result, SUB_VERB, head_node, res, puncts );
 	    }
 	  }
 	}
@@ -345,16 +352,16 @@ vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
 		}
 	      }
 	    }
-	    store_result( result, OBJ1_VERB, head_node, target );
+	    store_result( result, OBJ1_VERB, head_node, target, puncts );
 	  }
 	  else {
 	    xmlNode *res = node_search( *it, "rel", "hd" );
 	    if ( res ){
-	      store_result( result, OBJ1_VERB, head_node, res );
+	      store_result( result, OBJ1_VERB, head_node, res, puncts );
 	    }
 	    res = node_search( *it, "rel", "cnj" );
 	    if ( res ){
-	      store_result( result, OBJ1_VERB, head_node, res );
+	      store_result( result, OBJ1_VERB, head_node, res, puncts );
 	    }
 	  }
 	}
@@ -387,35 +394,35 @@ vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
 		}
 	      }
 	    }
-	    store_result( result, OBJ2_VERB, head_node, target );
+	    store_result( result, OBJ2_VERB, head_node, target, puncts );
 	  }
 	  else {
 	    xmlNode *res = node_search( *it, "rel", "hd" );
 	    if ( res ){
-	      store_result( result, OBJ2_VERB, head_node, res );
+	      store_result( result, OBJ2_VERB, head_node, res, puncts );
 	    }
 	    res = node_search( *it, "rel", "cnj" );
 	    if ( res ){
-	      store_result( result, OBJ2_VERB, head_node, res );
+	      store_result( result, OBJ2_VERB, head_node, res, puncts );
 	    }
 	  }
 	}
 	else if ( args["rel"] == "vc" ){
 	  xmlNode *res = node_search( *it, "rel", "hd" );
 	  if ( res ){
-	    store_result( result, VERB_VC, head_node, res );
+	    store_result( result, VERB_VC, head_node, res, puncts );
 	  }
 	}
 	if ( args["cat"] == "cp" ){
 	  xmlNode *res = node_search( *it, "rel", "cmp" );
 	  if ( res ){
-	    store_result( result, VERB_COMP, head_node, res );
+	    store_result( result, VERB_COMP, head_node, res, puncts );
 	  }
 	}
 	else if ( args["cat"] == "pp" ){
 	  xmlNode *res = node_search( *it, "rel", "hd" );
 	  if ( res ){
-	    store_result( result, VERB_PP, head_node, res );
+	    store_result( result, VERB_PP, head_node, res, puncts );
 	  }
 	}
       }
@@ -430,12 +437,12 @@ vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
 	//	cerr << "bekijk " << args << endl;
 	if ( args["rel"] == "det" ){
 	  if ( !(*it)->children ){
-	    store_result( result, NOUN_DET, head_node, *it );
+	    store_result( result, NOUN_DET, head_node, *it, puncts );
 	  }
 	  else {
 	    xmlNode *res = node_search( *it, "rel", "hd" );
 	    if ( res ){
-	      store_result( result, NOUN_DET, head_node, res );
+	      store_result( result, NOUN_DET, head_node, res, puncts );
 	    }
 	    res = node_search( *it, "rel", "mpw" );
 	    // determiners kunnen voor Alpino net als een onderwerp of lijdend 
@@ -444,14 +451,14 @@ vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
 	    if ( res ){
 	      string root = getAttribute( *it, "root" );
 	      if ( !root.empty() )
-		store_result( result, NOUN_DET, head_node, res );
+		store_result( result, NOUN_DET, head_node, res, puncts );
 	    }
 	  }
 	}
 	if ( args["rel"] == "vc" ){
 	  xmlNode *res = node_search( *it, "rel", "hd" );
 	  if ( res ){
-	    store_result( result, NOUN_VC, head_node, res );
+	    store_result( result, NOUN_VC, head_node, res, puncts );
 	  }
 	}
       }
@@ -466,17 +473,17 @@ vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
 	//	cerr << "bekijk " << args << endl;
 	if ( args["rel"] == "obj1" ){
 	  if ( !(*it)->children ){
-	    store_result( result, PREP_OBJ1, head_node, *it );
+	    store_result( result, PREP_OBJ1, head_node, *it, puncts );
 	  }
 	  else {
 	    xmlNode *res = node_search( *it, "rel", "hd" );
 	    if ( res ){
-	      store_result( result, PREP_OBJ1, head_node, res );
+	      store_result( result, PREP_OBJ1, head_node, res, puncts );
 	    }
 	    res = node_search( *it, "rel", "cnj" );
 	    if ( res ){
 	      if ( getAttribute( res, "root" ) != "" )
-		store_result( result, NOUN_DET, head_node, res );
+		store_result( result, NOUN_DET, head_node, res, puncts );
 	    }
 	  }
 	}
@@ -491,12 +498,12 @@ vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
 	//	cerr << "bekijk " << args << endl;
 	if ( args["rel"] == "cnj" ){
 	  if ( !(*it)->children ){
-	    store_result( result, CRD_CNJ, head_node, *it );
+	    store_result( result, CRD_CNJ, head_node, *it, puncts );
 	  }
 	  else {
 	    xmlNode *res = node_search( *it, "rel", "hd" );
 	    if ( res ){
-	      store_result( result, CRD_CNJ, head_node, res );
+	      store_result( result, CRD_CNJ, head_node, res, puncts );
 	    }
 	  }
 	}
@@ -513,11 +520,11 @@ vector<ddinfo> getDependencyDist( Word *w, xmlDoc *alp ){
 	if ( args["rel"] == "body" ){
 	  xmlNode *res = node_search( *it, "rel", "hd" );
 	  if ( res ){
-	    store_result( result, COMP_BODY, head_node, res );
+	    store_result( result, COMP_BODY, head_node, res, puncts );
 	  }
 	  res = node_search( *it, "rel", "cnj" );
 	  if ( res ){
-	    store_result( result, COMP_BODY, head_node, res );
+	    store_result( result, COMP_BODY, head_node, res, puncts );
 	  }
 	}
       }
@@ -632,6 +639,25 @@ vector<xmlNode *> getNodes( xmlDoc *doc ){
   xmlNode *pnt = xmlDocGetRootElement( doc );
   vector<xmlNode*> result;
   getNodes( pnt->children, result );
+  return result;
+}
+
+void getNodes( xmlNode *pnt, vector<xmlNode*>& result, 
+	       const string& att, const string& val ){
+  while ( pnt ){
+    if ( pnt->type == XML_ELEMENT_NODE && Name(pnt) == "node" ){
+      if ( getAttribute( pnt, att ) == val )
+	result.push_back( pnt );
+      getNodes( pnt->children, result, att, val );
+    }
+    pnt = pnt->next;
+  }
+}
+
+vector<xmlNode *> getNodes( xmlDoc *doc, const string& att, const string& val ){
+  xmlNode *pnt = xmlDocGetRootElement( doc );
+  vector<xmlNode*> result;
+  getNodes( pnt->children, result, att, val );
   return result;
 }
 
@@ -862,6 +888,28 @@ bool checkImp( Word *pv, xmlDoc *alp ){
       su_found = true;
   }
   return !su_found;
+}
+
+void mod_stats( xmlDoc *doc, int& vcMod, int& npCnt, int& npMod ){
+  vcMod = 0;
+  npMod = 0;
+  vector<xmlNode*> nodes = getNodes( doc );
+  for ( size_t i=0; i < nodes.size(); ++i ){
+    KWargs atts = getAttributes( nodes[i] );
+    if ( atts["rel"] == "hd" && atts["pos"] == "verb" ){
+      vector< xmlNode *> siblings = getSibblings( nodes[i] );
+      for ( size_t j=0; j < siblings.size(); ++j ){
+	if ( getAttribute( siblings[j], "rel" ) == "mod" )
+	  ++vcMod;
+      }
+    }
+    if ( atts["cat"] == "np" ) {
+      ++npCnt;
+      vector< xmlNode* > avnodes;
+      getNodes( nodes[i]->children, avnodes, "pos", "adv" );
+      npMod += avnodes.size();
+    }
+  }
 }
 
 void countCrdCnj( xmlDoc *doc, int& crdCnt, int& cnjCnt, int& reeksCnt ){
