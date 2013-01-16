@@ -386,6 +386,7 @@ struct basicStats {
   virtual void wordDifficultiesToCSV( ostream& ) const = 0;
   virtual void sentDifficultiesToCSV( ostream& ) const = 0;
   virtual void informationDensityToCSV( ostream& ) const = 0;
+  virtual void coherenceToCSV( ostream& ) const = 0;
   virtual string rarity( int ) const { return "NA"; };
   virtual void toCSV( ostream& ) const =0;
   virtual void addMetrics( ) const = 0;
@@ -419,6 +420,7 @@ struct wordStats : public basicStats {
   void wordDifficultiesToCSV( ostream& ) const;
   void sentDifficultiesToCSV( ostream& ) const {};
   void informationDensityToCSV( ostream& ) const;
+  void coherenceToCSV( ostream& ) const;
   void toCSV( ostream& ) const;
   string text() const { return word; };
   ConnType getConnType() const { return connType; };
@@ -1199,13 +1201,21 @@ void sentHeader( ostream& os ){
 
 void infoHeader( ostream& os ){
   os << "word_ttr,lemma_ttr,content_words_r,content_words_d,content_words_g,"
-     << "rar_index,vc_mods_d,vc_mods_g,np_mods_d,np_mods_g,np_dens,conjuncts";
+     << "rar_index,vc_mods_d,vc_mods_g,np_mods_d,np_mods_g,np_dens,conjuncts,";
+}
+ 
+void coherenceHeader( ostream& os ){
+  os << "temporals,reeks,contrast,comparatief,causal,referential_prons,"
+     << "argument_overlap_d,argument_overlap_g,lem_argument_overlap_d,"
+     << "lem_argument_overlap_g,wordbuffer_argument_overlap_g,"
+     << "wordbuffer_argument_overlap_d,lemmabuffer_argument_overlap_d,"
+     << "lemmabuffer_argument_overlap_g,indef_nps_p,indef_nps_r,indef_nps_g";
 }
  
 void wordStats::CSVheader( ostream& os ){
   os << "file,foliaID,woord,";
   wordHeader( os );
-  infoHeader( os );
+  coherenceHeader( os );
   os << endl;
 }
 
@@ -1253,7 +1263,17 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
   os << "not implemented,not implemented,";
 }
 
-void wordStats::informationDensityToCSV( ostream& os ) const {
+void wordStats::informationDensityToCSV( ostream& ) const {
+}
+
+void wordStats::coherenceToCSV( ostream& os ) const {
+  os << (connType==TEMPOREEL?1:0) << ","
+     << (connType==REEKS?1:0) << ","
+     << (connType==CONTRASTIEF) << ","
+     << (connType==COMPARATIEF) << ","
+     << (connType==CAUSAAL) << ","
+     << isPronRef << ","
+     << "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,";
 }
 
 void wordStats::toCSV( ostream& os ) const {
@@ -1263,6 +1283,7 @@ void wordStats::toCSV( ostream& os ) const {
     os << word;
   os << ",";
   wordDifficultiesToCSV( os );
+  coherenceToCSV( os );
   os << endl;
 }
 
@@ -1368,7 +1389,12 @@ struct structStats: public basicStats {
   void wordDifficultiesToCSV( ostream& ) const;
   void sentDifficultiesToCSV( ostream& ) const;
   void informationDensityToCSV( ostream& ) const;
+  void coherenceToCSV( ostream& ) const;
   void merge( structStats * );
+  virtual bool isSentence() const { return false; };
+  virtual bool isDocument() const { return false; };
+  virtual int word_overlapCnt() const { return -1; };
+  virtual int lemma_overlapCnt() const { return-1; };
   string id;
   string text;
   int wordCnt;
@@ -1843,9 +1869,41 @@ void structStats::informationDensityToCSV( ostream& os ) const {
     os << (cnjCnt/double(crdCnt)) * 1000 << ",";
 }
 
+void structStats::coherenceToCSV( ostream& os ) const {
+  os << (tempConnCnt/double(wordCnt)) * 1000 << ","
+     << (reeksConnCnt/double(wordCnt)) * 1000 << ","
+     << (contConnCnt/double(wordCnt)) * 1000 << ","
+     << (compConnCnt/double(wordCnt)) * 1000 << ","
+     << (causeConnCnt/double(wordCnt)) * 1000 << ","
+     << (pronRefCnt/double(wordCnt)) * 1000 << ",";
+  if ( isSentence() ){
+    os << double(argRepeatCnt) << ",NA,"
+       << double(lemmaRepeatCnt) << ",NA,";
+  }
+  else {
+    os << (argRepeatCnt/double(wordCnt)) * 1000 << ","
+       << (argRepeatCnt/double(sentCnt)) << ",";
+    os << (lemmaRepeatCnt/double(wordCnt)) * 1000 << ","
+       << (lemmaRepeatCnt/double(sentCnt)) << ",";
+  }
+  if ( !isDocument() ){
+    os << "NA,NA,NA,NA,";
+  }
+  else {
+    os << (word_overlapCnt()/double(wordCnt)) * 1000 << ","
+       << word_overlapCnt()/double(presentCnt+pastCnt) << ","
+       << (lemma_overlapCnt()/double(wordCnt)) * 1000 << ","
+       << lemma_overlapCnt()/double(presentCnt+pastCnt) << ",";
+  }
+  os << indefNpCnt/double(npCnt) << ","
+     << indefNpCnt/double(npCnt - indefNpCnt) << ","
+     << (indefNpCnt/double(wordCnt)) * 1000 << ",";
+}
+
 struct sentStats : public structStats {
   sentStats( Sentence *, Sentence *, xmlDoc * );
-  virtual void print( ostream& ) const;
+  void print( ostream& ) const;
+  bool isSentence() const { return true; };
   static void CSVheader( ostream& os );
   void toCSV( ostream& ) const;
   void resolveConnectives();
@@ -2255,6 +2313,7 @@ void sentStats::CSVheader( ostream& os ){
   wordHeader( os );
   sentHeader( os );
   infoHeader( os );
+  coherenceHeader( os );
   os << endl;
 }
 
@@ -2262,6 +2321,7 @@ void sentStats::toCSV( ostream& os ) const {
   wordDifficultiesToCSV( os );
   sentDifficultiesToCSV( os );
   informationDensityToCSV( os );
+  coherenceToCSV( os );
   os << endl;
 }
 
@@ -2338,6 +2398,7 @@ void parStats::CSVheader( ostream& os ){
   wordHeader( os );
   sentHeader( os );
   infoHeader( os );
+  coherenceHeader( os );
   os << endl;
 }
 
@@ -2345,6 +2406,7 @@ void parStats::toCSV( ostream& os ) const {
   wordDifficultiesToCSV( os );
   sentDifficultiesToCSV( os );
   informationDensityToCSV( os );
+  coherenceToCSV( os );
   os << endl;
 }
 
@@ -2358,11 +2420,14 @@ void parStats::addMetrics( ) const {
 struct docStats : public structStats {
   docStats( Document * );
   void print( ostream& ) const;
+  bool isDocument() const { return true; };
   void toCSV( const string&, csvKind ) const;
   static void CSVheader( ostream& os );
   void toCSV( ostream& ) const;
   string rarity( int level ) const;
   void addMetrics( ) const;
+  int word_overlapCnt() const { return doc_word_overlapCnt; };
+  int lemma_overlapCnt() const { return doc_lemma_overlapCnt; };
   int doc_word_argCnt;
   int doc_word_overlapCnt;
   int doc_lemma_argCnt;
@@ -2547,6 +2612,7 @@ void docStats::CSVheader( ostream& os ){
   wordHeader(os);
   sentHeader(os);
   infoHeader( os );
+  coherenceHeader( os );
   os << endl;
 }
 
@@ -2554,6 +2620,7 @@ void docStats::toCSV( ostream& os ) const {
   wordDifficultiesToCSV( os );
   sentDifficultiesToCSV( os );
   informationDensityToCSV( os );
+  coherenceToCSV( os );
   os << endl;
 }
 
