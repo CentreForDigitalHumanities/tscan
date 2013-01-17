@@ -393,7 +393,7 @@ struct basicStats {
   {};
   virtual ~basicStats(){};
   virtual void print( ostream& ) const = 0;
-  virtual void CSVheader( ostream& os ) const = 0;
+  virtual void CSVheader( ostream&, const string& ) const = 0;
   virtual void wordDifficultiesHeader( ostream& ) const = 0;
   virtual void wordDifficultiesToCSV( ostream& ) const = 0;
   virtual void sentDifficultiesHeader( ostream& ) const = 0;
@@ -439,7 +439,7 @@ void basicStats::print( ostream& os ) const {
 struct wordStats : public basicStats {
   wordStats( Word *, xmlDoc *, const set<size_t>& );
   void print( ostream& ) const;
-  void CSVheader( ostream& os ) const;
+  void CSVheader( ostream&, const string& ) const;
   void wordDifficultiesHeader( ostream& ) const;
   void wordDifficultiesToCSV( ostream& ) const;
   void sentDifficultiesHeader( ostream& ) const {};
@@ -1230,8 +1230,8 @@ void wordStats::print( ostream& os ) const {
   }
 }
  
-void wordStats::CSVheader( ostream& os ) const {
-  os << "file,foliaID,woord,";
+void wordStats::CSVheader( ostream& os, const string& intro ) const {
+  os << intro << ",";
   wordDifficultiesHeader( os );
   coherenceHeader( os );
   concreetHeader( os );
@@ -1537,6 +1537,7 @@ struct structStats: public basicStats {
   void wordSortToCSV( ostream& ) const;
   void miscHeader( ostream& ) const;
   void miscToCSV( ostream& ) const;
+  void CSVheader( ostream&, const string& ) const;
   void toCSV( ostream& ) const;
   void merge( structStats * );
   virtual bool isSentence() const { return false; };
@@ -1919,6 +1920,19 @@ void structStats::addMetrics( ) const {
   for ( size_t i=0; i < sv.size(); ++i ){
     sv[i]->addMetrics();
   }
+}
+
+void structStats::CSVheader( ostream& os, const string& intro ) const {
+  os << intro << ",";
+  wordDifficultiesHeader( os );
+  sentDifficultiesHeader( os );
+  infoHeader( os );
+  coherenceHeader( os );
+  concreetHeader( os );
+  persoonlijkheidHeader( os );
+  wordSortHeader( os );
+  miscHeader( os );
+  os << endl;
 }
 
 void structStats::toCSV( ostream& os ) const {
@@ -2336,7 +2350,6 @@ struct sentStats : public structStats {
   sentStats( Sentence *, Sentence *, xmlDoc * );
   void print( ostream& ) const;
   bool isSentence() const { return true; };
-  void CSVheader( ostream& os ) const;
   void resolveConnectives();
   void addMetrics( ) const;
 };
@@ -2779,19 +2792,6 @@ void sentStats::print( ostream& os ) const {
   structStats::print( os );
 }
 
-void sentStats::CSVheader( ostream& os ) const {
-  os << "file,foliaID,";
-  wordDifficultiesHeader( os );
-  sentDifficultiesHeader( os );
-  infoHeader( os );
-  coherenceHeader( os );
-  concreetHeader( os );
-  persoonlijkheidHeader( os );
-  wordSortHeader( os );
-  miscHeader( os );
-  os << endl;
-}
-
 void sentStats::addMetrics( ) const {
   structStats::addMetrics( );
   FoliaElement *el = folia_node;
@@ -2807,7 +2807,6 @@ void sentStats::addMetrics( ) const {
 struct parStats: public structStats {
   parStats( Paragraph * );
   void print( ostream& ) const;
-  void CSVheader( ostream& ) const;
   void addMetrics( ) const;
 };
 
@@ -2859,19 +2858,6 @@ void parStats::print( ostream& os ) const {
   structStats::print( os );
 }
 
-void parStats::CSVheader( ostream& os ) const {
-  os << "file,foliaID,";
-  wordDifficultiesHeader( os );
-  sentDifficultiesHeader( os );
-  infoHeader( os );
-  coherenceHeader( os );
-  concreetHeader( os );
-  persoonlijkheidHeader( os );
-  wordSortHeader( os );
-  miscHeader( os );
-  os << endl;
-}
-
 void parStats::addMetrics( ) const {
   FoliaElement *el = folia_node;
   structStats::addMetrics( );
@@ -2884,7 +2870,6 @@ struct docStats : public structStats {
   void print( ostream& ) const;
   bool isDocument() const { return true; };
   void toCSV( const string&, csvKind ) const;
-  void CSVheader( ostream& ) const;
   string rarity( int level ) const;
   void addMetrics( ) const;
   int word_overlapCnt() const { return doc_word_overlapCnt; };
@@ -3006,7 +2991,7 @@ void docStats::toCSV( const string& name,
     string fname = name + ".document.csv";
     ofstream out( fname.c_str() );
     if ( out ){
-      CSVheader( out );
+      CSVheader( out, "File" );
       out << name << ",";
       structStats::toCSV( out );
       cout << "stored document statistics in " << fname << endl;
@@ -3021,7 +3006,7 @@ void docStats::toCSV( const string& name,
     if ( out ){
       for ( size_t par=0; par < sv.size(); ++par ){
 	if ( par == 0 )
-	  sv[0]->CSVheader( out );
+	  sv[0]->CSVheader( out, "File,FoLiA-ID" );
 	out << name << "," << sv[par]->folia_node->id() << ",";
 	sv[par]->toCSV( out );
       }
@@ -3038,7 +3023,7 @@ void docStats::toCSV( const string& name,
       for ( size_t par=0; par < sv.size(); ++par ){
 	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
 	  if ( par == 0 && sent == 0 )
-	    sv[0]->sv[0]->CSVheader( out );
+	    sv[0]->sv[0]->CSVheader( out, "File,FoLiA-ID" );
 	  out << name << "," << sv[par]->sv[sent]->folia_node->id() << ",";
 	  sv[par]->sv[sent]->toCSV( out );
 	}
@@ -3057,7 +3042,7 @@ void docStats::toCSV( const string& name,
 	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
 	  for ( size_t word=0; word < sv[par]->sv[sent]->sv.size(); ++word ){
 	    if ( par == 0 && sent == 0 && word == 0 )
-	      sv[0]->sv[0]->sv[0]->CSVheader( out );
+	      sv[0]->sv[0]->sv[0]->CSVheader( out, "File,FoLiA-ID,word" );
 	    out << name << "," << sv[par]->sv[sent]->sv[word]->folia_node->id() << ",";
 	    sv[par]->sv[sent]->sv[word]->toCSV( out );
 	  }
@@ -3069,19 +3054,6 @@ void docStats::toCSV( const string& name,
       cout << "storing word statistics in " << fname << " FAILED!" << endl;
     }
   }
-}
-
-void docStats::CSVheader( ostream& os ) const {
-  os << "file,";
-  wordDifficultiesHeader(os);
-  sentDifficultiesHeader(os);
-  infoHeader( os );
-  coherenceHeader( os );
-  concreetHeader( os );
-  persoonlijkheidHeader( os );
-  wordSortHeader( os );
-  miscHeader( os );
-  os << endl;
 }
 
 Document *getFrogResult( istream& is ){
