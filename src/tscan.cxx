@@ -313,6 +313,37 @@ void aggregate( multimap<DD_type,int>& out,
   }
 }
 
+namespace CGN {
+  enum Type { UNASS, ADJ, BW, LET, LID, N, SPEC, TSW, TW, VG, VNW, VZ, WW };
+
+  Type toCGN( const string& s ){
+    if ( s == "N" )
+      return N;
+    else if ( s == "ADJ" )
+      return ADJ;
+    else if ( s == "VNW" )
+      return VNW;
+    else if ( s == "LET" )
+      return LET;
+    else if ( s == "LID" )
+      return LID;
+    else if ( s == "SPEC" )
+      return SPEC;
+    else if ( s == "BW" )
+      return BW;
+    else if ( s == "WW" )
+      return WW;
+    else if ( s == "TW" )
+      return TW;
+    else if ( s == "VZ" )
+      return VZ;
+    else if ( s == "VG" )
+      return VG;
+    else 
+      return UNASS;
+  }
+};
+
 enum WordProp { ISNAME, ISPUNCT, 
 		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL,
 		ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
@@ -472,7 +503,7 @@ struct wordStats : public basicStats {
   void getSentenceOverlap( const Sentence * );
   string word;
   string pos;
-  string posHead;
+  CGN::Type tag;
   string lemma;
   string wwform;
   bool isPassiefWW;
@@ -566,7 +597,7 @@ ConnType wordStats::checkConnective() const {
       "waartoe", "wanneer", "want", "wegens", "zodat", "zodoende", "zolang" };
   static set<string> causuals( causesList, 
 			       causesList + sizeof(causesList)/sizeof(string) );
-  if ( posHead == "VG" ){
+  if ( tag == CGN::VG ){
     string lword = lowercase( word );
     if ( temporals.find( lword ) != temporals.end() )
       return TEMPOREEL;
@@ -655,13 +686,13 @@ ConnType check3Connectives( const string& mword ){
 }
 
 bool wordStats::checkContent() const {
-  if ( posHead == "WW" ){
+  if ( tag == CGN::WW ){
     if ( wwform == "hoofdww" ){
       return true;
     }
   }
   else {
-    return ( posHead == "N" || posHead == "BW" || posHead == "ADJ" );
+    return ( tag == CGN::N || tag == CGN::BW || tag == CGN::ADJ );
   }
   return false;
 }
@@ -693,7 +724,7 @@ bool wordStats::checkNominal( Word *w, xmlDoc *alpDoc ) const {
   static set<string> morphs( morphList, 
 			     morphList + sizeof(morphList)/sizeof(string) );
   //  cerr << "check Nominal. morphemes=" << morphemes << endl;
-  if ( posHead == "N" && morphemes.size() > 1 ){
+  if ( tag == CGN::N && morphemes.size() > 1 ){
     string last_morph = morphemes[morphemes.size()-1];
     if ( ( last_morph == "en" || last_morph == "s" ) 
 	 && morphemes.size() > 2 )
@@ -733,11 +764,11 @@ bool wordStats::checkNominal( Word *w, xmlDoc *alpDoc ) const {
 }
 
 WordProp wordStats::checkProps( const PosAnnotation* pa ) {
-  if ( posHead == "LET" )
+  if ( tag == CGN::LET )
     prop = ISPUNCT;
-  else if ( posHead == "SPEC" && pos.find("eigen") != string::npos )
+  else if ( tag == CGN::SPEC && pos.find("eigen") != string::npos )
     prop = ISNAME;
-  else if ( posHead == "WW" ){
+  else if ( tag == CGN::WW ){
     string wvorm = pa->feat("wvorm");
     if ( wvorm == "inf" )
       prop = ISINF;
@@ -761,7 +792,7 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
       exit(3);
     }
   }
-  else if ( posHead == "VNW" ){
+  else if ( tag == CGN::VNW ){
     string vwtype = pa->feat("vwtype");
     isBetr = vwtype == "betr";
     if ( lowercase( word ) != "men" ){
@@ -792,11 +823,11 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
       }
     }
   }
-  else if ( posHead == "LID" ) {
+  else if ( tag == CGN::LID ) {
     string cas = pa->feat("case");
     archaic = ( cas == "gen" || cas == "dat" );
   }
-  else if ( posHead == "VG" ) {
+  else if ( tag == CGN::VG ) {
     string cp = pa->feat("conjtype");
     isOnder = cp == "onder";
   }
@@ -805,11 +836,11 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
 
 double wordStats::checkPolarity( ) const {
   string key = lowercase(word)+":";
-  if ( posHead == "N" )
+  if ( tag == CGN::N )
     key += "n";
-  else if ( posHead == "ADJ" )
+  else if ( tag == CGN::ADJ )
     key += "a";
-  else if ( posHead == "WW" )
+  else if ( tag == CGN::WW )
     key += "v";
   else
     return NA;
@@ -820,8 +851,8 @@ double wordStats::checkPolarity( ) const {
   return NA;
 }
 
-SemType get_sem_type( const string& lemma, const string& pos ){
-  if ( pos == "N" ){
+SemType get_sem_type( const string& lemma, CGN::Type tag ){
+  if ( tag == CGN::N ){
     map<string,string>::const_iterator it = settings.noun_sem.find( lemma );
     if ( it != settings.noun_sem.end() ){
       string type = it->second;
@@ -836,7 +867,7 @@ SemType get_sem_type( const string& lemma, const string& pos ){
 	return BROAD_NOUN;
     }
   }
-  else if ( pos == "ADJ" ) {
+  else if ( tag == CGN::ADJ ) {
     map<string,string>::const_iterator it = settings.adj_sem.find( lemma );
     if ( it != settings.adj_sem.end() ){
       string type = it->second;
@@ -848,7 +879,7 @@ SemType get_sem_type( const string& lemma, const string& pos ){
 	return BROAD_ADJ;
     }
   }
-  else if ( pos == "WW" ) {
+  else if ( tag == CGN::WW ) {
     map<string,string>::const_iterator it = settings.verb_sem.find( lemma );
     if ( it != settings.verb_sem.end() ){
       string type = it->second;
@@ -866,7 +897,7 @@ SemType get_sem_type( const string& lemma, const string& pos ){
 }
   
 SemType wordStats::checkSemProps( ) const {
-  SemType type = get_sem_type( lemma, posHead );
+  SemType type = get_sem_type( lemma, tag );
   return type;
 }
 
@@ -918,7 +949,7 @@ bool wordStats::checkPropNeg() const {
   if ( negatives.find( lword ) != negatives.end() ){
     return true;
   }
-  else if ( posHead == "BW" &&
+  else if ( tag == CGN::BW &&
 	    ( lword == "moeilijk" || lword == "weg" ) ){
     // "moeilijk" en "weg" mochten kennelijk alleen als bijwoord worden 
     // meegeteld (in het geval van weg natuurlijk duidelijk ivm "de weg")
@@ -1027,11 +1058,11 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
     throw ValueError( "word doesn't have Frog POS tag info" );
   PosAnnotation *pa = posV[0];
   pos = pa->cls();
-  posHead = pa->feat("head");
+  tag = CGN::toCGN( pa->feat("head") );
   lemma = w->lemma( frog_lemma_set );
   prop = checkProps( pa );
   if ( alpDoc ){
-    if ( posHead == "WW" ){
+    if ( tag == CGN::WW ){
       wwform = classifyVerb( w, alpDoc );
       isPassiefWW = ( wwform == "passiefww" );
       isModaalWW = ( wwform == "modaalww" );
@@ -1094,8 +1125,8 @@ void addOneMetric( Document *doc, FoliaElement *parent,
 
 void wordStats::getSentenceOverlap( const Sentence *prev ){
   if ( prev &&
-       ( ( posHead == "VNW" && prop != ISAANW ) ||
-	 ( posHead == "N" ) ||
+       ( ( tag == CGN::VNW && prop != ISAANW ) ||
+	 ( tag == CGN::N ) ||
 	 ( pos == "SPEC(deeleigen)" ) ) ){
     vector<string> wordbuffer;
     vector<string> lemmabuffer;
@@ -1179,7 +1210,7 @@ void wordStats::addMetrics( ) const {
 
 void wordStats::print( ostream& os ) const {
   os << "word: [" <<word << "], lengte=" << charCnt 
-     << ", morphemen: " << morphemes << ", HEAD: " << posHead;
+     << ", morphemen: " << morphemes << ", HEAD: " << tag;
   switch ( prop ){
   case ISINF:
     os << " (Infinitief)";
@@ -1360,16 +1391,16 @@ void wordStats::wordSortHeader( ostream& os ) const {
 }
 
 void wordStats::wordSortToCSV( ostream& os ) const {
-  os << (posHead == "ADJ" ) << ","
-     << (posHead == "VG" ) << ","
-     << (posHead == "VNW" ) << ","
-     << (posHead == "LID" ) << ","
-     << (posHead == "VZ" ) << ","
-     << (posHead == "BW" ) << ","
-     << (posHead == "TW" ) << ","
-     << (posHead == "N" ) << ","
-     << (posHead == "WW" ) << ","
-     << (posHead == "TSW" ) << ",";
+  os << (tag == CGN::ADJ ) << ","
+     << (tag == CGN::VG ) << ","
+     << (tag == CGN::VNW ) << ","
+     << (tag == CGN::LID ) << ","
+     << (tag == CGN::VZ ) << ","
+     << (tag == CGN::BW ) << ","
+     << (tag == CGN::TW ) << ","
+     << (tag == CGN::N ) << ","
+     << (tag == CGN::WW ) << ","
+     << (tag == CGN::TSW ) << ",";
 }
 
 void wordStats::miscHeader( ostream& os ) const {
@@ -1627,7 +1658,7 @@ struct structStats: public basicStats {
   int dLevel_gt4;
   int impCnt;
   int questCnt;
-  map<string,int> heads;
+  map<CGN::Type,int> heads;
   map<string,int> unique_words;
   map<string,int> unique_lemmas;
   map<NerProp, int> ners;
@@ -1749,7 +1780,7 @@ void structStats::merge( structStats *ss ){
 void structStats::print( ostream& os ) const {
   os << category << " " << id << endl;
   os << category << " POS tags: ";
-  for ( map<string,int>::const_iterator it = heads.begin();
+  for ( map<CGN::Type,int>::const_iterator it = heads.begin();
 	it != heads.end(); ++it ){
     os << it->first << "[" << it->second << "] ";
   }
@@ -2584,7 +2615,7 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
 	;
       }
       wordCnt++;
-      heads[ws->posHead]++;
+      heads[ws->tag]++;
       
       argRepeatCnt += ws->argRepeatCnt;
       wordOverlapCnt += ws->wordOverlapCnt;
@@ -2649,25 +2680,25 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
 	contentCnt++;
       if ( ws->isNominal )
 	nominalCnt++;
-      if ( ws->posHead == "N" )
+      if ( ws->tag == CGN::N )
 	nounCnt++;
-      else if ( ws->posHead == "ADJ" )
+      else if ( ws->tag == CGN::ADJ )
 	adjCnt++;
-      else if ( ws->posHead == "WW" )
+      else if ( ws->tag == CGN::WW )
 	verbCnt++;
-      else if ( ws->posHead == "VG" )
+      else if ( ws->tag == CGN::VG )
 	vgCnt++;
-      else if ( ws->posHead == "TSW" )
+      else if ( ws->tag == CGN::TSW )
 	tswCnt++;
-      else if ( ws->posHead == "BW" )
+      else if ( ws->tag == CGN::BW )
 	bwCnt++;
-      else if ( ws->posHead == "VNW" )
+      else if ( ws->tag == CGN::VNW )
 	vnwCnt++;
-      else if ( ws->posHead == "LID" )
+      else if ( ws->tag == CGN::LID )
 	lidCnt++;
-      else if ( ws->posHead == "TW" )
+      else if ( ws->tag == CGN::TW )
 	twCnt++;
-      else if ( ws->posHead == "VZ" )
+      else if ( ws->tag == CGN::VZ )
 	vzCnt++;
       if ( ws->isOnder )
 	onderCnt++;
