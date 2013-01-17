@@ -1036,7 +1036,7 @@ void argument_overlap( const string w_or_l,
 
 
 wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
-  basicStats( w, "WORD" ), 
+  basicStats( w, "WORD" ), wwform(NO_VERB),
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false), connType(NOCONN),
