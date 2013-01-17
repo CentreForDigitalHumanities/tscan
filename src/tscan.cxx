@@ -505,11 +505,7 @@ struct wordStats : public basicStats {
   string pos;
   CGN::Type tag;
   string lemma;
-  string wwform;
-  bool isPassiefWW;
-  bool isModaalWW;
-  bool isTijdWW;
-  bool isKoppelWW;
+  WWform wwform;
   bool isPersRef;
   bool isPronRef;
   bool archaic;
@@ -687,7 +683,7 @@ ConnType check3Connectives( const string& mword ){
 
 bool wordStats::checkContent() const {
   if ( tag == CGN::WW ){
-    if ( wwform == "hoofdww" ){
+    if ( wwform == HEAD_VERB ){
       return true;
     }
   }
@@ -1041,8 +1037,7 @@ void argument_overlap( const string w_or_l,
 
 wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
   basicStats( w, "WORD" ), 
-  isPassiefWW(false), isModaalWW(false), isTijdWW(false),
-  isKoppelWW(false),isPersRef(false), isPronRef(false),
+  isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false), connType(NOCONN),
   f50(false), f65(false), f77(false), f80(false),  compPartCnt(0), wfreq(0),
@@ -1064,10 +1059,6 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
   if ( alpDoc ){
     if ( tag == CGN::WW ){
       wwform = classifyVerb( w, alpDoc );
-      isPassiefWW = ( wwform == "passiefww" );
-      isModaalWW = ( wwform == "modaalww" );
-      isTijdWW = ( wwform == "tijdww" ); 
-      isKoppelWW = ( wwform == "koppelww" );
       if ( prop == ISPVTGW || prop == ISPVVERL ){
 	//	cerr << "check IMP voor " << pos << " en lemma " << lemma << endl;
 	isImperative = checkImp( w, alpDoc );
@@ -1200,10 +1191,10 @@ void wordStats::addMetrics( ) const {
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
 
   addOneMetric( doc, el, "average_log_wfreq", toString(lwfreq) );
-  if ( !wwform.empty() ){
+  if ( wwform != NO_VERB ){
     KWargs args;
     args["set"] = "tscan-set";
-    args["class"] = "wwform(" + wwform + ")";
+    args["class"] = "wwform(" + toString(wwform) + ")";
     el->addPosAnnotation( args );
   }
 }
@@ -1246,8 +1237,8 @@ void wordStats::print( ostream& os ) const {
   case JUSTAWORD:
     break;
   }
-  if ( !wwform.empty() )
-    os << " (" << wwform << ")";  
+  if ( wwform != NO_VERB )
+    os << " (" << toString(wwform) << ")";  
   if ( isNominal )
     os << " nominalisatie";  
   if ( isOnder )
@@ -1410,9 +1401,9 @@ void wordStats::miscHeader( ostream& os ) const {
 
 void wordStats::miscToCSV( ostream& os ) const {
   os << (prop == ISPVTGW) << ","
-     << isModaalWW << ","
-     << isTijdWW << ","
-     << isKoppelWW << ","
+     << (wwform == MODAL_VERB ) << ","
+     << (wwform == TIME_VERB ) << ","
+     << (wwform == COPULA ) << ","
      << archaic << ","
      << (prop == ISVD ) << ","
      << (prop == ISOD) << ","
@@ -2662,13 +2653,13 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
       default:
 	;// ignore JUSTAWORD and ISAANW
       }
-      if ( ws->isPassiefWW )
+      if ( ws->wwform == PASSIVE_VERB )
 	passiveCnt++;
-      if ( ws->isModaalWW )
+      if ( ws->wwform == MODAL_VERB )
 	modalCnt++;
-      if ( ws->isTijdWW )
+      if ( ws->wwform == TIME_VERB )
 	timeCnt++;
-      if ( ws->isKoppelWW )
+      if ( ws->wwform == COPULA )
 	koppelCnt++;
       if ( ws->isPersRef )
 	persRefCnt++;

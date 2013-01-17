@@ -534,7 +534,29 @@ multimap<DD_type, int> getDependencyDist( Word *w, xmlDoc *alp,
   return result;
 }
 
-string classifyVerb( Word *w, xmlDoc *alp ){
+string toString( const WWform wf ){
+  switch ( wf ){
+  case PASSIVE_VERB:
+    return "passiefww";
+    break;
+  case MODAL_VERB:
+    return "modaalww";
+    break;
+  case TIME_VERB:
+    return "tijdww";
+    break;
+  case COPULA:
+    return "koppelww";
+    break;
+  case HEAD_VERB:
+    return "hoofdww";
+    break;
+  default:
+    return "NoVerb";
+  }
+}
+
+WWform classifyVerb( Word *w, xmlDoc *alp ){
   xmlNode *wnode = getAlpWord( alp, w );
   cerr << "classify VERB " << w->text() << endl;
   if ( wnode ){
@@ -562,7 +584,7 @@ string classifyVerb( Word *w, xmlDoc *alp ){
 	      string sindex = getAttribute( su_node, "index" );
 	      if ( sindex == oindex ){
 		cerr << "resultaat = passiefww" << endl;
-		return "passiefww";
+		return PASSIVE_VERB;
 	      }
 	    }
 	  }
@@ -574,7 +596,7 @@ string classifyVerb( Word *w, xmlDoc *alp ){
 	KWargs atts = getAttributes( siblinglist[i] );
 	if ( atts["rel"] == "predc" ){
 	  //	  cerr << "resultaat = koppelww" << endl;
-	  return "koppelww";
+	  return COPULA;
 	}
       }
     }
@@ -588,39 +610,39 @@ string classifyVerb( Word *w, xmlDoc *alp ){
 				       "root", sws );
 	  if ( node ){
 	    //	    cerr << "resultaat 1 = hoofdww" << endl;
-	    return "hoofdww";
+	    return HEAD_VERB;
 	  }
 	}
       }
     }
     if ( lemma == "zullen" ){
-      return "tijdww";
+      return TIME_VERB;
     }
     if ( modals.find( lemma ) != modals.end() ){
       //      cerr << "resultaat = modaalww" << endl;
-      return "modaalww";
+      return MODAL_VERB;
     }      
     if ( lemma == "hebben" ){
       for ( size_t i=0; i < siblinglist.size(); ++i ){
 	KWargs atts = getAttributes( siblinglist[i] );
 	if ( atts["rel"] == "vc" && (atts["cat"] == "ppart" || atts["cat"] == "inf" ) ){
 	  //	  cerr << "resultaat = tijdww" << endl;
-	  return "tijdww";
+	  return TIME_VERB;
 	}
       }
       //      cerr << "resultaat 2 = hoofdww" << endl;
-      return "hoofdww";
+      return HEAD_VERB;
     }
     if ( lemma == "zijn" ){
       //      cerr << "resultaat = tijdww" << endl;
-      return "tijdww";
+      return TIME_VERB;
     }
     //    cerr << "resultaat 3 = hoofdww" << endl;
-    return "hoofdww";
+    return HEAD_VERB;
   }
   else {
     //    cerr << "resultaat = NONE" << endl;
-    return "none";
+    return NO_VERB;
   }
 }
 

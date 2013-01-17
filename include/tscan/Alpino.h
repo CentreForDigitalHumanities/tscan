@@ -31,9 +31,6 @@ xmlDoc *AlpinoParse( folia::Sentence * );
 xmlNode *getAlpWord( xmlDoc *, const folia::Word * );
 bool checkImp( folia::Word *, xmlDoc * );
 void countCrdCnj( xmlDoc *, int&, int&, int& );
-std::string classifyVerb( folia::Word *, xmlDoc * );
-
-void countCrdCnj( xmlDoc *, int& , int&, int& );
 void mod_stats( xmlDoc *, int&, int&, int& );
 
 bool checkImp( folia::Word *, xmlDoc * );
@@ -53,5 +50,10 @@ std::multimap<DD_type,int> getDependencyDist( folia::Word *, xmlDoc *,
 					      const std::set<size_t>& );
 int get_d_level( folia::Sentence *s, xmlDoc *alp );
 int indef_npcount( xmlDoc *alp );
+
+enum WWform { NO_VERB, PASSIVE_VERB, MODAL_VERB, TIME_VERB,
+	      COPULA, HEAD_VERB };
+std::string toString( const WWform );
+WWform classifyVerb( folia::Word *, xmlDoc * );
 
 #endif // ALPINO_H
