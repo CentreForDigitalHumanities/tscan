@@ -398,7 +398,8 @@ struct basicStats {
   virtual void informationDensityToCSV( ostream& ) const = 0;
   virtual void coherenceToCSV( ostream& ) const = 0;
   virtual void concreetToCSV( ostream& ) const = 0;
-  virtual void persoonlijkheidToCSV( ostream& ) const = 0;;
+  virtual void persoonlijkheidToCSV( ostream& ) const = 0;
+  virtual void wordSortToCSV( ostream& ) const = 0;
   virtual string rarity( int ) const { return "NA"; };
   virtual void toCSV( ostream& ) const =0;
   virtual void addMetrics( ) const = 0;
@@ -435,6 +436,7 @@ struct wordStats : public basicStats {
   void coherenceToCSV( ostream& ) const;
   void concreetToCSV( ostream& ) const;
   void persoonlijkheidToCSV( ostream& ) const;
+  void wordSortToCSV( ostream& ) const;
   void toCSV( ostream& ) const;
   string text() const { return word; };
   ConnType getConnType() const { return connType; };
@@ -1240,7 +1242,16 @@ void concreetHeader( ostream& os ){
 }
 
 void persoonlijkheidHeader( ostream& os ){
-  os << "pers_ref,pers_pron_1,pers_pron_2,pers_pron3,pers_pron";
+  os << "pers_ref,pers_pron_1,pers_pron_2,pers_pron3,pers_pron,"
+     << "names_p,names_r,names_d,"
+     << "action_verbs_p,action_verbs_d,state_verbs_p,state_verbs_d,"
+     << "process_verbs_p,process_verbs_d,human_nouns_p,human_nouns_d,"
+     << "emo_adjs_p,emo_adjs_d,imperatives_p,imperatives_d,"
+     << "questions_p,questions_d,";
+}
+
+void wordSortHeader( ostream& os ){
+  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,";
 }
 
 void wordStats::CSVheader( ostream& os ){
@@ -1249,6 +1260,7 @@ void wordStats::CSVheader( ostream& os ){
   coherenceHeader( os );
   concreetHeader( os );
   persoonlijkheidHeader( os );
+  wordSortHeader( os );
   os << endl;
 }
 
@@ -1332,8 +1344,36 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << (prop == ISPPRON1 ) << ","
      << (prop == ISPPRON2 ) << ","
      << (prop == ISPPRON3 ) << ","
-     << (prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3) << ",";
+     << (prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3) << ","
+     << (prop == ISNAME) << ","
+     << (prop == ISNAME) << ","
+     << (prop == ISNAME) << ","
+     << (sem_type == ACTION ) << ","
+     << (sem_type == ACTION ) << ","
+     << (sem_type == STATE ) << ","
+     << (sem_type == STATE ) << ","
+     << (sem_type == PROCESS ) << ","
+     << (sem_type == PROCESS ) << ","
+     << (sem_type == CONCRETE_HUMAN ) << ","
+     << (sem_type == CONCRETE_HUMAN ) << ","
+     << "not implemented yet" << ","
+     << "not implemented yet" << ","
+     << isImperative << ","
+     << isImperative << ","
+     << "NA,NA,";
+}
 
+void wordStats::wordSortToCSV( ostream& os ) const {
+  os << (posHead == "ADJ" ) << ","
+     << (posHead == "VG" ) << ","
+     << (posHead == "VNW" ) << ","
+     << (posHead == "LID" ) << ","
+     << (posHead == "VZ" ) << ","
+     << (posHead == "BW" ) << ","
+     << (posHead == "TW" ) << ","
+     << (posHead == "N" ) << ","
+     << (posHead == "WW" ) << ","
+     << (posHead == "TSW" ) << ",";
 }
 
 void wordStats::toCSV( ostream& os ) const {
@@ -1346,6 +1386,7 @@ void wordStats::toCSV( ostream& os ) const {
   coherenceToCSV( os );
   concreetToCSV( os );
   persoonlijkheidToCSV( os );
+  wordSortToCSV( os );
   os << endl;
 }
 
@@ -1398,8 +1439,16 @@ struct structStats: public basicStats {
     archaicsCnt(0),
     contentCnt(0),
     nominalCnt(0),
-    nounCnt(0),
     adjCnt(0),
+    vgCnt(0),
+    vnwCnt(0),
+    lidCnt(0),
+    vzCnt(0),
+    bwCnt(0),
+    twCnt(0),
+    nounCnt(0),
+    verbCnt(0),
+    tswCnt(0),
     onderCnt(0),
     betrCnt(0),
     reeksCnt(0),
@@ -1461,6 +1510,7 @@ struct structStats: public basicStats {
   void coherenceToCSV( ostream& ) const;
   void concreetToCSV( ostream& ) const;
   void persoonlijkheidToCSV( ostream& ) const;
+  void wordSortToCSV( ostream& ) const;
   void merge( structStats * );
   virtual bool isSentence() const { return false; };
   virtual bool isDocument() const { return false; };
@@ -1485,8 +1535,16 @@ struct structStats: public basicStats {
   int archaicsCnt;
   int contentCnt;
   int nominalCnt;
-  int nounCnt;
   int adjCnt;
+  int vgCnt;
+  int vnwCnt;
+  int lidCnt;
+  int vzCnt;
+  int bwCnt;
+  int twCnt;
+  int nounCnt;
+  int verbCnt;
+  int tswCnt;
   int onderCnt;
   int betrCnt;
   int reeksCnt;
@@ -1568,8 +1626,16 @@ void structStats::merge( structStats *ss ){
   archaicsCnt += ss->archaicsCnt;
   contentCnt += ss->contentCnt;
   nominalCnt += ss->nominalCnt;
-  nounCnt += ss->nounCnt;
   adjCnt += ss->adjCnt;
+  vgCnt += ss->vgCnt;
+  vnwCnt += ss->vnwCnt;
+  lidCnt += ss->lidCnt;
+  vzCnt += ss->vzCnt;
+  bwCnt += ss->bwCnt;
+  twCnt += ss->twCnt;
+  nounCnt += ss->nounCnt;
+  verbCnt += ss->verbCnt;
+  tswCnt += ss->tswCnt;
   onderCnt += ss->onderCnt;
   betrCnt += ss->betrCnt;
   reeksCnt += ss->reeksCnt;
@@ -1735,7 +1801,14 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "content_count", toString(contentCnt) );
   addOneMetric( doc, el, "nominal_count", toString(nominalCnt) );
   addOneMetric( doc, el, "noun_count", toString(nounCnt) );
-  addOneMetric( doc, el, "adj_count", toString(adjCnt) );
+  addOneMetric( doc, el, "vz_count", toString(vzCnt) );
+  addOneMetric( doc, el, "vg_count", toString(vgCnt) );
+  addOneMetric( doc, el, "tsw_count", toString(tswCnt) );
+  addOneMetric( doc, el, "bw_count", toString(bwCnt) );
+  addOneMetric( doc, el, "lid_count", toString(lidCnt) );
+  addOneMetric( doc, el, "tw_count", toString(twCnt) );
+  addOneMetric( doc, el, "vnw_count", toString(vnwCnt) );
+  addOneMetric( doc, el, "verb_count", toString(verbCnt) );
   addOneMetric( doc, el, "subord_count", toString(onderCnt) );
   addOneMetric( doc, el, "rel_count", toString(betrCnt) );
   addOneMetric( doc, el, "cnj_count", toString(cnjCnt) );
@@ -1905,9 +1978,12 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
      << (pastCnt + presentCnt)/double(wordCnt) * 1000 << ","
      << (pastCnt + presentCnt)/double(sentCnt) << ","
      << dLevel/double(sentCnt) << "," 
-     << dLevel_gt4/double(sentCnt) << ","
-     << dLevel_gt4/double(sentCnt - dLevel_gt4) << ","
-     << nominalCnt/double(wordCnt) * 1000 << ","
+     << dLevel_gt4/double(sentCnt) << ",";
+  if ( sentCnt == dLevel_gt4 )
+    os << "NA,";
+  else
+    os<< dLevel_gt4/double(sentCnt - dLevel_gt4) << ",";
+  os << nominalCnt/double(wordCnt) * 1000 << ","
      << passiveCnt/double(wordCnt) * 1000 << ",";
   if ( (pastCnt+presentCnt) == 0 )
     os << "NA,";
@@ -2051,7 +2127,54 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << (pron1Cnt/double(wordCnt)) * 1000 << ",";
   os << (pron2Cnt/double(wordCnt)) * 1000 << ",";
   os << (pron3Cnt/double(wordCnt)) * 1000 << ",";
-  os << (pronRefCnt/double(wordCnt)) * 1000 << ",";
+  os << ((pron1Cnt+pron2Cnt+pron3Cnt)/double(wordCnt)) * 1000 << ",";
+  if ( nounCnt == 0 )
+    os << "NA,";
+  else
+    os << nameCnt/double(nounCnt) << ",";
+  if ( nameCnt == wordCnt )
+    os << "NA,";
+  else
+    os << nameCnt/double(wordCnt - nameCnt) << ",";
+  os << (nameCnt/double(wordCnt)) * 1000 << ",";
+  if ( verbCnt == 0 )
+    os << "NA,";
+  else
+    os << actionCnt/double(verbCnt) << ",";
+  os << (actionCnt/double(wordCnt)) * 1000 << ",";
+  if ( verbCnt == 0 )
+    os << "NA,";
+  else
+    os << stateCnt/double(verbCnt) << ",";
+  os << (stateCnt/double(wordCnt)) * 1000 << ",";
+  if ( verbCnt == 0 )
+    os << "NA,";
+  else
+    os << processCnt/double(verbCnt) << ",";
+  os << (processCnt/double(wordCnt)) * 1000 << ",";
+  if ( nounCnt == 0 )
+    os << "NA,";
+  else
+    os << humanCnt/double(nounCnt) << ",";
+  os << (humanCnt/double(wordCnt)) * 1000 << ",";
+  os << "not implemented,not_implemented,";
+  os << impCnt/double(sentCnt) << ",";
+  os << (impCnt/double(wordCnt)) * 1000 << ",";
+  os << questCnt/double(sentCnt) << ",";
+  os << (questCnt/double(wordCnt)) * 1000 << ",";
+}
+
+void structStats::wordSortToCSV( ostream& os ) const {
+  os << (adjCnt/double(wordCnt)) * 1000 << ","
+     << (vgCnt/double(wordCnt)) * 1000 << ","
+     << (vnwCnt/double(wordCnt)) * 1000 << ","
+     << (lidCnt/double(wordCnt)) * 1000 << ","
+     << (vzCnt/double(wordCnt)) * 1000 << ","
+     << (bwCnt/double(wordCnt)) * 1000 << ","
+     << (twCnt/double(wordCnt)) * 1000 << ","
+     << (nounCnt/double(wordCnt)) * 1000 << ","
+     << (verbCnt/double(wordCnt)) * 1000 << ","
+     << (tswCnt/double(wordCnt)) * 1000 << ",";
 }
 
 struct sentStats : public structStats {
@@ -2357,6 +2480,22 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
 	nounCnt++;
       else if ( ws->posHead == "ADJ" )
 	adjCnt++;
+      else if ( ws->posHead == "WW" )
+	verbCnt++;
+      else if ( ws->posHead == "VG" )
+	vgCnt++;
+      else if ( ws->posHead == "TSW" )
+	tswCnt++;
+      else if ( ws->posHead == "BW" )
+	bwCnt++;
+      else if ( ws->posHead == "VNW" )
+	vnwCnt++;
+      else if ( ws->posHead == "LID" )
+	lidCnt++;
+      else if ( ws->posHead == "TW" )
+	twCnt++;
+      else if ( ws->posHead == "VZ" )
+	vzCnt++;
       if ( ws->isOnder )
 	onderCnt++;
       if ( ws->isImperative )
@@ -2488,6 +2627,7 @@ void sentStats::CSVheader( ostream& os ){
   coherenceHeader( os );
   concreetHeader( os );
   persoonlijkheidHeader( os );
+  wordSortHeader( os );
   os << endl;
 }
 
@@ -2498,6 +2638,7 @@ void sentStats::toCSV( ostream& os ) const {
   coherenceToCSV( os );
   concreetToCSV( os );
   persoonlijkheidToCSV( os );
+  wordSortToCSV( os );
   os << endl;
 }
 
@@ -2577,6 +2718,7 @@ void parStats::CSVheader( ostream& os ){
   coherenceHeader( os );
   concreetHeader( os );
   persoonlijkheidHeader( os );
+  wordSortHeader( os );
   os << endl;
 }
 
@@ -2587,6 +2729,7 @@ void parStats::toCSV( ostream& os ) const {
   coherenceToCSV( os );
   concreetToCSV( os );
   persoonlijkheidToCSV( os );
+  wordSortToCSV( os );
   os << endl;
 }
 
@@ -2795,6 +2938,7 @@ void docStats::CSVheader( ostream& os ){
   coherenceHeader( os );
   concreetHeader( os );
   persoonlijkheidHeader( os );
+  wordSortHeader( os );
   os << endl;
 }
 
@@ -2805,6 +2949,7 @@ void docStats::toCSV( ostream& os ) const {
   coherenceToCSV( os );
   concreetToCSV( os );
   persoonlijkheidToCSV( os );
+  wordSortToCSV( os );
   os << endl;
 }
 
