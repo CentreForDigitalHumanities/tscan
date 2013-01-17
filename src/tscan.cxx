@@ -1537,6 +1537,7 @@ struct structStats: public basicStats {
   void wordSortToCSV( ostream& ) const;
   void miscHeader( ostream& ) const;
   void miscToCSV( ostream& ) const;
+  void toCSV( ostream& ) const;
   void merge( structStats * );
   virtual bool isSentence() const { return false; };
   virtual bool isDocument() const { return false; };
@@ -1920,6 +1921,18 @@ void structStats::addMetrics( ) const {
   }
 }
 
+void structStats::toCSV( ostream& os ) const {
+  wordDifficultiesToCSV( os );
+  sentDifficultiesToCSV( os );
+  informationDensityToCSV( os );
+  coherenceToCSV( os );
+  concreetToCSV( os );
+  persoonlijkheidToCSV( os );
+  wordSortToCSV( os );
+  miscToCSV( os );
+  os << endl;
+}
+
 ostream& displayMM( ostream&os, const multimap<DD_type, int>& mm, DD_type t ){
   size_t len = mm.count(t);
   if ( len > 0 ){
@@ -1962,7 +1975,6 @@ double getHighest( const multimap<DD_type, int>&mm ){
   }
   return result;
 }
-
 
 void structStats::wordDifficultiesHeader( ostream& os ) const {
   os << "lpw,wpl,lpwzn,wplzn,mpw,wpm,mpwzn,wpmzn,"
@@ -2325,7 +2337,6 @@ struct sentStats : public structStats {
   void print( ostream& ) const;
   bool isSentence() const { return true; };
   void CSVheader( ostream& os ) const;
-  void toCSV( ostream& ) const;
   void resolveConnectives();
   void addMetrics( ) const;
 };
@@ -2781,18 +2792,6 @@ void sentStats::CSVheader( ostream& os ) const {
   os << endl;
 }
 
-void sentStats::toCSV( ostream& os ) const {
-  wordDifficultiesToCSV( os );
-  sentDifficultiesToCSV( os );
-  informationDensityToCSV( os );
-  coherenceToCSV( os );
-  concreetToCSV( os );
-  persoonlijkheidToCSV( os );
-  wordSortToCSV( os );
-  miscToCSV( os );
-  os << endl;
-}
-
 void sentStats::addMetrics( ) const {
   structStats::addMetrics( );
   FoliaElement *el = folia_node;
@@ -2809,7 +2808,6 @@ struct parStats: public structStats {
   parStats( Paragraph * );
   void print( ostream& ) const;
   void CSVheader( ostream& ) const;
-  void toCSV( ostream& ) const;
   void addMetrics( ) const;
 };
 
@@ -2874,18 +2872,6 @@ void parStats::CSVheader( ostream& os ) const {
   os << endl;
 }
 
-void parStats::toCSV( ostream& os ) const {
-  wordDifficultiesToCSV( os );
-  sentDifficultiesToCSV( os );
-  informationDensityToCSV( os );
-  coherenceToCSV( os );
-  concreetToCSV( os );
-  persoonlijkheidToCSV( os );
-  wordSortToCSV( os );
-  miscToCSV( os );
-  os << endl;
-}
-
 void parStats::addMetrics( ) const {
   FoliaElement *el = folia_node;
   structStats::addMetrics( );
@@ -2899,7 +2885,6 @@ struct docStats : public structStats {
   bool isDocument() const { return true; };
   void toCSV( const string&, csvKind ) const;
   void CSVheader( ostream& ) const;
-  void toCSV( ostream& ) const;
   string rarity( int level ) const;
   void addMetrics( ) const;
   int word_overlapCnt() const { return doc_word_overlapCnt; };
@@ -3023,7 +3008,7 @@ void docStats::toCSV( const string& name,
     if ( out ){
       CSVheader( out );
       out << name << ",";
-      toCSV( out );
+      structStats::toCSV( out );
       cout << "stored document statistics in " << fname << endl;
     }
     else {
@@ -3096,18 +3081,6 @@ void docStats::CSVheader( ostream& os ) const {
   persoonlijkheidHeader( os );
   wordSortHeader( os );
   miscHeader( os );
-  os << endl;
-}
-
-void docStats::toCSV( ostream& os ) const {
-  wordDifficultiesToCSV( os );
-  sentDifficultiesToCSV( os );
-  informationDensityToCSV( os );
-  coherenceToCSV( os );
-  concreetToCSV( os );
-  persoonlijkheidToCSV( os );
-  wordSortToCSV( os );
-  miscToCSV( os );
   os << endl;
 }
 
