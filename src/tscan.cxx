@@ -375,7 +375,7 @@ string toString( const ConnType& c ){
 }
 
 enum SemType { UNFOUND, CONCRETE_NOUN, CONCRETE_ADJ, CONCRETE_HUMAN, 
-	       ABSTRACT_NOUN, ABSTRACT_ADJ, BROAD_NOUN, BROAD_ADJ, 
+	       ABSTRACT_NOUN, ABSTRACT_ADJ, BROAD_NOUN, BROAD_ADJ, EMO_ADJ,
 	       STATE, ACTION, PROCESS, WEIRD };
 
 string toString( const SemType st ){
@@ -397,6 +397,9 @@ string toString( const SemType st ){
     break;
   case ABSTRACT_ADJ:
     return "abstract-adj";
+    break;
+  case EMO_ADJ:
+    return "emo-adj";
     break;
   case BROAD_NOUN:
     return "broad-noun";
@@ -875,7 +878,9 @@ SemType get_sem_type( const string& lemma, CGN::Type tag ){
     map<string,string>::const_iterator it = settings.adj_sem.find( lemma );
     if ( it != settings.adj_sem.end() ){
       string type = it->second;
-      if ( type == "phyper" || type == "stuff" || type == "colour" )
+      if ( type == "emomen" )
+	return EMO_ADJ;
+      else if ( type == "phyper" || type == "stuff" || type == "colour" )
 	return CONCRETE_ADJ;
       else if ( type == "abstract" )
 	return ABSTRACT_ADJ;
@@ -1390,7 +1395,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << (sem_type == STATE ) << ","
      << (sem_type == PROCESS ) << ","
      << (sem_type == CONCRETE_HUMAN ) << ","
-     << "not implemented yet" << ","
+     << (sem_type == EMO_ADJ ) << ","
      << isImperative << ","
      << "NA,";
   if ( polarity == NA )
@@ -1555,6 +1560,7 @@ struct structStats: public basicStats {
     actionCnt(0),
     processCnt(0),
     weirdCnt(0),
+    emoCnt(0),
     humanCnt(0),
     npCnt(0),
     indefNpCnt(0),
@@ -1669,6 +1675,7 @@ struct structStats: public basicStats {
   int actionCnt;
   int processCnt;
   int weirdCnt;
+  int emoCnt;
   int humanCnt;
   int npCnt;
   int indefNpCnt;
@@ -1777,6 +1784,7 @@ void structStats::merge( structStats *ss ){
   actionCnt += ss->actionCnt;
   processCnt += ss->processCnt;
   weirdCnt += ss->weirdCnt;
+  emoCnt += ss->emoCnt;
   humanCnt += ss->humanCnt;
   npCnt += ss->npCnt;
   indefNpCnt += ss->indefNpCnt;
@@ -2322,7 +2330,11 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   else
     os << humanCnt/double(nounCnt) << ",";
   os << (humanCnt/double(wordCnt)) * 1000 << ",";
-  os << "not implemented,not implemented,";
+  if ( adjCnt == 0 )
+    os << "NA,";
+  else
+    os << emoCnt/double(adjCnt) << ",";
+  os << (emoCnt/double(wordCnt)) * 1000 << ",";
   os << impCnt/double(sentCnt) << ",";
   os << (impCnt/double(wordCnt)) * 1000 << ",";
   os << questCnt/double(sentCnt) << ",";
@@ -2819,6 +2831,9 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
 	break;
       case WEIRD:
 	weirdCnt++;
+	break;
+      case EMO_ADJ:
+	emoCnt++;
 	break;
       default:
 	;
