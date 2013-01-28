@@ -78,7 +78,8 @@ struct settingData {
   map <string, string> noun_sem;
   map <string, string> verb_sem;
   map <string, double> pol_lex;
-  map<string, cf_data> freq_lex;
+  map<string, cf_data> word_freq_lex;
+  map<string, cf_data> lemma_freq_lex;
 };
 
 settingData settings;
@@ -278,9 +279,14 @@ void settingData::init( const Configuration& cf ){
     if ( !fill( pol_lex, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
-  val = cf.lookUp( "freq_lex" );
+  val = cf.lookUp( "word_freq_lex" );
   if ( !val.empty() ){
-    if ( !fill( freq_lex, cf.configDir() + "/" + val ) )
+    if ( !fill( word_freq_lex, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "lemma_freq_lex" );
+  if ( !val.empty() ){
+    if ( !fill( lemma_freq_lex, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
 }
@@ -522,12 +528,14 @@ struct wordStats : public basicStats {
   bool f77;
   bool f80;
   int compPartCnt;
-  int wfreq;
+  int word_freq;
+  int lemma_freq;
   int argRepeatCnt;
   int wordOverlapCnt;
   int lemmaRepeatCnt;
   int lemmaOverlapCnt;
-  double lwfreq;
+  double word_freq_log;
+  double lemma_freq_log;
   double polarity;
   double surprisal;
   WordProp prop;
@@ -898,10 +906,10 @@ SemType wordStats::checkSemProps( ) const {
 }
 
 void wordStats::freqLookup(){
-  map<string,cf_data>::const_iterator it = settings.freq_lex.find( lowercase(word) );
-  if ( it != settings.freq_lex.end() ){
-    wfreq = it->second.count;
-    lwfreq = log10(wfreq);
+  map<string,cf_data>::const_iterator it = settings.word_freq_lex.find( lowercase(word) );
+  if ( it != settings.word_freq_lex.end() ){
+    word_freq = it->second.count;
+    word_freq_log = log10(word_freq);
     double freq = it->second.freq;
     if ( freq <= 50 )
       f50 = true;
@@ -911,6 +919,11 @@ void wordStats::freqLookup(){
       f77 = true;
     if ( freq <= 80 )
       f80 = true;
+  }
+  it = settings.lemma_freq_lex.find( lowercase(lemma) );
+  if ( it != settings.lemma_freq_lex.end() ){
+    lemma_freq = it->second.count;
+    lemma_freq_log = log10(lemma_freq);
   }
 }
 
@@ -1040,9 +1053,10 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false), connType(NOCONN),
-  f50(false), f65(false), f77(false), f80(false),  compPartCnt(0), wfreq(0),
+  f50(false), f65(false), f77(false), f80(false),  compPartCnt(0), word_freq(0),
+  lemma_freq(0),
   argRepeatCnt(0), wordOverlapCnt(0), lemmaRepeatCnt(0), lemmaOverlapCnt(0),
-  lwfreq(0),
+  word_freq_log(0), lemma_freq_log(0),
   polarity(NA), surprisal(NA), prop(JUSTAWORD), sem_type(UNFOUND)
 {
   word = UnicodeToUTF8( w->text() );
@@ -1190,7 +1204,7 @@ void wordStats::addMetrics( ) const {
   addOneMetric( doc, el, 
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
 
-  addOneMetric( doc, el, "average_log_wfreq", toString(lwfreq) );
+  addOneMetric( doc, el, "average_log_word_freq", toString(word_freq_log) );
   if ( wwform != NO_VERB ){
     KWargs args;
     args["set"] = "tscan-set";
@@ -1266,7 +1280,7 @@ void wordStats::CSVheader( ostream& os, const string& intro ) const {
 void wordStats::wordDifficultiesHeader( ostream& os ) const {
   os << "lpw,wpl,lpwzn,wplzn,mpw,wpm,mpwzn,wpmzn,"
      << "sdpw,sdens,freq50,freq65,freq77,freq80,"
-     << "wfreq_log,wfreq_log_zn,"
+     << "word_freq_log,word_freq_log_zn,"
      << "lemfreq_log,lemfreq_log_zn,";
 }
 
@@ -1306,12 +1320,16 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
   os << (f65?1:0) << ",";
   os << (f77?1:0) << ",";
   os << (f80?1:0) << ",";
-  os << lwfreq << ",";
+  os << word_freq_log << ",";
   if ( prop == ISNAME )
     os << "NA" << ",";
   else
-    os << lwfreq << ",";
-  os << "not implemented,not implemented,";
+    os << word_freq_log << ",";
+  os << lemma_freq_log << ",";
+  if ( prop == ISNAME )
+    os << "NA" << ",";
+  else
+    os << lemma_freq_log << ",";
 }
 
 void wordStats::coherenceHeader( ostream& os ) const {
@@ -1358,7 +1376,7 @@ void wordStats::persoonlijkheidHeader( ostream& os ) const {
      << "action_verb,state_verb,"
      << "process_verb,human_noun,"
      << "emo_adj,imperative,"
-     << "question,";
+     << "question,polarity,";
 }
 
 void wordStats::persoonlijkheidToCSV( ostream& os ) const {
@@ -1375,6 +1393,10 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << "not implemented yet" << ","
      << isImperative << ","
      << "NA,";
+  if ( polarity == NA )
+    os << "NA,";
+  else
+    os << polarity << ",";
 }
 
 void wordStats::wordSortHeader( ostream& os ) const {
@@ -1511,10 +1533,14 @@ struct structStats: public basicStats {
     f80Cnt(0),
     compCnt(0),
     compPartCnt(0),
-    wfreq(0),
-    wfreq_n(0),
-    lwfreq(NA),
-    lwfreq_n(NA),
+    word_freq(0),
+    word_freq_n(0),
+    word_freq_log(NA),
+    word_freq_log_n(NA),
+    lemma_freq(0),
+    lemma_freq_n(0),
+    lemma_freq_log(NA),
+    lemma_freq_log_n(NA),
     polarity(NA),
     surprisal(NA),
     broadConcreteNounCnt(0),
@@ -1621,10 +1647,14 @@ struct structStats: public basicStats {
   int f80Cnt;
   int compCnt;
   int compPartCnt;
-  int wfreq; 
-  int wfreq_n; 
-  double lwfreq; 
-  double lwfreq_n;
+  int word_freq; 
+  int word_freq_n; 
+  double word_freq_log; 
+  double word_freq_log_n;
+  int lemma_freq; 
+  int lemma_freq_n; 
+  double lemma_freq_log; 
+  double lemma_freq_log_n; 
   double polarity;
   double surprisal;
   int broadConcreteNounCnt;
@@ -1712,8 +1742,10 @@ void structStats::merge( structStats *ss ){
   f80Cnt += ss->f80Cnt;
   compCnt += ss->compCnt;
   compPartCnt += ss->compPartCnt;
-  wfreq += ss->wfreq;
-  wfreq_n += ss->wfreq_n;
+  word_freq += ss->word_freq;
+  word_freq_n += ss->word_freq_n;
+  lemma_freq += ss->lemma_freq;
+  lemma_freq_n += ss->lemma_freq_n;
   if ( ss->polarity != NA ){
     if ( polarity == NA )
       polarity = ss->polarity;
@@ -1889,10 +1921,10 @@ void structStats::addMetrics( ) const {
 		"lemma_argument_repeat_count", toString( lemmaRepeatCnt ) );
   addOneMetric( doc, el, 
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
-  if ( lwfreq != NA  )
-    addOneMetric( doc, el, "average_log_wfreq", toString(lwfreq) );
-  if ( lwfreq_n != NA  )
-    addOneMetric( doc, el, "average_log_wfreq_min_names", toString(lwfreq_n) );
+  if ( word_freq_log != NA  )
+    addOneMetric( doc, el, "average_log_word_freq", toString(word_freq_log) );
+  if ( word_freq_log_n != NA  )
+    addOneMetric( doc, el, "average_log_word_freq_min_names", toString(word_freq_log_n) );
   addOneMetric( doc, el, "freq50", toString(f50Cnt) );
   addOneMetric( doc, el, "freq65", toString(f65Cnt) );
   addOneMetric( doc, el, "freq77", toString(f77Cnt) );
@@ -2015,8 +2047,8 @@ double getHighest( const multimap<DD_type, int>&mm ){
 void structStats::wordDifficultiesHeader( ostream& os ) const {
   os << "lpw,wpl,lpwzn,wplzn,mpw,wpm,mpwzn,wpmzn,"
      << "sdpw,sdens,freq50,freq65,freq77,freq80,"
-     << "wfreq_log,wfreq_log_zn,"
-     << "lemfreq_log,lemfreq_log_zn,";
+     << "word_freq_log,word_freq_log_zn,"
+     << "lemma_freq_log,lemma_freq_log_zn,";
 }
 
 void structStats::wordDifficultiesToCSV( ostream& os ) const {
@@ -2043,15 +2075,22 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
   os << f65Cnt/double(wordCnt) << ",";
   os << f77Cnt/double(wordCnt) << ",";
   os << f80Cnt/double(wordCnt) << ",";
-  if ( lwfreq == NA )
+  if ( word_freq_log == NA )
     os << "NA,";
   else
-    os << lwfreq/double(wordCnt) << ",";
-  if ( wordCnt == nameCnt || lwfreq == NA )
+    os << word_freq_log/double(wordCnt) << ",";
+  if ( wordCnt == nameCnt || word_freq_log == NA )
     os << "NA" << ",";
   else
-    os << lwfreq_n/double(wordCnt-nameCnt) << ",";
-  os << "not implemented,not implemented,";
+    os << word_freq_log_n/double(wordCnt-nameCnt) << ",";
+  if ( lemma_freq_log == NA )
+    os << "NA,";
+  else
+    os << lemma_freq_log/double(wordCnt) << ",";
+  if ( wordCnt == nameCnt || word_freq_log == NA )
+    os << "NA" << ",";
+  else
+    os << lemma_freq_log_n/double(wordCnt-nameCnt) << ",";
 }
 
 void structStats::sentDifficultiesHeader( ostream& os ) const {
@@ -2245,7 +2284,7 @@ void structStats::persoonlijkheidHeader( ostream& os ) const {
      << "action_verbs_p,action_verbs_d,state_verbs_p,state_verbs_d,"
      << "process_verbs_p,process_verbs_d,human_nouns_p,human_nouns_d,"
      << "emo_adjs_p,emo_adjs_d,imperatives_p,imperatives_d,"
-     << "questions_p,questions_d,";
+     << "questions_p,questions_d,polarity,";
 }
 
 void structStats::persoonlijkheidToCSV( ostream& os ) const {
@@ -2283,11 +2322,15 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   else
     os << humanCnt/double(nounCnt) << ",";
   os << (humanCnt/double(wordCnt)) * 1000 << ",";
-  os << "not implemented,not_implemented,";
+  os << "not implemented,not implemented,";
   os << impCnt/double(sentCnt) << ",";
   os << (impCnt/double(wordCnt)) * 1000 << ",";
   os << questCnt/double(sentCnt) << ",";
   os << (questCnt/double(wordCnt)) * 1000 << ",";
+  if ( polarity == NA )
+    os << "NA,";
+  else
+    os << polarity << ",";
 }
 
 void structStats::wordSortHeader( ostream& os ) const {
@@ -2622,9 +2665,12 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
       if ( ws->compPartCnt > 0 )
 	++compCnt;
       compPartCnt += ws->compPartCnt;
-      wfreq += ws->wfreq;
-      if ( ws->prop != ISNAME )
-	wfreq_n += ws->wfreq;
+      word_freq += ws->word_freq;
+      lemma_freq += ws->lemma_freq;
+      if ( ws->prop != ISNAME ){
+	word_freq_n += ws->word_freq;
+	lemma_freq_n += ws->lemma_freq;
+      }
       switch ( ws->prop ){
       case ISNAME:
 	nameCnt++;
@@ -2785,14 +2831,22 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
   if ( (morphNegCnt + propNegCnt) > 1 )
     multiNegCnt = 1;
   resolveConnectives();
-  if ( wfreq == 0 )
-    lwfreq = NA;
+  if ( word_freq == 0 )
+    word_freq_log = NA;
   else
-    lwfreq = log10( wfreq / w.size() );
-  if ( wordCnt == nameCnt || wfreq_n == 0 )
-    lwfreq_n = NA;
+    word_freq_log = log10( word_freq / w.size() );
+  if ( lemma_freq == 0 )
+    lemma_freq_log = NA;
   else
-    lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
+    lemma_freq_log = log10( lemma_freq / w.size() );
+  if ( wordCnt == nameCnt || word_freq_n == 0 )
+    word_freq_log_n = NA;
+  else
+    word_freq_log_n = log10( word_freq_n / (wordCnt-nameCnt) );
+  if ( wordCnt == nameCnt || lemma_freq_n == 0 )
+    lemma_freq_log_n = NA;
+  else
+    lemma_freq_log_n = log10( lemma_freq_n / (wordCnt-nameCnt) );
   np_length( s, npCnt, indefNpCnt, npSize );
   if ( alpDoc ){
     dLevel = get_d_level( s, alpDoc );
@@ -2865,14 +2919,22 @@ parStats::parStats( Paragraph *p ):
     merge( ss );
     sentCnt++;
   }
-  if ( wfreq == 0 )
-    lwfreq = NA;
+  if ( word_freq == 0 )
+    word_freq_log = NA;
   else
-    lwfreq = log10( wfreq / sents.size() );
-  if ( wordCnt == nameCnt || wfreq_n == 0 )
-    lwfreq_n = NA;
+    word_freq_log = log10( word_freq / sents.size() );
+  if ( wordCnt == nameCnt || word_freq_n == 0 )
+    word_freq_log_n = NA;
   else
-    lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
+    word_freq_log_n = log10( word_freq_n / (wordCnt-nameCnt) );
+  if ( lemma_freq == 0 )
+    lemma_freq_log = NA;
+  else
+    lemma_freq_log = log10( lemma_freq / sents.size() );
+  if ( wordCnt == nameCnt || lemma_freq_n == 0 )
+    lemma_freq_log_n = NA;
+  else
+    lemma_freq_log_n = log10( lemma_freq_n / (wordCnt-nameCnt) );
 }
 
 void parStats::print( ostream& os ) const {
@@ -2925,14 +2987,22 @@ docStats::docStats( Document *doc ):
     merge( ps );
     sentCnt += ps->sentCnt;
   }
-  if ( wfreq == 0 )
-    lwfreq = NA;
+  if ( word_freq == 0 )
+    word_freq_log = NA;
   else
-    lwfreq = log10( wfreq / pars.size() );
-  if ( wordCnt == nameCnt || wfreq_n == 0 )
-    lwfreq_n = NA;
+    word_freq_log = log10( word_freq / pars.size() );
+  if ( wordCnt == nameCnt || word_freq_n == 0 )
+    word_freq_log_n = NA;
   else
-    lwfreq_n = log10( wfreq_n / (wordCnt-nameCnt) );
+    word_freq_log_n = log10( word_freq_n / (wordCnt-nameCnt) );
+  if ( lemma_freq == 0 )
+    lemma_freq_log = NA;
+  else
+    lemma_freq_log = log10( lemma_freq / pars.size() );
+  if ( wordCnt == nameCnt || lemma_freq_n == 0 )
+    lemma_freq_log_n = NA;
+  else
+    lemma_freq_log_n = log10( lemma_freq_n / (wordCnt-nameCnt) );
   vector<Word*> wv = doc->words();
   vector<string> wordbuffer(settings.overlapSize);
   vector<string> lemmabuffer(settings.overlapSize);
