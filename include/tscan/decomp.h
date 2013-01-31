@@ -27,5 +27,7 @@
 
 #ifndef DECOMP_H
 #define DECOMP_H
-int runDecompoundWord( const std::string&, const std::string& );
+int runDecompoundWord( const std::string&, 
+		       const std::string&,
+		       const std::string& );
 #endif // DECOMP_H

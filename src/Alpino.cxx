@@ -27,8 +27,6 @@
 
 #include <cstdio> // for remove()
 #include <cstring> // for strerror()
-#include <sys/types.h> 
-#include <sys/stat.h> 
 #include <unistd.h> 
 #include <iostream>
 #include <fstream>
@@ -949,20 +947,9 @@ void countCrdCnj( xmlDoc *doc, int& crdCnt, int& cnjCnt, int& reeksCnt ){
   }
 }
 
-xmlDoc *AlpinoParse( folia::Sentence *s ){
+xmlDoc *AlpinoParse( folia::Sentence *s, const string& dirname ){
   string txt = folia::UnicodeToUTF8(s->toktext());
   //  cerr << "parse line: " << txt << endl;
-  struct stat sbuf;
-  pid_t pid = getpid();
-  string dirname = "/tmp/tscan-" + toString( pid ) + "/";
-  int res = stat( dirname.c_str(), &sbuf );
-  if ( res == -1 || !S_ISDIR(sbuf.st_mode) ){
-    res = mkdir( dirname.c_str(), S_IRWXU|S_IRWXG );
-    if ( res ){
-      cerr << "problem: " << res << endl;
-      exit( EXIT_FAILURE );
-    }
-  }
   string txtfile = dirname + "parse.txt";
   ofstream os( txtfile.c_str() );
   os << txt;
@@ -970,7 +957,7 @@ xmlDoc *AlpinoParse( folia::Sentence *s ){
   string parseCmd = "Alpino -fast -flag treebank " + dirname + 
     " end_hook=xml -parse < " + txtfile + " -notk > /dev/null 2>&1";
   // cerr << "run: " << parseCmd << endl;
-  res = system( parseCmd.c_str() );
+  int res = system( parseCmd.c_str() );
   if ( res ){
     cerr << "Aplino failed: RES = " << res << endl;
   }

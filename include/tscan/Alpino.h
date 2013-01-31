@@ -27,7 +27,7 @@
 
 #ifndef ALPINO_H
 #define ALPINO_H
-xmlDoc *AlpinoParse( folia::Sentence * );
+xmlDoc *AlpinoParse( folia::Sentence *, const std::string& );
 xmlNode *getAlpWord( xmlDoc *, const folia::Word * );
 bool checkImp( folia::Word *, xmlDoc * );
 void countCrdCnj( xmlDoc *, int&, int&, int& );

@@ -27,6 +27,8 @@
 
 #include <string>
 #include <algorithm>
+#include <sys/types.h> 
+#include <sys/stat.h> 
 #include "config.h"
 #include "timblserver/TimblServerAPI.h"
 #include "libfolia/folia.h"
@@ -56,6 +58,7 @@ enum csvKind { DOC_CSV, PAR_CSV, SENT_CSV, WORD_CSV };
 
 string configFile = "tscan.cfg";
 Configuration config;
+string workdir_name;
 
 struct cf_data {
   long int count;
@@ -68,6 +71,7 @@ struct settingData {
   bool doAlpinoServer;
   bool doDecompound;
   bool doSurprisal;
+  bool doWopr;
   string decompounderPath;
   string surprisalPath;
   string style;
@@ -218,6 +222,14 @@ void settingData::init( const Configuration& cf ){
     val = cf.lookUp( "useAlpino" );
     if( !Timbl::stringTo( val, doAlpino ) ){
       cerr << "invalid value for 'useAlpino' in config file" << endl;
+      exit( EXIT_FAILURE );
+    }
+  }
+  val = cf.lookUp( "useWopr" );
+  doWopr = false;
+  if ( !val.empty() ){
+    if ( !Timbl::stringTo( val, doWopr ) ){
+      cerr << "invalid value for 'useWopr' in config file" << endl;
       exit( EXIT_FAILURE );
     }
   }
@@ -541,6 +553,7 @@ struct wordStats : public basicStats {
   double lemma_freq_log;
   double polarity;
   double surprisal;
+  double logprob10;
   WordProp prop;
   SemType sem_type;
   vector<string> morphemes;
@@ -1062,7 +1075,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
   lemma_freq(0),
   argRepeatCnt(0), wordOverlapCnt(0), lemmaRepeatCnt(0), lemmaOverlapCnt(0),
   word_freq_log(0), lemma_freq_log(0),
-  polarity(NA), surprisal(NA), prop(JUSTAWORD), sem_type(UNFOUND)
+  polarity(NA), surprisal(NA), logprob10(NA), prop(JUSTAWORD), sem_type(UNFOUND)
 {
   word = UnicodeToUTF8( w->text() );
   charCnt = w->text().length();
@@ -1121,7 +1134,8 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
     }
     freqLookup();
     if ( settings.doDecompound )
-      compPartCnt = runDecompoundWord(word, settings.decompounderPath );
+      compPartCnt = runDecompoundWord( word, workdir_name, 
+				       settings.decompounderPath );
   }
 }
 
@@ -1196,6 +1210,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "polarity", toString(polarity) );
   if ( surprisal != NA  )
     addOneMetric( doc, el, "surprisal", toString(surprisal) );
+  if ( logprob10 != NA  )
+    addOneMetric( doc, el, "lprob10", toString(logprob10) );
   if ( sem_type != UNFOUND )
     addOneMetric( doc, el, "semtype", toString(sem_type) );
   if ( compPartCnt > 0 )
@@ -1423,7 +1439,7 @@ void wordStats::wordSortToCSV( ostream& os ) const {
 
 void wordStats::miscHeader( ostream& os ) const {
   os << "present_verb,modal,time_verb,copula,archaic,"
-     << "vol_deelw,onvol_deelw,infin,surprisal,";
+     << "vol_deelw,onvol_deelw,infin,surprisal,wopr_logprob";
 }
 
 void wordStats::miscToCSV( ostream& os ) const {
@@ -1439,6 +1455,10 @@ void wordStats::miscToCSV( ostream& os ) const {
     os << "NA,";
   else
     os << surprisal << ",";
+  if ( logprob10 == NA )
+    os << "NA,";
+  else
+    os << logprob10 << ",";
 }
 
 void wordStats::toCSV( ostream& os ) const {
@@ -1548,6 +1568,9 @@ struct structStats: public basicStats {
     lemma_freq_log_n(NA),
     polarity(NA),
     surprisal(NA),
+    avg_prob10(NA),
+    entropy(NA),
+    perplexity(NA),
     broadConcreteNounCnt(0),
     strictConcreteNounCnt(0),
     broadAbstractNounCnt(0),
@@ -1663,6 +1686,9 @@ struct structStats: public basicStats {
   double lemma_freq_log_n; 
   double polarity;
   double surprisal;
+  double avg_prob10;
+  double entropy;
+  double perplexity;
   int broadConcreteNounCnt;
   int strictConcreteNounCnt;
   int broadAbstractNounCnt;
@@ -1765,6 +1791,25 @@ void structStats::merge( structStats *ss ){
     else
       surprisal += ss->surprisal;
   }
+  if ( ss->avg_prob10 != NA ){
+    if ( avg_prob10 == NA )
+      avg_prob10 = ss->avg_prob10;
+    else
+      avg_prob10 += ss->avg_prob10;
+  }
+  if ( ss->entropy != NA ){
+    if ( entropy == NA )
+      entropy = ss->entropy;
+    else
+      entropy += ss->entropy;
+  }
+  if ( ss->perplexity != NA ){
+    if ( perplexity == NA )
+      perplexity = ss->surprisal;
+    else
+      perplexity += ss->perplexity;
+  }
+
   presentCnt += ss->presentCnt;
   pastCnt += ss->pastCnt;
   pron1Cnt += ss->pron1Cnt;
@@ -1917,6 +1962,12 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "polarity", toString(polarity) );
   if ( surprisal != NA )
     addOneMetric( doc, el, "surprisal", toString(surprisal) );
+  if ( avg_prob10 != NA )
+    addOneMetric( doc, el, "wopr_logprob", toString(avg_prob10) );
+  if ( entropy != NA )
+    addOneMetric( doc, el, "wopr_entropy", toString(entropy) );
+  if ( perplexity != NA )
+    addOneMetric( doc, el, "wopr_perplexity", toString(perplexity) );
   addOneMetric( doc, el, "prop_neg_count", toString(propNegCnt) );
   addOneMetric( doc, el, "morph_neg_count", toString(morphNegCnt) );
   addOneMetric( doc, el, "compound_count", toString(compCnt) );
@@ -2366,7 +2417,8 @@ void structStats::miscHeader( ostream& os ) const {
   os << "present_verbs_r,present_verbs_d,modals_d_,modals_g,"
      << "time_verbs_d,time_verbs_g,copula_d,copula_g,"
      << "archaics,vol_deelw_d,vol_deelw_g,"
-     << "onvol_deelw_d,onvol_deelw_g,infin_d,infin_g,surprisal,";
+     << "onvol_deelw_d,onvol_deelw_g,infin_d,infin_g,surprisal,"
+     << "wopr_logprob,wopr_entropy,wopr_perplexity,";
 }
 
 void structStats::miscToCSV( ostream& os ) const {
@@ -2420,7 +2472,22 @@ void structStats::miscToCSV( ostream& os ) const {
   else {
     os << infCnt/double(pastCnt + presentCnt) << ",";
   }
-  os << surprisal/double(sentCnt) << ",";
+  if ( surprisal == NA )
+    os << "NA,";
+  else
+    os << surprisal/double(sentCnt) << ",";
+  if ( avg_prob10 == NA )
+    os << "NA,";
+  else
+    os << avg_prob10/double(sentCnt) << ",";
+  if ( entropy == NA )
+    os << "NA,";
+  else
+    os << entropy/double(sentCnt) << ",";
+  if ( perplexity == NA )
+    os << "NA,";
+  else
+    os << perplexity/double(sentCnt) << ",";
 }
 
 struct sentStats : public structStats {
@@ -2599,6 +2666,81 @@ void sentStats::resolveConnectives(){
   }
 }
 
+void orderWopr( const string& txt, vector<double>& wordProbsV, 
+		double& sentProb, double& entropy, double& perplexity ){
+  string host = config.lookUp( "host", "wopr" );
+  string port = config.lookUp( "port", "wopr" );
+  Sockets::ClientSocket client;
+  if ( !client.connect( host, port ) ){
+    LOG << "failed to open Wopr connection: "<< host << ":" << port << endl;
+    LOG << "Reason: " << client.getMessage() << endl;
+    exit( EXIT_FAILURE );
+  }
+  client.write( txt + "\n\n" );
+  string result;
+  string s;
+  while ( client.read(s) ){
+    result += s + "\n";
+  }
+  DBG << "received data [" << result << "]" << endl;
+  Document *doc = 0;
+  if ( !result.empty() && result.size() > 10 ){
+    DBG << "start FoLiA parsing" << endl;
+    doc = new Document();
+    try {
+      doc->readFromString( result );      
+      DBG << "finished parsing" << endl;
+      vector<Word*> wv = doc->words();
+      if ( wv.size() !=  wordProbsV.size() ){
+	LOG << "OESP" << endl;
+	return;
+      }
+      for ( size_t i=0; i < wv.size(); ++i ){
+	vector<MetricAnnotation*> mv = wv[i]->select<MetricAnnotation>();
+	if ( mv.size() > 0 ){
+	  for ( size_t j=0; j < mv.size(); ++j ){
+	    if ( mv[j]->cls() == "lprob10" ){
+	      wordProbsV[i] = stringTo<double>( mv[j]->index(0)->cls() );
+	    }
+	  }
+	}
+      }
+      vector<Sentence*> sv = doc->sentences();
+      if ( sv.size() != 1 ){
+	LOG << "OESP 2" << endl;
+	return;
+      }
+      vector<MetricAnnotation*> mv = sv[0]->select<MetricAnnotation>();      
+      if ( mv.size() > 0 ){
+	for ( size_t j=0; j < mv.size(); ++j ){
+	  if ( mv[j]->cls() == "avg_prob10" ){
+	    string val = mv[j]->index(0)->cls();
+	    if ( val != "nan" ){
+	      sentProb = stringTo<double>( val );
+	    }
+	  }
+	  if ( mv[j]->cls() == "entropy" ){
+	    string val = mv[j]->index(0)->cls();
+	    if ( val != "nan" ){
+	      entropy = stringTo<double>( mv[j]->index(0)->cls() );
+	    }
+	  }
+	  if ( mv[j]->cls() == "perplexity" ){
+	    string val = mv[j]->index(0)->cls();
+	    if ( val != "nan" ){
+	      perplexity = stringTo<double>( mv[j]->index(0)->cls() );
+	    }
+	  }
+	}
+      }
+    }
+    catch ( std::exception& e ){
+      LOG << "FoLiaParsing failed:" << endl
+	  << e.what() << endl;	  
+    }
+  }
+}
+
 sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ): 
   structStats( s, "ZIN" ){
   sentCnt = 1;
@@ -2607,12 +2749,22 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
   vector<Word*> w = s->words();
   vector<double> surprisalV(w.size(),NA);
   if ( settings.doSurprisal ){
-    surprisalV = runSurprisal( s, settings.surprisalPath );
+    surprisalV = runSurprisal( s, workdir_name, settings.surprisalPath );
     if ( surprisalV.size() != w.size() ){
       cerr << "MISMATCH! " << surprisalV.size() << " != " <<  w.size()<< endl;
       surprisalV.clear();
     }
   }
+  vector<double> woprProbsV(w.size(),NA);
+  double sentProb = NA;
+  double sentEntropy = NA;
+  double sentPerplexity = NA;
+  if ( settings.doSurprisal ){
+    orderWopr( text, woprProbsV, sentProb, sentEntropy, sentPerplexity );
+  }
+  avg_prob10 = sentProb;
+  entropy = sentEntropy;
+  perplexity = sentPerplexity;
   set<size_t> puncts;
   if ( alpDoc ){
     for( size_t i=0; i < w.size(); ++i ){
@@ -2630,6 +2782,7 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
   for ( size_t i=0; i < w.size(); ++i ){
     wordStats *ws = new wordStats( w[i], alpDoc, puncts );
     ws->surprisal = surprisalV[i];
+    ws->logprob10 = woprProbsV[i];
     if ( prev ){
       ws->getSentenceOverlap( prev );
     }
@@ -2834,6 +2987,8 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
 	break;
       case EMO_ADJ:
 	emoCnt++;
+	broadConcreteAdjCnt++;
+	broadAbstractAdjCnt++;
 	break;
       default:
 	;
@@ -2920,7 +3075,7 @@ parStats::parStats( Paragraph *p ):
     }
     else if ( settings.doAlpino ){
       cerr << "calling Alpino parser" << endl;
-      alpDoc = AlpinoParse( sents[i] );
+      alpDoc = AlpinoParse( sents[i], workdir_name );
       if ( !alpDoc ){
 	cerr << "alpino parser failed!" << endl;
       }
@@ -3225,10 +3380,24 @@ xmlDoc *AlpinoServerParse( Sentence *sent ){
   DBG << "received data [" << result << "]" << endl;
   xmlDoc *doc = xmlReadMemory( result.c_str(), result.length(), 
 			       0, 0, XML_PARSE_NOBLANKS );
+  string txtfile = workdir_name + "1.xml";
+  xmlSaveFormatFileEnc( txtfile.c_str(), doc, "UTF8", 1 );
   return doc;
 }
 
 int main(int argc, char *argv[]) {
+  struct stat sbuf;
+  pid_t pid = getpid();
+  workdir_name = "/tmp/tscan-" + toString( pid ) + "/";
+  int res = stat( workdir_name.c_str(), &sbuf );
+  if ( res == -1 || !S_ISDIR(sbuf.st_mode) ){
+    res = mkdir( workdir_name.c_str(), S_IRWXU|S_IRWXG );
+    if ( res ){
+      cerr << "problem creating working dir '" << workdir_name
+	   << "' : " << res << endl;
+      exit( EXIT_FAILURE );
+    }
+  }
   Timbl::TimblOpts opts( argc, argv );
   string val;
   bool mood;
@@ -3284,6 +3453,7 @@ int main(int argc, char *argv[]) {
     outName = inName + ".tscan.xml";
   }
   cerr << "TScan " << VERSION << endl;
+  cerr << "working dir " << workdir_name << endl;
   ifstream is( inName.c_str() );
   if ( !is ){
     cerr << "failed to open file '" << inName << "'" << endl;

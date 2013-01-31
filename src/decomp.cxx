@@ -42,25 +42,16 @@ using namespace std;
 using namespace folia;
 using namespace TiCC;
 
-int runDecompoundWord( const string& word, const string& path ){
-  struct stat sbuf;
-  pid_t pid = getpid();
-  string dirname = "/tmp/tscan-" + toString( pid ) + "/";
-  int res = stat( dirname.c_str(), &sbuf );
-  if ( res == -1 || !S_ISDIR(sbuf.st_mode) ){
-    res = mkdir( dirname.c_str(), S_IRWXU|S_IRWXG );
-    if ( res ){
-      cerr << "problem: " << res << endl;
-      exit( EXIT_FAILURE );
-    }
-  }
+int runDecompoundWord( const string& word, 
+		       const string& dirname,
+		       const string& path ){
   string infile = dirname + "decomp.in";
   string outfile = dirname + "decomp.out";
   ofstream os( infile.c_str() );
   os << word << endl;
   os.close();
   string cmd = path + "decompound.sh " + infile + " " + outfile;
-  res = system( cmd.c_str() );
+  int res = system( cmd.c_str() );
   if ( res ){
     cerr << "RES = " << res << endl;
     cerr << "failed command: " << cmd << endl;

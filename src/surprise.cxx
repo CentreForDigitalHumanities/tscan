@@ -27,8 +27,6 @@
 
 #include <cstdio> // for remove()
 #include <cstring> // for strerror()
-#include <sys/types.h> 
-#include <sys/stat.h> 
 #include <unistd.h> 
 #include <iostream>
 #include <fstream>
@@ -90,18 +88,9 @@ string translatePos( const Word *w ){
     return head;
 }
 
-vector<double> runSurprisal( Sentence* sent, const string& path ){
-  struct stat sbuf;
-  pid_t pid = getpid();
-  string dirname = "/tmp/tscan-" + toString( pid ) + "/";
-  int res = stat( dirname.c_str(), &sbuf );
-  if ( res == -1 || !S_ISDIR(sbuf.st_mode) ){
-    res = mkdir( dirname.c_str(), S_IRWXU|S_IRWXG );
-    if ( res ){
-      cerr << "problem: " << res << endl;
-      exit( EXIT_FAILURE );
-    }
-  }
+vector<double> runSurprisal( Sentence* sent, 
+			     const string& dirname,
+			     const string& path ){
   string infile = dirname + "surprise.in";
   string outfile = dirname + "surprise.out";
   ofstream os( infile.c_str() );
@@ -111,7 +100,7 @@ vector<double> runSurprisal( Sentence* sent, const string& path ){
   }
   os.close();
   string cmd = path + "surprise.sh " + infile + " " + outfile;
-  res = system( cmd.c_str() );
+  int res = system( cmd.c_str() );
   if ( res ){
     cerr << "RES = " << res << endl;
     cerr << "failed command: " << cmd << endl;

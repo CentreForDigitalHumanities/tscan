@@ -28,5 +28,7 @@
 #ifndef SURPRISE_H
 #define SURPRISE_H
 
-std::vector<double> runSurprisal( folia::Sentence *, const std::string& );
+std::vector<double> runSurprisal( folia::Sentence *, 
+				  const std::string&,
+				  const std::string& );
 #endif // DECOMP_H
