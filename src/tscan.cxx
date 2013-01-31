@@ -210,8 +210,9 @@ bool fill( map<string,cf_data>& m, const string& filename ){
 }
 
 void settingData::init( const Configuration& cf ){
-  string val = cf.lookUp( "useAlpinoServer" );
+  doAlpino = false;
   doAlpinoServer = false;
+  string val = cf.lookUp( "useAlpinoServer" );
   if ( !val.empty() ){
     if ( !Timbl::stringTo( val, doAlpinoServer ) ){
       cerr << "invalid value for 'useAlpinoServer' in config file" << endl;
