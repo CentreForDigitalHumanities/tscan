@@ -2676,6 +2676,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
     LOG << "Reason: " << client.getMessage() << endl;
     exit( EXIT_FAILURE );
   }
+  LOG << "calling Wopr" << endl;
   client.write( txt + "\n\n" );
   string result;
   string s;
@@ -2739,6 +2740,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 	  << e.what() << endl;	  
     }
   }
+  LOG << "finished Wopr" << endl;
 }
 
 sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ): 
@@ -3067,18 +3069,20 @@ parStats::parStats( Paragraph *p ):
   for ( size_t i=0; i < sents.size(); ++i ){
     xmlDoc *alpDoc = 0;
     if ( settings.doAlpinoServer ){
-      cerr << "calling Alpino Server" << endl;
+      LOG << "calling Alpino Server" << endl;
       alpDoc = AlpinoServerParse( sents[i] );
       if ( !alpDoc ){
 	cerr << "alpino parser failed!" << endl;
       }
+      LOG << "done with Alpino Server" << endl;
     }
     else if ( settings.doAlpino ){
-      cerr << "calling Alpino parser" << endl;
+      LOG << "calling Alpino parser" << endl;
       alpDoc = AlpinoParse( sents[i], workdir_name );
       if ( !alpDoc ){
 	cerr << "alpino parser failed!" << endl;
       }
+      LOG << "done with Alpino parser" << endl;
     }
     sentStats *ss;
     if ( i == 0 )
