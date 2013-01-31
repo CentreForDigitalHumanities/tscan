@@ -2762,7 +2762,7 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
   double sentProb = NA;
   double sentEntropy = NA;
   double sentPerplexity = NA;
-  if ( settings.doSurprisal ){
+  if ( settings.doWopr ){
     orderWopr( text, woprProbsV, sentProb, sentEntropy, sentPerplexity );
   }
   avg_prob10 = sentProb;
