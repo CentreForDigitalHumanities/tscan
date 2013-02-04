@@ -368,6 +368,35 @@ enum WordProp { ISNAME, ISPUNCT,
 		ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
 		JUSTAWORD };
 
+string toString( const WordProp& w ){
+  switch ( w ){
+  case ISNAME:
+    return "naam";
+  case ISPUNCT:
+    return "punctuatie";
+  case ISVD:
+    return "voltooid_deelw";
+  case ISOD:
+    return "onvoltooid_deelw";
+  case ISINF:
+    return "infinitief";
+  case ISPVTGW:
+    return "tegenwoordige_tijd";
+  case ISPVVERL:
+    return "verleden_tijd";
+  case ISPPRON1:
+    return "voornaamwoord_1";
+  case ISPPRON2:
+    return "voornaamwoord_2";
+  case ISPPRON3:
+    return "voornaamwoord_3";
+  case  ISAANW:
+    return "aanwijzend";
+  default:
+    return "default";
+  }
+}
+
 enum ConnType { NOCONN, TEMPOREEL, REEKS, CONTRASTIEF, COMPARATIEF, CAUSAAL }; 
 
 string toString( const ConnType& c ){
@@ -445,7 +474,6 @@ struct basicStats {
     morphCnt(0), morphCntExNames(0)
   {};
   virtual ~basicStats(){};
-  virtual void print( ostream& ) const = 0;
   virtual void CSVheader( ostream&, const string& ) const = 0;
   virtual void wordDifficultiesHeader( ostream& ) const = 0;
   virtual void wordDifficultiesToCSV( ostream& ) const = 0;
@@ -477,21 +505,8 @@ struct basicStats {
   vector<basicStats *> sv;
 };
 
-ostream& operator<<( ostream& os, const basicStats& b ){
-  b.print(os);
-  return os;
-}
-
-void basicStats::print( ostream& os ) const {
-  os << "BASICSTATS PRINT" << endl;
-  os << category << endl;
-  os << " lengte=" << charCnt << ", aantal morphemen=" << morphCnt << endl;
-  os << " lengte zonder namem =" << charCntExNames << ", aantal morphemen zonder namen=" << morphCntExNames << endl;
-}
-
 struct wordStats : public basicStats {
   wordStats( Word *, xmlDoc *, const set<size_t>& );
-  void print( ostream& ) const;
   void CSVheader( ostream&, const string& ) const;
   void wordDifficultiesHeader( ostream& ) const;
   void wordDifficultiesToCSV( ostream& ) const;
@@ -1191,14 +1206,26 @@ void wordStats::getSentenceOverlap( const Sentence *prev ){
 void wordStats::addMetrics( ) const {
   FoliaElement *el = folia_node;
   Document *doc = el->doc();
-  if ( isContent )
-    addOneMetric( doc, el, "content_word", "true" );
+  if ( wwform != NO_VERB ){
+    KWargs args;
+    args["set"] = "tscan-set";
+    args["class"] = "wwform(" + toString(wwform) + ")";
+    el->addPosAnnotation( args );
+  }
+  if ( isPersRef )
+    addOneMetric( doc, el, "pers_ref", "true" );
+  if ( isPronRef )
+    addOneMetric( doc, el, "pron_ref", "true" );
   if ( archaic )
     addOneMetric( doc, el, "archaic", "true" );
+  if ( isContent )
+    addOneMetric( doc, el, "content_word", "true" );
   if ( isNominal )
     addOneMetric( doc, el, "nominalization", "true" );
   if ( isOnder )
     addOneMetric( doc, el, "subordinate", "true" );
+  if ( isImperative )
+    addOneMetric( doc, el, "imperative", "true" );
   if ( isBetr )
     addOneMetric( doc, el, "betrekkelijk", "true" );
   if ( isPropNeg )
@@ -1207,16 +1234,20 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "morph_negative", "true" );
   if ( connType != NOCONN )
     addOneMetric( doc, el, "connective", toString(connType) );
-  if ( polarity != NA  )
-    addOneMetric( doc, el, "polarity", toString(polarity) );
-  if ( surprisal != NA  )
-    addOneMetric( doc, el, "surprisal", toString(surprisal) );
-  if ( logprob10 != NA  )
-    addOneMetric( doc, el, "lprob10", toString(logprob10) );
-  if ( sem_type != UNFOUND )
-    addOneMetric( doc, el, "semtype", toString(sem_type) );
+  if ( f50 )
+    addOneMetric( doc, el, "f50", "true" );
+  if ( f65 )
+    addOneMetric( doc, el, "f65", "true" );
+  if ( f77 )
+    addOneMetric( doc, el, "f77", "true" );
+  if ( f80 )
+    addOneMetric( doc, el, "f80", "true" );
   if ( compPartCnt > 0 )
     addOneMetric( doc, el, "compound_length", toString(compPartCnt) );
+  addOneMetric( doc, el, "word_freq", toString(word_freq) );
+  addOneMetric( doc, el, "log_word_freq", toString(word_freq_log) );
+  addOneMetric( doc, el, "lemma_freq", toString(lemma_freq) );
+  addOneMetric( doc, el, "log_lemma_freq", toString(lemma_freq_log) );
   addOneMetric( doc, el, 
 		"argument_repeat_count", toString( argRepeatCnt ) );
   addOneMetric( doc, el, 
@@ -1225,69 +1256,18 @@ void wordStats::addMetrics( ) const {
 		"lemma_argument_repeat_count", toString( lemmaRepeatCnt ) );
   addOneMetric( doc, el, 
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
-
-  addOneMetric( doc, el, "average_log_word_freq", toString(word_freq_log) );
-  if ( wwform != NO_VERB ){
-    KWargs args;
-    args["set"] = "tscan-set";
-    args["class"] = "wwform(" + toString(wwform) + ")";
-    el->addPosAnnotation( args );
-  }
+  if ( polarity != NA  )
+    addOneMetric( doc, el, "polarity", toString(polarity) );
+  if ( surprisal != NA  )
+    addOneMetric( doc, el, "surprisal", toString(surprisal) );
+  if ( logprob10 != NA  )
+    addOneMetric( doc, el, "lprob10", toString(logprob10) );
+  if ( prop != JUSTAWORD )
+    addOneMetric( doc, el, "property", toString(prop) );
+  if ( sem_type != UNFOUND )
+    addOneMetric( doc, el, "semtype", toString(sem_type) );
 }
 
-void wordStats::print( ostream& os ) const {
-  os << "word: [" <<word << "], lengte=" << charCnt 
-     << ", morphemen: " << morphemes << ", HEAD: " << tag;
-  switch ( prop ){
-  case ISINF:
-    os << " (Infinitief)";
-    break;
-  case ISVD:
-    os << " (Voltooid deelwoord)";
-    break;
-  case ISOD:
-    os << " (Onvoltooid Deelwoord)";
-    break;
-  case ISPVTGW:
-    os << " (Tegenwoordige tijd)";
-    break;
-  case ISPVVERL:
-    os << " (Verleden tijd)";
-    break;
-  case ISPPRON1:
-    os << " (1-ste persoon)";
-    break;
-  case ISPPRON2:
-    os << " (2-de persoon)";
-    break;
-  case ISPPRON3:
-    os << " (3-de persoon)";
-    break;
-  case ISAANW:
-    os << " (aanwijzend)";
-    break;
-  case ISNAME:
-    os << " (Name)";
-    break;
-  case ISPUNCT:
-  case JUSTAWORD:
-    break;
-  }
-  if ( wwform != NO_VERB )
-    os << " (" << toString(wwform) << ")";  
-  if ( isNominal )
-    os << " nominalisatie";  
-  if ( isOnder )
-    os << " ondergeschikt";  
-  if ( isBetr )
-    os << " betrekkelijk";  
-  if ( isPropNeg || isMorphNeg )
-    os << " negatief";  
-  if ( polarity != NA ){
-    os << ", Polariteit=" << polarity << endl;
-  }
-}
- 
 void wordStats::CSVheader( ostream& os, const string& intro ) const {
   os << intro << ",";
   wordDifficultiesHeader( os );
@@ -1597,7 +1577,6 @@ struct structStats: public basicStats {
     questCnt(0)
  {};
   ~structStats();
-  virtual void print(  ostream& ) const;
   void addMetrics( ) const;
   void wordDifficultiesHeader( ostream& ) const;
   void wordDifficultiesToCSV( ostream& ) const;
@@ -1854,111 +1833,77 @@ void structStats::merge( structStats *ss ){
   aggregate( distances, ss->distances );
 }
 
-void structStats::print( ostream& os ) const {
-  os << category << " " << id << endl;
-  os << category << " POS tags: ";
-  for ( map<CGN::Type,int>::const_iterator it = heads.begin();
-	it != heads.end(); ++it ){
-    os << it->first << "[" << it->second << "] ";
-  }
-  os << endl;
-  os << "#Voltooid deelwoorden " << vdCnt 
-     << " gemiddeld: " << vdCnt/double(wordCnt) << endl;
-  os << "#Onvoltooid deelwoorden " << odCnt 
-     << " gemiddeld: " << odCnt/double(wordCnt) << endl;
-  os << "#Infinitieven " << infCnt 
-     << " gemiddeld: " << infCnt/double(wordCnt) << endl;
-  os << "#Archaische constructies " << archaicsCnt
-     << " gemiddeld: " << archaicsCnt/double(wordCnt) << endl;
-  os << "#Content woorden " << contentCnt
-     << " gemiddeld: " << contentCnt/double(wordCnt) << endl;
-  os << "#NP's " << npCnt << " met in totaal " << npSize
-     << " woorden, gemiddeld: " << npSize/npCnt << endl;
-  os << "D LEVEL=" << dLevel << endl;
-  if ( polarity != NA ){
-    os << "#Polariteit:" << polarity
-       << " gemiddeld: " << polarity/double(wordCnt) << endl;
-  }
-  else {
-    os << "#Polariteit: NA" << endl;
-  }
-  os << "#Nominalizaties " << nominalCnt
-     << " gemiddeld: " << nominalCnt/double(wordCnt) << endl;
-  os << "#Persoonsvorm (TW) " << presentCnt
-     << " gemiddeld: " << presentCnt/double(wordCnt) << endl;
-  os << "#Persoonsvorm (VERL) " << pastCnt
-     << " gemiddeld: " << pastCnt/double(wordCnt) << endl;
-  os << "#Clauses " << pastCnt+presentCnt
-     << " gemiddeld: " << (pastCnt+presentCnt)/double(wordCnt) << endl;  
-  os << "#passief constructies " << passiveCnt 
-     << " gemiddeld: " << passiveCnt/double(wordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden terugverwijzend " << pronRefCnt
-     << " gemiddeld: " << pronRefCnt/double(wordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden 1-ste persoon " << pron1Cnt
-     << " gemiddeld: " << pron1Cnt/double(wordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden 2-de persoon " << pron2Cnt
-     << " gemiddeld: " << pron2Cnt/double(wordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden 3-de persoon " << pron3Cnt
-     << " gemiddeld: " << pron3Cnt/double(wordCnt) << endl;
-  os << "#PersoonLijke Voornaamwoorden totaal " 
-     << pron1Cnt + pron2Cnt + pron3Cnt
-     << " gemiddeld: " << (pron1Cnt + pron2Cnt + pron3Cnt)/double(wordCnt) << endl;
-  os << category << " gemiddelde woordlengte " << charCnt/double(wordCnt) << endl;
-  os << category << " gemiddelde woordlengte zonder Namen " << charCntExNames/double(wordCnt - nameCnt) << endl;
-  os << category << " gemiddelde aantal morphemen " << morphCnt/double(wordCnt) << endl;
-  os << category << " gemiddelde aantal morphemen zonder Namen " << morphCntExNames/double(wordCnt-nameCnt) << endl;
-  os << category << " aantal ondergeschikte bijzinnen " << onderCnt
-     << " dichtheid " << onderCnt/double(wordCnt) << endl;
-  os << category << " aantal betrekkelijke bijzinnen " << betrCnt
-     << " dichtheid " << betrCnt/double(wordCnt) << endl;
-  os << category << " aantal Namen " << nameCnt << endl;
-  os << category << " Named Entities ";
-  for ( map<NerProp,int>::const_iterator it = ners.begin();
-	it != ners.end(); ++it ){
-    os << it->first << "[" << it->second << "] ";
-  }
-  os << endl;
-  os << category << " aantal woorden " << wordCnt << endl;
-  if ( sv.size() > 0 ){
-    os << category << " bevat " << sv.size() << " " 
-       << sv[0]->category << " onderdelen." << endl << endl;
-    for ( size_t i=0;  i < sv.size(); ++ i ){
-      os << *sv[i] << endl;
-    }
-  }
-}
-
 void structStats::addMetrics( ) const {
   FoliaElement *el = folia_node;
   Document *doc = el->doc();
   addOneMetric( doc, el, "word_count", toString(wordCnt) );
-  addOneMetric( doc, el, "name_count", toString(nameCnt) );
   addOneMetric( doc, el, "vd_count", toString(vdCnt) );
   addOneMetric( doc, el, "od_count", toString(odCnt) );
   addOneMetric( doc, el, "inf_count", toString(infCnt) );
+  addOneMetric( doc, el, "present_verb_count", toString(presentCnt) );
+  addOneMetric( doc, el, "past_verb_count", toString(pastCnt) );
+  addOneMetric( doc, el, "name_count", toString(nameCnt) );
+  addOneMetric( doc, el, "pers_pron_1_count", toString(pron1Cnt) );
+  addOneMetric( doc, el, "pers_pron_2_count", toString(pron2Cnt) );
+  addOneMetric( doc, el, "pres_pron_3_count", toString(pron3Cnt) );
+  addOneMetric( doc, el, "passive_count", toString(passiveCnt) );
+  addOneMetric( doc, el, "modal_count", toString(modalCnt) );
+  addOneMetric( doc, el, "time_count", toString(timeCnt) );
+  addOneMetric( doc, el, "koppel_count", toString(koppelCnt) );
+  addOneMetric( doc, el, "pers_ref_count", toString(persRefCnt) );
+  addOneMetric( doc, el, "pron_ref_count", toString(pronRefCnt) );
   addOneMetric( doc, el, "archaic_count", toString(archaicsCnt) );
   addOneMetric( doc, el, "content_count", toString(contentCnt) );
   addOneMetric( doc, el, "nominal_count", toString(nominalCnt) );
-  addOneMetric( doc, el, "noun_count", toString(nounCnt) );
-  addOneMetric( doc, el, "vz_count", toString(vzCnt) );
+  addOneMetric( doc, el, "adj_count", toString(adjCnt) );
   addOneMetric( doc, el, "vg_count", toString(vgCnt) );
-  addOneMetric( doc, el, "tsw_count", toString(tswCnt) );
-  addOneMetric( doc, el, "bw_count", toString(bwCnt) );
-  addOneMetric( doc, el, "lid_count", toString(lidCnt) );
-  addOneMetric( doc, el, "tw_count", toString(twCnt) );
   addOneMetric( doc, el, "vnw_count", toString(vnwCnt) );
+  addOneMetric( doc, el, "lid_count", toString(lidCnt) );
+  addOneMetric( doc, el, "vz_count", toString(vzCnt) );
+  addOneMetric( doc, el, "bw_count", toString(bwCnt) );
+  addOneMetric( doc, el, "tw_count", toString(twCnt) );
+  addOneMetric( doc, el, "noun_count", toString(nounCnt) );
   addOneMetric( doc, el, "verb_count", toString(verbCnt) );
+  addOneMetric( doc, el, "tsw_count", toString(tswCnt) );
   addOneMetric( doc, el, "subord_count", toString(onderCnt) );
   addOneMetric( doc, el, "rel_count", toString(betrCnt) );
+  addOneMetric( doc, el, "reeks_count", toString(reeksCnt) );
   addOneMetric( doc, el, "cnj_count", toString(cnjCnt) );
   addOneMetric( doc, el, "crd_count", toString(crdCnt) );
-  addOneMetric( doc, el, "passive_count", toString(passiveCnt) );
   addOneMetric( doc, el, "temporals_count", toString(tempConnCnt) );
-  addOneMetric( doc, el, "reeks_count", toString(reeksCnt) );
   addOneMetric( doc, el, "reeks_connector_count", toString(reeksConnCnt) );
   addOneMetric( doc, el, "contrast_count", toString(contConnCnt) );
   addOneMetric( doc, el, "comparatief_count", toString(compConnCnt) );
   addOneMetric( doc, el, "causaal_count", toString(causeConnCnt) );
+  addOneMetric( doc, el, "prop_neg_count", toString(propNegCnt) );
+  addOneMetric( doc, el, "morph_neg_count", toString(morphNegCnt) );
+  addOneMetric( doc, el, "multiple_neg_count", toString(multiNegCnt) );
+  addOneMetric( doc, el, 
+		"argument_repeat_count", toString( argRepeatCnt ) );
+  addOneMetric( doc, el, 
+		"word_overlap_count", toString( wordOverlapCnt ) );
+  addOneMetric( doc, el, 
+		"lemma_argument_repeat_count", toString( lemmaRepeatCnt ) );
+  addOneMetric( doc, el, 
+		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
+  addOneMetric( doc, el, "freq50", toString(f50Cnt) );
+  addOneMetric( doc, el, "freq65", toString(f65Cnt) );
+  addOneMetric( doc, el, "freq77", toString(f77Cnt) );
+  addOneMetric( doc, el, "freq80", toString(f80Cnt) );
+  addOneMetric( doc, el, "compound_count", toString(compCnt) );
+  addOneMetric( doc, el, "compound_length", toString(compPartCnt) );
+  addOneMetric( doc, el, "word_freq", toString(word_freq) );
+  addOneMetric( doc, el, "word_freq_no_names", toString(word_freq_n) );
+  if ( word_freq_log != NA  )
+    addOneMetric( doc, el, "log_word_freq", toString(word_freq_log) );
+  if ( word_freq_log_n != NA  )
+    addOneMetric( doc, el, "log_word_freq_no_names", toString(word_freq_log_n) );
+  addOneMetric( doc, el, "lemma_freq", toString(lemma_freq) );
+  addOneMetric( doc, el, "lemma_freq_no_names", toString(lemma_freq_n) );
+  if ( word_freq_log != NA  )
+    addOneMetric( doc, el, "log_lemma_freq", toString(lemma_freq_log) );
+  if ( word_freq_log_n != NA  )
+    addOneMetric( doc, el, "log_lemma_freq_no_names", toString(lemma_freq_log_n) );
   if ( polarity != NA )
     addOneMetric( doc, el, "polarity", toString(polarity) );
   if ( surprisal != NA )
@@ -1969,68 +1914,39 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "wopr_entropy", toString(entropy) );
   if ( perplexity != NA )
     addOneMetric( doc, el, "wopr_perplexity", toString(perplexity) );
-  addOneMetric( doc, el, "prop_neg_count", toString(propNegCnt) );
-  addOneMetric( doc, el, "morph_neg_count", toString(morphNegCnt) );
-  addOneMetric( doc, el, "compound_count", toString(compCnt) );
-  addOneMetric( doc, el, "compound_length", toString(compPartCnt) );
-  addOneMetric( doc, el, 
-		"argument_repeat_count", toString( argRepeatCnt ) );
-  addOneMetric( doc, el, 
-		"word_overlap_count", toString( wordOverlapCnt ) );
-  addOneMetric( doc, el, 
-		"lemma_argument_repeat_count", toString( lemmaRepeatCnt ) );
-  addOneMetric( doc, el, 
-		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
-  if ( word_freq_log != NA  )
-    addOneMetric( doc, el, "average_log_word_freq", toString(word_freq_log) );
-  if ( word_freq_log_n != NA  )
-    addOneMetric( doc, el, "average_log_word_freq_min_names", toString(word_freq_log_n) );
-  addOneMetric( doc, el, "freq50", toString(f50Cnt) );
-  addOneMetric( doc, el, "freq65", toString(f65Cnt) );
-  addOneMetric( doc, el, "freq77", toString(f77Cnt) );
-  addOneMetric( doc, el, "freq80", toString(f80Cnt) );
-  addOneMetric( doc, el, "present_verb_count", toString(presentCnt) );
-  addOneMetric( doc, el, "past_verb_count", toString(pastCnt) );
-  addOneMetric( doc, el, "referential_pron_count", toString(pronRefCnt) );
-  addOneMetric( doc, el, "pers_pron_1_count", toString(pron1Cnt) );
-  addOneMetric( doc, el, "pers_pron_2_count", toString(pron2Cnt) );
-  addOneMetric( doc, el, "pres_pron_3_count", toString(pron3Cnt) );
-  addOneMetric( doc, el, "character_count", toString(charCnt) );
-  addOneMetric( doc, el, "character_count_min_names", toString(charCntExNames) );
-  addOneMetric( doc, el, "morpheme_count", toString(morphCnt) );
-  addOneMetric( doc, el, "morpheme_count_min_names", toString(morphCntExNames) );
-  addOneMetric( doc, el, "concrete_strict_noun", toString(strictConcreteNounCnt) );
   addOneMetric( doc, el, "concrete_broad_noun", toString(broadConcreteNounCnt) );
-  addOneMetric( doc, el, "abstract_strict_noun", toString(strictAbstractNounCnt) );
+  addOneMetric( doc, el, "concrete_strict_noun", toString(strictConcreteNounCnt) );
   addOneMetric( doc, el, "abstract_broad_noun", toString(broadAbstractNounCnt) );
-  addOneMetric( doc, el, "concrete_strict_adj", toString(strictConcreteAdjCnt) );
+  addOneMetric( doc, el, "abstract_strict_noun", toString(strictAbstractNounCnt) );
   addOneMetric( doc, el, "concrete_broad_adj", toString(broadConcreteAdjCnt) );
-  addOneMetric( doc, el, "abstract_strict_adj", toString(strictAbstractAdjCnt) );
+  addOneMetric( doc, el, "concrete_strict_adj", toString(strictConcreteAdjCnt) );
   addOneMetric( doc, el, "abstract_broad_adj", toString(broadAbstractAdjCnt) );
+  addOneMetric( doc, el, "abstract_strict_adj", toString(strictAbstractAdjCnt) );
   addOneMetric( doc, el, "state_count", toString(stateCnt) );
   addOneMetric( doc, el, "action_count", toString(actionCnt) );
   addOneMetric( doc, el, "process_count", toString(processCnt) );
   addOneMetric( doc, el, "weird_count", toString(weirdCnt) );
+  addOneMetric( doc, el, "emo_count", toString(emoCnt) );
   addOneMetric( doc, el, "human_nouns_count", toString(humanCnt) );
   addOneMetric( doc, el, "indef_np_count", toString(indefNpCnt) );
   addOneMetric( doc, el, "np_count", toString(npCnt) );
   addOneMetric( doc, el, "np_size", toString(npSize) );
+  addOneMetric( doc, el, "vc_modifier_count", toString(vcModCnt) );
+
+  addOneMetric( doc, el, "character_count", toString(charCnt) );
+  addOneMetric( doc, el, "character_count_min_names", toString(charCntExNames) );
+  addOneMetric( doc, el, "morpheme_count", toString(morphCnt) );
+  addOneMetric( doc, el, "morpheme_count_min_names", toString(morphCntExNames) );
   if ( dLevel >= 0 )
     addOneMetric( doc, el, "d_level", toString(dLevel) );
   else
     addOneMetric( doc, el, "d_level", "missing" );
+  if ( dLevel_gt4 != 0 )
+    addOneMetric( doc, el, "d_level_gt4", toString(dLevel) );
   if ( questCnt > 0 )
     addOneMetric( doc, el, "question_count", toString(questCnt) );
   if ( impCnt > 0 )
     addOneMetric( doc, el, "imperative_count", toString(impCnt) );
-  /*
-  os << category << " Named Entities ";
-  for ( map<NerProp,int>::const_iterator it = ners.begin();
-	it != ners.end(); ++it ){
-    os << it->first << "[" << it->second << "] ";
-  }
-  os << endl;
-  */
   for ( size_t i=0; i < sv.size(); ++i ){
     sv[i]->addMetrics();
   }
@@ -2493,7 +2409,6 @@ void structStats::miscToCSV( ostream& os ) const {
 
 struct sentStats : public structStats {
   sentStats( Sentence *, Sentence *, xmlDoc * );
-  void print( ostream& ) const;
   bool isSentence() const { return true; };
   void resolveConnectives();
   void addMetrics( ) const;
@@ -3031,16 +2946,6 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
   }
 }
 
-void sentStats::print( ostream& os ) const {
-  os << category << "[" << text << "]" << endl;
-  os << category << " er zijn " << propNegCnt << " negatieve woorden en " 
-     << morphNegCnt << " negatieve morphemen gevonden";
-  if ( multiNegCnt > 1 )
-    os << " er is dus een dubbele ontkenning! ";
-  os << endl;
-  structStats::print( os );
-}
-
 void sentStats::addMetrics( ) const {
   structStats::addMetrics( );
   FoliaElement *el = folia_node;
@@ -3055,7 +2960,6 @@ void sentStats::addMetrics( ) const {
 
 struct parStats: public structStats {
   parStats( Paragraph * );
-  void print( ostream& ) const;
   void addMetrics( ) const;
 };
 
@@ -3112,11 +3016,6 @@ parStats::parStats( Paragraph *p ):
     lemma_freq_log_n = log10( lemma_freq_n / (wordCnt-nameCnt) );
 }
 
-void parStats::print( ostream& os ) const {
-  os << category << " with " << sentCnt << " Sentences" << endl;
-  structStats::print( os );
-}
-
 void parStats::addMetrics( ) const {
   FoliaElement *el = folia_node;
   structStats::addMetrics( );
@@ -3126,7 +3025,6 @@ void parStats::addMetrics( ) const {
 
 struct docStats : public structStats {
   docStats( Document * );
-  void print( ostream& ) const;
   bool isDocument() const { return true; };
   void toCSV( const string&, csvKind ) const;
   string rarity( int level ) const;
@@ -3240,16 +3138,6 @@ void docStats::addMetrics( ) const {
 		"document_lemma_argument_count", toString( doc_lemma_argCnt ) );
   addOneMetric( el->doc(), el, 
 		"document_lemma_argument_overlap_count", toString( doc_lemma_overlapCnt ) );
-}
-
-void docStats::print( ostream& os ) const {
-  os << category << " with "  << sv.size() << " paragraphs and "
-     << sentCnt << " Sentences" << endl;
-  os << "TTW = " << unique_words.size()/double(wordCnt) << endl;
-  os << "TTL = " << unique_lemmas.size()/double(wordCnt) << endl;
-  os << "rarity(" << settings.rarityLevel << ")=" 
-     << rarity( settings.rarityLevel ) << endl;
-  structStats::print( os );
 }
 
 void docStats::toCSV( const string& name, 
