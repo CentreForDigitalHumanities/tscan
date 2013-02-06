@@ -374,7 +374,7 @@ namespace CGN {
 };
 
 enum WordProp { ISNAME, ISPUNCT, 
-		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL,
+		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL, ISSUBJ,
 		ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
 		JUSTAWORD };
 
@@ -394,6 +394,8 @@ string toString( const WordProp& w ){
     return "tegenwoordige_tijd";
   case ISPVVERL:
     return "verleden_tijd";
+  case ISSUBJ:
+    return "subjonctive";
   case ISPPRON1:
     return "voornaamwoord_1";
   case ISPPRON2:
@@ -828,6 +830,8 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
 	prop = ISPVTGW;
       else if ( tijd == "verl" )
 	prop = ISPVVERL;
+      else if ( tijd == "conj" )
+	prop = ISSUBJ;
       else {
 	cerr << "PANIEK: een onverwachte ww tijd: " << tijd << endl;
 	exit(3);
@@ -1506,7 +1510,7 @@ struct structStats: public basicStats {
     wordCnt(0),
     sentCnt(0),
     vdCnt(0),odCnt(0),
-    infCnt(0), presentCnt(0), pastCnt(0),
+    infCnt(0), presentCnt(0), pastCnt(0), subjonctCnt(0),
     nameCnt(0),
     pron1Cnt(0), pron2Cnt(0), pron3Cnt(0), 
     passiveCnt(0),modalCnt(0),timeCnt(0),koppelCnt(0),
@@ -1618,6 +1622,7 @@ struct structStats: public basicStats {
   int infCnt;
   int presentCnt;
   int pastCnt;
+  int subjonctCnt;
   int nameCnt;
   int pron1Cnt;
   int pron2Cnt;
@@ -1800,6 +1805,7 @@ void structStats::merge( structStats *ss ){
 
   presentCnt += ss->presentCnt;
   pastCnt += ss->pastCnt;
+  subjonctCnt += ss->subjonctCnt;
   pron1Cnt += ss->pron1Cnt;
   pron2Cnt += ss->pron2Cnt;
   pron3Cnt += ss->pron3Cnt;
@@ -1850,6 +1856,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "inf_count", toString(infCnt) );
   addOneMetric( doc, el, "present_verb_count", toString(presentCnt) );
   addOneMetric( doc, el, "past_verb_count", toString(pastCnt) );
+  addOneMetric( doc, el, "subjonct_count", toString(subjonctCnt) );
   addOneMetric( doc, el, "name_count", toString(nameCnt) );
   addOneMetric( doc, el, "pers_pron_1_count", toString(pron1Cnt) );
   addOneMetric( doc, el, "pers_pron_2_count", toString(pron2Cnt) );
@@ -2807,6 +2814,9 @@ sentStats::sentStats( Sentence *s, Sentence *prev ):
 	break;
       case ISPVTGW:
 	presentCnt++;
+	break;
+      case ISSUBJ:
+	subjonctCnt++;
 	break;
       case ISPPRON1:
 	pron1Cnt++;
