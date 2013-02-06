@@ -72,6 +72,7 @@ struct settingData {
   bool doDecompound;
   bool doSurprisal;
   bool doWopr;
+  bool doXfiles;
   string decompounderPath;
   string surprisalPath;
   string style;
@@ -212,6 +213,7 @@ bool fill( map<string,cf_data>& m, const string& filename ){
 void settingData::init( const Configuration& cf ){
   doAlpino = false;
   doAlpinoServer = false;
+  doXfiles = true;
   string val = cf.lookUp( "useAlpinoServer" );
   if ( !val.empty() ){
     if ( !Timbl::stringTo( val, doAlpinoServer ) ){
@@ -305,7 +307,14 @@ void settingData::init( const Configuration& cf ){
 }
 
 inline void usage(){
-  cerr << "usage:  tscan -t <inputfile> [-o <outputfile>]" << endl;
+  cerr << "usage:  tscan [options] -t <inputfile> " << endl;
+  cerr << "options: " << endl;
+  cerr << "\t-o <file> store XML in file " << endl;
+  cerr << "\t--config=<file> read configuration from file " << endl;
+  cerr << "\t-V or --version show version " << endl;
+  cerr << "\t-D <value> set debug level " << endl;
+  cerr << "\t--skip=[wadsc]    Skip Wopr (w), Alpino (a), Decompounder (d), Suprisal Parser (s), or CSV output (s) \n";
+  cerr << endl;
 }
 
 template <class M>
@@ -3326,6 +3335,27 @@ int main(int argc, char *argv[]) {
     }
     opts.Delete( 'D' );
   }
+  if ( opts.Find( "skip", val, mood)) {
+    string skip = val;
+    if ( skip.find_first_of("wW") != string::npos ){
+      settings.doWopr = false;
+    }
+    if ( skip.find_first_of("aA") != string::npos ){
+      settings.doAlpino = false;
+      settings.doAlpinoServer = false;
+    }
+    if ( skip.find_first_of("sS") != string::npos ){
+      settings.doSurprisal = false;
+    }
+    if ( skip.find_first_of("dD") != string::npos ){
+      settings.doDecompound = false;
+    }
+    if ( skip.find_first_of("cC") != string::npos ){
+      settings.doXfiles = false;
+    }
+    opts.Delete("skip");
+  };
+
   string inName;
   string outName;
   if ( opts.Find( 't', val, mood ) ){
@@ -3359,10 +3389,12 @@ int main(int argc, char *argv[]) {
       docStats analyse( doc );
       analyse.addMetrics(); // add metrics info to doc
       doc->save( outName );
-      analyse.toCSV( inName, DOC_CSV );
-      analyse.toCSV( inName, PAR_CSV );
-      analyse.toCSV( inName, SENT_CSV );
-      analyse.toCSV( inName, WORD_CSV );
+      if ( settings.doXfiles ){
+	analyse.toCSV( inName, DOC_CSV );
+	analyse.toCSV( inName, PAR_CSV );
+	analyse.toCSV( inName, SENT_CSV );
+	analyse.toCSV( inName, WORD_CSV );
+      }
       delete doc;
       LOG << "saved output in " << outName << endl;
       // cerr << analyse << endl;
