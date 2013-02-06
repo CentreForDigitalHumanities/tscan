@@ -4,4 +4,4 @@ PORT=7345
 ID=tscan
 CONFIG=${PATH}/etc/frog/tscan-frog.cfg
 
-${PATH}/bin/frog -X --id=${ID} --config=${CONFIG} --skip=mp -S${PORT}
+${PATH}/bin/frog -X --id=${ID} -c ${CONFIG} --skip=mp -S${PORT}
