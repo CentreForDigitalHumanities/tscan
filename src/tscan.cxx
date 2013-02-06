@@ -52,6 +52,7 @@ TiCC::LogStream cur_log( "T-scan", StampMessage );
 const double NA = -123456789;
 const string frog_pos_set = "http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn";
 const string frog_lemma_set = "http://ilk.uvt.nl/folia/sets/frog-mblem-nl";
+const string frog_morph_set = "http://ilk.uvt.nl/folia/sets/frog-mbma-nl";
 const string frog_ner_set = "http://ilk.uvt.nl/folia/sets/frog-ner-nl";
 
 enum csvKind { DOC_CSV, PAR_CSV, SENT_CSV, WORD_CSV };
@@ -1128,7 +1129,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
     vector<Morpheme*> morphemeV;
     vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
     for ( size_t q=0; q < ml.size(); ++q ){
-      vector<Morpheme*> m = ml[q]->select<Morpheme>();
+      vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set );
       if ( m.size() > max ){
 	// a hack: we assume the longest morpheme list to 
 	// be the best choice. 
