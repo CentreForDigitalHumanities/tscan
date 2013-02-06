@@ -1117,9 +1117,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
     if ( tag == CGN::WW ){
       wwform = classifyVerb( w, alpDoc );
       if ( prop == ISPVTGW || prop == ISPVVERL ){
-	//	cerr << "check IMP voor " << pos << " en lemma " << lemma << endl;
 	isImperative = checkImp( w, alpDoc );
-	//	cerr << "isImperative =" << isImperative << endl;
       }
     }
     distances = getDependencyDist( w, alpDoc, puncts);
@@ -2417,7 +2415,7 @@ void structStats::miscToCSV( ostream& os ) const {
 }
 
 struct sentStats : public structStats {
-  sentStats( Sentence *, Sentence *, xmlDoc * );
+  sentStats( Sentence *, Sentence * );
   bool isSentence() const { return true; };
   void resolveConnectives();
   void addMetrics( ) const;
@@ -2668,13 +2666,21 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
   LOG << "finished Wopr" << endl;
 }
 
-sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ): 
+xmlDoc *AlpinoServerParse( Sentence *);
+
+sentStats::sentStats( Sentence *s, Sentence *prev ): 
   structStats( s, "ZIN" ){
   sentCnt = 1;
   id = s->id();
   text = UnicodeToUTF8( s->toktext() );
   vector<Word*> w = s->words();
   vector<double> surprisalV(w.size(),NA);
+  vector<double> woprProbsV(w.size(),NA);
+  double sentProb = NA;
+  double sentEntropy = NA;
+  double sentPerplexity = NA;
+  xmlDoc *alpDoc = 0;
+  set<size_t> puncts;
   if ( settings.doSurprisal ){
     surprisalV = runSurprisal( s, workdir_name, settings.surprisalPath );
     if ( surprisalV.size() != w.size() ){
@@ -2682,28 +2688,47 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
       surprisalV.clear();
     }
   }
-  vector<double> woprProbsV(w.size(),NA);
-  double sentProb = NA;
-  double sentEntropy = NA;
-  double sentPerplexity = NA;
+  if ( settings.doAlpino || settings.doAlpinoServer ){
+    if ( settings.doAlpinoServer ){
+      LOG << "calling Alpino Server" << endl;
+      alpDoc = AlpinoServerParse( s );
+      if ( !alpDoc ){
+	cerr << "alpino parser failed!" << endl;
+      }
+      LOG << "done with Alpino Server" << endl;
+    }
+    else if ( settings.doAlpino ){
+      LOG << "calling Alpino parser" << endl;
+      alpDoc = AlpinoParse( s, workdir_name );
+      if ( !alpDoc ){
+	cerr << "alpino parser failed!" << endl;
+      }
+      LOG << "done with Alpino parser" << endl;
+    }
+    if ( alpDoc ){
+      for( size_t i=0; i < w.size(); ++i ){
+	vector<PosAnnotation*> posV = w[i]->select<PosAnnotation>(frog_pos_set);
+	if ( posV.size() != 1 )
+	  throw ValueError( "word doesn't have Frog POS tag info" );
+	PosAnnotation *pa = posV[0];
+	string posHead = pa->feat("head");
+	if ( posHead == "LET" )
+	  puncts.insert( i );
+      }
+      dLevel = get_d_level( s, alpDoc );
+      if ( dLevel > 4 )
+	dLevel_gt4 = 1;
+      countCrdCnj( alpDoc, crdCnt, cnjCnt, reeksCnt );
+      int np2Cnt;
+      mod_stats( alpDoc, vcModCnt, np2Cnt, npModCnt );
+    }
+  }
   if ( settings.doWopr ){
     orderWopr( text, woprProbsV, sentProb, sentEntropy, sentPerplexity );
   }
   avg_prob10 = sentProb;
   entropy = sentEntropy;
   perplexity = sentPerplexity;
-  set<size_t> puncts;
-  if ( alpDoc ){
-    for( size_t i=0; i < w.size(); ++i ){
-      vector<PosAnnotation*> posV = w[i]->select<PosAnnotation>(frog_pos_set);
-      if ( posV.size() != 1 )
-	throw ValueError( "word doesn't have Frog POS tag info" );
-      PosAnnotation *pa = posV[0];
-      string posHead = pa->feat("head");
-      if ( posHead == "LET" )
-	puncts.insert( i );
-    }
-  }
   //  cerr << "PUNCTS " << puncts << endl;
   bool question = false;
   for ( size_t i=0; i < w.size(); ++i ){
@@ -2923,6 +2948,9 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
       sv.push_back( ws );
     }
   }
+  if ( alpDoc ){
+    xmlFreeDoc( alpDoc );
+  }
   if ( question )
     questCnt = 1;
   if ( (morphNegCnt + propNegCnt) > 1 )
@@ -2945,14 +2973,6 @@ sentStats::sentStats( Sentence *s, Sentence *prev, xmlDoc *alpDoc ):
   else
     lemma_freq_log_n = log10( lemma_freq_n / (wordCnt-nameCnt) );
   np_length( s, npCnt, indefNpCnt, npSize );
-  if ( alpDoc ){
-    dLevel = get_d_level( s, alpDoc );
-    if ( dLevel > 4 )
-      dLevel_gt4 = 1;
-    countCrdCnj( alpDoc, crdCnt, cnjCnt, reeksCnt );
-    int np2Cnt;
-    mod_stats( alpDoc, vcModCnt, np2Cnt, npModCnt );
-  }
 }
 
 void sentStats::addMetrics( ) const {
@@ -2972,8 +2992,6 @@ struct parStats: public structStats {
   void addMetrics( ) const;
 };
 
-xmlDoc *AlpinoServerParse( Sentence *);
-
 parStats::parStats( Paragraph *p ): 
   structStats( p, "PARAGRAAF" )
 {
@@ -2981,29 +2999,11 @@ parStats::parStats( Paragraph *p ):
   id = p->id();
   vector<Sentence*> sents = p->sentences();
   for ( size_t i=0; i < sents.size(); ++i ){
-    xmlDoc *alpDoc = 0;
-    if ( settings.doAlpinoServer ){
-      LOG << "calling Alpino Server" << endl;
-      alpDoc = AlpinoServerParse( sents[i] );
-      if ( !alpDoc ){
-	cerr << "alpino parser failed!" << endl;
-      }
-      LOG << "done with Alpino Server" << endl;
-    }
-    else if ( settings.doAlpino ){
-      LOG << "calling Alpino parser" << endl;
-      alpDoc = AlpinoParse( sents[i], workdir_name );
-      if ( !alpDoc ){
-	cerr << "alpino parser failed!" << endl;
-      }
-      LOG << "done with Alpino parser" << endl;
-    }
     sentStats *ss;
     if ( i == 0 )
-      ss = new sentStats( sents[i], 0, alpDoc );
+      ss = new sentStats( sents[i], 0 );
     else
-      ss = new sentStats( sents[i], sents[i-1], alpDoc );
-    xmlFreeDoc( alpDoc );
+      ss = new sentStats( sents[i], sents[i-1] );
     merge( ss );
   }
   if ( word_freq == 0 )
