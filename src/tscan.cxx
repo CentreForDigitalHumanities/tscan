@@ -1942,7 +1942,7 @@ void structStats::addMetrics( ) const {
   else
     addOneMetric( doc, el, "d_level", "missing" );
   if ( dLevel_gt4 != 0 )
-    addOneMetric( doc, el, "d_level_gt4", toString(dLevel) );
+    addOneMetric( doc, el, "d_level_gt4", toString(dLevel_gt4) );
   if ( questCnt > 0 )
     addOneMetric( doc, el, "question_count", toString(questCnt) );
   if ( impCnt > 0 )
@@ -2617,7 +2617,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 	if ( mv.size() > 0 ){
 	  for ( size_t j=0; j < mv.size(); ++j ){
 	    if ( mv[j]->cls() == "lprob10" ){
-	      wordProbsV[i] = stringTo<double>( mv[j]->index(0)->cls() );
+	      wordProbsV[i] = stringTo<double>( mv[j]->feat("value") );
 	    }
 	  }
 	}
@@ -2631,21 +2631,21 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
       if ( mv.size() > 0 ){
 	for ( size_t j=0; j < mv.size(); ++j ){
 	  if ( mv[j]->cls() == "avg_prob10" ){
-	    string val = mv[j]->index(0)->cls();
+	    string val = mv[j]->feat("value");
 	    if ( val != "nan" ){
 	      sentProb = stringTo<double>( val );
 	    }
 	  }
-	  if ( mv[j]->cls() == "entropy" ){
-	    string val = mv[j]->index(0)->cls();
+	  else if ( mv[j]->cls() == "entropy" ){
+	    string val = mv[j]->feat("value");
 	    if ( val != "nan" ){
-	      entropy = stringTo<double>( mv[j]->index(0)->cls() );
+	      entropy = stringTo<double>( val );
 	    }
 	  }
-	  if ( mv[j]->cls() == "perplexity" ){
-	    string val = mv[j]->index(0)->cls();
+	  else if ( mv[j]->cls() == "perplexity" ){
+	    string val = mv[j]->feat("value");
 	    if ( val != "nan" ){
-	      perplexity = stringTo<double>( mv[j]->index(0)->cls() );
+	      perplexity = stringTo<double>( val );
 	    }
 	  }
 	}
@@ -2996,7 +2996,6 @@ parStats::parStats( Paragraph *p ):
       ss = new sentStats( sents[i], sents[i-1], alpDoc );
     xmlFreeDoc( alpDoc );
     merge( ss );
-    sentCnt++;
   }
   if ( word_freq == 0 )
     word_freq_log = NA;
@@ -3058,7 +3057,6 @@ docStats::docStats( Document *doc ):
   for ( size_t i=0; i != pars.size(); ++i ){
     parStats *ps = new parStats( pars[i] );
     merge( ps );
-    sentCnt += ps->sentCnt;
   }
   if ( word_freq == 0 )
     word_freq_log = NA;
@@ -3266,8 +3264,6 @@ xmlDoc *AlpinoServerParse( Sentence *sent ){
   string result;
   string s;
   while ( client.read(s) ){
-    if ( s == "READY" )
-      break;
     result += s + "\n";
   }
   DBG << "received data [" << result << "]" << endl;
