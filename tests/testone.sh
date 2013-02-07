@@ -19,7 +19,7 @@ do if test -e $file
 	\rm -f $file.out
 	\rm -f $file.tscan.xml
 	echo -n "Tscanning  $file "
-	$comm -t $file > $file.out 2> $file.err
+	$comm --skip=c -t $file > $file.out 2> $file.err
 	#xmldiff /tmp/folia.2.xml $file.ok >& $file.diff
 	diff -w --ignore-matching-lines=".?*-annotation .?*" $file.tscan.xml $file.ok >& $file.diff
 	if [ $? -ne 0 ];
