@@ -2689,7 +2689,8 @@ sentStats::sentStats( Sentence *s, Sentence *prev ):
   double sentPerplexity = NA;
   xmlDoc *alpDoc = 0;
   set<size_t> puncts;
-  if ( settings.doSurprisal ){
+  if ( settings.doSurprisal 
+       && w.size() != 1 ){ // the surpisal pasrer chokes on 1 word sentences
     surprisalV = runSurprisal( s, workdir_name, settings.surprisalPath );
     if ( surprisalV.size() != w.size() ){
       cerr << "MISMATCH! " << surprisalV.size() << " != " <<  w.size()<< endl;
