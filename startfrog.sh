@@ -1,7 +1,11 @@
-#! /bin/sh
-PATH=/home/sloot/usr/local/
+#! /bin/bash
+if [ `hostname` == "applejack" ]; then
+	FROGPATH="/vol/customopt/uvt-ru/"
+else
+	FROGPATH="/home/sloot/usr/local/"
+fi
 PORT=7345
 ID=tscan
-CONFIG=${PATH}/etc/frog/tscan-frog.cfg
+CONFIG=${FROGPATH}/etc/frog/tscan-frog.cfg
 
-${PATH}/bin/frog -X --id=${ID} -c ${CONFIG} --skip=mp -S${PORT}
+${FROGPATH}/bin/frog -X --id=${ID} -c ${CONFIG} --skip=mp -S${PORT}
