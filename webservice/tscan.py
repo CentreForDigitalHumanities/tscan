@@ -186,11 +186,11 @@ COMMAND = TSCANDIR + "/webservice/tscanwrapper.py $DATAFILE $STATUSFILE $INPUTDI
 
 wordfreqlist = [] 
 for f in glob.glob(TSCANDIR + "/data/*words.freq"):
-    wordfreqlist.append( (os.path.basename(f), f) )
+    wordfreqlist.append( (os.path.basename(f), os.path.basename(f)) )
 
 lemmafreqlist = []
 for f in glob.glob(TSCANDIR + "/data/*lemma.freq"):
-    lemmafreqlist.append( (os.path.basename(f), f) )
+    lemmafreqlist.append( (os.path.basename(f), os.path.basename(f)) )
     
 
 
