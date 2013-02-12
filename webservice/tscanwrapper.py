@@ -37,8 +37,9 @@ import clam.common.status
 #this script takes three arguments from CLAM: $DATAFILE $STATUSFILE $OUTPUTDIRECTORY  (as configured at COMMAND= in the service configuration file)
 datafile = sys.argv[1]
 statusfile = sys.argv[2]
-outputdir = sys.argv[3]
-TSCANDIR = sys.argv[4]
+inputdir = sys.argv[3]
+outputdir = sys.argv[4]
+TSCANDIR = sys.argv[5]
 
 #Obtain all data from the CLAM system (passed in $DATAFILE (clam.xml))
 clamdata = clam.common.data.getclamdata(datafile)
@@ -52,7 +53,14 @@ clam.common.status.write(statusfile, "Starting...")
 #Write configuration file
 
 f = open(outputdir + '/tscan.cfg','w')
-f.write("useAlpino=1\n")
+if 'usealpino' in clamdata and clamdata['usealpino'] == 'yes':
+    f.write("useAlpino=1\n")
+else:
+    f.write("useAlpino=0\n")
+if 'usewopr' in clamdata and clamdata['usewopr'] == 'yes':
+    f.write("useWopr=1\n")
+else:
+    f.write("useWopr=0\n")    
 f.write("decompounderPath=\"" + TSCANDIR + "\"\n")
 f.write("surprisalPath=\"" + TSCANDIR + "\"\n")
 f.write("styleSheet=\"tscanview.xsl\"\n")
@@ -67,11 +75,25 @@ f.write("adj_semtypes=\"adjs_semtype.data\"\n")
 f.write("verb_semtypes=\"verbs_semtype.data\"\n")
 f.write("noun_semtypes=\"nouns_semtype.data\"\n")
 f.write("polarity_lex=\"polarity_lexicon.data\"\n")
-f.write("freq_lex=\"dcoi_staphformat.freq\"\n")
+#f.write("freq_lex=\"dcoi_staphformat.freq\"\n")
+
+f.write("word_freq_lex=\"" + clamdata['word_freq_lex'] + "\"\n")  #freqlist_staphorsius_CLIB_words.freq
+f.write("lemma_freq_lex=\"" + clamdata['lemma_freq_lex'] + "\"\n") #freqlist_staphorsius_CLIB_lemma.freq
+
 
 f.write("[[frog]]\n") #Frog server should already be runnning, start manually
 f.write("port=7345\n")
+f.write("host=localhost\n\n")
+
+
+f.write("[[wopr]]\n")
+f.write("port=6345\n")
+f.write("host=localhost\n\n")
+
+f.write("[[alpino]]\n")
+f.write("port=6666\n")
 f.write("host=localhost\n")
+
 
 f.close()
 
@@ -85,7 +107,9 @@ for inputfile in clamdata.inputfiles('textinput'):
    ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg -t ' + str(inputfile) + ' -o ' + outputdir + '/' + os.path.basename(str(inputfile).replace('.txt','') + '.xml'))
    if ref != 0:
         clam.common.status.write(statusfile, "Failed",50) # status update
-   
+
+#tscan writes CSV file in input directory, move:       
+os.system("mv -f " + inputdir + "/*.csv " + outputdir)     
    
 shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
 

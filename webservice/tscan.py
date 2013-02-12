@@ -22,6 +22,7 @@ from clam.common.digestauth import pwhash
 import sys
 from os import uname, environ
 from base64 import b64decode as D
+import glob
 
 #DEBUG = True
 
@@ -177,11 +178,21 @@ PROFILES = [
 #                        (set to "anonymous" if there is none)
 #     $PARAMETERS      - List of chosen parameters, using the specified flags
 #
-COMMAND = TSCANDIR + "/webservice/tscanwrapper.py $DATAFILE $STATUSFILE $OUTPUTDIRECTORY " + TSCANDIR
+COMMAND = TSCANDIR + "/webservice/tscanwrapper.py $DATAFILE $STATUSFILE $INPUTDIRECTORY $OUTPUTDIRECTORY " + TSCANDIR
 
 # ======== PARAMETER DEFINITIONS ===========
 
 #The parameters are subdivided into several groups. In the form of a list of (groupname, parameters) tuples. The parameters are a list of instances from common/parameters.py
+
+wordfreqlist = [] 
+for f in glob.glob(TSCANDIR + "/data/*words.freq"):
+    wordfreqlist.append( (os.path.basename(f), f) )
+
+lemmafreqlist = []
+for f in glob.glob(TSCANDIR + "/data/*lemma.freq"):
+    lemmafreqlist.append( (os.path.basename(f), f) )
+    
+
 
 PARAMETERS =  [ 
     ('Parameters', [ 
@@ -191,6 +202,10 @@ PARAMETERS =  [
         #BooleanParameter(id='createlexicon',name='Create Lexicon',description='Generate a separate overall lexicon?'),
         #ChoiceParameter(id='casesensitive',name='Case Sensitivity',description='Enable case sensitive behaviour?', choices=['yes','no'],default='no'),
         #StringParameter(id='author',name='Author',description='Sign output metadata with the specified author name',maxlength=255),
+        ChoiceParameter(id='usealpino',name='Use Alpino parser',description='Use Alpino parser?', choices=['yes','no'],default='yes'),
+        ChoiceParameter(id='usewopr',name='Use Wopr',description='Use Wopr?', choices=['yes','no'],default='yes'),
+        ChoiceParameter(id='word_freq_lex', name='Word Frequency List', description="Word frequency list", choices=wordfreqlist),
+        ChoiceParameter(id='lemma_freq_lex', name='Lemma Frequency List', description="Lemma frequency list", choices=lemmafreqlist),
     ] )
 ]
 
