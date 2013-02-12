@@ -2096,9 +2096,12 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
 
 void structStats::sentDifficultiesToCSV( ostream& os ) const {
   os << wordCnt/double(sentCnt) << ","
-     << double(sentCnt)/wordCnt * 100.0 << ","
-     << wordCnt/double(npCnt) << ","
-     << onderCnt/double(wordCnt) * 1000 << ","
+     << double(sentCnt)/wordCnt * 100.0 << ",";
+  if ( npCnt == 0 )
+    os << "NA,";
+  else
+    os << wordCnt/double(npCnt) << ",";
+  os << onderCnt/double(wordCnt) * 1000 << ","
      << betrCnt/double(wordCnt) * 1000 << ","
      << (pastCnt + presentCnt)/double(wordCnt) * 1000 << ","
      << (pastCnt + presentCnt)/double(sentCnt) << ","
@@ -2201,9 +2204,15 @@ void structStats::coherenceToCSV( ostream& os ) const {
        << (lemma_overlapCnt()/double(wordCnt)) * 1000 << ","
        << lemma_overlapCnt()/double(presentCnt+pastCnt) << ",";
   }
-  os << indefNpCnt/double(npCnt) << ","
-     << indefNpCnt/double(npCnt - indefNpCnt) << ","
-     << (indefNpCnt/double(wordCnt)) * 1000 << ",";
+  if ( npCnt == 0 )
+    os << "NA,";
+  else
+    os << indefNpCnt/double(npCnt) << ",";
+  if ( npCnt == indefNpCnt )
+    os << "NA,";
+  else
+    os << indefNpCnt/double(npCnt - indefNpCnt) << ",";
+  os << (indefNpCnt/double(wordCnt)) * 1000 << ",";
 }
 
 void structStats::concreetHeader( ostream& os ) const {
