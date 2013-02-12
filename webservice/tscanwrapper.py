@@ -54,9 +54,9 @@ clam.common.status.write(statusfile, "Starting...")
 
 f = open(outputdir + '/tscan.cfg','w')
 if 'usealpino' in clamdata and clamdata['usealpino'] == 'yes':
-    f.write("useAlpino=1\n")
+    f.write("useAlpinoServer=1\n")
 else:
-    f.write("useAlpino=0\n")
+    f.write("useAlpinoServer=0\n")
 if 'usewopr' in clamdata and clamdata['usewopr'] == 'yes':
     f.write("useWopr=1\n")
 else:
