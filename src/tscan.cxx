@@ -66,7 +66,7 @@ struct cf_data {
   double freq;
 };
 
-enum top_val { notFound, top1000, top2000, top3000, top5000, top10000, top20000  };
+enum top_val { top1000, top2000, top3000, top5000, top10000, top20000, notFound  };
  
 struct settingData {
   void init( const Configuration& );
@@ -1385,7 +1385,8 @@ void wordStats::wordDifficultiesHeader( ostream& os ) const {
   os << "lpw,wpl,lpwzn,wplzn,mpw,wpm,mpwzn,wpmzn,"
      << "sdpw,sdens,freq50,freq65,freq77,freq80,"
      << "word_freq_log,word_freq_log_zn,"
-     << "lemfreq_log,lemfreq_log_zn,";
+     << "lemfreq_log,lemfreq_log_zn,"
+     << "freq1000,freq2000,freq3000,freq5000,freq10000,freq20000,";
 }
 
 void wordStats::wordDifficultiesToCSV( ostream& os ) const {
@@ -1440,6 +1441,12 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
     os << "NA" << ",";
   else
     os << lemma_freq_log << ",";
+  os << (top_freq==top1000?1:0) << ",";
+  os << (top_freq<=top2000?1:0) << ",";
+  os << (top_freq<=top3000?1:0) << ",";
+  os << (top_freq<=top5000?1:0) << ",";
+  os << (top_freq<=top10000?1:0) << ",";
+  os << (top_freq<=top20000?1:0) << ",";
 }
 
 void wordStats::coherenceHeader( ostream& os ) const {
@@ -2156,7 +2163,8 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
   os << "lpw,wpl,lpwzn,wplzn,mpw,wpm,mpwzn,wpmzn,"
      << "sdpw,sdens,freq50,freq65,freq77,freq80,"
      << "word_freq_log,word_freq_log_zn,"
-     << "lemma_freq_log,lemma_freq_log_zn,";
+     << "lemma_freq_log,lemma_freq_log_zn,"
+     << "freq1000,freq2000,freq3000,freq5000,freq10000,freq20000,";
 }
 
 void structStats::wordDifficultiesToCSV( ostream& os ) const {
@@ -2199,6 +2207,12 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
     os << "NA" << ",";
   else
     os << lemma_freq_log_n/double(wordCnt-nameCnt) << ",";
+  os << top1000Cnt/double(wordCnt) << ",";
+  os << top2000Cnt/double(wordCnt) << ",";
+  os << top3000Cnt/double(wordCnt) << ",";
+  os << top5000Cnt/double(wordCnt) << ",";
+  os << top10000Cnt/double(wordCnt) << ",";
+  os << top20000Cnt/double(wordCnt) << ",";
 }
 
 void structStats::sentDifficultiesHeader( ostream& os ) const {
