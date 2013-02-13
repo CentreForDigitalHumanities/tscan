@@ -66,6 +66,8 @@ struct cf_data {
   double freq;
 };
 
+enum top_val { notFound, top1000, top2000, top3000, top5000, top10000, top20000  };
+ 
 struct settingData {
   void init( const Configuration& );
   bool doAlpino;
@@ -87,6 +89,7 @@ struct settingData {
   map<string, cf_data> staph_word_freq_lex;
   map<string, cf_data> word_freq_lex;
   map<string, cf_data> lemma_freq_lex;
+  map<string, top_val> top_freq_lex;
 };
 
 settingData settings;
@@ -212,6 +215,47 @@ bool fill( map<string,cf_data>& m, const string& filename ){
   return false;
 }
 
+bool fill( map<string,top_val>& m, istream& is ){
+  string line;
+  int line_count = 0;
+  top_val val = top2000;
+  while( getline( is, line ) ){
+    ++line_count;
+    if ( line_count > 10000 )
+      val = top20000;
+    else if ( line_count > 5000 )
+      val = top10000;
+    else if ( line_count > 3000 )
+      val = top5000;
+    else if ( line_count > 2000 )
+      val = top3000;
+    else if ( line_count > 1000 )
+      val = top2000;
+    else
+      val = top1000;
+    vector<string> parts;
+    size_t n = split_at( line, parts, "\t" ); // split at tabs
+    if ( n != 2 ){
+      cerr << "skip line: " << line << " (expected 2 values, got " 
+	   << n << ")" << endl;
+      continue;
+    }
+    m[parts[0]] = val;
+  }
+  return true;
+}
+
+bool fill( map<string,top_val>& m, const string& filename ){
+  ifstream is( filename.c_str() );
+  if ( is ){
+    return fill( m, is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
 void settingData::init( const Configuration& cf ){
   doAlpino = false;
   doAlpinoServer = false;
@@ -309,6 +353,11 @@ void settingData::init( const Configuration& cf ){
   val = cf.lookUp( "lemma_freq_lex" );
   if ( !val.empty() ){
     if ( !fill( lemma_freq_lex, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "top_freq_lex" );
+  if ( !val.empty() ){
+    if ( !fill( top_freq_lex, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
 }
@@ -555,6 +604,7 @@ struct wordStats : public basicStats {
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
   void staphFreqLookup();
+  void topFreqLookup();
   void freqLookup();
   void getSentenceOverlap( const Sentence * );
   string word;
@@ -578,6 +628,7 @@ struct wordStats : public basicStats {
   bool f77;
   bool f80;
   int compPartCnt;
+  top_val top_freq;
   int word_freq;
   int lemma_freq;
   int argRepeatCnt;
@@ -960,6 +1011,14 @@ SemType wordStats::checkSemProps( ) const {
   return type;
 }
 
+void wordStats::topFreqLookup(){
+  map<string,top_val>::const_iterator it = settings.top_freq_lex.find( lowercase(word) );
+  top_freq = notFound;
+  if ( it != settings.top_freq_lex.end() ){
+    top_freq = it->second;
+  }
+}
+
 void wordStats::freqLookup(){
   map<string,cf_data>::const_iterator it = settings.word_freq_lex.find( lowercase(word) );
   if ( it != settings.word_freq_lex.end() ){
@@ -1115,7 +1174,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false), connType(NOCONN),
   f50(false), f65(false), f77(false), f80(false),  compPartCnt(0), 
-  word_freq(0), lemma_freq(0),
+  top_freq(notFound), word_freq(0), lemma_freq(0),
   argRepeatCnt(0), wordOverlapCnt(0), lemmaRepeatCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NA), lemma_freq_log(NA),
   polarity(NA), surprisal(NA), logprob10(NA), prop(JUSTAWORD), sem_type(UNFOUND)
@@ -1173,6 +1232,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
 	 prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3 ){
       isPersRef = true;
     }
+    topFreqLookup();
     staphFreqLookup();
     if ( isContent ){
       freqLookup();
@@ -1270,6 +1330,18 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "f77", "true" );
   if ( f80 )
     addOneMetric( doc, el, "f80", "true" );
+  if ( top_freq == top1000 )
+    addOneMetric( doc, el, "top1000", "true" );
+  else if ( top_freq == top2000 )
+    addOneMetric( doc, el, "top2000", "true" );
+  else if ( top_freq == top3000 )
+    addOneMetric( doc, el, "top3000", "true" );
+  else if ( top_freq == top5000 )
+    addOneMetric( doc, el, "top5000", "true" );
+  else if ( top_freq == top10000 )
+    addOneMetric( doc, el, "top10000", "true" );
+  else if ( top_freq == top20000 )
+    addOneMetric( doc, el, "top20000", "true" );
   if ( compPartCnt > 0 )
     addOneMetric( doc, el, "compound_length", toString(compPartCnt) );
   addOneMetric( doc, el, "word_freq", toString(word_freq) );
@@ -1572,6 +1644,12 @@ struct structStats: public basicStats {
     f80Cnt(0),
     compCnt(0),
     compPartCnt(0),
+    top1000Cnt(0),
+    top2000Cnt(0),
+    top3000Cnt(0),
+    top5000Cnt(0),
+    top10000Cnt(0),
+    top20000Cnt(0),
     word_freq(0),
     word_freq_n(0),
     word_freq_log(NA),
@@ -1690,6 +1768,12 @@ struct structStats: public basicStats {
   int f80Cnt;
   int compCnt;
   int compPartCnt;
+  int top1000Cnt; 
+  int top2000Cnt; 
+  int top3000Cnt; 
+  int top5000Cnt; 
+  int top10000Cnt; 
+  int top20000Cnt; 
   int word_freq; 
   int word_freq_n; 
   double word_freq_log; 
@@ -1789,6 +1873,12 @@ void structStats::merge( structStats *ss ){
   f80Cnt += ss->f80Cnt;
   compCnt += ss->compCnt;
   compPartCnt += ss->compPartCnt;
+  top1000Cnt += ss->top1000Cnt;
+  top2000Cnt += ss->top2000Cnt;
+  top3000Cnt += ss->top3000Cnt;
+  top5000Cnt += ss->top5000Cnt;
+  top10000Cnt += ss->top10000Cnt;
+  top20000Cnt += ss->top20000Cnt;
   word_freq += ss->word_freq;
   word_freq_n += ss->word_freq_n;
   lemma_freq += ss->lemma_freq;
@@ -1928,6 +2018,12 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "freq80", toString(f80Cnt) );
   addOneMetric( doc, el, "compound_count", toString(compCnt) );
   addOneMetric( doc, el, "compound_length", toString(compPartCnt) );
+  addOneMetric( doc, el, "top1000", toString(top1000Cnt) );
+  addOneMetric( doc, el, "top2000", toString(top2000Cnt) );
+  addOneMetric( doc, el, "top3000", toString(top3000Cnt) );
+  addOneMetric( doc, el, "top5000", toString(top5000Cnt) );
+  addOneMetric( doc, el, "top10000", toString(top10000Cnt) );
+  addOneMetric( doc, el, "top20000", toString(top20000Cnt) );
   addOneMetric( doc, el, "word_freq", toString(word_freq) );
   addOneMetric( doc, el, "word_freq_no_names", toString(word_freq_n) );
   if ( word_freq_log != NA  )
@@ -2933,6 +3029,23 @@ sentStats::sentStats( Sentence *s, Sentence *prev ):
 	f77Cnt++;
       if ( ws->f80 )
 	f80Cnt++;
+      switch ( ws->top_freq ){
+	// NO BREAKS
+      case top1000:
+	++top1000Cnt;
+      case top2000:
+	++top2000Cnt;
+      case top3000:
+	++top3000Cnt;
+      case top5000:
+	++top5000Cnt;
+      case top10000:
+	++top10000Cnt;
+      case top20000:
+	++top20000Cnt;
+      default:
+	break;
+      }
       if ( ws->polarity != NA ){
 	if ( polarity == NA )
 	  polarity = ws->polarity;
