@@ -2102,7 +2102,7 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
     os << "NA,";
   else
     os << lemma_freq_log/double(wordCnt) << ",";
-  if ( wordCnt == nameCnt || word_freq_log_n == NA )
+  if ( wordCnt == nameCnt || lemma_freq_log_n == NA )
     os << "NA" << ",";
   else
     os << lemma_freq_log_n/double(wordCnt-nameCnt) << ",";
