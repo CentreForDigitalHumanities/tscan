@@ -1479,10 +1479,7 @@ void wordStats::miscToCSV( ostream& os ) const {
 }
 
 void wordStats::toCSV( ostream& os ) const {
-  if ( word == "," )
-    os << "&komma;";
-  else
-    os << word;
+  os << '"' << word << '"';
   os << ",";
   wordDifficultiesToCSV( os );
   coherenceToCSV( os );
