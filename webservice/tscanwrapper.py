@@ -65,10 +65,21 @@ f.write("decompounderPath=\"" + TSCANDIR + "\"\n")
 f.write("surprisalPath=\"" + TSCANDIR + "\"\n")
 f.write("styleSheet=\"tscanview.xsl\"\n")
 
-
-f.write("rarityLevel="  + str(clamdata['rarityLevel']) + "\n")
-f.write("overlapSize="  + str(clamdata['overlapSize']) + "\n")
-f.write("polarity_threshold="  + str(clamdata['polarity_threshold']) + "\n")
+if 'rarityLevel' in clamdata:
+	raritylevel = clamdata['rarityLevel']
+else:
+	raritylevel = 4
+if 'overlapSize' in clamdata:
+	overlapsize = clamdata['overlapSize']
+else:
+	overlapsize = 50 i
+if 'polarity_threshold' in clamdata:
+	polarity = clamdata['polarity_threshold']
+else:
+	polarity = 0.01
+f.write("rarityLevel="  + str(raritylevel) + "\n")
+f.write("overlapSize="  + str(overlapsize) + "\n")
+f.write("polarity_threshold="  + str(polarity) + "\n")
 
 f.write("configDir="+ TSCANDIR + "/data\n")
 f.write("adj_semtypes=\"adjs_semtype.data\"\n")
