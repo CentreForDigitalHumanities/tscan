@@ -72,7 +72,7 @@ else:
 if 'overlapSize' in clamdata:
 	overlapsize = clamdata['overlapSize']
 else:
-	overlapsize = 50 i
+	overlapsize = 50
 if 'polarity_threshold' in clamdata:
 	polarity = clamdata['polarity_threshold']
 else:
