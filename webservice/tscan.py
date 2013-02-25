@@ -58,7 +58,8 @@ if hostname == 'applejack': #final server in Nijmegen
         'user': 'clamopener',        
         'password': D(open(environ['CLAMOPENER_KEYFILE']).read().strip()),
         'database': 'clamopener',
-        'table': 'clamusers_clamusers'
+        'table': 'clamusers_clamusers',
+	'accesslist': environ['accesslist']
     }
     REALM = "WEBSERVICES-LST"
 else: #local
