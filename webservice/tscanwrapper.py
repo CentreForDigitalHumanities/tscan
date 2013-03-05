@@ -90,7 +90,8 @@ f.write("polarity_lex=\"polarity_lexicon.data\"\n")
 
 f.write("word_freq_lex=\"" + clamdata['word_freq_lex'] + "\"\n")  #freqlist_staphorsius_CLIB_words.freq
 f.write("lemma_freq_lex=\"" + clamdata['lemma_freq_lex'] + "\"\n") #freqlist_staphorsius_CLIB_lemma.freq
-
+f.write("staph_word_freq_lex=\"freqlist_staphorsius_CLIB_words.freq\"\n")  #freqlist_staphorsius_CLIB_words.freq
+f.write("top_freq_lex=\"" + clamdata['top_freq_lex'] + "\"\n")  #freqlist_staphorsius_CLIB_words.freq
 
 f.write("[[frog]]\n") #Frog server should already be runnning, start manually
 f.write("port=7345\n")

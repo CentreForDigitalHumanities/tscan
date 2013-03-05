@@ -194,6 +194,10 @@ for f in glob.glob(TSCANDIR + "/data/*lemma.freq"):
     lemmafreqlist.append( (os.path.basename(f), os.path.basename(f)) )
     
 
+topfreqlist = []
+for f in glob.glob(TSCANDIR + "/data/*20000.freq"):
+    topfreqlist.append( (os.path.basename(f), os.path.basename(f)) )
+    
 
 PARAMETERS =  [ 
     ('Parameters', [ 
@@ -207,6 +211,7 @@ PARAMETERS =  [
         ChoiceParameter(id='usewopr',name='Use Wopr',description='Use Wopr?', choices=['yes','no'],default='yes'),
         ChoiceParameter(id='word_freq_lex', name='Word Frequency List', description="Word frequency list", choices=wordfreqlist),
         ChoiceParameter(id='lemma_freq_lex', name='Lemma Frequency List', description="Lemma frequency list", choices=lemmafreqlist),
+        ChoiceParameter(id='top_freq_lex', name='Top Frequency List', description="Top frequency list", choices=topfreqlist),
     ] )
 ]
 
