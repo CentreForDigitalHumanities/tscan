@@ -1844,6 +1844,9 @@ void structStats::merge( structStats *ss ){
   odCnt += ss->odCnt;
   infCnt += ss->infCnt;
   passiveCnt += ss->passiveCnt;
+  modalCnt += ss->modalCnt;
+  timeCnt += ss->timeCnt;
+  koppelCnt += ss->koppelCnt;
   archaicsCnt += ss->archaicsCnt;
   contentCnt += ss->contentCnt;
   nominalCnt += ss->nominalCnt;

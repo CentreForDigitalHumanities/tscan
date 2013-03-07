@@ -959,7 +959,7 @@ xmlDoc *AlpinoParse( folia::Sentence *s, const string& dirname ){
   // cerr << "run: " << parseCmd << endl;
   int res = system( parseCmd.c_str() );
   if ( res ){
-    cerr << "Aplino failed: RES = " << res << endl;
+    cerr << "Alpino failed: RES = " << res << endl;
   }
   remove( txtfile.c_str() );
   string xmlfile = dirname + "1.xml";
