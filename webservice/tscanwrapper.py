@@ -2,8 +2,7 @@
 #-*- coding:utf-8 -*-
 
 ###############################################################
-# CLAM: Computational Linguistics Application Mediator
-# -- CLAM Wrapper script Template --
+# -- Tscan Wrapper script for CLAM --
 #       by Maarten van Gompel (proycon)
 #       http://ilk.uvt.nl/~mvgompel
 #       Induction for Linguistic Knowledge Research Group
@@ -13,20 +12,14 @@
 #
 ###############################################################
 
-#This is a test wrapper, meant to illustrate how easy it is to set
-#up a wrapper script for your system using Python and the CLAM Client API.
-#We make use of the XML configuration file that CLAM outputs, rather than 
-#passing all parameters on the command line.
 
 #This script will be called by CLAM and will run with the current working directory set to the specified project directory
 
 #import some general python modules:
 import sys
 import os
-import codecs
-import re
-import string
 import shutil
+import glob
 
 #import CLAM-specific modules. The CLAM API makes a lot of stuff easily accessible.
 import clam.common.data
@@ -124,7 +117,15 @@ for inputfile in clamdata.inputfiles('textinput'):
 
 #tscan writes CSV file in input directory, move:       
 os.system("mv -f " + inputdir + "/*.csv " + outputdir)     
-   
+
+os.system("cat " + outputdir + "/*.words.csv | head -n 1 > " + outputdir + "/total.word.csv")
+os.system("cat " + outputdir + "/*.paragraphs.csv | head -n 1 > " + outputdir + "/total.par.csv")
+os.system("cat " + outputdir + "/*.sentences.csv | head -n 1 > " + outputdir + "/total.sen.csv")
+
+for f in glob.glob(outputdir + "/*.words.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.word.csv")
+for f in glob.glob(outputdir + "/*.paragraphs.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.par.csv")
+for f in glob.glob(outputdir + "/*.sentences.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.sen.csv")
+      
 shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
 
 #A nice status message to indicate we're done
