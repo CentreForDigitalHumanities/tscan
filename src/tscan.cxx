@@ -703,7 +703,7 @@ ConnType wordStats::checkConnective() const {
       "waartoe", "wanneer", "want", "wegens", "zodat", "zodoende", "zolang" };
   static set<string> causuals( causesList, 
 			       causesList + sizeof(causesList)/sizeof(string) );
-  if ( tag == CGN::VG ){
+  if ( tag == CGN::VG || tag == CGN::BW ){
     string lword = lowercase( word );
     if ( temporals.find( lword ) != temporals.end() )
       return TEMPOREEL;
@@ -2307,8 +2307,8 @@ void structStats::informationDensityToCSV( ostream& os ) const {
 void structStats::coherenceHeader( ostream& os ) const {
   os << "temporals,reeks,contrast,comparatief,causal,referential_prons,"
      << "argument_overlap_d,argument_overlap_g,lem_argument_overlap_d,"
-     << "lem_argument_overlap_g,wordbuffer_argument_overlap_g,"
-     << "wordbuffer_argument_overlap_d,lemmabuffer_argument_overlap_d,"
+     << "lem_argument_overlap_g,wordbuffer_argument_overlap_d,"
+     << "wordbuffer_argument_overlap_g,lemmabuffer_argument_overlap_d,"
      << "lemmabuffer_argument_overlap_g,indef_nps_p,indef_nps_r,indef_nps_g,";
 }
 
@@ -2413,7 +2413,7 @@ void structStats::concreetToCSV( ostream& os ) const {
 
 
 void structStats::persoonlijkheidHeader( ostream& os ) const {
-  os << "pers_ref,pers_pron_1,pers_pron_2,pers_pron3,pers_pron,"
+  os << "pers_ref_d,pers_pron_1,pers_pron_2,pers_pron3,pers_pron,"
      << "names_p,names_r,names_d,"
      << "action_verbs_p,action_verbs_d,state_verbs_p,state_verbs_d,"
      << "process_verbs_p,process_verbs_d,human_nouns_p,human_nouns_d,"
