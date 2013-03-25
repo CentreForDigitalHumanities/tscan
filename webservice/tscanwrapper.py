@@ -125,6 +125,8 @@ os.system("cat " + outputdir + "/*.sentences.csv | head -n 1 > " + outputdir + "
 for f in glob.glob(outputdir + "/*.words.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.word.csv")
 for f in glob.glob(outputdir + "/*.paragraphs.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.par.csv")
 for f in glob.glob(outputdir + "/*.sentences.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.sen.csv")
+for f in glob.glob(outputdir + "/*.document.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.doc.csv")
+
       
 shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
 
