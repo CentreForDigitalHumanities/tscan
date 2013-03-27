@@ -2840,44 +2840,55 @@ sentStats::sentStats( Sentence *s, Sentence *prev ):
       surprisalV.clear();
     }
   }
-  if ( settings.doAlpino || settings.doAlpinoServer ){
-    if ( settings.doAlpinoServer ){
-      LOG << "calling Alpino Server" << endl;
-      alpDoc = AlpinoServerParse( s );
-      if ( !alpDoc ){
-	cerr << "alpino parser failed!" << endl;
+#pragma omp parallel sections 
+  {
+#pragma omp section
+    {
+      if ( settings.doAlpino || settings.doAlpinoServer ){
+	if ( settings.doAlpinoServer ){
+	  LOG << "calling Alpino Server" << endl;
+	  alpDoc = AlpinoServerParse( s );
+	  if ( !alpDoc ){
+	    cerr << "alpino parser failed!" << endl;
+	  }
+	  LOG << "done with Alpino Server" << endl;
+	}
+	else if ( settings.doAlpino ){
+	  LOG << "calling Alpino parser" << endl;
+	  alpDoc = AlpinoParse( s, workdir_name );
+	  if ( !alpDoc ){
+	    cerr << "alpino parser failed!" << endl;
+	  }
+	  LOG << "done with Alpino parser" << endl;
+	}
+	if ( alpDoc ){
+	  for( size_t i=0; i < w.size(); ++i ){
+	    vector<PosAnnotation*> posV = w[i]->select<PosAnnotation>(frog_pos_set);
+	    if ( posV.size() != 1 )
+	      throw ValueError( "word doesn't have Frog POS tag info" );
+	    PosAnnotation *pa = posV[0];
+	    string posHead = pa->feat("head");
+	    if ( posHead == "LET" )
+	      puncts.insert( i );
+	  }
+	  dLevel = get_d_level( s, alpDoc );
+	  if ( dLevel > 4 )
+	    dLevel_gt4 = 1;
+	  countCrdCnj( alpDoc, crdCnt, cnjCnt, reeksCnt );
+	  int np2Cnt;
+	  mod_stats( alpDoc, vcModCnt, np2Cnt, npModCnt );
+	}
       }
-      LOG << "done with Alpino Server" << endl;
-    }
-    else if ( settings.doAlpino ){
-      LOG << "calling Alpino parser" << endl;
-      alpDoc = AlpinoParse( s, workdir_name );
-      if ( !alpDoc ){
-	cerr << "alpino parser failed!" << endl;
+    } // omp section
+
+#pragma omp section
+    {
+      if ( settings.doWopr ){
+	orderWopr( text, woprProbsV, sentProb, sentEntropy, sentPerplexity );
       }
-      LOG << "done with Alpino parser" << endl;
-    }
-    if ( alpDoc ){
-      for( size_t i=0; i < w.size(); ++i ){
-	vector<PosAnnotation*> posV = w[i]->select<PosAnnotation>(frog_pos_set);
-	if ( posV.size() != 1 )
-	  throw ValueError( "word doesn't have Frog POS tag info" );
-	PosAnnotation *pa = posV[0];
-	string posHead = pa->feat("head");
-	if ( posHead == "LET" )
-	  puncts.insert( i );
-      }
-      dLevel = get_d_level( s, alpDoc );
-      if ( dLevel > 4 )
-	dLevel_gt4 = 1;
-      countCrdCnj( alpDoc, crdCnt, cnjCnt, reeksCnt );
-      int np2Cnt;
-      mod_stats( alpDoc, vcModCnt, np2Cnt, npModCnt );
-    }
-  }
-  if ( settings.doWopr ){
-    orderWopr( text, woprProbsV, sentProb, sentEntropy, sentPerplexity );
-  }
+    } // omp section
+  } // omp sections
+
   avg_prob10 = sentProb;
   entropy = sentEntropy;
   perplexity = sentPerplexity;

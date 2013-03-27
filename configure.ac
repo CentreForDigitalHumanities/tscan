@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.60])
-AC_INIT([tscan], [0.1], [to-be-decided@ergens.nl])
+AC_INIT([tscan], [0.2], [to-be-decided@ergens.nl])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
 
@@ -27,11 +27,12 @@ AC_SUBST([LIBTOOL_DEPS])
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
-ACX_PTHREAD([],[AC_MSG_NOTICE([no pthread support found])])
-if test x"$acx_pthread_ok" = xyes; then
-   LIBS="$PTHREAD_LIBS $LIBS" \
-   CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
-fi
+
+OPENMP_CHECK( [CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
+	       AC_DEFINE(HAVE_OPENMP, 1 , Define to 1 if you have OpenMP )],
+	      [AC_MSG_NOTICE(We don't have OpenMP. Multithreaded testing is disabled)] )
+
+AC_SUBST([OPENMPFLAGS],[$OPENMP_CXXFLAGS])
 
 # ugly hack when PKG_CONFIG_PATH isn't defined.
 # couldn't get it to work otherwise

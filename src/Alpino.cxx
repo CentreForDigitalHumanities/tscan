@@ -556,11 +556,11 @@ string toString( const WWform wf ){
 
 WWform classifyVerb( Word *w, xmlDoc *alp ){
   xmlNode *wnode = getAlpWord( alp, w );
-  cerr << "classify VERB " << w->text() << endl;
+  //  cerr << "classify VERB " << w->text() << endl;
   if ( wnode ){
     vector< xmlNode *> siblinglist = getSibblings( wnode );
     string lemma = w->lemma();
-    cerr << "classify VERB lemma=" << lemma << endl;
+    //    cerr << "classify VERB lemma=" << lemma << endl;
     if ( lemma == "zijn" || lemma == "worden" ){
       xmlNode *obj_node = 0;
       xmlNode *su_node = 0;
@@ -568,7 +568,7 @@ WWform classifyVerb( Word *w, xmlDoc *alp ){
 	KWargs atts = getAttributes( siblinglist[i] );
 	if ( atts["rel"] == "su" ){
 	  su_node = siblinglist[i];
-	  cerr << "Found a SU node!" << getAttributes(su_node) << endl;
+	  //	  cerr << "Found a SU node!" << getAttributes(su_node) << endl;
 	}
       }
       for ( size_t i=0; i < siblinglist.size(); ++i ){
@@ -576,12 +576,12 @@ WWform classifyVerb( Word *w, xmlDoc *alp ){
 	if ( atts["rel"] == "vc" && atts["cat"] == "ppart" ){
 	  obj_node = node_search( siblinglist[i], "rel", "obj1" );
 	  if ( obj_node ){
-	    cerr << "found an obj node! " << getAttributes(obj_node) << endl;
+	    //	    cerr << "found an obj node! " << getAttributes(obj_node) << endl;
 	    string oindex = getAttribute( obj_node, "index" );
 	    if ( !oindex.empty() ){
 	      string sindex = getAttribute( su_node, "index" );
 	      if ( sindex == oindex ){
-		cerr << "resultaat = passiefww" << endl;
+		//		cerr << "resultaat = passiefww" << endl;
 		return PASSIVE_VERB;
 	      }
 	    }
