@@ -30,6 +30,9 @@
 #include <sys/types.h> 
 #include <sys/stat.h> 
 #include "config.h"
+#ifdef HAVE_OPENMP
+#include "omp.h"
+#endif
 #include "timblserver/TimblServerAPI.h"
 #include "libfolia/folia.h"
 #include "libfolia/document.h"
@@ -3490,6 +3493,22 @@ int main(int argc, char *argv[]) {
   if ( opts.Find( "V", val, mood ) ||
        opts.Find( "version", val, mood ) ){
     exit( EXIT_SUCCESS );
+  }
+
+  if ( opts.Find( "threads", val, mood ) ){
+#ifdef HAVE_OPENMP
+    int num = stringTo<int>( val );
+    if ( num < 1 || num > 4 ){
+      cerr << "wrong value for 'threads' option. (must be >=1 and <= 4 )" 
+	   << endl;
+      exit(EXIT_FAILURE);
+    }
+    else {
+      omp_set_num_threads( num );
+    }
+#else
+    cerr << "No OPEN_MP support available. 'threads' option ignored." << endl;
+#endif
   }
 
   if ( opts.Find( "config", val, mood ) ){
