@@ -50,8 +50,8 @@ xmlNode *getAlpWord( xmlNode *node, const string& pos ){
       string epos = atts["end"];
       if ( epos == pos ){
 	string bpos = atts["begin"];
-	int start = stringTo<int>( bpos );
-	int finish = stringTo<int>( epos );
+	int start = TiCC::stringTo<int>( bpos );
+	int finish = TiCC::stringTo<int>( epos );
 	//	cerr << "begin = " << start << ", end=" << finish << endl;
 	if ( start + 1 == finish ){
 	  result = pnt;
@@ -197,7 +197,7 @@ set<string> koppels = set<string>( koppelA, koppelA + 9 );
 
 int get_begin( xmlNode *n ){
   string bpos = getAttribute( n, "begin" );
-  return stringTo<int>( bpos );
+  return TiCC::stringTo<int>( bpos );
 }
 
 string toString( const DD_type& t ){

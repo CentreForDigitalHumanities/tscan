@@ -116,7 +116,7 @@ vector<double> runSurprisal( Sentence* sent,
     vector<string> v;
     int n = split_at( line, v, "\t" );
     if ( n == 4 ){
-      double surp = stringTo<double>( v[3] );
+      double surp = TiCC::stringTo<double>( v[3] );
       results.push_back( surp );
     }
   }

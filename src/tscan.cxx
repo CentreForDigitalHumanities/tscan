@@ -154,7 +154,7 @@ bool fill( map<string,double>& m, istream& is ){
 	   << n << ")" << endl;
       continue;
     }
-    double value = stringTo<double>( parts[1] );
+    double value = TiCC::stringTo<double>( parts[1] );
     if ( abs(value) < settings.polarity_threshold ){
       value = 0;
     }
@@ -200,8 +200,8 @@ bool fill( map<string,cf_data>& m, istream& is ){
       continue;
     }
     cf_data data;
-    data.count = stringTo<long int>( parts[1] );
-    data.freq = stringTo<double>( parts[3] );
+    data.count = TiCC::stringTo<long int>( parts[1] );
+    data.freq = TiCC::stringTo<double>( parts[3] );
     m[parts[0]] = data;
   }
   return true;
@@ -265,14 +265,14 @@ void settingData::init( const Configuration& cf ){
   doXfiles = true;
   string val = cf.lookUp( "useAlpinoServer" );
   if ( !val.empty() ){
-    if ( !Timbl::stringTo( val, doAlpinoServer ) ){
+    if ( !TiCC::stringTo( val, doAlpinoServer ) ){
       cerr << "invalid value for 'useAlpinoServer' in config file" << endl;
       exit( EXIT_FAILURE );
     }
   }
   if ( !doAlpinoServer ){
     val = cf.lookUp( "useAlpino" );
-    if( !Timbl::stringTo( val, doAlpino ) ){
+    if( !TiCC::stringTo( val, doAlpino ) ){
       cerr << "invalid value for 'useAlpino' in config file" << endl;
       exit( EXIT_FAILURE );
     }
@@ -280,7 +280,7 @@ void settingData::init( const Configuration& cf ){
   val = cf.lookUp( "useWopr" );
   doWopr = false;
   if ( !val.empty() ){
-    if ( !Timbl::stringTo( val, doWopr ) ){
+    if ( !TiCC::stringTo( val, doWopr ) ){
       cerr << "invalid value for 'useWopr' in config file" << endl;
       exit( EXIT_FAILURE );
     }
@@ -305,14 +305,14 @@ void settingData::init( const Configuration& cf ){
   if ( val.empty() ){
     rarityLevel = 10;
   }
-  else if ( !Timbl::stringTo( val, rarityLevel ) ){ 
+  else if ( !TiCC::stringTo( val, rarityLevel ) ){ 
     cerr << "invalid value for 'rarityLevel' in config file" << endl;
   }
   val = cf.lookUp( "overlapSize" );
   if ( val.empty() ){
     overlapSize = 50;
   }
-  else if ( !Timbl::stringTo( val, overlapSize ) ){ 
+  else if ( !TiCC::stringTo( val, overlapSize ) ){ 
     cerr << "invalid value for 'overlapSize' in config file" << endl;
     exit( EXIT_FAILURE );
   }
@@ -335,7 +335,7 @@ void settingData::init( const Configuration& cf ){
   if ( val.empty() ){
     polarity_threshold = 0.01;
   }
-  else if ( !Timbl::stringTo( val, polarity_threshold ) ){ 
+  else if ( !TiCC::stringTo( val, polarity_threshold ) ){ 
     cerr << "invalid value for 'polarity_threshold' in config file" << endl;
   }
   val = cf.lookUp( "polarity_lex" );
@@ -1172,7 +1172,7 @@ void argument_overlap( const string w_or_l,
 
 
 wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
-  basicStats( w, "WORD" ), wwform(NO_VERB),
+  basicStats( w, "WORD" ), wwform(::NO_VERB),
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false), connType(NOCONN),
@@ -1297,7 +1297,7 @@ void wordStats::getSentenceOverlap( const Sentence *prev ){
 void wordStats::addMetrics( ) const {
   FoliaElement *el = folia_node;
   Document *doc = el->doc();
-  if ( wwform != NO_VERB ){
+  if ( wwform != ::NO_VERB ){
     KWargs args;
     args["set"] = "tscan-set";
     args["class"] = "wwform(" + toString(wwform) + ")";
@@ -2778,7 +2778,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 	if ( mv.size() > 0 ){
 	  for ( size_t j=0; j < mv.size(); ++j ){
 	    if ( mv[j]->cls() == "lprob10" ){
-	      wordProbsV[i] = stringTo<double>( mv[j]->feat("value") );
+	      wordProbsV[i] = TiCC::stringTo<double>( mv[j]->feat("value") );
 	    }
 	  }
 	}
@@ -2794,19 +2794,19 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 	  if ( mv[j]->cls() == "avg_prob10" ){
 	    string val = mv[j]->feat("value");
 	    if ( val != "nan" ){
-	      sentProb = stringTo<double>( val );
+	      sentProb = TiCC::stringTo<double>( val );
 	    }
 	  }
 	  else if ( mv[j]->cls() == "entropy" ){
 	    string val = mv[j]->feat("value");
 	    if ( val != "nan" ){
-	      entropy = stringTo<double>( val );
+	      entropy = TiCC::stringTo<double>( val );
 	    }
 	  }
 	  else if ( mv[j]->cls() == "perplexity" ){
 	    string val = mv[j]->feat("value");
 	    if ( val != "nan" ){
-	      perplexity = stringTo<double>( val );
+	      perplexity = TiCC::stringTo<double>( val );
 	    }
 	  }
 	}
@@ -3497,7 +3497,7 @@ int main(int argc, char *argv[]) {
 
   if ( opts.Find( "threads", val, mood ) ){
 #ifdef HAVE_OPENMP
-    int num = stringTo<int>( val );
+    int num = TiCC::stringTo<int>( val );
     if ( num < 1 || num > 4 ){
       cerr << "wrong value for 'threads' option. (must be >=1 and <= 4 )" 
 	   << endl;
