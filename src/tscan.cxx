@@ -34,8 +34,8 @@
 #include "omp.h"
 #endif
 #include "timblserver/TimblServerAPI.h"
-#include "libfolia/folia.h"
-#include "libfolia/document.h"
+#include "folia/folia.h"
+#include "folia/document.h"
 #include "ticcutils/StringOps.h"
 #include "ticcutils/LogStream.h"
 #include "ticcutils/Configuration.h"

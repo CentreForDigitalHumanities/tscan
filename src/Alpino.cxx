@@ -31,8 +31,8 @@
 #include <iostream>
 #include <fstream>
 #include "config.h"
-#include "libfolia/folia.h"
-#include "libfolia/document.h"
+#include "folia/folia.h"
+#include "folia/document.h"
 #include "ticcutils/PrettyPrint.h"
 #include "tscan/Alpino.h"
 
