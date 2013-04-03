@@ -63,7 +63,7 @@ AC_ARG_WITH(timblserver,
                ./configure --prefix=<DIR> in the timbl installation directory],
        [PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$withval/lib/pkgconfig"])
 #  AC_MSG_NOTICE( [pkg-config search path: $PKG_CONFIG_PATH] )
-PKG_CHECK_MODULES([timblserver], [timblserver >= 1.4] )
+PKG_CHECK_MODULES([timblserver], [timblserver >= 1.7] )
 CXXFLAGS="$CXXFLAGS $timblserver_CFLAGS"
 LIBS="$timblserver_LIBS $LIBS"
 
