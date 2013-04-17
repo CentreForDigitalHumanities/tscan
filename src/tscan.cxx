@@ -2133,10 +2133,10 @@ void structStats::addMetrics( ) const {
   if ( impCnt > 0 )
     addOneMetric( doc, el, "imperative_count", toString(impCnt) );
   addOneMetric( doc, el, "sub_verb_dist", MMtoString( distances, SUB_VERB ) );
-  addOneMetric( doc, el, "dir_obj_verb_dist", MMtoString( distances, OBJ1_VERB ) );
-  addOneMetric( doc, el, "indir_obj_verb_dist", MMtoString( distances, OBJ2_VERB ) );
+  addOneMetric( doc, el, "obj_verb_dist", MMtoString( distances, OBJ1_VERB ) );
+  addOneMetric( doc, el, "lijdend_verb_dist", MMtoString( distances, OBJ2_VERB ) );
   addOneMetric( doc, el, "verb_pp_dist", MMtoString( distances, VERB_PP ) );
-  addOneMetric( doc, el, "noun_set_dist", MMtoString( distances, NOUN_DET ) );
+  addOneMetric( doc, el, "noun_det_dist", MMtoString( distances, NOUN_DET ) );
   addOneMetric( doc, el, "prep_obj_dist", MMtoString( distances, PREP_OBJ1 ) );
   addOneMetric( doc, el, "verb_vc_dist", MMtoString( distances, VERB_VC ) );
   addOneMetric( doc, el, "comp_body_dist", MMtoString( distances, COMP_BODY ) );
