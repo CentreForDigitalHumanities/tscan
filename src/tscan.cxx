@@ -1490,7 +1490,7 @@ void wordStats::concreetToCSV( ostream& os ) const {
 }
 
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
-  os << "pers_ref,pers_pron_1,pers_pron_2,pers_pron3,pers_pron,"
+  os << "pers_ref,pers_pron_1,pers_pron_2,pers_pron_3,pers_pron,"
      << "name,"
      << "action_verb,state_verb,"
      << "process_verb,human_noun,"
@@ -1970,6 +1970,47 @@ void structStats::merge( structStats *ss ){
   aggregate( distances, ss->distances );
 }
 
+string MMtoString( const multimap<DD_type, int>& mm, DD_type t ){
+  size_t len = mm.count(t);
+  if ( len > 0 ){
+    int result = 0;
+    for( multimap<DD_type, int>::const_iterator pos = mm.lower_bound(t); 
+	 pos != mm.upper_bound(t); 
+	 ++pos ){
+      result += pos->second;
+    }
+    return toString( result/double(len) );
+  }
+  else
+    return "NA";
+}
+
+string MMtoString( const multimap<DD_type, int>& mm ){
+  size_t len = mm.size();
+  if ( len > 0 ){
+    int result = 0;
+    for( multimap<DD_type, int>::const_iterator pos = mm.begin(); 
+	 pos != mm.end(); 
+	 ++pos ){
+      result += pos->second;
+    }
+    return toString( result/double(len) );
+  }
+  else
+    return "NA";
+}
+
+double getHighest( const multimap<DD_type, int>&mm ){
+  double result = 0.0;
+  for( multimap<DD_type, int>::const_iterator pos = mm.begin(); 
+       pos != mm.end();
+       ++pos ){
+    if ( pos->second > result )
+      result = pos->second;
+  }
+  return result;
+}
+
 void structStats::addMetrics( ) const {
   FoliaElement *el = folia_node;
   Document *doc = el->doc();
@@ -2091,6 +2132,19 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "question_count", toString(questCnt) );
   if ( impCnt > 0 )
     addOneMetric( doc, el, "imperative_count", toString(impCnt) );
+  addOneMetric( doc, el, "sub_verb_dist", MMtoString( distances, SUB_VERB ) );
+  addOneMetric( doc, el, "dir_obj_verb_dist", MMtoString( distances, OBJ1_VERB ) );
+  addOneMetric( doc, el, "indir_obj_verb_dist", MMtoString( distances, OBJ2_VERB ) );
+  addOneMetric( doc, el, "verb_pp_dist", MMtoString( distances, VERB_PP ) );
+  addOneMetric( doc, el, "noun_set_dist", MMtoString( distances, NOUN_DET ) );
+  addOneMetric( doc, el, "prep_obj_dist", MMtoString( distances, PREP_OBJ1 ) );
+  addOneMetric( doc, el, "verb_vc_dist", MMtoString( distances, VERB_VC ) );
+  addOneMetric( doc, el, "comp_body_dist", MMtoString( distances, COMP_BODY ) );
+  addOneMetric( doc, el, "crd_cnj_dist", MMtoString( distances, CRD_CNJ ) );
+  addOneMetric( doc, el, "verb_comp_dist", MMtoString( distances, VERB_COMP ) );
+  addOneMetric( doc, el, "noun_vc_dist", MMtoString( distances, NOUN_VC ) );
+  addOneMetric( doc, el, "deplen", MMtoString( distances ) );
+  addOneMetric( doc, el, "max_deplen", toString( getHighest( distances )/sentCnt ) );
   for ( size_t i=0; i < sv.size(); ++i ){
     sv[i]->addMetrics();
   }
@@ -2119,49 +2173,6 @@ void structStats::toCSV( ostream& os ) const {
   wordSortToCSV( os );
   miscToCSV( os );
   os << endl;
-}
-
-ostream& displayMM( ostream&os, const multimap<DD_type, int>& mm, DD_type t ){
-  size_t len = mm.count(t);
-  if ( len > 0 ){
-    int result = 0;
-    for( multimap<DD_type, int>::const_iterator pos = mm.lower_bound(t); 
-	 pos != mm.upper_bound(t); 
-	 ++pos ){
-      result += pos->second;
-    }
-    os << result/double(len);
-  }
-  else
-    os << "NA";
-  return os;
-}
-
-ostream& displayTotalMM( ostream&os, const multimap<DD_type, int>& mm ){
-  size_t len = mm.size();
-  if ( len > 0 ){
-    int result = 0;
-    for( multimap<DD_type, int>::const_iterator pos = mm.begin(); 
-	 pos != mm.end(); 
-	 ++pos ){
-      result += pos->second;
-    }
-    os << result/double(len);
-  }
-  else
-    os << "NA";
-  return os;
-}
-
-double getHighest( const multimap<DD_type, int>&mm ){
-  double result = 0.0;
-  for( multimap<DD_type, int>::const_iterator pos = mm.begin(); 
-       pos != mm.end();
-       ++pos ){
-    if ( pos->second > result )
-      result = pos->second;
-  }
-  return result;
 }
 
 void structStats::wordDifficultiesHeader( ostream& os ) const {
@@ -2258,18 +2269,18 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
      << (propNegCnt+morphNegCnt)/double(wordCnt) * 1000 << ","
      << multiNegCnt/double(sentCnt) * 1000 << ",";
   //  cerr << distances << endl;
-  displayMM( os, distances, SUB_VERB ) << ",";
-  displayMM( os, distances, OBJ1_VERB ) << ",";
-  displayMM( os, distances, OBJ2_VERB ) << ",";
-  displayMM( os, distances, VERB_PP ) << ",";
-  displayMM( os, distances, NOUN_DET ) << ",";
-  displayMM( os, distances, PREP_OBJ1 ) << ",";
-  displayMM( os, distances, VERB_VC ) << ",";
-  displayMM( os, distances, COMP_BODY ) << ",";
-  displayMM( os, distances, CRD_CNJ ) << ",";
-  displayMM( os, distances, VERB_COMP ) << ",";
-  displayMM( os, distances, NOUN_VC ) << ",";
-  displayTotalMM( os, distances ) << ",";
+  os << MMtoString( distances, SUB_VERB ) << ",";
+  os << MMtoString( distances, OBJ1_VERB ) << ",";
+  os << MMtoString( distances, OBJ2_VERB ) << ",";
+  os << MMtoString( distances, VERB_PP ) << ",";
+  os << MMtoString( distances, NOUN_DET ) << ",";
+  os << MMtoString( distances, PREP_OBJ1 ) << ",";
+  os << MMtoString( distances, VERB_VC ) << ",";
+  os << MMtoString( distances, COMP_BODY ) << ",";
+  os << MMtoString( distances, CRD_CNJ ) << ",";
+  os << MMtoString( distances, VERB_COMP ) << ",";
+  os << MMtoString( distances, NOUN_VC ) << ",";
+  os << MMtoString( distances ) << ",";
   os << getHighest( distances )/sentCnt << ",";
 }
 
