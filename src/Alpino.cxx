@@ -247,12 +247,14 @@ void store_result( multimap<DD_type,int>& result, DD_type type,
   int pos2 = get_begin( n2 );
   if ( pos1 > pos2 )
     swap( pos1, pos2 );
-  int dist = pos2-pos1;
+  int dist = pos2-pos1-1;
   for ( int i=pos1; i <= pos2; ++i )
     if ( puncts.find( i ) != puncts.end() )
       --dist;
   //  cerr << "store " << type << "(" << pos1 << "," << pos2 << ")=" << dist << endl;
-  result.insert( make_pair( type, dist ) );
+  if ( dist >= 0 ){
+    result.insert( make_pair( type, dist ) );
+  }
 }
 
 multimap<DD_type, int> getDependencyDist( Word *w, xmlDoc *alp, 
