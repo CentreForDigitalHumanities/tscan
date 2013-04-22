@@ -663,22 +663,24 @@ vector<xmlNode *> getNodes( xmlDoc *doc ){
   return result;
 }
 
-void getNodes( xmlNode *pnt, vector<xmlNode*>& result, 
-	       const string& att, const string& val ){
+void getNodesValue( xmlNode *pnt, vector<xmlNode*>& result, 
+		    const string& att, const string& val ){
   while ( pnt ){
     if ( pnt->type == XML_ELEMENT_NODE && Name(pnt) == "node" ){
       if ( getAttribute( pnt, att ) == val )
 	result.push_back( pnt );
-      getNodes( pnt->children, result, att, val );
+      if ( getAttribute( pnt->children, "root" ) == "" )
+	getNodesValue( pnt->children, result, att, val );
     }
     pnt = pnt->next;
   }
 }
 
-vector<xmlNode *> getNodes( xmlDoc *doc, const string& att, const string& val ){
+vector<xmlNode *> getNodesValue( xmlDoc *doc, const string& att, 
+				  const string& val ){
   xmlNode *pnt = xmlDocGetRootElement( doc );
   vector<xmlNode*> result;
-  getNodes( pnt->children, result, att, val );
+  getNodesValue( pnt->children, result, att, val );
   return result;
 }
 
@@ -927,7 +929,8 @@ void mod_stats( xmlDoc *doc, int& vcMod, int& npCnt, int& npMod ){
     if ( atts["cat"] == "np" ) {
       ++npCnt;
       vector< xmlNode* > avnodes;
-      getNodes( nodes[i]->children, avnodes, "pos", "adv" );
+      getNodesValue( nodes[i]->children, avnodes, "pos", "adv" );
+      getNodesValue( nodes[i]->children, avnodes, "pos", "adj" );
       npMod += avnodes.size();
     }
   }
