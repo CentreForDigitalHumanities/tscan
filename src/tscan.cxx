@@ -2498,7 +2498,7 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   if ( polarity == NA )
     os << "NA,";
   else
-    os << polarity << ",";
+    os << (polarity/double(wordCnt)) << ",";
 }
 
 void structStats::wordSortHeader( ostream& os ) const {
