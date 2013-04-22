@@ -86,17 +86,9 @@ xmlNode *getAlpWord( xmlDoc *doc, const Word *w ){
 
 vector< xmlNode*> getSibblings( xmlNode *node ){
   vector<xmlNode *> result;
-  xmlNode *pnt = node->prev;
+  xmlNode *pnt = node->parent->children;
   while ( pnt ){
-    if ( pnt->prev )
-      pnt = pnt->prev;
-    else
-      break;
-  }
-  if ( !pnt )
-    pnt = node;
-  while ( pnt ){
-    if ( pnt->type == XML_ELEMENT_NODE )
+    if ( pnt->type == XML_ELEMENT_NODE && pnt != node )
       result.push_back( pnt );
     pnt = pnt->next;
   }
