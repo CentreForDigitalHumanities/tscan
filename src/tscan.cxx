@@ -994,8 +994,9 @@ SemType get_sem_type( const string& lemma, CGN::Type tag ){
       }
       else if ( type == "emomen" )
 	return EMO_ADJ;
-      else if ( type == "phyper" || type == "stuff" || type == "colour" )
+      else if ( type == "phyper" || type == "stuff" || type == "colour" ){
 	return CONCRETE_ADJ;
+      }
       else if ( type == "abstract" )
 	return ABSTRACT_ADJ;
       else 
@@ -1488,15 +1489,15 @@ void wordStats::concreetHeader( ostream& os ) const {
 
 void wordStats::concreetToCSV( ostream& os ) const {
   if ( sem_type == CONCRETE_HUMAN || sem_type == CONCRETE_NOUN ){
-    os << "1,0,0,0,";
+    os << "1,1,0,0,";
   }
   else if ( sem_type == BROAD_NOUN ){
     os << "0,1,0,0,";
   }
   else if ( sem_type  == CONCRETE_ADJ ){
-    os << "0,0,1,0,";
+    os << "0,0,1,1,";
   }
-  else if ( sem_type == BROAD_ADJ ){
+  else if ( sem_type == BROAD_ADJ || sem_type == EMO_ADJ ){
     os << "0,0,0,1,";
   }
   else {
