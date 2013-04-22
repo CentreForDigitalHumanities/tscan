@@ -2133,6 +2133,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "np_count", toString(npCnt) );
   addOneMetric( doc, el, "np_size", toString(npSize) );
   addOneMetric( doc, el, "vc_modifier_count", toString(vcModCnt) );
+  addOneMetric( doc, el, "np_modifier_count", toString(npModCnt) );
 
   addOneMetric( doc, el, "character_count", toString(charCnt) );
   addOneMetric( doc, el, "character_count_min_names", toString(charCntExNames) );
