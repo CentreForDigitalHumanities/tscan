@@ -126,7 +126,10 @@ bool fill( map<string,string>& m, istream& is ){
 	  topval = vals[i];
 	}
       }
-      m[parts[0]] = topval;
+      if ( topval != "undefined" ){
+	// no use to store undefined values
+	m[parts[0]] = topval;
+      }
     }
   }
   return true;
@@ -143,7 +146,7 @@ bool fill( map<string,string>& m, const string& filename ){
   return false;
 }
 
-bool fill( map<string,double>& m, istream& is ){
+bool fill_pol( map<string,double>& m, istream& is ){
   string line;
   while( getline( is, line ) ){
     vector<string> parts;
@@ -177,10 +180,10 @@ bool fill( map<string,double>& m, istream& is ){
   return true;
 }
 
-bool fill( map<string,double>& m, const string& filename ){
+bool fill_pol( map<string,double>& m, const string& filename ){
   ifstream is( filename.c_str() );
   if ( is ){
-    return fill( m, is );
+    return fill_pol( m, is );
   }
   else {
     cerr << "couldn't open file: " << filename << endl;
@@ -188,7 +191,7 @@ bool fill( map<string,double>& m, const string& filename ){
   return false;
 }
 
-bool fill( map<string,cf_data>& m, istream& is ){
+bool fill_freqlex( map<string,cf_data>& m, istream& is ){
   string line;
   while( getline( is, line ) ){
     vector<string> parts;
@@ -206,10 +209,10 @@ bool fill( map<string,cf_data>& m, istream& is ){
   return true;
 }
 
-bool fill( map<string,cf_data>& m, const string& filename ){
+bool fill_freqlex( map<string,cf_data>& m, const string& filename ){
   ifstream is( filename.c_str() );
   if ( is ){
-    return fill( m, is );
+    return fill_freqlex( m, is );
   }
   else {
     cerr << "couldn't open file: " << filename << endl;
@@ -217,7 +220,7 @@ bool fill( map<string,cf_data>& m, const string& filename ){
   return false;
 }
 
-bool fill( map<string,top_val>& m, istream& is ){
+bool fill_topvals( map<string,top_val>& m, istream& is ){
   string line;
   int line_count = 0;
   top_val val = top2000;
@@ -247,10 +250,10 @@ bool fill( map<string,top_val>& m, istream& is ){
   return true;
 }
 
-bool fill( map<string,top_val>& m, const string& filename ){
+bool fill_topvals( map<string,top_val>& m, const string& filename ){
   ifstream is( filename.c_str() );
   if ( is ){
-    return fill( m, is );
+    return fill_topvals( m, is );
   }
   else {
     cerr << "couldn't open file: " << filename << endl;
@@ -339,27 +342,27 @@ void settingData::init( const Configuration& cf ){
   }
   val = cf.lookUp( "polarity_lex" );
   if ( !val.empty() ){
-    if ( !fill( pol_lex, cf.configDir() + "/" + val ) )
+    if ( !fill_pol( pol_lex, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "staph_word_freq_lex" );
   if ( !val.empty() ){
-    if ( !fill( staph_word_freq_lex, cf.configDir() + "/" + val ) )
+    if ( !fill_freqlex( staph_word_freq_lex, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "word_freq_lex" );
   if ( !val.empty() ){
-    if ( !fill( word_freq_lex, cf.configDir() + "/" + val ) )
+    if ( !fill_freqlex( word_freq_lex, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "lemma_freq_lex" );
   if ( !val.empty() ){
-    if ( !fill( lemma_freq_lex, cf.configDir() + "/" + val ) )
+    if ( !fill_freqlex( lemma_freq_lex, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "top_freq_lex" );
   if ( !val.empty() ){
-    if ( !fill( top_freq_lex, cf.configDir() + "/" + val ) )
+    if ( !fill_topvals( top_freq_lex, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
 }
@@ -966,7 +969,11 @@ SemType get_sem_type( const string& lemma, CGN::Type tag ){
     map<string,string>::const_iterator it = settings.noun_sem.find( lemma );
     if ( it != settings.noun_sem.end() ){
       string type = it->second;
-      if ( type == "human" )
+      if ( type == "undefined" ){
+	// should never happen, because 'undefined' is not stored. 
+	return UNFOUND;
+      }
+      else if ( type == "human" )
 	return CONCRETE_HUMAN;
       else if ( type == "concrother" || type == "substance" 
 		|| type == "artefact" || type == "nonhuman" )
@@ -981,7 +988,11 @@ SemType get_sem_type( const string& lemma, CGN::Type tag ){
     map<string,string>::const_iterator it = settings.adj_sem.find( lemma );
     if ( it != settings.adj_sem.end() ){
       string type = it->second;
-      if ( type == "emomen" )
+      if ( type == "undefined" ){
+	// should never happen, because 'undefined' is not stored
+	return UNFOUND;
+      }
+      else if ( type == "emomen" )
 	return EMO_ADJ;
       else if ( type == "phyper" || type == "stuff" || type == "colour" )
 	return CONCRETE_ADJ;
@@ -995,7 +1006,11 @@ SemType get_sem_type( const string& lemma, CGN::Type tag ){
     map<string,string>::const_iterator it = settings.verb_sem.find( lemma );
     if ( it != settings.verb_sem.end() ){
       string type = it->second;
-      if ( type == "state" )
+      if ( type == "undefined" ){
+	// should never happen, because 'undefined' is not stored
+	return UNFOUND;
+      }
+      else if ( type == "state" )
 	return STATE;
       else if ( type == "action" )
 	return ACTION;
