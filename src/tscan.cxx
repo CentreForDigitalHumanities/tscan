@@ -109,7 +109,9 @@ bool fill( map<string,string>& m, istream& is ){
     vector<string> vals;
     n = split_at( parts[1], vals, "," ); // split at ,
     if ( n == 1 ){
-      m[parts[0]] = vals[0];
+      if ( vals[0] != "undefined" ){
+	m[parts[0]] = vals[0];
+      }
     }
     else if ( n == 0 ){
       cerr << "skip line: " << line << " (expected some values, got none."
@@ -964,13 +966,17 @@ double wordStats::checkPolarity( ) const {
   return NA;
 }
 
-SemType get_sem_type( const string& lemma, CGN::Type tag ){
+SemType get_sem_type( const string& word, const string& lemma, CGN::Type tag ){
   if ( tag == CGN::N ){
     map<string,string>::const_iterator it = settings.noun_sem.find( lemma );
     if ( it != settings.noun_sem.end() ){
       string type = it->second;
       if ( type == "undefined" ){
 	// should never happen, because 'undefined' is not stored. 
+	return UNFOUND;
+      }
+      if ( type == "institut" ){
+	// ignore
 	return UNFOUND;
       }
       else if ( type == "human" )
@@ -1002,6 +1008,26 @@ SemType get_sem_type( const string& lemma, CGN::Type tag ){
       else 
 	return BROAD_ADJ;
     }
+    else {
+      // lemma not found. maybe the whole word?
+      map<string,string>::const_iterator it = settings.adj_sem.find( word );
+      if ( it != settings.adj_sem.end() ){
+	string type = it->second;
+	if ( type == "undefined" ){
+	  // should never happen, because 'undefined' is not stored
+	  return UNFOUND;
+	}
+	else if ( type == "emomen" )
+	  return EMO_ADJ;
+	else if ( type == "phyper" || type == "stuff" || type == "colour" ){
+	  return CONCRETE_ADJ;
+	}
+	else if ( type == "abstract" )
+	  return ABSTRACT_ADJ;
+	else 
+	  return BROAD_ADJ;
+      }
+    }
   }
   else if ( tag == CGN::WW ) {
     map<string,string>::const_iterator it = settings.verb_sem.find( lemma );
@@ -1025,7 +1051,7 @@ SemType get_sem_type( const string& lemma, CGN::Type tag ){
 }
   
 SemType wordStats::checkSemProps( ) const {
-  SemType type = get_sem_type( lemma, tag );
+  SemType type = get_sem_type( word, lemma, tag );
   return type;
 }
 
