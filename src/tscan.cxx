@@ -909,7 +909,7 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
     string vwtype = pa->feat("vwtype");
     isBetr = vwtype == "betr";
     if ( lowercase( word ) != "men" ){
-      string cas = pa->feat("case");
+      string cas = pa->feat("naamval");
       archaic = ( cas == "gen" || cas == "dat" );
       if ( vwtype == "pers" || vwtype == "refl" 
 	   || vwtype == "pr" || vwtype == "bez" ) {
@@ -937,7 +937,7 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
     }
   }
   else if ( tag == CGN::LID ) {
-    string cas = pa->feat("case");
+    string cas = pa->feat("naamval");
     archaic = ( cas == "gen" || cas == "dat" );
   }
   else if ( tag == CGN::VG ) {
