@@ -242,7 +242,7 @@ bool fill_topvals( map<string,top_val>& m, istream& is ){
       val = top1000;
     vector<string> parts;
     size_t n = split_at( line, parts, "\t" ); // split at tabs
-    if ( n != 2 ){
+    if ( n != 4 ){
       cerr << "skip line: " << line << " (expected 2 values, got " 
 	   << n << ")" << endl;
       continue;
