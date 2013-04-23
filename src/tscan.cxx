@@ -664,8 +664,8 @@ ConnType wordStats::checkConnective() const {
       "ineens", "ingaande", "inmiddels", "medio", "meer", "meestal", 
       "meteen", "morgen", "morgenavond", "morgenmiddag", "morgennacht", 
       "morgenochtend", "morgenvroeg", "na", "nadat", "naderhand", 
-      "nadezen", "nadien", "net", "nooit", "olim", "omstreeks", 
-      "onderwijl", "onlangs", "ooit", "opeens", "overdag", "overmorgen", 
+      "nadezen", "nadien", "olim", "omstreeks", 
+      "onderwijl", "onlangs", "opeens", "overdag", "overmorgen", 
       "pardoes", "pas", "plotsklaps", "recentelijk", "reeds", "sedert", 
       "sedert", "sedertdien", "sinds", "sinds", "sindsdien", "steeds", 
       "strakjes", "straks", "subiet", "tegelijk", "tegelijkertijd", 
@@ -679,9 +679,10 @@ ConnType wordStats::checkConnective() const {
 
   static string reeksList[] = 
     {"alsmede", "alsook", "annex", "bovendien", "buitendien", "daarenboven",
-     "daarnaast", "en", "evenals", "eveneens", "evenmin", "hetzij", 
-     "hierenboven", "noch", "of", "ofwel", "ook", "respectievelijk", 
-     "tevens", "vooral", "waarnaast"};
+     "daarnaast", "en", "evenals", "eveneens", "evenmin", "hetzij", "bovenal",
+     "hierenboven", "noch", "of", "ofwel", "ook", "respectievelijk", "zelfs",
+     "tevens", "vooral", "waarnaast", "verder", "voornamelijk", "voorts",
+     "zowel" };
   static set<string> reeks( reeksList, 
 			    reeksList + sizeof(reeksList)/sizeof(string) );
 
@@ -689,13 +690,14 @@ ConnType wordStats::checkConnective() const {
     { "al", "alhoewel", "althans", "anderzijds", "behalve", "behoudens",
       "daarentegen", "desondanks", "doch", "echter", "evengoed", "evenwel", 
       "hoewel", "hoezeer", "integendeel", "maar", "niettegenstaande", 
-      "niettemin", "nochtans", "ofschoon", "ondanks", "ondertussen", 
+      "niettemin", "nochtans", "ofschoon", "ondanks", "ondertussen", "terwijl", 
       "ongeacht", "tenzij", "uitgezonderd", "weliswaar", "enerzijds"  };
   static set<string> contrastief( contrastList, 
 				  contrastList + sizeof(contrastList)/sizeof(string) );
   
   static string comparList[] = {
-    "als", "alsof", "dan", "meer", "meest", "minder", "minst", "naargelang", "naarmate", "zoals" };
+    "als", "alsof", "dan", "meer", "meest", "minder", "minst", "naargelang", 
+    "naarmate", "zoals" };
   static set<string> comparatief( comparList, 
 				  comparList + sizeof(comparList)/sizeof(string) );
 
@@ -708,8 +710,9 @@ ConnType wordStats::checkConnective() const {
       "mits", "namelijk", "nu", "om", "om", "omdat", "opdat", "teneinde", 
       "vanwege", "vermits", "waardoor", "waarmee", "waarom", "waartoe",
       "waartoe", "wanneer", "want", "wegens", "zodat", "zodoende", "zolang" };
-  static set<string> causuals( causesList, 
-			       causesList + sizeof(causesList)/sizeof(string) );
+  static set<string> causals( causesList, 
+			      causesList + sizeof(causesList)/sizeof(string) );
+
   if ( tag == CGN::VG || tag == CGN::BW ){
     string lword = lowercase( word );
     if ( temporals.find( lword ) != temporals.end() )
@@ -720,7 +723,7 @@ ConnType wordStats::checkConnective() const {
       return CONTRASTIEF;
     else if ( comparatief.find( lword ) != comparatief.end() )
       return COMPARATIEF;
-    else if ( causuals.find( lword ) != causuals.end() )
+    else if ( causals.find( lword ) != causals.end() )
       return CAUSAAL;
   }
   return NOCONN;
@@ -732,9 +735,11 @@ ConnType check2Connectives( const string& mword ){
 				  temporal2List + sizeof(temporal2List)/sizeof(string) );
 
   static string reeks2List[] = 
-    { "bovenal ", "daarbij komt", "dan wel", "evenmin als", "ten derde", 
-      "ten eerste", "ten tweede", "ten vierde", 
-      "verder ", "voornamelijk ", "voorts ", "zomin als", "zowel als" }; 
+    { "daarbij komt", "dan wel", "evenmin als", 
+      "ten eerste", "ten tweede", "ten derde", "ten vierde", 
+      "als eerste", "als tweede", "als derde", "als vierde", 
+      "met name",
+      "zomin als", "zowel als" }; 
   static set<string> reeks_2( reeks2List, 
 			      reeks2List + sizeof(reeks2List)/sizeof(string) );
 
@@ -749,8 +754,8 @@ ConnType check2Connectives( const string& mword ){
   static string causes2List[] = 
     { "dan ook", "tengevolge van", "vandaar dat", "zo ja", 
       "zo nee", "zo niet" };
-  static set<string> causuals_2( causes2List, 
-				 causes2List + sizeof(causes2List)/sizeof(string) );
+  static set<string> causals_2( causes2List, 
+				causes2List + sizeof(causes2List)/sizeof(string) );
   if ( temporals_2.find( mword ) != temporals_2.end() )
     return TEMPOREEL;
   else if ( reeks_2.find( mword ) != reeks_2.end() )
@@ -759,7 +764,7 @@ ConnType check2Connectives( const string& mword ){
     return CONTRASTIEF;
   else if ( comparatief_2.find( mword ) != comparatief_2.end() )
     return COMPARATIEF;
-  else if ( causuals_2.find( mword ) != causuals_2.end() )
+  else if ( causals_2.find( mword ) != causals_2.end() )
     return CAUSAAL;
   return NOCONN;
 }
@@ -783,8 +788,8 @@ ConnType check3Connectives( const string& mword ){
 				    compar3List + sizeof(compar3List)/sizeof(string) );
 
   static string causes3List[] = { "met behulp van" };
-  static set<string> causuals_3( causes3List, 
-				 causes3List + sizeof(causes3List)/sizeof(string) );
+  static set<string> causals_3( causes3List, 
+				causes3List + sizeof(causes3List)/sizeof(string) );
   if ( temporals_3.find( mword ) != temporals_3.end() )
     return TEMPOREEL;
   else if ( reeks_3.find( mword ) != reeks_3.end() )
@@ -793,7 +798,7 @@ ConnType check3Connectives( const string& mword ){
     return CONTRASTIEF;
   else if ( comparatief_3.find( mword ) != comparatief_3.end() )
     return COMPARATIEF;
-  else if ( causuals_3.find( mword ) != causuals_3.end() )
+  else if ( causals_3.find( mword ) != causals_3.end() )
     return CAUSAAL;
   return NOCONN;
 }
