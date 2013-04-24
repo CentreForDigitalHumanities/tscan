@@ -763,80 +763,6 @@ ConnType wordStats::checkConnective() const {
   return NOCONN;
 }
 
-ConnType check2Connectives( const string& mword ){
-  static string temporal2List[] = {"de dato", "na dato"};
-  static set<string> temporals_2( temporal2List, 
-				  temporal2List + sizeof(temporal2List)/sizeof(string) );
-
-  static string reeks2List[] = 
-    { "daarbij komt", "dan wel", "evenmin als", 
-      "ten eerste", "ten tweede", "ten derde", "ten vierde", 
-      "als eerste", "als tweede", "als derde", "als vierde", 
-      "met name",
-      "zomin als", "zowel als" }; 
-  static set<string> reeks_2( reeks2List, 
-			      reeks2List + sizeof(reeks2List)/sizeof(string) );
-
-  static string contrast2List[] = { "ook al", "zij het" };
-  static set<string> contrastief_2( contrast2List, 
-				    contrast2List + sizeof(contrast2List)/sizeof(string) );
-
-  static string compar2List[] = { "net als" };
-  static set<string> comparatief_2( compar2List, 
-				    compar2List + sizeof(compar2List)/sizeof(string) );
-
-  static string causes2List[] = 
-    { "dan ook", "tengevolge van", "vandaar dat", "zo ja", 
-      "zo nee", "zo niet" };
-  static set<string> causals_2( causes2List, 
-				causes2List + sizeof(causes2List)/sizeof(string) );
-  if ( temporals_2.find( mword ) != temporals_2.end() )
-    return TEMPOREEL;
-  else if ( reeks_2.find( mword ) != reeks_2.end() )
-    return REEKS;
-  else if ( contrastief_2.find( mword ) != contrastief_2.end() )
-    return CONTRASTIEF;
-  else if ( comparatief_2.find( mword ) != comparatief_2.end() )
-    return COMPARATIEF;
-  else if ( causals_2.find( mword ) != causals_2.end() )
-    return CAUSAAL;
-  return NOCONN;
-}
-
-ConnType check3Connectives( const string& mword ){
-  static string temporal3List[] = {"a la minute", "hic et nunc"};
-  static set<string> temporals_3( temporal3List, 
-				  temporal3List + sizeof(temporal3List)/sizeof(string) );
-
-  static string reeks3List[] = { "om te beginnen" };
-  static set<string> reeks_3( reeks3List, 
-			      reeks3List + sizeof(reeks3List)/sizeof(string) );
-
-  static string contrast3List[] = 
-    { "in plaats daarvan", "in tegenstelling tot", "zij het dat" };
-  static set<string> contrastief_3( contrast3List, 
-				    contrast3List + sizeof(contrast3List)/sizeof(string) );
-  
-  static string compar3List[] = { "net zo als" };
-  static set<string> comparatief_3( compar3List, 
-				    compar3List + sizeof(compar3List)/sizeof(string) );
-
-  static string causes3List[] = { "met behulp van" };
-  static set<string> causals_3( causes3List, 
-				causes3List + sizeof(causes3List)/sizeof(string) );
-  if ( temporals_3.find( mword ) != temporals_3.end() )
-    return TEMPOREEL;
-  else if ( reeks_3.find( mword ) != reeks_3.end() )
-    return REEKS;
-  else if ( contrastief_3.find( mword ) != contrastief_3.end() )
-    return CONTRASTIEF;
-  else if ( comparatief_3.find( mword ) != comparatief_3.end() )
-    return COMPARATIEF;
-  else if ( causals_3.find( mword ) != causals_3.end() )
-    return CAUSAAL;
-  return NOCONN;
-}
-
 bool wordStats::checkContent() const {
   if ( tag == CGN::WW ){
     if ( wwform == HEAD_VERB ){
@@ -2664,6 +2590,8 @@ struct sentStats : public structStats {
   bool isSentence() const { return true; };
   void resolveConnectives();
   void addMetrics( ) const;
+  void check2Connectives( const string& );
+  void check3Connectives( const string& );
 };
 
 NerProp lookupNer( const Word *w, const Sentence * s ){
@@ -2741,6 +2669,102 @@ void np_length( Sentence *s, int& npcount, int& indefcount, int& size ) {
   }
 }
 
+void sentStats::check2Connectives( const string& mword ){
+  static string temporal2List[] = {"de dato", "na dato"};
+  static set<string> temporals_2( temporal2List, 
+				  temporal2List + sizeof(temporal2List)/sizeof(string) );
+
+  static string reeks2List[] = 
+    { "daarbij komt", "dan wel", "evenmin als", 
+      "ten eerste", "ten tweede", "ten derde", "ten vierde", 
+      "als eerste", "als tweede", "als derde", "als vierde", 
+      "met name",
+      "zomin als", "zowel als" }; 
+  static set<string> reeks_2( reeks2List, 
+			      reeks2List + sizeof(reeks2List)/sizeof(string) );
+
+  static string contrast2List[] = { "ook al", "zij het" };
+  static set<string> contrastief_2( contrast2List, 
+				    contrast2List + sizeof(contrast2List)/sizeof(string) );
+
+  static string compar2List[] = { "net als" };
+  static set<string> comparatief_2( compar2List, 
+				    compar2List + sizeof(compar2List)/sizeof(string) );
+
+  static string causes2List[] = 
+    { "dan ook", "tengevolge van", "vandaar dat", "zo ja", 
+      "zo nee", "zo niet" };
+  static set<string> causals_2( causes2List, 
+				causes2List + sizeof(causes2List)/sizeof(string) );
+  ConnType conn = NOCONN;
+  if ( temporals_2.find( mword ) != temporals_2.end() ){
+    tempConnCnt++;
+    conn = TEMPOREEL;
+  }
+  else if ( reeks_2.find( mword ) != reeks_2.end() ){
+    reeksConnCnt++;
+    conn = REEKS;
+  }
+  else if ( contrastief_2.find( mword ) != contrastief_2.end() ){
+    contConnCnt++;
+    conn = CONTRASTIEF;
+  }
+  else if ( comparatief_2.find( mword ) != comparatief_2.end() ){
+    compConnCnt++;
+    conn = COMPARATIEF;
+  }
+  else if ( causals_2.find( mword ) != causals_2.end() ){
+    causeConnCnt++;
+    conn = CAUSAAL;
+  }
+  cerr << "2-conn = " << conn << endl;
+}
+
+void sentStats::check3Connectives( const string& mword ){
+  static string temporal3List[] = {"a la minute", "hic et nunc"};
+  static set<string> temporals_3( temporal3List, 
+				  temporal3List + sizeof(temporal3List)/sizeof(string) );
+
+  static string reeks3List[] = { "om te beginnen" };
+  static set<string> reeks_3( reeks3List, 
+			      reeks3List + sizeof(reeks3List)/sizeof(string) );
+
+  static string contrast3List[] = 
+    { "in plaats daarvan", "in tegenstelling tot", "zij het dat" };
+  static set<string> contrastief_3( contrast3List, 
+				    contrast3List + sizeof(contrast3List)/sizeof(string) );
+  
+  static string compar3List[] = { "net zo als" };
+  static set<string> comparatief_3( compar3List, 
+				    compar3List + sizeof(compar3List)/sizeof(string) );
+
+  static string causes3List[] = { "met behulp van" };
+  static set<string> causals_3( causes3List, 
+				causes3List + sizeof(causes3List)/sizeof(string) );
+  ConnType conn = NOCONN;
+  if ( temporals_3.find( mword ) != temporals_3.end() ){
+    tempConnCnt++;
+    conn = TEMPOREEL;
+  }
+  else if ( reeks_3.find( mword ) != reeks_3.end() ) {
+    reeksConnCnt++;
+    conn = REEKS;
+  }
+  else if ( contrastief_3.find( mword ) != contrastief_3.end() ){
+    contConnCnt++;
+    conn = CONTRASTIEF;
+  }
+  else if ( comparatief_3.find( mword ) != comparatief_3.end() ){
+    compConnCnt++;
+    conn = COMPARATIEF;
+  }
+  else if ( causals_3.find( mword ) != causals_3.end() ){
+    causeConnCnt++;
+    conn = CAUSAAL;
+  }
+  cerr << "3-conn = " << conn << endl;
+}
+
 void sentStats::resolveConnectives(){
   if ( sv.size() > 1 ){
     for ( size_t i=0; i < sv.size()-2; ++i ){
@@ -2749,26 +2773,7 @@ void sentStats::resolveConnectives(){
       //      cerr << "zoek op " << multiword2 << endl;
       if ( sv[i+1]->getConnType() == NOCONN ){
 	// no result yet
-	ConnType conn = check2Connectives( multiword2 );
-	switch( conn ){
-	case TEMPOREEL:
-	  tempConnCnt++;
-	  break;
-	case REEKS:
-	  reeksConnCnt++;
-	  break;
-	case CONTRASTIEF:
-	contConnCnt++;
-	break;
-	case COMPARATIEF:
-	  compConnCnt++;
-	  break;
-	case CAUSAAL:
-	causeConnCnt++;
-	break;
-	default:
-	  break;
-	}
+	check2Connectives( multiword2 );
       }
       if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
 	propNegCnt++;
@@ -2778,55 +2783,18 @@ void sentStats::resolveConnectives(){
       //      cerr << "zoek op " << multiword3 << endl;
       if ( sv[sv.size()-1]->getConnType() == NOCONN ){
 	// no result yet
-	ConnType conn = check3Connectives( multiword3 );
-	switch( conn ){
-	case TEMPOREEL:
-	  tempConnCnt++;
-	  break;
-	case REEKS:
-	  reeksConnCnt++;
-	  break;
-	case CONTRASTIEF:
-	  contConnCnt++;
-	  break;
-	case COMPARATIEF:
-	  compConnCnt++;
-	  break;
-	case CAUSAAL:
-	  causeConnCnt++;
-	  break;
-	default:
-	  break;
-	}
+	check3Connectives( multiword3 );
       }
       if ( negatives_long.find( multiword3 ) != negatives_long.end() )
 	propNegCnt++;
     }
+    // don't forget the last 2 words
     string multiword2 = lowercase( sv[sv.size()-2]->text() )
     + " " + lowercase( sv[sv.size()-1]->text() );
     //    cerr << "zoek op " << multiword2 << endl;
     if ( sv[sv.size()-1]->getConnType() == NOCONN ){
       // no result yet
-      ConnType conn = check2Connectives( multiword2 );
-      switch( conn ){
-      case TEMPOREEL:
-	tempConnCnt++;
-	break;
-      case REEKS:
-	reeksConnCnt++;
-	break;
-      case CONTRASTIEF:
-	contConnCnt++;
-	break;
-      case COMPARATIEF:
-	compConnCnt++;
-	break;
-      case CAUSAAL:
-	causeConnCnt++;
-	break;
-      default:
-	break;
-      }
+      check2Connectives( multiword2 );
     }
     if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
       propNegCnt++;
