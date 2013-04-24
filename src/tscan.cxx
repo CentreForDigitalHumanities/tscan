@@ -686,42 +686,76 @@ ConnType wordStats::checkConnective() const {
   static set<string> reeks( reeksList, 
 			    reeksList + sizeof(reeksList)/sizeof(string) );
 
-  static string contrastList[] = 
-    { "al", "alhoewel", "althans", "anderzijds", "behalve", "behoudens",
-      "daarentegen", "desondanks", "doch", "echter", "evengoed", "evenwel", 
+  static string vg_contrastList[] = 
+    { "alhoewel", "althans", "anderzijds", "behalve", 
+      "behoudens", "daarentegen", "desondanks", "doch",
+      "echter", "enerzijds", "evengoed", "evenwel", 
+      "hoewel", "hoezeer", "integendeel", "niettegenstaande", 
+      "niettemin", "nochtans", "ofschoon", "ondanks",
+      "ondertussen", "ongeacht", "tenzij", "terwijl",
+      "uitgezonderd", "weliswaar" };
+  static set<string> vg_contrastief( vg_contrastList, 
+				     vg_contrastList + sizeof(vg_contrastList)/sizeof(string) );
+  static string bw_contrastList[] = 
+    { "al", "alhoewel", "althans", "anderzijds", "behalve", 
+      "behoudens", "daarentegen", "desondanks", "doch",
+      "echter", "enerzijds", "evengoed", "evenwel", 
       "hoewel", "hoezeer", "integendeel", "maar", "niettegenstaande", 
-      "niettemin", "nochtans", "ofschoon", "ondanks", "ondertussen", "terwijl", 
-      "ongeacht", "tenzij", "uitgezonderd", "weliswaar", "enerzijds"  };
-  static set<string> contrastief( contrastList, 
-				  contrastList + sizeof(contrastList)/sizeof(string) );
+      "niettemin", "nochtans", "ofschoon", "ondanks", 
+      "ondertussen", "ongeacht", "tenzij", "terwijl", 
+      "uitgezonderd", "weliswaar" };
+  static set<string> bw_contrastief( bw_contrastList, 
+				     bw_contrastList + sizeof(bw_contrastList)/sizeof(string) );
   
-  static string comparList[] = {
-    "als", "alsof", "dan", "meer", "meest", "minder", "minst", "naargelang", 
-    "naarmate", "zoals" };
-  static set<string> comparatief( comparList, 
-				  comparList + sizeof(comparList)/sizeof(string) );
+  static string vg_comparList[] = 
+    { "als", "alsof", "dan", "meer", "meest", 
+      "minder", "minst", "naargelang", "naarmate", "zoals" };
+  static set<string> vg_comparatief( vg_comparList, 
+				     vg_comparList + sizeof(vg_comparList)/sizeof(string) );
+  static string bw_comparList[] = 
+    { "als", "alsof", "meer", "meest", 
+      "minder", "minst", "naargelang", "naarmate", "zoals" };
+  static set<string> bw_comparatief( bw_comparList, 
+				     bw_comparList + sizeof(bw_comparList)/sizeof(string) );
 
   static string causesList[] = 
-    { "aangezien", "als", "bijgevolg", "daar", "daardoor", "daarmee", 
-      "daarom", "daartoe", "daarvoor", "dankzij", "derhalve", "dientengevolge",
-      "doordat", "dus", "dus", "ergo", "ermee", "erom", "ertoe", "getuige", 
-      "gezien", "hierdoor", "hiermee", "hierom", "hiertoe", "hiervoor", 
-      "immers", "indien", "ingeval", "ingevolge", "krachtens", "middels", 
-      "mits", "namelijk", "nu", "om", "om", "omdat", "opdat", "teneinde", 
-      "vanwege", "vermits", "waardoor", "waarmee", "waarom", "waartoe",
-      "waartoe", "wanneer", "want", "wegens", "zodat", "zodoende", "zolang" };
+    { "aangezien", "als", "anders", "bijgevolg", 
+      "daar", "daardoor", "daarmee", "daarom", 
+      "daartoe", "daarvoor", "dankzij", "derhalve",
+      "dientengevolge", "doordat", "dus", "ergo", 
+      "ermee", "erom", "ertoe", "getuige", 
+      "gezien", "hierdoor", "hiermee", "hierom", 
+      "hiertoe", "hiervoor", "immers", "indien", 
+      "ingeval", "ingevolge", "krachtens", "middels", 
+      "mits", "namelijk", "nu", "om", "omdat", 
+      "opdat", "teneinde", "vanwege", "vermits", 
+      "waardoor", "waarmee", "waarom", "waartoe",
+      "wanneer", "want", "wegens", "zodat", 
+      "zodoende", "zolang" };
   static set<string> causals( causesList, 
 			      causesList + sizeof(causesList)/sizeof(string) );
 
-  if ( tag == CGN::VG || tag == CGN::BW ){
-    string lword = lowercase( word );
+  string lword = lowercase( word );
+  if ( tag == CGN::VG ){
     if ( temporals.find( lword ) != temporals.end() )
       return TEMPOREEL;
     else if ( reeks.find( lword ) != reeks.end() )
       return REEKS;
-    else if ( contrastief.find( lword ) != contrastief.end() )
+    else if ( vg_contrastief.find( lword ) != vg_contrastief.end() )
       return CONTRASTIEF;
-    else if ( comparatief.find( lword ) != comparatief.end() )
+    else if ( vg_comparatief.find( lword ) != vg_comparatief.end() )
+      return COMPARATIEF;
+    else if ( causals.find( lword ) != causals.end() )
+      return CAUSAAL;
+  }
+  else if ( tag == CGN::BW ){
+    if ( temporals.find( lword ) != temporals.end() )
+      return TEMPOREEL;
+    else if ( reeks.find( lword ) != reeks.end() )
+      return REEKS;
+    else if ( bw_contrastief.find( lword ) != bw_contrastief.end() )
+      return CONTRASTIEF;
+    else if ( bw_comparatief.find( lword ) != bw_comparatief.end() )
       return COMPARATIEF;
     else if ( causals.find( lword ) != causals.end() )
       return CAUSAAL;
@@ -2316,7 +2350,6 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
      << morphNegCnt/double(wordCnt) * 1000 << ","
      << (propNegCnt+morphNegCnt)/double(wordCnt) * 1000 << ","
      << multiNegCnt/double(sentCnt) * 1000 << ",";
-  //  cerr << distances << endl;
   os << MMtoString( distances, SUB_VERB ) << ",";
   os << MMtoString( distances, OBJ1_VERB ) << ",";
   os << MMtoString( distances, OBJ2_VERB ) << ",";
