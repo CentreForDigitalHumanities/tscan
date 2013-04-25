@@ -2340,14 +2340,14 @@ void structStats::coherenceToCSV( ostream& os ) const {
      << (causeConnCnt/double(wordCnt)) * 1000 << ","
      << (pronRefCnt/double(wordCnt)) * 1000 << ",";
   if ( isSentence() ){
-    os << double(argRepeatCnt) << ",NA,"
-       << double(lemmaRepeatCnt) << ",NA,";
+    os << double(wordOverlapCnt) << ",NA,"
+       << double(lemmaOverlapCnt) << ",NA,";
   }
   else {
-    os << (argRepeatCnt/double(wordCnt)) * 1000 << ","
-       << (argRepeatCnt/double(sentCnt)) << ",";
-    os << (lemmaRepeatCnt/double(wordCnt)) * 1000 << ","
-       << (lemmaRepeatCnt/double(sentCnt)) << ",";
+    os << (wordOverlapCnt/double(wordCnt)) * 1000 << ","
+       << (wordOverlapCnt/double(sentCnt)) << ",";
+    os << (lemmaOverlapCnt/double(wordCnt)) * 1000 << ","
+       << (lemmaOverlapCnt/double(sentCnt)) << ",";
   }
   if ( !isDocument() ){
     os << "NA,NA,NA,NA,";
