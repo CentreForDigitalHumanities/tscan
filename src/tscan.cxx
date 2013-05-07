@@ -579,6 +579,8 @@ struct basicStats {
   vector<basicStats *> sv;
 };
 
+struct sentStats;
+
 struct wordStats : public basicStats {
   wordStats( Word *, xmlDoc *, const set<size_t>& );
   void CSVheader( ostream&, const string& ) const;
@@ -613,7 +615,7 @@ struct wordStats : public basicStats {
   void staphFreqLookup();
   void topFreqLookup();
   void freqLookup();
-  void getSentenceOverlap( const Sentence * );
+  void getSentenceOverlap( const vector<string>&, const vector<string>& );
   string word;
   string pos;
   CGN::Type tag;
@@ -1124,25 +1126,25 @@ void argument_overlap( const string w_or_l,
     return;
   // cerr << "test overlap, lemma/word= " << w_or_l << endl;
   // cerr << "buffer=" << buffer << endl;
-  static string vnw_1sA[] = {"ik","mij","me","mijn"};
+  static string vnw_1sA[] = {"ik", "mij", "me", "mijn" };
   static set<string> vnw_1s = set<string>( vnw_1sA, 
 					   vnw_1sA + sizeof(vnw_1sA)/sizeof(string) );
-  static string vnw_2sA[] = {"jij","je","jouw"};
+  static string vnw_2sA[] = {"jij", "je", "jou", "jouw" };
   static set<string> vnw_2s = set<string>( vnw_2sA, 
-					    vnw_2sA + sizeof(vnw_2sA)/sizeof(string) );
-  static string vnw_3smA[] = {"hij", "hem", "zijn"};
+					   vnw_2sA + sizeof(vnw_2sA)/sizeof(string) );
+  static string vnw_3smA[] = {"hij", "hem", "zijn" };
   static set<string> vnw_3sm = set<string>( vnw_3smA, 
 					    vnw_3smA + sizeof(vnw_3smA)/sizeof(string) );
-  static string vnw_3sfA[] = {"zij","ze","haar"};
+  static string vnw_3sfA[] = {"zij", "ze", "haar"};
   static set<string> vnw_3sf = set<string>( vnw_3sfA, 
 					    vnw_3sfA + sizeof(vnw_3sfA)/sizeof(string) );
-  static string vnw_1pA[] = {"wij","we","ons","onze"};
+  static string vnw_1pA[] = {"wij", "we", "ons", "onze"};
   static set<string> vnw_1p = set<string>( vnw_1pA, 
 					   vnw_1pA + sizeof(vnw_1pA)/sizeof(string) );
   static string vnw_2pA[] = {"jullie"};
   static set<string> vnw_2p = set<string>( vnw_2pA, 
 					   vnw_2pA + sizeof(vnw_2pA)/sizeof(string) );
-  static string vnw_3pA[] = {"zij","ze","hen","hun"};
+  static string vnw_3pA[] = {"zij", "ze", "hen", "hun"};
   static set<string> vnw_3p = set<string>( vnw_3pA, 
 					   vnw_3pA + sizeof(vnw_3pA)/sizeof(string) );
 
@@ -1260,43 +1262,46 @@ void addOneMetric( Document *doc, FoliaElement *parent,
   parent->append( m );
 }
 
-void wordStats::getSentenceOverlap( const Sentence *prev ){
-  if ( prev &&
-       ( ( tag == CGN::VNW && prop != ISAANW ) ||
-	 ( tag == CGN::N ) ||
-	 ( pos == "SPEC(deeleigen)" ) ) ){
-    vector<string> wordbuffer;
-    vector<string> lemmabuffer;
+void fill_word_lemma_buffers( const sentStats*, 
+			      vector<string>&, vector<string>& );
+
+//#define DEBUG_OL
+
+void wordStats::getSentenceOverlap(const vector<string>& wordbuffer,
+				   const vector<string>& lemmabuffer ){
+  if ( ( tag == CGN::VNW && prop != ISAANW ) ||
+       ( tag == CGN::N ) ||
+       ( tag == CGN::ADJ ) ||
+       ( pos == "SPEC(deeleigen)" ) ||
+       ( tag == CGN::WW && wwform == HEAD_VERB ) ){
     // get the words and lemmas' of the previous sentence
-    vector<Word*> wv = prev->words();
-    for ( size_t w=0; w < wv.size(); ++w ){
-      wordbuffer.push_back( lowercase( UnicodeToUTF8( wv[w]->text() ) ) );
-      lemmabuffer.push_back( lowercase(wv[w]->lemma( frog_lemma_set ) ) );
-    }
-    // cerr << "call word sentenceOverlap, word = " << lowercase(word) 
-    // 	 << " prev=" << wordbuffer << endl;
-    // int tmp1 = argRepeatCnt;
-    // int tmp2 = wordOverlapCnt;
+#ifdef DEBUG_OL
+    cerr << "call word sentenceOverlap, word = " << lowercase(word);
+    int tmp1 = argRepeatCnt;
+    int tmp2 = wordOverlapCnt;
+#endif
     argument_overlap( lowercase(word), wordbuffer, argRepeatCnt, wordOverlapCnt );
+#ifdef DEBUG_OL
     // if ( tmp1 != argRepeatCnt ){
     //   cerr << "argument repeated " << argRepeatCnt - tmp1 << endl;
     // }
-    // if ( tmp2 != wordOverlapCnt ){
-    //   cerr << "word Overlapped " << wordOverlapCnt - tmp2 << endl;
-    // }
-
-    // cerr << "call lemma sentenceOverlap, lemma= " << lowercase(lemma)
-    // 	 << " prev=" << lemmabuffer << endl;
-    // tmp1 = lemmaRepeatCnt;
-    // tmp2 = lemmaOverlapCnt;
+    if ( tmp2 != wordOverlapCnt ){
+      cerr << " OVERLAPPED " << endl;
+    }    
+    else
+      cerr << endl;
+    cerr << "call lemma sentenceOverlap, lemma= " << lowercase(lemma);
+    tmp1 = lemmaRepeatCnt;
+    tmp2 = lemmaOverlapCnt;
+#endif
     argument_overlap( lowercase(lemma), lemmabuffer, lemmaRepeatCnt, lemmaOverlapCnt );
-    // if ( tmp1 != lemmaRepeatCnt ){
-    //   cerr << "lemma argument repeated " << lemmaRepeatCnt - tmp1 << endl;
-    // }
-    // if ( tmp2 != lemmaOverlapCnt ){
-    //   cerr << "lemma Overlapped " << lemmaOverlapCnt - tmp2 << endl;
-    // }
-
+#ifdef DEBUG_OL
+    if ( tmp2 != lemmaOverlapCnt ){
+      cerr << " OVERLAPPED " << endl;
+    }
+    else
+      cerr << endl;
+#endif
   }
 }
 
@@ -2586,13 +2591,30 @@ void structStats::miscToCSV( ostream& os ) const {
 }
 
 struct sentStats : public structStats {
-  sentStats( Sentence *, Sentence * );
+  sentStats( Sentence *, const sentStats* );
   bool isSentence() const { return true; };
   void resolveConnectives();
   void addMetrics( ) const;
   void check2Connectives( const string& );
   void check3Connectives( const string& );
 };
+
+void fill_word_lemma_buffers( const sentStats* ss, 
+			      vector<string>& wv,
+			      vector<string>& lv ){
+  vector<basicStats*> bv = ss->sv;
+  for ( size_t i=0; i < bv.size(); ++i ){
+    wordStats *w = dynamic_cast<wordStats*>(bv[i]);
+    if ( ( w->tag == CGN::VNW && w->prop != ISAANW ) ||
+	 ( w->tag == CGN::N ) ||
+	 ( w->tag == CGN::ADJ ) ||
+	 ( w->pos == "SPEC(deeleigen)" ) ||
+	 ( w->tag == CGN::WW && w->wwform == HEAD_VERB ) ){
+      wv.push_back( lowercase( w->word ) );
+      lv.push_back( lowercase( w->lemma ) );
+    }
+  }
+}
 
 NerProp lookupNer( const Word *w, const Sentence * s ){
   NerProp result = NONER;
@@ -2717,7 +2739,7 @@ void sentStats::check2Connectives( const string& mword ){
     causeConnCnt++;
     conn = CAUSAAL;
   }
-  cerr << "2-conn = " << conn << endl;
+  //  cerr << "2-conn = " << conn << endl;
 }
 
 void sentStats::check3Connectives( const string& mword ){
@@ -2762,7 +2784,7 @@ void sentStats::check3Connectives( const string& mword ){
     causeConnCnt++;
     conn = CAUSAAL;
   }
-  cerr << "3-conn = " << conn << endl;
+  //  cerr << "3-conn = " << conn << endl;
 }
 
 void sentStats::resolveConnectives(){
@@ -2881,7 +2903,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 
 xmlDoc *AlpinoServerParse( Sentence *);
 
-sentStats::sentStats( Sentence *s, Sentence *prev ): 
+sentStats::sentStats( Sentence *s, const sentStats* pred ): 
   structStats( s, "ZIN" ){
   sentCnt = 1;
   id = s->id();
@@ -2956,12 +2978,21 @@ sentStats::sentStats( Sentence *s, Sentence *prev ):
   perplexity = sentPerplexity;
   //  cerr << "PUNCTS " << puncts << endl;
   bool question = false;
+  vector<string> wordbuffer;
+  vector<string> lemmabuffer;
+  if ( pred ){
+    fill_word_lemma_buffers( pred, wordbuffer, lemmabuffer );
+#ifdef DEBUG_OL
+    cerr << "call sentenceOverlap, wordbuffer " << wordbuffer << endl;
+    cerr << "call sentenceOverlap, lemmabuffer " << lemmabuffer << endl;
+#endif
+  }
   for ( size_t i=0; i < w.size(); ++i ){
     wordStats *ws = new wordStats( w[i], alpDoc, puncts );
     ws->surprisal = surprisalV[i];
     ws->logprob10 = woprProbsV[i];
-    if ( prev ){
-      ws->getSentenceOverlap( prev );
+    if ( pred ){
+      ws->getSentenceOverlap( wordbuffer, lemmabuffer );
     }
     if ( ws->lemma == "?" ){
       question = true;
@@ -3243,12 +3274,10 @@ parStats::parStats( Paragraph *p ):
   sentCnt = 0;
   id = p->id();
   vector<Sentence*> sents = p->sentences();
+  sentStats *prev = 0;;
   for ( size_t i=0; i < sents.size(); ++i ){
-    sentStats *ss;
-    if ( i == 0 )
-      ss = new sentStats( sents[i], 0 );
-    else
-      ss = new sentStats( sents[i], sents[i-1] );
+    sentStats *ss = new sentStats( sents[i], prev );
+    prev = ss;
     merge( ss );
   }
   if ( word_freq == 0 || contentCnt == 0 )
@@ -3329,28 +3358,64 @@ docStats::docStats( Document *doc ):
   else
     lemma_freq_log_n = log10( lemma_freq_n / (contentCnt-nameCnt) );
   vector<Word*> wv = doc->words();
-  vector<string> wordbuffer(settings.overlapSize);
-  vector<string> lemmabuffer(settings.overlapSize);
-  for ( size_t w=0; w < wv.size() && w < settings.overlapSize; ++w ){
-    wordbuffer[w] = lowercase( UnicodeToUTF8( wv[w]->text() ) );
-    lemmabuffer[w] = lowercase( wv[w]->lemma( frog_lemma_set ) );
+  vector<string> wordbuffer;
+  vector<string> lemmabuffer;
+  size_t w;
+  for ( w=0; w < wv.size(); ++w ){
+    vector<PosAnnotation*> posV = wv[w]->select<PosAnnotation>(frog_pos_set);
+    if ( posV.size() != 1 )
+      throw ValueError( "word doesn't have Frog POS tag info" );
+    string head = posV[0]->feat("head");
+    if ( ( head == "VNW" && posV[0]->feat( "vwtype" ) != "aanw" ) ||
+	 ( head == "N" ) ||
+	 ( head == "ADJ" ) ||
+	 ( head == "WW" ) ||
+	 ( wv[w]->pos( frog_pos_set ) == "SPEC(deeleigen)" ) ){
+      wordbuffer.push_back( lowercase( UnicodeToUTF8( wv[w]->text() ) ) );
+      lemmabuffer.push_back( lowercase( wv[w]->lemma( frog_lemma_set ) ) );
+      if ( wordbuffer.size() == settings.overlapSize )
+	break;
+    }
   }
-  for ( size_t i=settings.overlapSize; i < wv.size(); ++i ){
+#ifdef DEBUG_OL
+  cerr << "Document overlap" << endl;
+  cerr << "wordbuffer= " << wordbuffer << endl;
+  cerr << "lemmabuffer= " << lemmabuffer << endl;
+#endif
+  for ( size_t i=w+1; i < wv.size(); ++i ){
     vector<PosAnnotation*> posV = wv[i]->select<PosAnnotation>(frog_pos_set);
     if ( posV.size() != 1 )
       throw ValueError( "word doesn't have Frog POS tag info" );
     string head = posV[0]->feat("head");
     if ( ( head == "VNW" && posV[0]->feat( "vwtype" ) != "aanw" ) ||
 	 ( head == "N" ) ||
+	 ( head == "ADJ" ) ||
+	 ( head == "WW" ) ||
 	 ( wv[i]->pos( frog_pos_set ) == "SPEC(deeleigen)" ) ){
       string word = UnicodeToUTF8(wv[i]->text()); 
+#ifdef DEBUG_OL
+      int tmp = doc_word_overlapCnt;
+#endif
       argument_overlap( lowercase(word), wordbuffer, 
 			doc_word_argCnt, doc_word_overlapCnt );
+#ifdef DEBUG_OL
+      if ( doc_word_overlapCnt > tmp ){
+	cerr << "word OVERLAP " << word << endl;
+      }
+#endif
       wordbuffer.erase(wordbuffer.begin());
       wordbuffer.push_back( word );
       string lemma = wv[i]->lemma( frog_lemma_set );
+#ifdef DEBUG_OL
+      tmp = doc_lemma_overlapCnt;
+#endif
       argument_overlap( lowercase(lemma), lemmabuffer, 
 			doc_lemma_argCnt, doc_lemma_overlapCnt );
+#ifdef DEBUG_OL
+      if ( doc_lemma_overlapCnt > tmp ){
+	cerr << "lemma OVERLAP " << lemma << endl;
+      }
+#endif
       lemmabuffer.erase(lemmabuffer.begin());
       lemmabuffer.push_back( lemma );
     }
