@@ -7,7 +7,7 @@
 #       http://ilk.uvt.nl/~mvgompel
 #       Induction for Linguistic Knowledge Research Group
 #       Universiteit van Tilburg
-#       
+#
 #       Licensed under GPLv3
 #
 ###############################################################
@@ -55,7 +55,7 @@ else:
 if 'usewopr' in clamdata and clamdata['usewopr'] == 'yes':
     f.write("useWopr=1\n")
 else:
-    f.write("useWopr=0\n")    
+    f.write("useWopr=0\n")
 f.write("decompounderPath=\"" + TSCANDIR + "\"\n")
 f.write("surprisalPath=\"" + TSCANDIR + "\"\n")
 f.write("styleSheet=\"tscanview.xsl\"\n")
@@ -104,19 +104,20 @@ f.write("host=localhost\n")
 
 f.close()
 
+os.system('svn info ' + TSCANDIR + ' >&2')
 
-    
-#-- Iterate over all input files? -- 
 
-for inputfile in clamdata.inputfiles('textinput'):    
+#-- Iterate over all input files? --
+
+for inputfile in clamdata.inputfiles('textinput'):
    inputtemplate = inputfile.metadata.inputtemplate
-   clam.common.status.write(statusfile, "Processing " + os.path.basename(str(inputfile)),50) # status update   
+   clam.common.status.write(statusfile, "Processing " + os.path.basename(str(inputfile)),50) # status update
    ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg -t ' + str(inputfile) + ' -o ' + outputdir + '/' + os.path.basename(str(inputfile).replace('.txt','') + '.xml'))
    if ref != 0:
         clam.common.status.write(statusfile, "Failed",50) # status update
 
-#tscan writes CSV file in input directory, move:       
-os.system("mv -f " + inputdir + "/*.csv " + outputdir)     
+#tscan writes CSV file in input directory, move:
+os.system("mv -f " + inputdir + "/*.csv " + outputdir)
 
 os.system("cat " + outputdir + "/*.words.csv | head -n 1 > " + outputdir + "/total.word.csv")
 os.system("cat " + outputdir + "/*.paragraphs.csv | head -n 1 > " + outputdir + "/total.par.csv")
@@ -127,7 +128,7 @@ for f in glob.glob(outputdir + "/*.paragraphs.csv"): os.system("sed 1d " + f + "
 for f in glob.glob(outputdir + "/*.sentences.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.sen.csv")
 for f in glob.glob(outputdir + "/*.document.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.doc.csv")
 
-      
+
 shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
 
 #A nice status message to indicate we're done
