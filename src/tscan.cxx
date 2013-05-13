@@ -540,6 +540,9 @@ string toString( const SemType st ){
   }
 }
 
+struct sentStats;
+struct wordStats;
+
 struct basicStats {
   basicStats( FoliaElement *el, const string& cat ): 
     folia_node( el ),
@@ -570,6 +573,7 @@ struct basicStats {
   virtual void addMetrics( ) const = 0;
   virtual string text() const { return ""; };
   virtual ConnType getConnType() const { return NOCONN; };
+  virtual vector<const wordStats*> collectWords() const = 0;
   FoliaElement *folia_node;
   string category;
   int charCnt;
@@ -578,8 +582,6 @@ struct basicStats {
   int morphCntExNames;
   vector<basicStats *> sv;
 };
-
-struct sentStats;
 
 struct wordStats : public basicStats {
   wordStats( Word *, xmlDoc *, const set<size_t>& );
@@ -616,6 +618,8 @@ struct wordStats : public basicStats {
   void topFreqLookup();
   void freqLookup();
   void getSentenceOverlap( const vector<string>&, const vector<string>& );
+  bool isOverlapCandidate() const;
+  vector<const wordStats*> collectWords() const;
   string word;
   string pos;
   CGN::Type tag;
@@ -654,6 +658,12 @@ struct wordStats : public basicStats {
   vector<string> morphemes;
   multimap<DD_type,int> distances;
 };
+
+vector<const wordStats*> wordStats::collectWords() const {
+  vector<const wordStats*> result;
+  result.push_back( this );
+  return result;
+}
 
 ConnType wordStats::checkConnective() const {
   static string temporalList[] = 
@@ -1155,26 +1165,33 @@ void argument_overlap( const string w_or_l,
     if ( w_or_l == buffer[i] )
       ++arg_overlap_cnt;
     else if ( vnw_1s.find( w_or_l ) != vnw_1s.end() &&
-	      vnw_1s.find( buffer[i] ) != vnw_1s.end() )
+	      vnw_1s.find( buffer[i] ) != vnw_1s.end() ){
       ++arg_overlap_cnt;
+    }
     else if ( vnw_2s.find( w_or_l ) != vnw_2s.end() &&
-	      vnw_2s.find( buffer[i] ) != vnw_2s.end() )
+	      vnw_2s.find( buffer[i] ) != vnw_2s.end() ){
       ++arg_overlap_cnt;	
+    }
     else if ( vnw_3sm.find( w_or_l ) != vnw_3sm.end() &&
-	      vnw_3sm.find( buffer[i] ) != vnw_3sm.end() )
+	      vnw_3sm.find( buffer[i] ) != vnw_3sm.end() ){
       ++arg_overlap_cnt;
+    }
     else if ( vnw_3sf.find( w_or_l ) != vnw_3sf.end() &&
-	      vnw_3sf.find( buffer[i] ) != vnw_3sf.end() )
+	      vnw_3sf.find( buffer[i] ) != vnw_3sf.end() ){
       ++arg_overlap_cnt;	
+    }
     else if ( vnw_1p.find( w_or_l ) != vnw_1p.end() &&
-	      vnw_1p.find( buffer[i] ) != vnw_1p.end() )
+	      vnw_1p.find( buffer[i] ) != vnw_1p.end() ){
       ++arg_overlap_cnt;
+    }
     else if ( vnw_2p.find( w_or_l ) != vnw_2p.end() &&
-	      vnw_2p.find( buffer[i] ) != vnw_2p.end() )
+	      vnw_2p.find( buffer[i] ) != vnw_2p.end() ){
       ++arg_overlap_cnt;	
+    }
     else if ( vnw_3p.find( w_or_l ) != vnw_3p.end() &&
-	      vnw_3p.find( buffer[i] ) != vnw_3p.end() )
+	      vnw_3p.find( buffer[i] ) != vnw_3p.end() ){
       ++arg_overlap_cnt;	
+    }
   }
 }
 
@@ -1267,13 +1284,20 @@ void fill_word_lemma_buffers( const sentStats*,
 
 //#define DEBUG_OL
 
-void wordStats::getSentenceOverlap(const vector<string>& wordbuffer,
-				   const vector<string>& lemmabuffer ){
+bool wordStats::isOverlapCandidate() const {
   if ( ( tag == CGN::VNW && prop != ISAANW ) ||
        ( tag == CGN::N ) ||
        ( tag == CGN::ADJ ) ||
        ( pos == "SPEC(deeleigen)" ) ||
-       ( tag == CGN::WW && wwform == HEAD_VERB ) ){
+       ( tag == CGN::WW && wwform == HEAD_VERB ) )
+    return true;
+  else
+    return false;
+}
+
+void wordStats::getSentenceOverlap(const vector<string>& wordbuffer,
+				   const vector<string>& lemmabuffer ){
+  if ( isOverlapCandidate() ){
     // get the words and lemmas' of the previous sentence
 #ifdef DEBUG_OL
     cerr << "call word sentenceOverlap, word = " << lowercase(word);
@@ -1733,6 +1757,7 @@ struct structStats: public basicStats {
   virtual bool isDocument() const { return false; };
   virtual int word_overlapCnt() const { return -1; };
   virtual int lemma_overlapCnt() const { return-1; };
+  vector<const wordStats*> collectWords() const;
   string id;
   string text;
   int wordCnt;
@@ -2590,6 +2615,17 @@ void structStats::miscToCSV( ostream& os ) const {
     os << perplexity/double(sentCnt) << ",";
 }
 
+vector<const wordStats*> structStats::collectWords() const {
+  vector<const wordStats*> result;
+  vector<basicStats *>::const_iterator it = sv.begin();
+  while ( it != sv.end() ){
+    vector<const wordStats*> tmp = (*it)->collectWords(); 
+    result.insert( result.end(), tmp.begin(), tmp.end() );
+    ++it;
+  }
+  return result;
+}
+
 struct sentStats : public structStats {
   sentStats( Sentence *, const sentStats* );
   bool isSentence() const { return true; };
@@ -2605,11 +2641,7 @@ void fill_word_lemma_buffers( const sentStats* ss,
   vector<basicStats*> bv = ss->sv;
   for ( size_t i=0; i < bv.size(); ++i ){
     wordStats *w = dynamic_cast<wordStats*>(bv[i]);
-    if ( ( w->tag == CGN::VNW && w->prop != ISAANW ) ||
-	 ( w->tag == CGN::N ) ||
-	 ( w->tag == CGN::ADJ ) ||
-	 ( w->pos == "SPEC(deeleigen)" ) ||
-	 ( w->tag == CGN::WW && w->wwform == HEAD_VERB ) ){
+    if ( w->isOverlapCandidate() ){
       wv.push_back( lowercase( w->word ) );
       lv.push_back( lowercase( w->lemma ) );
     }
@@ -3313,11 +3345,69 @@ struct docStats : public structStats {
   void addMetrics( ) const;
   int word_overlapCnt() const { return doc_word_overlapCnt; };
   int lemma_overlapCnt() const { return doc_lemma_overlapCnt; };
+  void calculate_doc_overlap( Document *doc );
   int doc_word_argCnt;
   int doc_word_overlapCnt;
   int doc_lemma_argCnt;
   int doc_lemma_overlapCnt;
 };
+
+//#define DEBUG_DOL
+
+void docStats::calculate_doc_overlap( Document *doc ){
+  vector<const wordStats*> wv2 = collectWords();
+  if ( wv2.size() < settings.overlapSize )
+    return;
+  vector<string> wordbuffer;
+  vector<string> lemmabuffer;
+  int count = 0;
+  for ( vector<const wordStats*>::const_iterator it = wv2.begin();
+	it != wv2.end();
+	++it ){
+    ++count;
+#ifdef DEBUG_DOL
+    if ( count == settings.overlapSize ){
+      cerr << "Document overlap" << endl;
+      cerr << "wordbuffer= " << wordbuffer << endl;
+      cerr << "lemmabuffer= " << lemmabuffer << endl;
+    }
+#endif
+    if ( (*it)->isOverlapCandidate() ){
+      string word = lowercase( (*it)->word );  
+      string lemma = lowercase( (*it)->lemma );
+      if ( count < settings.overlapSize ){
+	wordbuffer.push_back( word );
+	lemmabuffer.push_back( lemma );
+      }
+      else {
+#ifdef DEBUG_DOL
+	int tmp = doc_word_overlapCnt;
+#endif
+	argument_overlap( word, wordbuffer, 
+			  doc_word_argCnt, doc_word_overlapCnt );
+#ifdef DEBUG_DOL
+	if ( doc_word_overlapCnt > tmp ){
+	  cerr << "word OVERLAP " << word << endl;
+	}
+#endif
+	wordbuffer.erase(wordbuffer.begin());
+	wordbuffer.push_back( word );
+#ifdef DEBUG_DOL
+	tmp = doc_lemma_overlapCnt;
+#endif
+	argument_overlap( lemma, lemmabuffer, 
+			  doc_lemma_argCnt, doc_lemma_overlapCnt );
+#ifdef DEBUG_DOL
+	if ( doc_lemma_overlapCnt > tmp ){
+	  cerr << "lemma OVERLAP " << lemma << endl;
+	}
+#endif
+	lemmabuffer.erase(lemmabuffer.begin());
+	lemmabuffer.push_back( lemma );
+      }
+    }
+  }
+}
 
 docStats::docStats( Document *doc ):
   structStats( 0, "DOCUMENT" ),
@@ -3357,69 +3447,9 @@ docStats::docStats( Document *doc ):
     lemma_freq_log_n = NA;
   else
     lemma_freq_log_n = log10( lemma_freq_n / (contentCnt-nameCnt) );
-  vector<Word*> wv = doc->words();
-  vector<string> wordbuffer;
-  vector<string> lemmabuffer;
-  size_t w;
-  for ( w=0; w < wv.size(); ++w ){
-    vector<PosAnnotation*> posV = wv[w]->select<PosAnnotation>(frog_pos_set);
-    if ( posV.size() != 1 )
-      throw ValueError( "word doesn't have Frog POS tag info" );
-    string head = posV[0]->feat("head");
-    if ( ( head == "VNW" && posV[0]->feat( "vwtype" ) != "aanw" ) ||
-	 ( head == "N" ) ||
-	 ( head == "ADJ" ) ||
-	 ( head == "WW" ) ||
-	 ( wv[w]->pos( frog_pos_set ) == "SPEC(deeleigen)" ) ){
-      wordbuffer.push_back( lowercase( UnicodeToUTF8( wv[w]->text() ) ) );
-      lemmabuffer.push_back( lowercase( wv[w]->lemma( frog_lemma_set ) ) );
-      if ( wordbuffer.size() == settings.overlapSize )
-	break;
-    }
-  }
-#ifdef DEBUG_OL
-  cerr << "Document overlap" << endl;
-  cerr << "wordbuffer= " << wordbuffer << endl;
-  cerr << "lemmabuffer= " << lemmabuffer << endl;
-#endif
-  for ( size_t i=w+1; i < wv.size(); ++i ){
-    vector<PosAnnotation*> posV = wv[i]->select<PosAnnotation>(frog_pos_set);
-    if ( posV.size() != 1 )
-      throw ValueError( "word doesn't have Frog POS tag info" );
-    string head = posV[0]->feat("head");
-    if ( ( head == "VNW" && posV[0]->feat( "vwtype" ) != "aanw" ) ||
-	 ( head == "N" ) ||
-	 ( head == "ADJ" ) ||
-	 ( head == "WW" ) ||
-	 ( wv[i]->pos( frog_pos_set ) == "SPEC(deeleigen)" ) ){
-      string word = UnicodeToUTF8(wv[i]->text()); 
-#ifdef DEBUG_OL
-      int tmp = doc_word_overlapCnt;
-#endif
-      argument_overlap( lowercase(word), wordbuffer, 
-			doc_word_argCnt, doc_word_overlapCnt );
-#ifdef DEBUG_OL
-      if ( doc_word_overlapCnt > tmp ){
-	cerr << "word OVERLAP " << word << endl;
-      }
-#endif
-      wordbuffer.erase(wordbuffer.begin());
-      wordbuffer.push_back( word );
-      string lemma = wv[i]->lemma( frog_lemma_set );
-#ifdef DEBUG_OL
-      tmp = doc_lemma_overlapCnt;
-#endif
-      argument_overlap( lowercase(lemma), lemmabuffer, 
-			doc_lemma_argCnt, doc_lemma_overlapCnt );
-#ifdef DEBUG_OL
-      if ( doc_lemma_overlapCnt > tmp ){
-	cerr << "lemma OVERLAP " << lemma << endl;
-      }
-#endif
-      lemmabuffer.erase(lemmabuffer.begin());
-      lemmabuffer.push_back( lemma );
-    }
-  }
+  
+  calculate_doc_overlap( doc );
+  
 }
 
 string docStats::rarity( int level ) const {
