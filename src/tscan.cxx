@@ -1162,35 +1162,44 @@ void argument_overlap( const string w_or_l,
   // later op te kunnen delen 
   // (aantal overlappende argumenten op totaal aantal argumenten)
   for( size_t i=0; i < buffer.size(); ++i ){
-    if ( w_or_l == buffer[i] )
+    if ( w_or_l == buffer[i] ){
       ++arg_overlap_cnt;
+      break;
+    }
     else if ( vnw_1s.find( w_or_l ) != vnw_1s.end() &&
 	      vnw_1s.find( buffer[i] ) != vnw_1s.end() ){
       ++arg_overlap_cnt;
+      break;
     }
     else if ( vnw_2s.find( w_or_l ) != vnw_2s.end() &&
 	      vnw_2s.find( buffer[i] ) != vnw_2s.end() ){
       ++arg_overlap_cnt;	
+      break;
     }
     else if ( vnw_3sm.find( w_or_l ) != vnw_3sm.end() &&
 	      vnw_3sm.find( buffer[i] ) != vnw_3sm.end() ){
       ++arg_overlap_cnt;
+      break;
     }
     else if ( vnw_3sf.find( w_or_l ) != vnw_3sf.end() &&
 	      vnw_3sf.find( buffer[i] ) != vnw_3sf.end() ){
       ++arg_overlap_cnt;	
+      break;
     }
     else if ( vnw_1p.find( w_or_l ) != vnw_1p.end() &&
 	      vnw_1p.find( buffer[i] ) != vnw_1p.end() ){
       ++arg_overlap_cnt;
-    }
+       break;
+   }
     else if ( vnw_2p.find( w_or_l ) != vnw_2p.end() &&
 	      vnw_2p.find( buffer[i] ) != vnw_2p.end() ){
       ++arg_overlap_cnt;	
+      break;
     }
     else if ( vnw_3p.find( w_or_l ) != vnw_3p.end() &&
 	      vnw_3p.find( buffer[i] ) != vnw_3p.end() ){
       ++arg_overlap_cnt;	
+      break;
     }
   }
 }
@@ -1287,7 +1296,6 @@ void fill_word_lemma_buffers( const sentStats*,
 bool wordStats::isOverlapCandidate() const {
   if ( ( tag == CGN::VNW && prop != ISAANW ) ||
        ( tag == CGN::N ) ||
-       ( tag == CGN::ADJ ) ||
        ( pos == "SPEC(deeleigen)" ) ||
        ( tag == CGN::WW && wwform == HEAD_VERB ) )
     return true;
