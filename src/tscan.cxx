@@ -572,6 +572,7 @@ struct basicStats {
   virtual void toCSV( ostream& ) const =0;
   virtual void addMetrics( ) const = 0;
   virtual string text() const { return ""; };
+  virtual CGN::Type postag() const { return CGN::UNASS; };
   virtual ConnType getConnType() const { return NOCONN; };
   virtual vector<const wordStats*> collectWords() const = 0;
   FoliaElement *folia_node;
@@ -604,6 +605,7 @@ struct wordStats : public basicStats {
   void miscToCSV( ostream& ) const;
   void toCSV( ostream& ) const;
   string text() const { return word; };
+  CGN::Type postag() const { return tag; };
   ConnType getConnType() const { return connType; };
   void addMetrics( ) const;
   bool checkContent() const;
@@ -720,18 +722,18 @@ ConnType wordStats::checkConnective() const {
 				     bw_contrastList + sizeof(bw_contrastList)/sizeof(string) );
   
   static string vg_comparList[] = 
-    { "als", "alsof", "dan", "meer", "meest", 
-      "minder", "minst", "naargelang", "naarmate", "zoals" };
+    { "alsof", "dan", "meer", "meest", 
+      "minder", "minst", "naargelang", "naarmate", "net", "zoals" };
   static set<string> vg_comparatief( vg_comparList, 
 				     vg_comparList + sizeof(vg_comparList)/sizeof(string) );
   static string bw_comparList[] = 
-    { "als", "alsof", "meer", "meest", 
-      "minder", "minst", "naargelang", "naarmate", "zoals" };
+    { "alsof", "meer", "meest", 
+      "minder", "minst", "naargelang", "naarmate", "net", "zoals" };
   static set<string> bw_comparatief( bw_comparList, 
 				     bw_comparList + sizeof(bw_comparList)/sizeof(string) );
 
   static string causesList[] = 
-    { "aangezien", "als", "anders", "bijgevolg", 
+    { "aangezien", "anders", "bijgevolg", 
       "daar", "daardoor", "daarmee", "daarom", 
       "daartoe", "daarvoor", "dankzij", "derhalve",
       "dientengevolge", "doordat", "dus", "ergo", 
@@ -969,6 +971,10 @@ SemType get_sem_type( const string& word, const string& lemma, CGN::Type tag ){
   }
   else if ( tag == CGN::ADJ ) {
     map<string,string>::const_iterator it = settings.adj_sem.find( lemma );
+    if ( it == settings.adj_sem.end() ){
+      // lemma not found. maybe the whole word?
+      it = settings.adj_sem.find( word );
+    }
     if ( it != settings.adj_sem.end() ){
       string type = it->second;
       if ( type == "undefined" ){
@@ -984,26 +990,6 @@ SemType get_sem_type( const string& word, const string& lemma, CGN::Type tag ){
 	return ABSTRACT_ADJ;
       else 
 	return BROAD_ADJ;
-    }
-    else {
-      // lemma not found. maybe the whole word?
-      map<string,string>::const_iterator it = settings.adj_sem.find( word );
-      if ( it != settings.adj_sem.end() ){
-	string type = it->second;
-	if ( type == "undefined" ){
-	  // should never happen, because 'undefined' is not stored
-	  return UNFOUND;
-	}
-	else if ( type == "emomen" )
-	  return EMO_ADJ;
-	else if ( type == "phyper" || type == "stuff" || type == "colour" ){
-	  return CONCRETE_ADJ;
-	}
-	else if ( type == "abstract" )
-	  return ABSTRACT_ADJ;
-	else 
-	  return BROAD_ADJ;
-      }
     }
   }
   else if ( tag == CGN::WW ) {
@@ -2639,6 +2625,7 @@ struct sentStats : public structStats {
   bool isSentence() const { return true; };
   void resolveConnectives();
   void addMetrics( ) const;
+  bool checkAls( size_t );
   void check2Connectives( const string& );
   void check3Connectives( const string& );
 };
@@ -2731,28 +2718,70 @@ void np_length( Sentence *s, int& npcount, int& indefcount, int& size ) {
   }
 }
 
+bool sentStats::checkAls( size_t index ){
+  static string alsList[] = { "evenmin", "net", "zowel", "zomin" };
+  static set<string> alsSet( alsList, 
+			     alsList + sizeof(alsList)/sizeof(string) );
+  
+  string als = lowercase( sv[index]->text() );
+  if ( als == "als" ){
+    if ( index == 0 ){
+      // eerste woord, terugkijken kan dus niet
+      causeConnCnt++;      
+    }
+    else {
+      for ( size_t i = index-1; i+1 != 0; --i ){
+	// kijk naar "evenmin ... als" constructies
+	string word = lowercase( sv[i]->text() );
+	if ( alsSet.find( word ) != alsSet.end() ){
+	  compConnCnt++;      
+	  //	cerr << "ALS comparatief:" << word << endl;
+	  return true;
+	}
+      }
+      if ( sv[index]->postag() == CGN::VG ){
+	if ( sv[index-1]->postag() == CGN::ADJ ){
+	  // "groter als"
+	  //	cerr << "ALS comparatief: ADJ: " << sv[index-1]->text() << endl;
+	  compConnCnt++;
+	}
+	else {
+	  //	cerr << "ALS causaal: " << sv[index-1]->text() << endl;
+	  causeConnCnt++;
+	}
+	return true;
+      }
+    }
+    if ( index < sv.size() &&
+	 sv[index+1]->postag() == CGN::TW ){
+      // "als eerste" "als dertigste"
+      reeksConnCnt++;
+      return true;
+    }
+  }
+  return false;
+}
+
 void sentStats::check2Connectives( const string& mword ){
   static string temporal2List[] = {"de dato", "na dato"};
   static set<string> temporals_2( temporal2List, 
 				  temporal2List + sizeof(temporal2List)/sizeof(string) );
-
+  
   static string reeks2List[] = 
-    { "daarbij komt", "dan wel", "evenmin als", 
+    { "daarbij komt", "dan wel",
       "ten eerste", "ten tweede", "ten derde", "ten vierde", 
-      "als eerste", "als tweede", "als derde", "als vierde", 
-      "met name",
-      "zomin als", "zowel als" }; 
+      "met name" };
   static set<string> reeks_2( reeks2List, 
 			      reeks2List + sizeof(reeks2List)/sizeof(string) );
-
+  
   static string contrast2List[] = { "ook al", "zij het" };
   static set<string> contrastief_2( contrast2List, 
 				    contrast2List + sizeof(contrast2List)/sizeof(string) );
-
-  static string compar2List[] = { "net als" };
+  
+  static string compar2List[] = { };
   static set<string> comparatief_2( compar2List, 
 				    compar2List + sizeof(compar2List)/sizeof(string) );
-
+  
   static string causes2List[] = 
     { "dan ook", "tengevolge van", "vandaar dat", "zo ja", 
       "zo nee", "zo niet" };
@@ -2779,27 +2808,27 @@ void sentStats::check2Connectives( const string& mword ){
     causeConnCnt++;
     conn = CAUSAAL;
   }
-  //  cerr << "2-conn = " << conn << endl;
+  //   cerr << "2-conn = " << conn << endl;
 }
 
 void sentStats::check3Connectives( const string& mword ){
   static string temporal3List[] = {"a la minute", "hic et nunc"};
   static set<string> temporals_3( temporal3List, 
 				  temporal3List + sizeof(temporal3List)/sizeof(string) );
-
+  
   static string reeks3List[] = { "om te beginnen" };
   static set<string> reeks_3( reeks3List, 
 			      reeks3List + sizeof(reeks3List)/sizeof(string) );
-
+  
   static string contrast3List[] = 
     { "in plaats daarvan", "in tegenstelling tot", "zij het dat" };
   static set<string> contrastief_3( contrast3List, 
 				    contrast3List + sizeof(contrast3List)/sizeof(string) );
   
-  static string compar3List[] = { "net zo als" };
+  static string compar3List[] = {};
   static set<string> comparatief_3( compar3List, 
 				    compar3List + sizeof(compar3List)/sizeof(string) );
-
+  
   static string causes3List[] = { "met behulp van" };
   static set<string> causals_3( causes3List, 
 				causes3List + sizeof(causes3List)/sizeof(string) );
@@ -2824,18 +2853,23 @@ void sentStats::check3Connectives( const string& mword ){
     causeConnCnt++;
     conn = CAUSAAL;
   }
-  //  cerr << "3-conn = " << conn << endl;
+  //   cerr << "3-conn = " << conn << endl;
 }
 
 void sentStats::resolveConnectives(){
   if ( sv.size() > 1 ){
     for ( size_t i=0; i < sv.size()-2; ++i ){
-      string multiword2 = lowercase( sv[i]->text() )
-	+ " " + lowercase( sv[i+1]->text() );
-      //      cerr << "zoek op " << multiword2 << endl;
-      if ( sv[i+1]->getConnType() == NOCONN ){
-	// no result yet
-	check2Connectives( multiword2 );
+      string word = lowercase( sv[i]->text() );
+      string multiword2 = word + " " + lowercase( sv[i+1]->text() );
+      if ( !checkAls( i ) ){
+	// "als" is speciaal als het matcht met eerdere woorden.
+	// (evenmin ... als) (zowel ... als ) etc.
+	// In dat geval nie meer zoeken naar "als ..."
+	//      cerr << "zoek op " << multiword2 << endl;
+	if ( sv[i+1]->getConnType() == NOCONN ){
+	  // no result yet
+	  check2Connectives( multiword2 );
+	}
       }
       if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
 	propNegCnt++;
@@ -2957,7 +2991,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
   xmlDoc *alpDoc = 0;
   set<size_t> puncts;
   if ( settings.doSurprisal 
-       && w.size() != 1 ){ // the surpisal pasrer chokes on 1 word sentences
+       && w.size() != 1 ){ // the surpisal parser chokes on 1 word sentences
     surprisalV = runSurprisal( s, workdir_name, settings.surprisalPath );
     if ( surprisalV.size() != w.size() ){
       cerr << "MISMATCH! " << surprisalV.size() << " != " <<  w.size()<< endl;
