@@ -433,7 +433,41 @@ namespace CGN {
     else 
       return UNASS;
   }
+
+  string toString( const Type& t ){
+    switch ( t ){
+    case N:
+      return "N";
+    case ADJ:
+      return "ADJ";
+    case VNW:
+      return "VNW";
+    case LET:
+      return "LET";
+    case LID:
+      return "LID";
+    case SPEC:
+      return "SPEC";
+    case BW:
+      return "BW";
+    case WW:
+      return "WW";
+    case TW:
+      return "TW";
+    case VZ:
+      return "VZ";
+    case VG:
+      return "VG";
+    default:
+      return "UNASSIGNED";
+    }
+  }
 };
+
+ostream& operator<<( ostream& os, const CGN::Type t ){
+  os << toString( t );
+  return os;
+}
 
 enum WordProp { ISNAME, ISPUNCT, 
 		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL, ISSUBJ,
@@ -538,6 +572,11 @@ string toString( const SemType st ){
   default:
     return "invalid semtype value";
   }
+}
+
+ostream& operator<<( ostream& os, const SemType s ){
+  os << toString( s );
+  return os;
 }
 
 struct sentStats;
@@ -950,6 +989,7 @@ SemType get_sem_type( const string& word, const string& lemma, CGN::Type tag ){
     map<string,string>::const_iterator it = settings.noun_sem.find( lemma );
     if ( it != settings.noun_sem.end() ){
       string type = it->second;
+      cerr << "NOUN semtype(" << word << ") = " << type << endl;
       if ( type == "undefined" ){
 	// should never happen, because 'undefined' is not stored. 
 	return UNFOUND;
@@ -977,6 +1017,7 @@ SemType get_sem_type( const string& word, const string& lemma, CGN::Type tag ){
     }
     if ( it != settings.adj_sem.end() ){
       string type = it->second;
+      cerr << "ADJ semtype(" << word << " or " << lemma << ") = " << type << endl;
       if ( type == "undefined" ){
 	// should never happen, because 'undefined' is not stored
 	return UNFOUND;
@@ -996,6 +1037,7 @@ SemType get_sem_type( const string& word, const string& lemma, CGN::Type tag ){
     map<string,string>::const_iterator it = settings.verb_sem.find( lemma );
     if ( it != settings.verb_sem.end() ){
       string type = it->second;
+      cerr << "VERB semtype(" << word << ") = " << type << endl;
       if ( type == "undefined" ){
 	// should never happen, because 'undefined' is not stored
 	return UNFOUND;
@@ -1015,6 +1057,8 @@ SemType get_sem_type( const string& word, const string& lemma, CGN::Type tag ){
   
 SemType wordStats::checkSemProps( ) const {
   SemType type = get_sem_type( word, lemma, tag );
+  cerr << "get semtype( " << word << " [" << lemma << "], " << tag << ") ==> "
+       << type << endl;
   return type;
 }
 
@@ -2719,9 +2763,12 @@ void np_length( Sentence *s, int& npcount, int& indefcount, int& size ) {
 }
 
 bool sentStats::checkAls( size_t index ){
-  static string alsList[] = { "evenmin", "net", "zowel", "zomin" };
-  static set<string> alsSet( alsList, 
-			     alsList + sizeof(alsList)/sizeof(string) );
+  static string compAlsList[] = { "net", "evenmin", "zomin" };
+  static set<string> compAlsSet( compAlsList, 
+				 compAlsList + sizeof(compAlsList)/sizeof(string) );
+  static string reeksAlsList[] = { "zowel" };
+  static set<string> reeksAlsSet( reeksAlsList, 
+				  reeksAlsList + sizeof(reeksAlsList)/sizeof(string) );
   
   string als = lowercase( sv[index]->text() );
   if ( als == "als" ){
@@ -2731,11 +2778,17 @@ bool sentStats::checkAls( size_t index ){
     }
     else {
       for ( size_t i = index-1; i+1 != 0; --i ){
-	// kijk naar "evenmin ... als" constructies
 	string word = lowercase( sv[i]->text() );
-	if ( alsSet.find( word ) != alsSet.end() ){
+	if ( compAlsSet.find( word ) != compAlsSet.end() ){
+	  // kijk naar "evenmin ... als" constructies
 	  compConnCnt++;      
 	  //	cerr << "ALS comparatief:" << word << endl;
+	  return true;
+	}
+	else if ( reeksAlsSet.find( word ) != reeksAlsSet.end() ){
+	  // kijk naar "zowel ... als" constructies
+	  reeksConnCnt++;      
+	  //	cerr << "ALS opsommend:" << word << endl;
 	  return true;
 	}
       }
@@ -2755,7 +2808,7 @@ bool sentStats::checkAls( size_t index ){
     if ( index < sv.size() &&
 	 sv[index+1]->postag() == CGN::TW ){
       // "als eerste" "als dertigste"
-      reeksConnCnt++;
+      compConnCnt++;
       return true;
     }
   }
@@ -2864,7 +2917,7 @@ void sentStats::resolveConnectives(){
       if ( !checkAls( i ) ){
 	// "als" is speciaal als het matcht met eerdere woorden.
 	// (evenmin ... als) (zowel ... als ) etc.
-	// In dat geval nie meer zoeken naar "als ..."
+	// In dat gevalt nie meer zoeken naar "als ..."
 	//      cerr << "zoek op " << multiword2 << endl;
 	if ( sv[i+1]->getConnType() == NOCONN ){
 	  // no result yet
