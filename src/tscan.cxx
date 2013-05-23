@@ -984,12 +984,37 @@ double wordStats::checkPolarity( ) const {
   return NA;
 }
 
-SemType get_sem_type( const string& word, const string& lemma, CGN::Type tag ){
+SemType wordStats::checkSemProps( ) const {
   if ( tag == CGN::N ){
     map<string,string>::const_iterator it = settings.noun_sem.find( lemma );
     if ( it != settings.noun_sem.end() ){
       string type = it->second;
-      cerr << "NOUN semtype(" << word << ") = " << type << endl;
+      //      cerr << "NOUN semtype(" << word << ") = " << type << endl;
+      if ( type == "undefined" ){
+	// should never happen, because 'undefined' is not stored. 
+	return UNFOUND;
+      }
+      if ( type == "institut" ){
+	// ignore
+	return UNFOUND;
+      }
+      else if ( type == "human" )
+	return CONCRETE_HUMAN;
+      else if ( type == "concrother" || type == "substance" 
+		|| type == "artefact" || type == "nonhuman" )
+	return CONCRETE_NOUN;
+      else if ( type == "dynamic" || type == "nondynamic" )
+	return ABSTRACT_NOUN;
+      else 
+	return BROAD_NOUN;
+    }
+  }
+  else if ( prop == ISNAME ){
+    // Names are te be looked up in the Noun list too
+    map<string,string>::const_iterator it = settings.noun_sem.find( word );
+    if ( it != settings.noun_sem.end() ){
+      string type = it->second;
+      cerr << "SPEC semtype(" << word << ") = " << type << endl;
       if ( type == "undefined" ){
 	// should never happen, because 'undefined' is not stored. 
 	return UNFOUND;
@@ -1017,7 +1042,7 @@ SemType get_sem_type( const string& word, const string& lemma, CGN::Type tag ){
     }
     if ( it != settings.adj_sem.end() ){
       string type = it->second;
-      cerr << "ADJ semtype(" << word << " or " << lemma << ") = " << type << endl;
+      //      cerr << "ADJ semtype(" << word << " or " << lemma << ") = " << type << endl;
       if ( type == "undefined" ){
 	// should never happen, because 'undefined' is not stored
 	return UNFOUND;
@@ -1037,7 +1062,7 @@ SemType get_sem_type( const string& word, const string& lemma, CGN::Type tag ){
     map<string,string>::const_iterator it = settings.verb_sem.find( lemma );
     if ( it != settings.verb_sem.end() ){
       string type = it->second;
-      cerr << "VERB semtype(" << word << ") = " << type << endl;
+      //      cerr << "VERB semtype(" << word << ") = " << type << endl;
       if ( type == "undefined" ){
 	// should never happen, because 'undefined' is not stored
 	return UNFOUND;
@@ -1053,13 +1078,6 @@ SemType get_sem_type( const string& word, const string& lemma, CGN::Type tag ){
     }
   }
   return UNFOUND;
-}
-  
-SemType wordStats::checkSemProps( ) const {
-  SemType type = get_sem_type( word, lemma, tag );
-  cerr << "get semtype( " << word << " [" << lemma << "], " << tag << ") ==> "
-       << type << endl;
-  return type;
 }
 
 void wordStats::topFreqLookup(){
@@ -2445,11 +2463,11 @@ void structStats::concreetHeader( ostream& os ) const {
 }
 
 void structStats::concreetToCSV( ostream& os ) const {
-  if ( nounCnt == 0 ){
+  if ( (nounCnt + nameCnt) == 0 ){
     os << "NA,";
   }
   else {
-    os << strictConcreteNounCnt/double(nounCnt) << ",";
+    os << strictConcreteNounCnt/double(nounCnt+nameCnt) << ",";
   }
   if ( broadAbstractNounCnt == 0 ){
     os << "NA,";
@@ -2458,11 +2476,11 @@ void structStats::concreetToCSV( ostream& os ) const {
     os << strictConcreteNounCnt/double(broadAbstractNounCnt) << ",";
   }
   os << (strictConcreteNounCnt/double(wordCnt)) * 1000 << ",";
-  if ( nounCnt == 0 ){
+  if ( (nounCnt + nameCnt) == 0 ){
     os << "NA,";
   }
   else {
-    os << broadConcreteNounCnt/double(nounCnt) << ",";
+    os << broadConcreteNounCnt/double(nounCnt+nameCnt) << ",";
   }
   if ( broadAbstractNounCnt == 0 ){
     os << "NA,";
