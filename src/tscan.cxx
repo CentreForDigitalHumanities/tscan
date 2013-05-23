@@ -69,6 +69,128 @@ struct cf_data {
 };
 
 enum top_val { top1000, top2000, top3000, top5000, top10000, top20000, notFound  };
+
+enum SemType { UNFOUND, ABSTRACT_NOUN, ABSTRACT_ADJ, 
+	       BROAD_NOUN, BROAD_ADJ, EMO_ADJ, 
+	       CONCRETE_NOUN, CONCRETE_ADJ, 
+	       CONCRETE_HUMAN,  
+	       STATE, ACTION, PROCESS, WEIRD };
+
+string toString( const SemType st ){
+  switch ( st ){
+  case UNFOUND:
+    return "not_found";
+    break;
+  case CONCRETE_NOUN:
+    return "concrete-noun";
+    break;
+  case CONCRETE_ADJ:
+    return "concrete-adj";
+    break;
+  case CONCRETE_HUMAN:
+    return "concrete_human";
+    break;
+  case ABSTRACT_NOUN:
+    return "abstract-noun";
+    break;
+  case ABSTRACT_ADJ:
+    return "abstract-adj";
+    break;
+  case EMO_ADJ:
+    return "emo-adj";
+    break;
+  case BROAD_NOUN:
+    return "broad-noun";
+    break;
+  case BROAD_ADJ:
+    return "broad-adj";
+    break;
+  case STATE:
+    return "state";
+    break;
+  case ACTION:
+    return "action";
+    break;
+  case PROCESS:
+    return "process";
+    break;
+  case WEIRD:
+    return "weird";
+    break;
+  default:
+    return "invalid semtype value";
+  }
+}
+
+ostream& operator<<( ostream& os, const SemType s ){
+  os << toString( s );
+  return os;
+}
+
+namespace CGN {
+  enum Type { UNASS, ADJ, BW, LET, LID, N, SPEC, TSW, TW, VG, VNW, VZ, WW };
+
+  Type toCGN( const string& s ){
+    if ( s == "N" )
+      return N;
+    else if ( s == "ADJ" )
+      return ADJ;
+    else if ( s == "VNW" )
+      return VNW;
+    else if ( s == "LET" )
+      return LET;
+    else if ( s == "LID" )
+      return LID;
+    else if ( s == "SPEC" )
+      return SPEC;
+    else if ( s == "BW" )
+      return BW;
+    else if ( s == "WW" )
+      return WW;
+    else if ( s == "TW" )
+      return TW;
+    else if ( s == "VZ" )
+      return VZ;
+    else if ( s == "VG" )
+      return VG;
+    else 
+      return UNASS;
+  }
+
+  string toString( const Type& t ){
+    switch ( t ){
+    case N:
+      return "N";
+    case ADJ:
+      return "ADJ";
+    case VNW:
+      return "VNW";
+    case LET:
+      return "LET";
+    case LID:
+      return "LID";
+    case SPEC:
+      return "SPEC";
+    case BW:
+      return "BW";
+    case WW:
+      return "WW";
+    case TW:
+      return "TW";
+    case VZ:
+      return "VZ";
+    case VG:
+      return "VG";
+    default:
+      return "UNASSIGNED";
+    }
+  }
+};
+
+ostream& operator<<( ostream& os, const CGN::Type t ){
+  os << toString( t );
+  return os;
+}
  
 struct settingData {
   void init( const Configuration& );
@@ -85,8 +207,11 @@ struct settingData {
   unsigned int overlapSize;
   double polarity_threshold;
   map <string, string> adj_sem;
+  map <string, SemType> adj_sem2;
   map <string, string> noun_sem;
+  map <string, SemType> noun_sem2;
   map <string, string> verb_sem;
+  map <string, SemType> verb_sem2;
   map <string, double> pol_lex;
   map<string, cf_data> staph_word_freq_lex;
   map<string, cf_data> word_freq_lex;
@@ -147,6 +272,117 @@ bool fill( map<string,string>& m, const string& filename ){
   }
   return false;
 }
+
+SemType classifySem( CGN::Type tag, const string& s ){
+  if ( tag == CGN::N ){
+    if ( s == "undefined" ||
+	 s == "institut" )
+      return UNFOUND;
+    else if ( s == "concrother" ||
+	      s == "substance" ||
+	      s == "artefact" ||
+	      s == "nonhuman" )
+      return CONCRETE_NOUN;
+    else if ( s == "human" )
+      return CONCRETE_HUMAN;
+    else if ( s == "dynamic" ||
+	      s == "nondynamic" )
+      return ABSTRACT_NOUN;
+    else // "place", "time" and "measure"
+      return BROAD_NOUN;
+  }
+  else if ( tag == CGN::ADJ ){
+    if ( s == "undefined" )
+      return UNFOUND;
+    else if ( s == "phyper" ||
+	      s == "stuff" ||
+	      s == "colour" )
+      return CONCRETE_ADJ;
+    else if ( s == "abstract" )
+      return ABSTRACT_ADJ;
+    else if ( s == "emomen" )
+      return EMO_ADJ;
+    else // "place" and "temp"
+      return BROAD_ADJ;
+  }
+  else if ( tag == CGN::WW ){
+    if ( s == "undefined" ){
+      return UNFOUND;
+    }
+    else if ( s == "state" )
+      return STATE;
+    else if ( s == "action" )
+      return ACTION;
+    else if (s == "process" )
+      return PROCESS;
+    else
+      return WEIRD;
+  }
+}
+
+bool fill( CGN::Type tag, map<string,SemType>& m, istream& is ){
+  string line;
+  while( getline( is, line ) ){
+    vector<string> parts;
+    int n = split_at( line, parts, "\t" ); // split at tab
+    if ( n != 2 ){
+      cerr << "skip line: " << line << " (expected 2 values, got " 
+	   << n << ")" << endl;
+      continue;
+    }
+    vector<string> vals;
+    n = split_at( parts[1], vals, "," ); // split at ,
+    if ( n == 1 ){
+      if ( vals[0] != "undefined" ){
+	m[parts[0]] = classifySem( tag, vals[0] );
+      }
+    }
+    else if ( n == 0 ){
+      cerr << "skip line: " << line << " (expected some values, got none."
+	   << endl;
+      continue;
+    }
+    else {
+      SemType topval = UNFOUND;
+      if ( tag == CGN::WW ){
+	map<SemType,int> stats;
+	int max = 0;
+	for ( size_t i=0; i< vals.size(); ++i ){
+	  SemType val = classifySem( tag, vals[i] );
+	  if ( ++stats[val] > max ){
+	    max = stats[val];
+	    topval = val;
+	  }
+	}
+      }
+      else {
+	for ( size_t i=0; i< vals.size(); ++i ){
+	  SemType val = classifySem( tag, vals[i] );
+	  if ( val > topval ){
+	    topval = val;
+	  }
+	}
+      }
+      if ( topval != UNFOUND ){
+	// no use to store undefined values
+	m[parts[0]] = topval;
+      }
+    }
+  }
+  return true;
+}
+
+bool fill( CGN::Type tag, map<string,SemType>& m, const string& filename ){
+  ifstream is( filename.c_str() );
+  if ( is ){
+    return fill( tag, m, is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
 
 bool fill_pol( map<string,double>& m, istream& is ){
   string line;
@@ -324,15 +560,21 @@ void settingData::init( const Configuration& cf ){
   if ( !val.empty() ){
     if ( !fill( adj_sem, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
+    if ( !fill( CGN::ADJ, adj_sem2, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "noun_semtypes" );
   if ( !val.empty() ){
     if ( !fill( noun_sem, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
+    if ( !fill( CGN::N, noun_sem2, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "verb_semtypes" );
   if ( !val.empty() ){
     if ( !fill( verb_sem, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+    if ( !fill( CGN::WW, verb_sem2, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "polarity_threshold" );
@@ -404,71 +646,6 @@ void aggregate( multimap<DD_type,int>& out,
   }
 }
 
-namespace CGN {
-  enum Type { UNASS, ADJ, BW, LET, LID, N, SPEC, TSW, TW, VG, VNW, VZ, WW };
-
-  Type toCGN( const string& s ){
-    if ( s == "N" )
-      return N;
-    else if ( s == "ADJ" )
-      return ADJ;
-    else if ( s == "VNW" )
-      return VNW;
-    else if ( s == "LET" )
-      return LET;
-    else if ( s == "LID" )
-      return LID;
-    else if ( s == "SPEC" )
-      return SPEC;
-    else if ( s == "BW" )
-      return BW;
-    else if ( s == "WW" )
-      return WW;
-    else if ( s == "TW" )
-      return TW;
-    else if ( s == "VZ" )
-      return VZ;
-    else if ( s == "VG" )
-      return VG;
-    else 
-      return UNASS;
-  }
-
-  string toString( const Type& t ){
-    switch ( t ){
-    case N:
-      return "N";
-    case ADJ:
-      return "ADJ";
-    case VNW:
-      return "VNW";
-    case LET:
-      return "LET";
-    case LID:
-      return "LID";
-    case SPEC:
-      return "SPEC";
-    case BW:
-      return "BW";
-    case WW:
-      return "WW";
-    case TW:
-      return "TW";
-    case VZ:
-      return "VZ";
-    case VG:
-      return "VG";
-    default:
-      return "UNASSIGNED";
-    }
-  }
-};
-
-ostream& operator<<( ostream& os, const CGN::Type t ){
-  os << toString( t );
-  return os;
-}
-
 enum WordProp { ISNAME, ISPUNCT, 
 		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL, ISSUBJ,
 		ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
@@ -522,61 +699,6 @@ string toString( const ConnType& c ){
     return "causaal";
   else 
     throw "no translation for ConnType";
-}
-
-enum SemType { UNFOUND, CONCRETE_NOUN, CONCRETE_ADJ, CONCRETE_HUMAN, 
-	       ABSTRACT_NOUN, ABSTRACT_ADJ, BROAD_NOUN, BROAD_ADJ, EMO_ADJ,
-	       STATE, ACTION, PROCESS, WEIRD };
-
-string toString( const SemType st ){
-  switch ( st ){
-  case UNFOUND:
-    return "not_found";
-    break;
-  case CONCRETE_NOUN:
-    return "concrete-noun";
-    break;
-  case CONCRETE_ADJ:
-    return "concrete-adj";
-    break;
-  case CONCRETE_HUMAN:
-    return "concrete_human";
-    break;
-  case ABSTRACT_NOUN:
-    return "abstract-noun";
-    break;
-  case ABSTRACT_ADJ:
-    return "abstract-adj";
-    break;
-  case EMO_ADJ:
-    return "emo-adj";
-    break;
-  case BROAD_NOUN:
-    return "broad-noun";
-    break;
-  case BROAD_ADJ:
-    return "broad-adj";
-    break;
-  case STATE:
-    return "state";
-    break;
-  case ACTION:
-    return "action";
-    break;
-  case PROCESS:
-    return "process";
-    break;
-  case WEIRD:
-    return "weird";
-    break;
-  default:
-    return "invalid semtype value";
-  }
-}
-
-ostream& operator<<( ostream& os, const SemType s ){
-  os << toString( s );
-  return os;
 }
 
 struct sentStats;
@@ -986,55 +1108,53 @@ double wordStats::checkPolarity( ) const {
 
 SemType wordStats::checkSemProps( ) const {
   if ( tag == CGN::N ){
+    SemType sem2 = UNFOUND;
+    map<string,SemType>::const_iterator sit = settings.noun_sem2.find( lemma );
+    if ( sit != settings.noun_sem2.end() ){
+      sem2 = sit->second;
+    }
+    return sem2;
     map<string,string>::const_iterator it = settings.noun_sem.find( lemma );
     if ( it != settings.noun_sem.end() ){
       string type = it->second;
+      SemType sem = classifySem( tag, type );
+      if ( sem != sem2 ){
+	cerr << "verschil : " << lemma << " geeft " << sem << " versus " << sem2 << endl;
+      }
       //      cerr << "NOUN semtype(" << word << ") = " << type << endl;
-      if ( type == "undefined" ){
-	// should never happen, because 'undefined' is not stored. 
-	return UNFOUND;
-      }
-      if ( type == "institut" ){
-	// ignore
-	return UNFOUND;
-      }
-      else if ( type == "human" )
-	return CONCRETE_HUMAN;
-      else if ( type == "concrother" || type == "substance" 
-		|| type == "artefact" || type == "nonhuman" )
-	return CONCRETE_NOUN;
-      else if ( type == "dynamic" || type == "nondynamic" )
-	return ABSTRACT_NOUN;
-      else 
-	return BROAD_NOUN;
+      return sem;
     }
   }
   else if ( prop == ISNAME ){
     // Names are te be looked up in the Noun list too
+    SemType sem2 = UNFOUND;
+    map<string,SemType>::const_iterator sit = settings.noun_sem2.find( lemma );
+    if ( sit != settings.noun_sem2.end() ){
+      sem2 = sit->second;
+    }
+    return sem2;
     map<string,string>::const_iterator it = settings.noun_sem.find( word );
     if ( it != settings.noun_sem.end() ){
       string type = it->second;
-      cerr << "SPEC semtype(" << word << ") = " << type << endl;
-      if ( type == "undefined" ){
-	// should never happen, because 'undefined' is not stored. 
-	return UNFOUND;
+      SemType sem = classifySem( CGN::N, type );
+      if ( sem != sem2 ){
+	cerr << "verschil : " << lemma << " geeft " << sem << " versus " << sem2 << endl;
       }
-      if ( type == "institut" ){
-	// ignore
-	return UNFOUND;
-      }
-      else if ( type == "human" )
-	return CONCRETE_HUMAN;
-      else if ( type == "concrother" || type == "substance" 
-		|| type == "artefact" || type == "nonhuman" )
-	return CONCRETE_NOUN;
-      else if ( type == "dynamic" || type == "nondynamic" )
-	return ABSTRACT_NOUN;
-      else 
-	return BROAD_NOUN;
+      // cerr << "SPEC semtype(" << word << ") = " << type << endl;
+      return sem;
     }
   }
   else if ( tag == CGN::ADJ ) {
+    SemType sem2 = UNFOUND;
+    map<string,SemType>::const_iterator sit = settings.adj_sem2.find( lemma );
+    if ( sit == settings.adj_sem2.end() ){
+      // lemma not found. maybe the whole word?
+      sit = settings.adj_sem2.find( word );
+    }
+    if ( sit != settings.adj_sem2.end() ){
+      sem2 = sit->second;
+    }
+    return sem2;
     map<string,string>::const_iterator it = settings.adj_sem.find( lemma );
     if ( it == settings.adj_sem.end() ){
       // lemma not found. maybe the whole word?
@@ -1043,38 +1163,29 @@ SemType wordStats::checkSemProps( ) const {
     if ( it != settings.adj_sem.end() ){
       string type = it->second;
       //      cerr << "ADJ semtype(" << word << " or " << lemma << ") = " << type << endl;
-      if ( type == "undefined" ){
-	// should never happen, because 'undefined' is not stored
-	return UNFOUND;
+      SemType sem = classifySem( tag, type );
+      if ( sem != sem2 ){
+	cerr << "verschil : " << lemma << " geeft " << sem << " versus " << sem2 << endl;
       }
-      else if ( type == "emomen" )
-	return EMO_ADJ;
-      else if ( type == "phyper" || type == "stuff" || type == "colour" ){
-	return CONCRETE_ADJ;
-      }
-      else if ( type == "abstract" )
-	return ABSTRACT_ADJ;
-      else 
-	return BROAD_ADJ;
+      return sem;
     }
   }
   else if ( tag == CGN::WW ) {
+    SemType sem2 = UNFOUND;
+    map<string,SemType>::const_iterator sit = settings.verb_sem2.find( lemma );
+    if ( sit != settings.verb_sem2.end() ){
+      sem2 = sit->second;
+    }
+    return sem2;
     map<string,string>::const_iterator it = settings.verb_sem.find( lemma );
     if ( it != settings.verb_sem.end() ){
       string type = it->second;
       //      cerr << "VERB semtype(" << word << ") = " << type << endl;
-      if ( type == "undefined" ){
-	// should never happen, because 'undefined' is not stored
-	return UNFOUND;
+      SemType sem = classifySem( tag, type );
+      if ( sem != sem2 ){
+	cerr << "verschil : " << lemma << " geeft " << sem << " versus " << sem2 << endl;
       }
-      else if ( type == "state" )
-	return STATE;
-      else if ( type == "action" )
-	return ACTION;
-      else if ( type == "process" )
-	return PROCESS;
-      else
-	return WEIRD;
+      return sem;
     }
   }
   return UNFOUND;
@@ -3331,11 +3442,11 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	broadConcreteAdjCnt++;
 	break;
       case ABSTRACT_NOUN:
-	strictAbstractNounCnt++;
+	strictAbstractNounCnt++; // UNUSED
 	broadAbstractNounCnt++;
 	break;
       case ABSTRACT_ADJ:
-	strictAbstractAdjCnt++;
+	strictAbstractAdjCnt++; // UNUSED
 	broadAbstractAdjCnt++;
 	break;
       case BROAD_NOUN:
