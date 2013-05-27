@@ -3199,7 +3199,8 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
   for ( size_t i=0; i < w.size(); ++i ){
     wordStats *ws = new wordStats( w[i], alpDoc, puncts );
     ws->surprisal = surprisalV[i];
-    ws->logprob10 = woprProbsV[i];
+    if ( woprProbsV[i] != -99 )
+      ws->logprob10 = woprProbsV[i];
     if ( pred ){
       ws->getSentenceOverlap( wordbuffer, lemmabuffer );
     }
