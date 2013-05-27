@@ -206,12 +206,9 @@ struct settingData {
   int rarityLevel;
   unsigned int overlapSize;
   double polarity_threshold;
-  map <string, string> adj_sem;
-  map <string, SemType> adj_sem2;
-  map <string, string> noun_sem;
-  map <string, SemType> noun_sem2;
-  map <string, string> verb_sem;
-  map <string, SemType> verb_sem2;
+  map <string, SemType> adj_sem;
+  map <string, SemType> noun_sem;
+  map <string, SemType> verb_sem;
   map <string, double> pol_lex;
   map<string, cf_data> staph_word_freq_lex;
   map<string, cf_data> word_freq_lex;
@@ -220,58 +217,6 @@ struct settingData {
 };
 
 settingData settings;
-
-bool fill( map<string,string>& m, istream& is ){
-  string line;
-  while( getline( is, line ) ){
-    vector<string> parts;
-    int n = split_at( line, parts, "\t" ); // split at tab
-    if ( n != 2 ){
-      cerr << "skip line: " << line << " (expected 2 values, got " 
-	   << n << ")" << endl;
-      continue;
-    }
-    vector<string> vals;
-    n = split_at( parts[1], vals, "," ); // split at ,
-    if ( n == 1 ){
-      if ( vals[0] != "undefined" ){
-	m[parts[0]] = vals[0];
-      }
-    }
-    else if ( n == 0 ){
-      cerr << "skip line: " << line << " (expected some values, got none."
-	   << endl;
-      continue;
-    }
-    else {
-      map<string,int> stats;
-      int max = 0;
-      string topval;
-      for ( size_t i=0; i< vals.size(); ++i ){
-	if ( ++stats[vals[i]] > max ){
-	  max = stats[vals[i]];
-	  topval = vals[i];
-	}
-      }
-      if ( topval != "undefined" ){
-	// no use to store undefined values
-	m[parts[0]] = topval;
-      }
-    }
-  }
-  return true;
-}
-
-bool fill( map<string,string>& m, const string& filename ){
-  ifstream is( filename.c_str() );
-  if ( is ){
-    return fill( m, is );
-  }
-  else {
-    cerr << "couldn't open file: " << filename << endl;
-  }
-  return false;
-}
 
 SemType classifySem( CGN::Type tag, const string& s ){
   if ( tag == CGN::N ){
@@ -417,6 +362,9 @@ bool fill( CGN::Type tag, map<string,SemType>& m, istream& is ){
 	    topval = res;
 	  }
 	}
+      }
+      if ( m.find(parts[0]) != m.end() ){
+	cerr << "multiple entry '" << parts[0] << "' in " << tag << " lex" << endl;
       }
       if ( topval != UNFOUND ){
 	// no use to store undefined values
@@ -613,23 +561,17 @@ void settingData::init( const Configuration& cf ){
   }
   val = cf.lookUp( "adj_semtypes" );
   if ( !val.empty() ){
-    if ( !fill( adj_sem, cf.configDir() + "/" + val ) )
-      exit( EXIT_FAILURE );
-    if ( !fill( CGN::ADJ, adj_sem2, cf.configDir() + "/" + val ) )
+    if ( !fill( CGN::ADJ, adj_sem, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "noun_semtypes" );
   if ( !val.empty() ){
-    if ( !fill( noun_sem, cf.configDir() + "/" + val ) )
-      exit( EXIT_FAILURE );
-    if ( !fill( CGN::N, noun_sem2, cf.configDir() + "/" + val ) )
+    if ( !fill( CGN::N, noun_sem, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "verb_semtypes" );
   if ( !val.empty() ){
-    if ( !fill( verb_sem, cf.configDir() + "/" + val ) )
-      exit( EXIT_FAILURE );
-    if ( !fill( CGN::WW, verb_sem2, cf.configDir() + "/" + val ) )
+    if ( !fill( CGN::WW, verb_sem, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "polarity_threshold" );
@@ -1164,84 +1106,40 @@ double wordStats::checkPolarity( ) const {
 SemType wordStats::checkSemProps( ) const {
   if ( tag == CGN::N ){
     SemType sem2 = UNFOUND;
-    map<string,SemType>::const_iterator sit = settings.noun_sem2.find( lemma );
-    if ( sit != settings.noun_sem2.end() ){
+    map<string,SemType>::const_iterator sit = settings.noun_sem.find( lemma );
+    if ( sit != settings.noun_sem.end() ){
       sem2 = sit->second;
     }
     return sem2;
-    map<string,string>::const_iterator it = settings.noun_sem.find( lemma );
-    if ( it != settings.noun_sem.end() ){
-      string type = it->second;
-      SemType sem = classifySem( tag, type );
-      if ( sem != sem2 ){
-	cerr << "verschil : " << lemma << " geeft " << sem << " versus " << sem2 << endl;
-      }
-      //      cerr << "NOUN semtype(" << word << ") = " << type << endl;
-      return sem;
-    }
   }
   else if ( prop == ISNAME ){
     // Names are te be looked up in the Noun list too
     SemType sem2 = UNFOUND;
-    map<string,SemType>::const_iterator sit = settings.noun_sem2.find( lemma );
-    if ( sit != settings.noun_sem2.end() ){
+    map<string,SemType>::const_iterator sit = settings.noun_sem.find( lemma );
+    if ( sit != settings.noun_sem.end() ){
       sem2 = sit->second;
     }
     return sem2;
-    map<string,string>::const_iterator it = settings.noun_sem.find( word );
-    if ( it != settings.noun_sem.end() ){
-      string type = it->second;
-      SemType sem = classifySem( CGN::N, type );
-      if ( sem != sem2 ){
-	cerr << "verschil : " << lemma << " geeft " << sem << " versus " << sem2 << endl;
-      }
-      // cerr << "SPEC semtype(" << word << ") = " << type << endl;
-      return sem;
-    }
   }
   else if ( tag == CGN::ADJ ) {
     SemType sem2 = UNFOUND;
-    map<string,SemType>::const_iterator sit = settings.adj_sem2.find( lemma );
-    if ( sit == settings.adj_sem2.end() ){
+    map<string,SemType>::const_iterator sit = settings.adj_sem.find( lemma );
+    if ( sit == settings.adj_sem.end() ){
       // lemma not found. maybe the whole word?
-      sit = settings.adj_sem2.find( word );
+      sit = settings.adj_sem.find( word );
     }
-    if ( sit != settings.adj_sem2.end() ){
+    if ( sit != settings.adj_sem.end() ){
       sem2 = sit->second;
     }
     return sem2;
-    map<string,string>::const_iterator it = settings.adj_sem.find( lemma );
-    if ( it == settings.adj_sem.end() ){
-      // lemma not found. maybe the whole word?
-      it = settings.adj_sem.find( word );
-    }
-    if ( it != settings.adj_sem.end() ){
-      string type = it->second;
-      //      cerr << "ADJ semtype(" << word << " or " << lemma << ") = " << type << endl;
-      SemType sem = classifySem( tag, type );
-      if ( sem != sem2 ){
-	cerr << "verschil : " << lemma << " geeft " << sem << " versus " << sem2 << endl;
-      }
-      return sem;
-    }
   }
   else if ( tag == CGN::WW ) {
     SemType sem2 = UNFOUND;
-    map<string,SemType>::const_iterator sit = settings.verb_sem2.find( lemma );
-    if ( sit != settings.verb_sem2.end() ){
+    map<string,SemType>::const_iterator sit = settings.verb_sem.find( lemma );
+    if ( sit != settings.verb_sem.end() ){
       sem2 = sit->second;
     }
     return sem2;
-    map<string,string>::const_iterator it = settings.verb_sem.find( lemma );
-    if ( it != settings.verb_sem.end() ){
-      string type = it->second;
-      //      cerr << "VERB semtype(" << word << ") = " << type << endl;
-      SemType sem = classifySem( tag, type );
-      if ( sem != sem2 ){
-	cerr << "verschil : " << lemma << " geeft " << sem << " versus " << sem2 << endl;
-      }
-      return sem;
-    }
   }
   return UNFOUND;
 }
