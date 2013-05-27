@@ -3182,7 +3182,9 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
     } // omp section
   } // omp sections
 
-  avg_prob10 = sentProb;
+  if ( sentProb != -99 ){
+    avg_prob10 = sentProb;
+  }
   entropy = sentEntropy;
   perplexity = sentPerplexity;
   //  cerr << "PUNCTS " << puncts << endl;
