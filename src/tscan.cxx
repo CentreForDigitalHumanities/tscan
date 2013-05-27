@@ -73,7 +73,7 @@ enum top_val { top1000, top2000, top3000, top5000, top10000, top20000, notFound 
 enum SemType { UNFOUND, ABSTRACT_NOUN, ABSTRACT_ADJ, 
 	       BROAD_NOUN, BROAD_ADJ, EMO_ADJ, 
 	       CONCRETE_NOUN, CONCRETE_ADJ, 
-	       CONCRETE_HUMAN,  
+	       CONCRETE_HUMAN_NOUN,  
 	       STATE, ACTION, PROCESS, WEIRD };
 
 string toString( const SemType st ){
@@ -87,7 +87,7 @@ string toString( const SemType st ){
   case CONCRETE_ADJ:
     return "concrete-adj";
     break;
-  case CONCRETE_HUMAN:
+  case CONCRETE_HUMAN_NOUN:
     return "concrete_human";
     break;
   case ABSTRACT_NOUN:
@@ -284,7 +284,7 @@ SemType classifySem( CGN::Type tag, const string& s ){
 	      s == "nonhuman" )
       return CONCRETE_NOUN;
     else if ( s == "human" )
-      return CONCRETE_HUMAN;
+      return CONCRETE_HUMAN_NOUN;
     else if ( s == "dynamic" ||
 	      s == "nondynamic" )
       return ABSTRACT_NOUN;
@@ -355,11 +355,66 @@ bool fill( CGN::Type tag, map<string,SemType>& m, istream& is ){
 	  }
 	}
       }
-      else {
+      else { // N or ADJ
+	map<SemType,int> stats;
 	for ( size_t i=0; i< vals.size(); ++i ){
 	  SemType val = classifySem( tag, vals[i] );
-	  if ( val > topval ){
-	    topval = val;
+	  stats[val]++;
+	}
+	if ( tag == CGN::N ){
+	  // possible values are (from high to low)
+	  // CONCRETE_NOUN CONCRETE_HUMAN_NOUN ( strict )
+	  // BROAD_NOUN ( broad )
+	  // ABSTRACT_NOUN ( none )
+	  // UNFOUND
+	  SemType res = UNFOUND;
+	  int concr_cnt = stats[CONCRETE_NOUN];
+	  int hum_cnt = stats[CONCRETE_HUMAN_NOUN];
+	  if ( concr_cnt == hum_cnt ){
+	    if ( concr_cnt != 0 )
+	      res = CONCRETE_NOUN;
+	  }
+	  else if ( concr_cnt > hum_cnt )
+	    res = CONCRETE_NOUN;
+	  else 
+	    res = CONCRETE_HUMAN_NOUN;
+	  if ( res == UNFOUND ){
+	    if ( stats[BROAD_NOUN] > 0 )
+	      res = BROAD_NOUN;
+	    else if ( stats[ABSTRACT_NOUN] > 0 ){
+	      res = ABSTRACT_NOUN;
+	    }
+	  }
+	  topval = res;
+	}
+	else {
+	  // CGN::ADJ
+	  // possible values are (from high to low)
+	  // CONCRETE_ADJ (strict)
+	  // BROAD_ADJ EMO_ADJ (broad)
+	  // ABSTRACT_ADJ (none)
+	  // UNFOUND
+	  if ( stats[CONCRETE_ADJ] > 0 ){
+	    topval = CONCRETE_ADJ;
+	  }
+	  else {
+	    SemType res = UNFOUND;
+	    int broad_cnt = stats[BROAD_ADJ];
+	    int emo_cnt = stats[EMO_ADJ];
+	    if ( broad_cnt == emo_cnt ){
+	      if ( emo_cnt != 0 )
+		res = EMO_ADJ;
+	    }
+	    else if ( broad_cnt > emo_cnt )
+	      res = BROAD_ADJ;
+	    else 
+	      res = EMO_ADJ;
+	    if ( res == UNFOUND ){
+	      if ( stats[ABSTRACT_ADJ] > 0 ){
+		res = ABSTRACT_ADJ;
+	      }
+	    }
+	    topval = res;
 	  }
 	}
       }
@@ -1423,7 +1478,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
     if (alpDoc) isNominal = checkNominal( w, alpDoc );
     polarity = checkPolarity();
     sem_type = checkSemProps();
-    if ( sem_type == CONCRETE_HUMAN ||
+    if ( sem_type == CONCRETE_HUMAN_NOUN ||
 	 prop == ISNAME ||
 	 prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3 ){
       isPersRef = true;
@@ -1675,7 +1730,7 @@ void wordStats::concreetHeader( ostream& os ) const {
 }
 
 void wordStats::concreetToCSV( ostream& os ) const {
-  if ( sem_type == CONCRETE_HUMAN || sem_type == CONCRETE_NOUN ){
+  if ( sem_type == CONCRETE_HUMAN_NOUN || sem_type == CONCRETE_NOUN ){
     os << "1,1,0,0,";
   }
   else if ( sem_type == BROAD_NOUN ){
@@ -1711,7 +1766,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << (sem_type == ACTION ) << ","
      << (sem_type == STATE ) << ","
      << (sem_type == PROCESS ) << ","
-     << (sem_type == CONCRETE_HUMAN ) << ","
+     << (sem_type == CONCRETE_HUMAN_NOUN ) << ","
      << (sem_type == EMO_ADJ ) << ","
      << isImperative << ","
      << "NA,";
@@ -3430,7 +3485,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	  polarity += ws->polarity;
       }
       switch ( ws->sem_type ){
-      case CONCRETE_HUMAN:
+      case CONCRETE_HUMAN_NOUN:
 	humanCnt++;
 	// fall throug
       case CONCRETE_NOUN:
