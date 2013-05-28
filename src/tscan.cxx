@@ -1047,7 +1047,9 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
   else if ( tag == CGN::VNW ){
     string vwtype = pa->feat("vwtype");
     isBetr = vwtype == "betr";
-    if ( lowercase( word ) != "men" ){
+    if ( lowercase( word ) != "men" 
+	 && lowercase( word ) != "er"
+	 && lowercase( word ) != "het" ){
       string cas = pa->feat("naamval");
       archaic = ( cas == "gen" || cas == "dat" );
       if ( vwtype == "pers" || vwtype == "refl" 
@@ -1158,10 +1160,18 @@ void wordStats::freqLookup(){
     word_freq = it->second.count;
     word_freq_log = log10(word_freq);
   }
+  else {
+    word_freq = 1;
+    word_freq_log = 0;
+  }
   it = settings.lemma_freq_lex.find( lowercase(lemma) );
   if ( it != settings.lemma_freq_lex.end() ){
     lemma_freq = it->second.count;
     lemma_freq_log = log10(lemma_freq);
+  }
+  else {
+    lemma_freq = 1;
+    lemma_freq_log = 0;
   }
 }
 
@@ -1316,6 +1326,17 @@ void argument_overlap( const string w_or_l,
   }
 }
 
+bool isLijdend( const multimap<DD_type,int>& distances ){
+  multimap<DD_type,int>::const_iterator it = distances.begin();
+  while ( it != distances.end() ){
+    if ( it->first == OBJ2_VERB && it->second > 0 ){
+      return true;
+    }
+    ++it;
+  }
+  return false;
+}
+
 
 wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
   basicStats( w, "WORD" ), wwform(::NO_VERB),
@@ -1340,13 +1361,14 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
   lemma = w->lemma( frog_lemma_set );
   prop = checkProps( pa );
   if ( alpDoc ){
+    distances = getDependencyDist( w, alpDoc, puncts);
     if ( tag == CGN::WW ){
       wwform = classifyVerb( w, alpDoc );
-      if ( prop == ISPVTGW || prop == ISPVVERL ){
+      if ( prop == ISPVTGW || prop == ISPVVERL &&
+	   !isLijdend( distances ) ){
 	isImperative = checkImp( w, alpDoc );
       }
     }
-    distances = getDependencyDist( w, alpDoc, puncts);
   }
   isContent = checkContent();
   if ( prop != ISPUNCT ){
@@ -2242,7 +2264,7 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "log_word_freq_no_names", toString(word_freq_log_n) );
   addOneMetric( doc, el, "lemma_freq", toString(lemma_freq) );
   addOneMetric( doc, el, "lemma_freq_no_names", toString(lemma_freq_n) );
-  if ( word_freq_log != NA  )
+  if ( lemma_freq_log != NA  )
     addOneMetric( doc, el, "log_lemma_freq", toString(lemma_freq_log) );
   if ( lemma_freq_log_n != NA  )
     addOneMetric( doc, el, "log_lemma_freq_no_names", toString(lemma_freq_log_n) );
