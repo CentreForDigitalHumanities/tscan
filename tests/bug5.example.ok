@@ -3,13 +3,13 @@
 <FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v0.11">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2013-05-27T16:58:04" set="tscan-tokconfig-nl"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2013-05-27T16:58:04" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2013-05-28T15:16:23" set="tscan-tokconfig-nl"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2013-05-28T15:16:23" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
       <pos-annotation annotator="tscan" set="tscan-set"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2013-05-27T16:58:04" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2013-05-27T16:58:04" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2013-05-27T16:58:04" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2013-05-27T16:58:04" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2013-05-28T15:16:23" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2013-05-28T15:16:23" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2013-05-28T15:16:23" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2013-05-28T15:16:23" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
     </annotations>
   </metadata>
@@ -93,8 +93,10 @@
           <lemma class="hot"/>
           <metric class="content_word" value="true"/>
           <metric class="top5000" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -308,14 +310,14 @@
         <metric class="top5000" value="7"/>
         <metric class="top10000" value="7"/>
         <metric class="top20000" value="7"/>
-        <metric class="word_freq" value="170"/>
-        <metric class="word_freq_no_names" value="170"/>
+        <metric class="word_freq" value="171"/>
+        <metric class="word_freq_no_names" value="171"/>
         <metric class="log_word_freq" value="1.92942"/>
-        <metric class="log_word_freq_no_names" value="2.23045"/>
-        <metric class="lemma_freq" value="170"/>
-        <metric class="lemma_freq_no_names" value="170"/>
+        <metric class="log_word_freq_no_names" value="2.233"/>
+        <metric class="lemma_freq" value="171"/>
+        <metric class="lemma_freq_no_names" value="171"/>
         <metric class="log_lemma_freq" value="1.92942"/>
-        <metric class="log_lemma_freq_no_names" value="2.23045"/>
+        <metric class="log_lemma_freq_no_names" value="2.233"/>
         <metric class="surprisal" value="8.56314"/>
         <metric class="wopr_logprob" value="0.000467172"/>
         <metric class="wopr_entropy" value="0.513951"/>
@@ -419,14 +421,14 @@
       <metric class="top5000" value="7"/>
       <metric class="top10000" value="7"/>
       <metric class="top20000" value="7"/>
-      <metric class="word_freq" value="170"/>
-      <metric class="word_freq_no_names" value="170"/>
+      <metric class="word_freq" value="171"/>
+      <metric class="word_freq_no_names" value="171"/>
       <metric class="log_word_freq" value="1.92942"/>
-      <metric class="log_word_freq_no_names" value="2.23045"/>
-      <metric class="lemma_freq" value="170"/>
-      <metric class="lemma_freq_no_names" value="170"/>
+      <metric class="log_word_freq_no_names" value="2.233"/>
+      <metric class="lemma_freq" value="171"/>
+      <metric class="lemma_freq_no_names" value="171"/>
       <metric class="log_lemma_freq" value="1.92942"/>
-      <metric class="log_lemma_freq_no_names" value="2.23045"/>
+      <metric class="log_lemma_freq_no_names" value="2.233"/>
       <metric class="surprisal" value="8.56314"/>
       <metric class="wopr_logprob" value="0.000467172"/>
       <metric class="wopr_entropy" value="0.513951"/>
@@ -845,8 +847,6 @@
             </morpheme>
           </morphology>
           <lemma class="het"/>
-          <metric class="pers_ref" value="true"/>
-          <metric class="pron_ref" value="true"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -860,7 +860,6 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="surprisal" value="4.74743"/>
           <metric class="lprob10" value="-1.08843"/>
-          <metric class="property" value="voornaamwoord_3"/>
         </w>
         <w xml:id="tscan.p.2.s.1.w.15" class="WORD">
           <t>maar</t>
@@ -1124,8 +1123,10 @@
           </morphology>
           <lemma class="ab-so-luut"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -1326,13 +1327,13 @@
         <metric class="name_count" value="0"/>
         <metric class="pers_pron_1_count" value="2"/>
         <metric class="pers_pron_2_count" value="2"/>
-        <metric class="pres_pron_3_count" value="3"/>
+        <metric class="pres_pron_3_count" value="2"/>
         <metric class="passive_count" value="0"/>
         <metric class="modal_count" value="2"/>
         <metric class="time_count" value="1"/>
         <metric class="koppel_count" value="0"/>
-        <metric class="pers_ref_count" value="3"/>
-        <metric class="pron_ref_count" value="1"/>
+        <metric class="pers_ref_count" value="2"/>
+        <metric class="pron_ref_count" value="0"/>
         <metric class="archaic_count" value="0"/>
         <metric class="content_count" value="10"/>
         <metric class="nominal_count" value="0"/>
@@ -1375,12 +1376,12 @@
         <metric class="top5000" value="20"/>
         <metric class="top10000" value="22"/>
         <metric class="top20000" value="22"/>
-        <metric class="word_freq" value="5170"/>
-        <metric class="word_freq_no_names" value="5170"/>
+        <metric class="word_freq" value="5171"/>
+        <metric class="word_freq_no_names" value="5171"/>
         <metric class="log_word_freq" value="2.71349"/>
         <metric class="log_word_freq_no_names" value="2.71349"/>
-        <metric class="lemma_freq" value="6363"/>
-        <metric class="lemma_freq_no_names" value="6363"/>
+        <metric class="lemma_freq" value="6364"/>
+        <metric class="lemma_freq_no_names" value="6364"/>
         <metric class="log_lemma_freq" value="2.80346"/>
         <metric class="log_lemma_freq_no_names" value="2.80346"/>
         <metric class="polarity" value="0.398674"/>
@@ -1441,13 +1442,13 @@
       <metric class="name_count" value="0"/>
       <metric class="pers_pron_1_count" value="2"/>
       <metric class="pers_pron_2_count" value="2"/>
-      <metric class="pres_pron_3_count" value="3"/>
+      <metric class="pres_pron_3_count" value="2"/>
       <metric class="passive_count" value="0"/>
       <metric class="modal_count" value="2"/>
       <metric class="time_count" value="1"/>
       <metric class="koppel_count" value="0"/>
-      <metric class="pers_ref_count" value="3"/>
-      <metric class="pron_ref_count" value="1"/>
+      <metric class="pers_ref_count" value="2"/>
+      <metric class="pron_ref_count" value="0"/>
       <metric class="archaic_count" value="0"/>
       <metric class="content_count" value="10"/>
       <metric class="nominal_count" value="0"/>
@@ -1490,12 +1491,12 @@
       <metric class="top5000" value="20"/>
       <metric class="top10000" value="22"/>
       <metric class="top20000" value="22"/>
-      <metric class="word_freq" value="5170"/>
-      <metric class="word_freq_no_names" value="5170"/>
+      <metric class="word_freq" value="5171"/>
+      <metric class="word_freq_no_names" value="5171"/>
       <metric class="log_word_freq" value="2.71349"/>
       <metric class="log_word_freq_no_names" value="2.71349"/>
-      <metric class="lemma_freq" value="6363"/>
-      <metric class="lemma_freq_no_names" value="6363"/>
+      <metric class="lemma_freq" value="6364"/>
+      <metric class="lemma_freq_no_names" value="6364"/>
       <metric class="log_lemma_freq" value="2.80346"/>
       <metric class="log_lemma_freq_no_names" value="2.80346"/>
       <metric class="polarity" value="0.398674"/>
@@ -2322,7 +2323,8 @@
           <pos class="wwform(hoofdww)" set="tscan-set"/>
           <metric class="content_word" value="true"/>
           <metric class="top10000" value="true"/>
-          <metric class="word_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
           <metric class="lemma_freq" value="3"/>
           <metric class="log_lemma_freq" value="0.477121"/>
           <metric class="argument_repeat_count" value="0"/>
@@ -2436,8 +2438,6 @@
             </morpheme>
           </morphology>
           <lemma class="het"/>
-          <metric class="pers_ref" value="true"/>
-          <metric class="pron_ref" value="true"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -2451,7 +2451,6 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="surprisal" value="1.27121"/>
           <metric class="lprob10" value="-1.05918"/>
-          <metric class="property" value="voornaamwoord_3"/>
         </w>
         <w xml:id="tscan.p.5.s.1.w.6" class="WORD">
           <t>lang</t>
@@ -2898,13 +2897,13 @@
         <metric class="name_count" value="0"/>
         <metric class="pers_pron_1_count" value="1"/>
         <metric class="pers_pron_2_count" value="1"/>
-        <metric class="pres_pron_3_count" value="2"/>
+        <metric class="pres_pron_3_count" value="1"/>
         <metric class="passive_count" value="0"/>
         <metric class="modal_count" value="1"/>
         <metric class="time_count" value="1"/>
         <metric class="koppel_count" value="0"/>
-        <metric class="pers_ref_count" value="3"/>
-        <metric class="pron_ref_count" value="1"/>
+        <metric class="pers_ref_count" value="2"/>
+        <metric class="pron_ref_count" value="0"/>
         <metric class="archaic_count" value="0"/>
         <metric class="content_count" value="7"/>
         <metric class="nominal_count" value="0"/>
@@ -2947,8 +2946,8 @@
         <metric class="top5000" value="15"/>
         <metric class="top10000" value="16"/>
         <metric class="top20000" value="16"/>
-        <metric class="word_freq" value="1207"/>
-        <metric class="word_freq_no_names" value="1207"/>
+        <metric class="word_freq" value="1208"/>
+        <metric class="word_freq_no_names" value="1208"/>
         <metric class="log_word_freq" value="2.23553"/>
         <metric class="log_word_freq_no_names" value="2.23553"/>
         <metric class="lemma_freq" value="1097"/>
@@ -3008,13 +3007,13 @@
       <metric class="name_count" value="0"/>
       <metric class="pers_pron_1_count" value="1"/>
       <metric class="pers_pron_2_count" value="1"/>
-      <metric class="pres_pron_3_count" value="2"/>
+      <metric class="pres_pron_3_count" value="1"/>
       <metric class="passive_count" value="0"/>
       <metric class="modal_count" value="1"/>
       <metric class="time_count" value="1"/>
       <metric class="koppel_count" value="0"/>
-      <metric class="pers_ref_count" value="3"/>
-      <metric class="pron_ref_count" value="1"/>
+      <metric class="pers_ref_count" value="2"/>
+      <metric class="pron_ref_count" value="0"/>
       <metric class="archaic_count" value="0"/>
       <metric class="content_count" value="7"/>
       <metric class="nominal_count" value="0"/>
@@ -3057,8 +3056,8 @@
       <metric class="top5000" value="15"/>
       <metric class="top10000" value="16"/>
       <metric class="top20000" value="16"/>
-      <metric class="word_freq" value="1207"/>
-      <metric class="word_freq_no_names" value="1207"/>
+      <metric class="word_freq" value="1208"/>
+      <metric class="word_freq_no_names" value="1208"/>
       <metric class="log_word_freq" value="2.23553"/>
       <metric class="log_word_freq_no_names" value="2.23553"/>
       <metric class="lemma_freq" value="1097"/>
@@ -3246,8 +3245,10 @@
           </morphology>
           <lemma class="blasé"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -3404,8 +3405,10 @@
           </morphology>
           <lemma class="ordinair"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -3465,8 +3468,10 @@
           <lemma class="laagbegaafd"/>
           <metric class="content_word" value="true"/>
           <metric class="compound_length" value="2"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -3680,8 +3685,10 @@
           <pos class="wwform(hoofdww)" set="tscan-set"/>
           <metric class="content_word" value="true"/>
           <metric class="top10000" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -3941,14 +3948,14 @@
         <metric class="top5000" value="12"/>
         <metric class="top10000" value="13"/>
         <metric class="top20000" value="15"/>
-        <metric class="word_freq" value="323"/>
-        <metric class="word_freq_no_names" value="323"/>
+        <metric class="word_freq" value="327"/>
+        <metric class="word_freq_no_names" value="327"/>
         <metric class="log_word_freq" value="1.60206"/>
-        <metric class="log_word_freq_no_names" value="2.02938"/>
-        <metric class="lemma_freq" value="664"/>
-        <metric class="lemma_freq_no_names" value="664"/>
+        <metric class="log_word_freq_no_names" value="2.03743"/>
+        <metric class="lemma_freq" value="668"/>
+        <metric class="lemma_freq_no_names" value="668"/>
         <metric class="log_lemma_freq" value="1.91908"/>
-        <metric class="log_lemma_freq_no_names" value="2.34439"/>
+        <metric class="log_lemma_freq_no_names" value="2.34635"/>
         <metric class="polarity" value="0.0168362"/>
         <metric class="surprisal" value="46.0351"/>
         <metric class="wopr_logprob" value="1.04172e-10"/>
@@ -4052,14 +4059,14 @@
       <metric class="top5000" value="12"/>
       <metric class="top10000" value="13"/>
       <metric class="top20000" value="15"/>
-      <metric class="word_freq" value="323"/>
-      <metric class="word_freq_no_names" value="323"/>
+      <metric class="word_freq" value="327"/>
+      <metric class="word_freq_no_names" value="327"/>
       <metric class="log_word_freq" value="1.60206"/>
-      <metric class="log_word_freq_no_names" value="2.02938"/>
-      <metric class="lemma_freq" value="664"/>
-      <metric class="lemma_freq_no_names" value="664"/>
+      <metric class="log_word_freq_no_names" value="2.03743"/>
+      <metric class="lemma_freq" value="668"/>
+      <metric class="lemma_freq_no_names" value="668"/>
       <metric class="log_lemma_freq" value="1.91908"/>
-      <metric class="log_lemma_freq_no_names" value="2.34439"/>
+      <metric class="log_lemma_freq_no_names" value="2.34635"/>
       <metric class="polarity" value="0.0168362"/>
       <metric class="surprisal" value="46.0351"/>
       <metric class="wopr_logprob" value="1.04172e-10"/>
@@ -4158,8 +4165,10 @@
           <pos class="wwform(hoofdww)" set="tscan-set"/>
           <metric class="content_word" value="true"/>
           <metric class="top20000" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -4985,12 +4994,12 @@
         <metric class="top5000" value="22"/>
         <metric class="top10000" value="24"/>
         <metric class="top20000" value="25"/>
-        <metric class="word_freq" value="1522"/>
-        <metric class="word_freq_no_names" value="1522"/>
+        <metric class="word_freq" value="1523"/>
+        <metric class="word_freq_no_names" value="1523"/>
         <metric class="log_word_freq" value="2.03342"/>
         <metric class="log_word_freq_no_names" value="2.03342"/>
-        <metric class="lemma_freq" value="1921"/>
-        <metric class="lemma_freq_no_names" value="1921"/>
+        <metric class="lemma_freq" value="1922"/>
+        <metric class="lemma_freq_no_names" value="1922"/>
         <metric class="log_lemma_freq" value="2.13672"/>
         <metric class="log_lemma_freq_no_names" value="2.13672"/>
         <metric class="polarity" value="-0.442959"/>
@@ -5096,12 +5105,12 @@
       <metric class="top5000" value="22"/>
       <metric class="top10000" value="24"/>
       <metric class="top20000" value="25"/>
-      <metric class="word_freq" value="1522"/>
-      <metric class="word_freq_no_names" value="1522"/>
+      <metric class="word_freq" value="1523"/>
+      <metric class="word_freq_no_names" value="1523"/>
       <metric class="log_word_freq" value="2.03342"/>
       <metric class="log_word_freq_no_names" value="2.03342"/>
-      <metric class="lemma_freq" value="1921"/>
-      <metric class="lemma_freq_no_names" value="1921"/>
+      <metric class="lemma_freq" value="1922"/>
+      <metric class="lemma_freq_no_names" value="1922"/>
       <metric class="log_lemma_freq" value="2.13672"/>
       <metric class="log_lemma_freq_no_names" value="2.13672"/>
       <metric class="polarity" value="-0.442959"/>
@@ -5214,8 +5223,10 @@
           <lemma class="houdbaarheidsdatum"/>
           <metric class="content_word" value="true"/>
           <metric class="compound_length" value="2"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -5924,12 +5935,12 @@
         <metric class="top5000" value="18"/>
         <metric class="top10000" value="20"/>
         <metric class="top20000" value="20"/>
-        <metric class="word_freq" value="1708"/>
-        <metric class="word_freq_no_names" value="1708"/>
+        <metric class="word_freq" value="1709"/>
+        <metric class="word_freq_no_names" value="1709"/>
         <metric class="log_word_freq" value="2.19033"/>
         <metric class="log_word_freq_no_names" value="2.19033"/>
-        <metric class="lemma_freq" value="2517"/>
-        <metric class="lemma_freq_no_names" value="2517"/>
+        <metric class="lemma_freq" value="2518"/>
+        <metric class="lemma_freq_no_names" value="2518"/>
         <metric class="log_lemma_freq" value="2.35793"/>
         <metric class="log_lemma_freq_no_names" value="2.35793"/>
         <metric class="polarity" value="0.0264615"/>
@@ -6034,12 +6045,12 @@
       <metric class="top5000" value="18"/>
       <metric class="top10000" value="20"/>
       <metric class="top20000" value="20"/>
-      <metric class="word_freq" value="1708"/>
-      <metric class="word_freq_no_names" value="1708"/>
+      <metric class="word_freq" value="1709"/>
+      <metric class="word_freq_no_names" value="1709"/>
       <metric class="log_word_freq" value="2.19033"/>
       <metric class="log_word_freq_no_names" value="2.19033"/>
-      <metric class="lemma_freq" value="2517"/>
-      <metric class="lemma_freq_no_names" value="2517"/>
+      <metric class="lemma_freq" value="2518"/>
+      <metric class="lemma_freq_no_names" value="2518"/>
       <metric class="log_lemma_freq" value="2.35793"/>
       <metric class="log_lemma_freq_no_names" value="2.35793"/>
       <metric class="polarity" value="0.0264615"/>
@@ -6841,8 +6852,10 @@
           <lemma class="gladgepolijste"/>
           <metric class="content_word" value="true"/>
           <metric class="compound_length" value="2"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -6969,14 +6982,14 @@
         <metric class="top5000" value="1"/>
         <metric class="top10000" value="1"/>
         <metric class="top20000" value="1"/>
-        <metric class="word_freq" value="588"/>
-        <metric class="word_freq_no_names" value="588"/>
+        <metric class="word_freq" value="589"/>
+        <metric class="word_freq_no_names" value="589"/>
         <metric class="log_word_freq" value="2.46835"/>
         <metric class="log_word_freq_no_names" value="2.46835"/>
-        <metric class="lemma_freq" value="65"/>
-        <metric class="lemma_freq_no_names" value="65"/>
-        <metric class="log_lemma_freq" value="1.50515"/>
-        <metric class="log_lemma_freq_no_names" value="1.50515"/>
+        <metric class="lemma_freq" value="66"/>
+        <metric class="lemma_freq_no_names" value="66"/>
+        <metric class="log_lemma_freq" value="1.51851"/>
+        <metric class="log_lemma_freq_no_names" value="1.51851"/>
         <metric class="surprisal" value="0.413099"/>
         <metric class="wopr_logprob" value="3.00426e-35"/>
         <metric class="wopr_entropy" value="0.22527"/>
@@ -7078,14 +7091,14 @@
       <metric class="top5000" value="1"/>
       <metric class="top10000" value="1"/>
       <metric class="top20000" value="1"/>
-      <metric class="word_freq" value="588"/>
-      <metric class="word_freq_no_names" value="588"/>
+      <metric class="word_freq" value="589"/>
+      <metric class="word_freq_no_names" value="589"/>
       <metric class="log_word_freq" value="2.46835"/>
       <metric class="log_word_freq_no_names" value="2.46835"/>
-      <metric class="lemma_freq" value="65"/>
-      <metric class="lemma_freq_no_names" value="65"/>
-      <metric class="log_lemma_freq" value="1.50515"/>
-      <metric class="log_lemma_freq_no_names" value="1.50515"/>
+      <metric class="lemma_freq" value="66"/>
+      <metric class="lemma_freq_no_names" value="66"/>
+      <metric class="log_lemma_freq" value="1.51851"/>
+      <metric class="log_lemma_freq_no_names" value="1.51851"/>
       <metric class="surprisal" value="0.413099"/>
       <metric class="wopr_logprob" value="3.00426e-35"/>
       <metric class="wopr_entropy" value="0.22527"/>
@@ -7268,8 +7281,10 @@
           <lemma class="onbedoeld"/>
           <metric class="content_word" value="true"/>
           <metric class="morph_negative" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -7501,12 +7516,12 @@
         <metric class="top5000" value="7"/>
         <metric class="top10000" value="8"/>
         <metric class="top20000" value="8"/>
-        <metric class="word_freq" value="469"/>
-        <metric class="word_freq_no_names" value="469"/>
+        <metric class="word_freq" value="470"/>
+        <metric class="word_freq_no_names" value="470"/>
         <metric class="log_word_freq" value="2.06819"/>
         <metric class="log_word_freq_no_names" value="2.19312"/>
-        <metric class="lemma_freq" value="250"/>
-        <metric class="lemma_freq_no_names" value="250"/>
+        <metric class="lemma_freq" value="251"/>
+        <metric class="lemma_freq_no_names" value="251"/>
         <metric class="log_lemma_freq" value="1.79239"/>
         <metric class="log_lemma_freq_no_names" value="1.91908"/>
         <metric class="polarity" value="0"/>
@@ -7611,12 +7626,12 @@
       <metric class="top5000" value="7"/>
       <metric class="top10000" value="8"/>
       <metric class="top20000" value="8"/>
-      <metric class="word_freq" value="469"/>
-      <metric class="word_freq_no_names" value="469"/>
+      <metric class="word_freq" value="470"/>
+      <metric class="word_freq_no_names" value="470"/>
       <metric class="log_word_freq" value="2.06819"/>
       <metric class="log_word_freq_no_names" value="2.19312"/>
-      <metric class="lemma_freq" value="250"/>
-      <metric class="lemma_freq_no_names" value="250"/>
+      <metric class="lemma_freq" value="251"/>
+      <metric class="lemma_freq_no_names" value="251"/>
       <metric class="log_lemma_freq" value="1.79239"/>
       <metric class="log_lemma_freq_no_names" value="1.91908"/>
       <metric class="polarity" value="0"/>
@@ -7813,8 +7828,10 @@
           <metric class="content_word" value="true"/>
           <metric class="top20000" value="true"/>
           <metric class="compound_length" value="2"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -7905,8 +7922,10 @@
           <metric class="content_word" value="true"/>
           <metric class="nominalization" value="true"/>
           <metric class="top20000" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -8021,14 +8040,14 @@
         <metric class="top5000" value="6"/>
         <metric class="top10000" value="6"/>
         <metric class="top20000" value="8"/>
-        <metric class="word_freq" value="137"/>
-        <metric class="word_freq_no_names" value="137"/>
+        <metric class="word_freq" value="139"/>
+        <metric class="word_freq_no_names" value="139"/>
         <metric class="log_word_freq" value="1.43136"/>
         <metric class="log_word_freq_no_names" value="1.43136"/>
-        <metric class="lemma_freq" value="289"/>
-        <metric class="lemma_freq_no_names" value="289"/>
-        <metric class="log_lemma_freq" value="1.75587"/>
-        <metric class="log_lemma_freq_no_names" value="1.75587"/>
+        <metric class="lemma_freq" value="291"/>
+        <metric class="lemma_freq_no_names" value="291"/>
+        <metric class="log_lemma_freq" value="1.76343"/>
+        <metric class="log_lemma_freq_no_names" value="1.76343"/>
         <metric class="polarity" value="-0.23889"/>
         <metric class="surprisal" value="10.8299"/>
         <metric class="wopr_logprob" value="0.000579045"/>
@@ -8131,14 +8150,14 @@
       <metric class="top5000" value="6"/>
       <metric class="top10000" value="6"/>
       <metric class="top20000" value="8"/>
-      <metric class="word_freq" value="137"/>
-      <metric class="word_freq_no_names" value="137"/>
+      <metric class="word_freq" value="139"/>
+      <metric class="word_freq_no_names" value="139"/>
       <metric class="log_word_freq" value="1.43136"/>
       <metric class="log_word_freq_no_names" value="1.43136"/>
-      <metric class="lemma_freq" value="289"/>
-      <metric class="lemma_freq_no_names" value="289"/>
-      <metric class="log_lemma_freq" value="1.75587"/>
-      <metric class="log_lemma_freq_no_names" value="1.75587"/>
+      <metric class="lemma_freq" value="291"/>
+      <metric class="lemma_freq_no_names" value="291"/>
+      <metric class="log_lemma_freq" value="1.76343"/>
+      <metric class="log_lemma_freq_no_names" value="1.76343"/>
       <metric class="polarity" value="-0.23889"/>
       <metric class="surprisal" value="10.8299"/>
       <metric class="wopr_logprob" value="0.000579045"/>
@@ -8455,8 +8474,10 @@
           <metric class="content_word" value="true"/>
           <metric class="nominalization" value="true"/>
           <metric class="top20000" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -8508,8 +8529,10 @@
           </morphology>
           <lemma class="bleachorexia"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -8668,8 +8691,10 @@
           </morphology>
           <lemma class="glow-in-the-dark-tand"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -8730,8 +8755,10 @@
           </morphology>
           <lemma class="tanorexia"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -8951,8 +8978,10 @@
           </morphology>
           <lemma class="botoxia"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -9085,8 +9114,10 @@
           <lemma class="dodenmasker"/>
           <metric class="content_word" value="true"/>
           <metric class="compound_length" value="2"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -9265,13 +9296,13 @@
         <metric class="top5000" value="19"/>
         <metric class="top10000" value="19"/>
         <metric class="top20000" value="21"/>
-        <metric class="word_freq" value="232"/>
-        <metric class="word_freq_no_names" value="232"/>
-        <metric class="log_word_freq" value="1.20412"/>
+        <metric class="word_freq" value="238"/>
+        <metric class="word_freq_no_names" value="238"/>
+        <metric class="log_word_freq" value="1.23045"/>
         <metric class="log_word_freq_no_names" value="1.27875"/>
-        <metric class="lemma_freq" value="1440"/>
-        <metric class="lemma_freq_no_names" value="1440"/>
-        <metric class="log_lemma_freq" value="2.0086"/>
+        <metric class="lemma_freq" value="1446"/>
+        <metric class="lemma_freq_no_names" value="1446"/>
+        <metric class="log_lemma_freq" value="2.01284"/>
         <metric class="log_lemma_freq_no_names" value="2.07918"/>
         <metric class="polarity" value="-0.248008"/>
         <metric class="surprisal" value="71.0286"/>
@@ -9376,13 +9407,13 @@
       <metric class="top5000" value="19"/>
       <metric class="top10000" value="19"/>
       <metric class="top20000" value="21"/>
-      <metric class="word_freq" value="232"/>
-      <metric class="word_freq_no_names" value="232"/>
-      <metric class="log_word_freq" value="1.20412"/>
+      <metric class="word_freq" value="238"/>
+      <metric class="word_freq_no_names" value="238"/>
+      <metric class="log_word_freq" value="1.23045"/>
       <metric class="log_word_freq_no_names" value="1.27875"/>
-      <metric class="lemma_freq" value="1440"/>
-      <metric class="lemma_freq_no_names" value="1440"/>
-      <metric class="log_lemma_freq" value="2.0086"/>
+      <metric class="lemma_freq" value="1446"/>
+      <metric class="lemma_freq_no_names" value="1446"/>
+      <metric class="log_lemma_freq" value="2.01284"/>
       <metric class="log_lemma_freq_no_names" value="2.07918"/>
       <metric class="polarity" value="-0.248008"/>
       <metric class="surprisal" value="71.0286"/>
@@ -9598,7 +9629,8 @@
           <metric class="top1000" value="true"/>
           <metric class="word_freq" value="100"/>
           <metric class="log_word_freq" value="2"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -9707,8 +9739,8 @@
         <metric class="word_freq_no_names" value="2447"/>
         <metric class="log_word_freq" value="2.78604"/>
         <metric class="log_word_freq_no_names" value="2.78604"/>
-        <metric class="lemma_freq" value="2768"/>
-        <metric class="lemma_freq_no_names" value="2768"/>
+        <metric class="lemma_freq" value="2769"/>
+        <metric class="lemma_freq_no_names" value="2769"/>
         <metric class="log_lemma_freq" value="2.84011"/>
         <metric class="log_lemma_freq_no_names" value="2.84011"/>
         <metric class="polarity" value="0.239763"/>
@@ -9817,8 +9849,8 @@
       <metric class="word_freq_no_names" value="2447"/>
       <metric class="log_word_freq" value="2.78604"/>
       <metric class="log_word_freq_no_names" value="2.78604"/>
-      <metric class="lemma_freq" value="2768"/>
-      <metric class="lemma_freq_no_names" value="2768"/>
+      <metric class="lemma_freq" value="2769"/>
+      <metric class="lemma_freq_no_names" value="2769"/>
       <metric class="log_lemma_freq" value="2.84011"/>
       <metric class="log_lemma_freq_no_names" value="2.84011"/>
       <metric class="polarity" value="0.239763"/>
@@ -9890,8 +9922,10 @@
           <lemma class="imperfectie"/>
           <metric class="content_word" value="true"/>
           <metric class="nominalization" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -10025,8 +10059,10 @@
           </morphology>
           <lemma class="catwalk"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -10131,10 +10167,14 @@
         <metric class="top5000" value="4"/>
         <metric class="top10000" value="4"/>
         <metric class="top20000" value="4"/>
-        <metric class="word_freq" value="0"/>
-        <metric class="word_freq_no_names" value="0"/>
-        <metric class="lemma_freq" value="0"/>
-        <metric class="lemma_freq_no_names" value="0"/>
+        <metric class="word_freq" value="2"/>
+        <metric class="word_freq_no_names" value="2"/>
+        <metric class="log_word_freq" value="0"/>
+        <metric class="log_word_freq_no_names" value="0"/>
+        <metric class="lemma_freq" value="2"/>
+        <metric class="lemma_freq_no_names" value="2"/>
+        <metric class="log_lemma_freq" value="0"/>
+        <metric class="log_lemma_freq_no_names" value="0"/>
         <metric class="polarity" value="0"/>
         <metric class="surprisal" value="6.62111"/>
         <metric class="wopr_logprob" value="3.9173e-17"/>
@@ -10237,10 +10277,14 @@
       <metric class="top5000" value="4"/>
       <metric class="top10000" value="4"/>
       <metric class="top20000" value="4"/>
-      <metric class="word_freq" value="0"/>
-      <metric class="word_freq_no_names" value="0"/>
-      <metric class="lemma_freq" value="0"/>
-      <metric class="lemma_freq_no_names" value="0"/>
+      <metric class="word_freq" value="2"/>
+      <metric class="word_freq_no_names" value="2"/>
+      <metric class="log_word_freq" value="0"/>
+      <metric class="log_word_freq_no_names" value="0"/>
+      <metric class="lemma_freq" value="2"/>
+      <metric class="lemma_freq_no_names" value="2"/>
+      <metric class="log_lemma_freq" value="0"/>
+      <metric class="log_lemma_freq_no_names" value="0"/>
       <metric class="polarity" value="0"/>
       <metric class="surprisal" value="6.62111"/>
       <metric class="wopr_logprob" value="3.9173e-17"/>
@@ -10468,8 +10512,10 @@
           <lemma class="woekeren"/>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -10711,12 +10757,12 @@
         <metric class="top5000" value="6"/>
         <metric class="top10000" value="6"/>
         <metric class="top20000" value="8"/>
-        <metric class="word_freq" value="2208"/>
-        <metric class="word_freq_no_names" value="2208"/>
+        <metric class="word_freq" value="2209"/>
+        <metric class="word_freq_no_names" value="2209"/>
         <metric class="log_word_freq" value="2.56585"/>
         <metric class="log_word_freq_no_names" value="2.74194"/>
-        <metric class="lemma_freq" value="2448"/>
-        <metric class="lemma_freq_no_names" value="2448"/>
+        <metric class="lemma_freq" value="2449"/>
+        <metric class="lemma_freq_no_names" value="2449"/>
         <metric class="log_lemma_freq" value="2.61066"/>
         <metric class="log_lemma_freq_no_names" value="2.78675"/>
         <metric class="polarity" value="0.241566"/>
@@ -10824,12 +10870,12 @@
       <metric class="top5000" value="6"/>
       <metric class="top10000" value="6"/>
       <metric class="top20000" value="8"/>
-      <metric class="word_freq" value="2208"/>
-      <metric class="word_freq_no_names" value="2208"/>
+      <metric class="word_freq" value="2209"/>
+      <metric class="word_freq_no_names" value="2209"/>
       <metric class="log_word_freq" value="2.56585"/>
       <metric class="log_word_freq_no_names" value="2.74194"/>
-      <metric class="lemma_freq" value="2448"/>
-      <metric class="lemma_freq_no_names" value="2448"/>
+      <metric class="lemma_freq" value="2449"/>
+      <metric class="lemma_freq_no_names" value="2449"/>
       <metric class="log_lemma_freq" value="2.61066"/>
       <metric class="log_lemma_freq_no_names" value="2.78675"/>
       <metric class="polarity" value="0.241566"/>
@@ -11013,7 +11059,8 @@
           </morphology>
           <lemma class="spleet"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
           <metric class="lemma_freq" value="9"/>
           <metric class="log_lemma_freq" value="0.954243"/>
           <metric class="argument_repeat_count" value="0"/>
@@ -11466,8 +11513,10 @@
           <lemma class="nóg"/>
           <metric class="content_word" value="true"/>
           <metric class="top10000" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -11491,8 +11540,10 @@
           </morphology>
           <lemma class="hip"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -11642,12 +11693,12 @@
         <metric class="top5000" value="16"/>
         <metric class="top10000" value="18"/>
         <metric class="top20000" value="18"/>
-        <metric class="word_freq" value="6297"/>
-        <metric class="word_freq_no_names" value="6297"/>
+        <metric class="word_freq" value="6300"/>
+        <metric class="word_freq_no_names" value="6300"/>
         <metric class="log_word_freq" value="2.7574"/>
-        <metric class="log_word_freq_no_names" value="2.84448"/>
-        <metric class="lemma_freq" value="8230"/>
-        <metric class="lemma_freq_no_names" value="8230"/>
+        <metric class="log_word_freq_no_names" value="2.8451"/>
+        <metric class="lemma_freq" value="8232"/>
+        <metric class="lemma_freq_no_names" value="8232"/>
         <metric class="log_lemma_freq" value="2.8739"/>
         <metric class="log_lemma_freq_no_names" value="2.96095"/>
         <metric class="wopr_logprob" value="0.00329665"/>
@@ -11750,12 +11801,12 @@
       <metric class="top5000" value="16"/>
       <metric class="top10000" value="18"/>
       <metric class="top20000" value="18"/>
-      <metric class="word_freq" value="6297"/>
-      <metric class="word_freq_no_names" value="6297"/>
+      <metric class="word_freq" value="6300"/>
+      <metric class="word_freq_no_names" value="6300"/>
       <metric class="log_word_freq" value="2.7574"/>
-      <metric class="log_word_freq_no_names" value="2.84448"/>
-      <metric class="lemma_freq" value="8230"/>
-      <metric class="lemma_freq_no_names" value="8230"/>
+      <metric class="log_word_freq_no_names" value="2.8451"/>
+      <metric class="lemma_freq" value="8232"/>
+      <metric class="lemma_freq_no_names" value="8232"/>
       <metric class="log_lemma_freq" value="2.8739"/>
       <metric class="log_lemma_freq_no_names" value="2.96095"/>
       <metric class="wopr_logprob" value="0.00329665"/>
@@ -11849,7 +11900,6 @@
             </morpheme>
           </morphology>
           <lemma class="er"/>
-          <metric class="pron_ref" value="true"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -11863,7 +11913,6 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="surprisal" value="0.413994"/>
           <metric class="lprob10" value="-1.47422"/>
-          <metric class="property" value="aanwijzend"/>
         </w>
         <w xml:id="tscan.p.19.s.1.w.3" class="WORD">
           <t>je</t>
@@ -12009,7 +12058,7 @@
         <metric class="time_count" value="0"/>
         <metric class="koppel_count" value="0"/>
         <metric class="pers_ref_count" value="1"/>
-        <metric class="pron_ref_count" value="1"/>
+        <metric class="pron_ref_count" value="0"/>
         <metric class="archaic_count" value="0"/>
         <metric class="content_count" value="2"/>
         <metric class="nominal_count" value="0"/>
@@ -12121,7 +12170,7 @@
       <metric class="time_count" value="0"/>
       <metric class="koppel_count" value="0"/>
       <metric class="pers_ref_count" value="1"/>
-      <metric class="pron_ref_count" value="1"/>
+      <metric class="pron_ref_count" value="0"/>
       <metric class="archaic_count" value="0"/>
       <metric class="content_count" value="2"/>
       <metric class="nominal_count" value="0"/>
@@ -12283,8 +12332,10 @@
           </morphology>
           <lemma class="thrones"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -12381,10 +12432,14 @@
         <metric class="top5000" value="1"/>
         <metric class="top10000" value="2"/>
         <metric class="top20000" value="2"/>
-        <metric class="word_freq" value="0"/>
-        <metric class="word_freq_no_names" value="0"/>
-        <metric class="lemma_freq" value="0"/>
-        <metric class="lemma_freq_no_names" value="0"/>
+        <metric class="word_freq" value="1"/>
+        <metric class="word_freq_no_names" value="1"/>
+        <metric class="log_word_freq" value="0"/>
+        <metric class="log_word_freq_no_names" value="0"/>
+        <metric class="lemma_freq" value="1"/>
+        <metric class="lemma_freq_no_names" value="1"/>
+        <metric class="log_lemma_freq" value="0"/>
+        <metric class="log_lemma_freq_no_names" value="0"/>
         <metric class="surprisal" value="2.00798"/>
         <metric class="wopr_logprob" value="9.29677e-28"/>
         <metric class="wopr_entropy" value="0.29848"/>
@@ -12486,10 +12541,14 @@
       <metric class="top5000" value="1"/>
       <metric class="top10000" value="2"/>
       <metric class="top20000" value="2"/>
-      <metric class="word_freq" value="0"/>
-      <metric class="word_freq_no_names" value="0"/>
-      <metric class="lemma_freq" value="0"/>
-      <metric class="lemma_freq_no_names" value="0"/>
+      <metric class="word_freq" value="1"/>
+      <metric class="word_freq_no_names" value="1"/>
+      <metric class="log_word_freq" value="0"/>
+      <metric class="log_word_freq_no_names" value="0"/>
+      <metric class="lemma_freq" value="1"/>
+      <metric class="lemma_freq_no_names" value="1"/>
+      <metric class="log_lemma_freq" value="0"/>
+      <metric class="log_lemma_freq_no_names" value="0"/>
       <metric class="surprisal" value="2.00798"/>
       <metric class="wopr_logprob" value="9.29677e-28"/>
       <metric class="wopr_entropy" value="0.29848"/>
@@ -12649,8 +12708,10 @@
           <metric class="content_word" value="true"/>
           <metric class="nominalization" value="true"/>
           <metric class="top20000" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -12711,8 +12772,10 @@
           <lemma class="knuffelseriemoordenaar"/>
           <metric class="content_word" value="true"/>
           <metric class="compound_length" value="3"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -12876,8 +12939,10 @@
           <lemma class="knuffelbare"/>
           <metric class="content_word" value="true"/>
           <metric class="compound_length" value="2"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -13008,8 +13073,10 @@
           <lemma class="geil"/>
           <metric class="content_word" value="true"/>
           <metric class="top20000" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -13264,8 +13331,6 @@
             </morpheme>
           </morphology>
           <lemma class="het"/>
-          <metric class="pers_ref" value="true"/>
-          <metric class="pron_ref" value="true"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -13279,7 +13344,6 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="surprisal" value="3.08403"/>
           <metric class="lprob10" value="-1.01282"/>
-          <metric class="property" value="voornaamwoord_3"/>
         </w>
         <w xml:id="tscan.p.21.s.1.w.29" class="WORD">
           <t>wel</t>
@@ -13499,8 +13563,10 @@
           <metric class="content_word" value="true"/>
           <metric class="nominalization" value="true"/>
           <metric class="top20000" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -13628,13 +13694,13 @@
         <metric class="name_count" value="2"/>
         <metric class="pers_pron_1_count" value="1"/>
         <metric class="pers_pron_2_count" value="1"/>
-        <metric class="pres_pron_3_count" value="2"/>
+        <metric class="pres_pron_3_count" value="1"/>
         <metric class="passive_count" value="0"/>
         <metric class="modal_count" value="0"/>
         <metric class="time_count" value="0"/>
         <metric class="koppel_count" value="1"/>
-        <metric class="pers_ref_count" value="5"/>
-        <metric class="pron_ref_count" value="1"/>
+        <metric class="pers_ref_count" value="4"/>
+        <metric class="pron_ref_count" value="0"/>
         <metric class="archaic_count" value="0"/>
         <metric class="content_count" value="14"/>
         <metric class="nominal_count" value="2"/>
@@ -13677,12 +13743,12 @@
         <metric class="top5000" value="22"/>
         <metric class="top10000" value="23"/>
         <metric class="top20000" value="27"/>
-        <metric class="word_freq" value="2707"/>
-        <metric class="word_freq_no_names" value="2707"/>
+        <metric class="word_freq" value="2712"/>
+        <metric class="word_freq_no_names" value="2712"/>
         <metric class="log_word_freq" value="2.28556"/>
-        <metric class="log_word_freq_no_names" value="2.35218"/>
-        <metric class="lemma_freq" value="2765"/>
-        <metric class="lemma_freq_no_names" value="2765"/>
+        <metric class="log_word_freq_no_names" value="2.35411"/>
+        <metric class="lemma_freq" value="2770"/>
+        <metric class="lemma_freq_no_names" value="2770"/>
         <metric class="log_lemma_freq" value="2.29447"/>
         <metric class="log_lemma_freq_no_names" value="2.36173"/>
         <metric class="polarity" value="-0.640105"/>
@@ -13738,13 +13804,13 @@
       <metric class="name_count" value="2"/>
       <metric class="pers_pron_1_count" value="1"/>
       <metric class="pers_pron_2_count" value="1"/>
-      <metric class="pres_pron_3_count" value="2"/>
+      <metric class="pres_pron_3_count" value="1"/>
       <metric class="passive_count" value="0"/>
       <metric class="modal_count" value="0"/>
       <metric class="time_count" value="0"/>
       <metric class="koppel_count" value="1"/>
-      <metric class="pers_ref_count" value="5"/>
-      <metric class="pron_ref_count" value="1"/>
+      <metric class="pers_ref_count" value="4"/>
+      <metric class="pron_ref_count" value="0"/>
       <metric class="archaic_count" value="0"/>
       <metric class="content_count" value="14"/>
       <metric class="nominal_count" value="2"/>
@@ -13787,12 +13853,12 @@
       <metric class="top5000" value="22"/>
       <metric class="top10000" value="23"/>
       <metric class="top20000" value="27"/>
-      <metric class="word_freq" value="2707"/>
-      <metric class="word_freq_no_names" value="2707"/>
+      <metric class="word_freq" value="2712"/>
+      <metric class="word_freq_no_names" value="2712"/>
       <metric class="log_word_freq" value="2.28556"/>
-      <metric class="log_word_freq_no_names" value="2.35218"/>
-      <metric class="lemma_freq" value="2765"/>
-      <metric class="lemma_freq_no_names" value="2765"/>
+      <metric class="log_word_freq_no_names" value="2.35411"/>
+      <metric class="lemma_freq" value="2770"/>
+      <metric class="lemma_freq_no_names" value="2770"/>
       <metric class="log_lemma_freq" value="2.29447"/>
       <metric class="log_lemma_freq_no_names" value="2.36173"/>
       <metric class="polarity" value="-0.640105"/>
@@ -14019,8 +14085,10 @@
           </morphology>
           <lemma class="thrones"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -14085,8 +14153,10 @@
           </morphology>
           <lemma class="hbo-hit"/>
           <metric class="content_word" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -14616,14 +14686,14 @@
         <metric class="top5000" value="17"/>
         <metric class="top10000" value="19"/>
         <metric class="top20000" value="19"/>
-        <metric class="word_freq" value="667"/>
-        <metric class="word_freq_no_names" value="667"/>
+        <metric class="word_freq" value="669"/>
+        <metric class="word_freq_no_names" value="669"/>
         <metric class="log_word_freq" value="2.12385"/>
-        <metric class="log_word_freq_no_names" value="2.22011"/>
-        <metric class="lemma_freq" value="2011"/>
-        <metric class="lemma_freq_no_names" value="2011"/>
+        <metric class="log_word_freq_no_names" value="2.22272"/>
+        <metric class="lemma_freq" value="2013"/>
+        <metric class="lemma_freq_no_names" value="2013"/>
         <metric class="log_lemma_freq" value="2.60423"/>
-        <metric class="log_lemma_freq_no_names" value="2.7007"/>
+        <metric class="log_lemma_freq_no_names" value="2.70157"/>
         <metric class="polarity" value="0"/>
         <metric class="surprisal" value="41.8904"/>
         <metric class="wopr_logprob" value="9.53981e-15"/>
@@ -14728,14 +14798,14 @@
       <metric class="top5000" value="17"/>
       <metric class="top10000" value="19"/>
       <metric class="top20000" value="19"/>
-      <metric class="word_freq" value="667"/>
-      <metric class="word_freq_no_names" value="667"/>
+      <metric class="word_freq" value="669"/>
+      <metric class="word_freq_no_names" value="669"/>
       <metric class="log_word_freq" value="2.12385"/>
-      <metric class="log_word_freq_no_names" value="2.22011"/>
-      <metric class="lemma_freq" value="2011"/>
-      <metric class="lemma_freq_no_names" value="2011"/>
+      <metric class="log_word_freq_no_names" value="2.22272"/>
+      <metric class="lemma_freq" value="2013"/>
+      <metric class="lemma_freq_no_names" value="2013"/>
       <metric class="log_lemma_freq" value="2.60423"/>
-      <metric class="log_lemma_freq_no_names" value="2.7007"/>
+      <metric class="log_lemma_freq_no_names" value="2.70157"/>
       <metric class="polarity" value="0"/>
       <metric class="surprisal" value="41.8904"/>
       <metric class="wopr_logprob" value="9.53981e-15"/>
@@ -14827,8 +14897,10 @@
           <lemma class="ingrediënt"/>
           <metric class="content_word" value="true"/>
           <metric class="top10000" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -14898,8 +14970,10 @@
           <lemma class="fictief"/>
           <metric class="content_word" value="true"/>
           <metric class="top20000" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -15073,8 +15147,10 @@
           <lemma class="sex"/>
           <metric class="content_word" value="true"/>
           <metric class="top3000" value="true"/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
+          <metric class="word_freq" value="1"/>
+          <metric class="log_word_freq" value="0"/>
+          <metric class="lemma_freq" value="1"/>
+          <metric class="log_lemma_freq" value="0"/>
           <metric class="argument_repeat_count" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_argument_repeat_count" value="0"/>
@@ -15358,12 +15434,12 @@
         <metric class="top5000" value="7"/>
         <metric class="top10000" value="9"/>
         <metric class="top20000" value="12"/>
-        <metric class="word_freq" value="242"/>
-        <metric class="word_freq_no_names" value="242"/>
+        <metric class="word_freq" value="245"/>
+        <metric class="word_freq_no_names" value="245"/>
         <metric class="log_word_freq" value="1.47712"/>
         <metric class="log_word_freq_no_names" value="1.60206"/>
-        <metric class="lemma_freq" value="344"/>
-        <metric class="lemma_freq_no_names" value="344"/>
+        <metric class="lemma_freq" value="347"/>
+        <metric class="lemma_freq_no_names" value="347"/>
         <metric class="log_lemma_freq" value="1.63347"/>
         <metric class="log_lemma_freq_no_names" value="1.75587"/>
         <metric class="polarity" value="0"/>
@@ -15467,12 +15543,12 @@
       <metric class="top5000" value="7"/>
       <metric class="top10000" value="9"/>
       <metric class="top20000" value="12"/>
-      <metric class="word_freq" value="242"/>
-      <metric class="word_freq_no_names" value="242"/>
+      <metric class="word_freq" value="245"/>
+      <metric class="word_freq_no_names" value="245"/>
       <metric class="log_word_freq" value="1.47712"/>
       <metric class="log_word_freq_no_names" value="1.60206"/>
-      <metric class="lemma_freq" value="344"/>
-      <metric class="lemma_freq_no_names" value="344"/>
+      <metric class="lemma_freq" value="347"/>
+      <metric class="lemma_freq_no_names" value="347"/>
       <metric class="log_lemma_freq" value="1.63347"/>
       <metric class="log_lemma_freq_no_names" value="1.75587"/>
       <metric class="polarity" value="0"/>
@@ -15942,13 +16018,13 @@
     <metric class="name_count" value="20"/>
     <metric class="pers_pron_1_count" value="8"/>
     <metric class="pers_pron_2_count" value="11"/>
-    <metric class="pres_pron_3_count" value="21"/>
+    <metric class="pres_pron_3_count" value="18"/>
     <metric class="passive_count" value="0"/>
     <metric class="modal_count" value="4"/>
     <metric class="time_count" value="4"/>
     <metric class="koppel_count" value="7"/>
-    <metric class="pers_ref_count" value="46"/>
-    <metric class="pron_ref_count" value="16"/>
+    <metric class="pers_ref_count" value="43"/>
+    <metric class="pron_ref_count" value="12"/>
     <metric class="archaic_count" value="0"/>
     <metric class="content_count" value="139"/>
     <metric class="nominal_count" value="6"/>
@@ -15991,14 +16067,14 @@
     <metric class="top5000" value="227"/>
     <metric class="top10000" value="245"/>
     <metric class="top20000" value="263"/>
-    <metric class="word_freq" value="31510"/>
-    <metric class="word_freq_no_names" value="31510"/>
+    <metric class="word_freq" value="31546"/>
+    <metric class="word_freq_no_names" value="31546"/>
     <metric class="log_word_freq" value="2.35411"/>
-    <metric class="log_word_freq_no_names" value="2.4216"/>
-    <metric class="lemma_freq" value="39378"/>
-    <metric class="lemma_freq_no_names" value="39378"/>
+    <metric class="log_word_freq_no_names" value="2.42325"/>
+    <metric class="lemma_freq" value="39413"/>
+    <metric class="lemma_freq_no_names" value="39413"/>
     <metric class="log_lemma_freq" value="2.45179"/>
-    <metric class="log_lemma_freq_no_names" value="2.51851"/>
+    <metric class="log_lemma_freq_no_names" value="2.51983"/>
     <metric class="polarity" value="0.0402549"/>
     <metric class="surprisal" value="443.697"/>
     <metric class="wopr_logprob" value="0.0591262"/>
@@ -16049,9 +16125,9 @@
     <metric class="word_ttr" value="0.661074"/>
     <metric class="lemma_ttr" value="0.634228"/>
     <metric class="rar_index" value="0.952381"/>
-    <metric class="document_word_argument_count" value="111"/>
+    <metric class="document_word_argument_count" value="112"/>
     <metric class="document_word_argument_overlap_count" value="13"/>
-    <metric class="document_lemma_argument_count" value="111"/>
+    <metric class="document_lemma_argument_count" value="112"/>
     <metric class="document_lemma_argument_overlap_count" value="14"/>
   </text>
 </FoLiA>
