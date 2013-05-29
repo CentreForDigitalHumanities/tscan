@@ -942,7 +942,8 @@ bool wordStats::checkContent() const {
     }
   }
   else {
-    return ( tag == CGN::N || tag == CGN::BW || tag == CGN::ADJ );
+    return ( prop == ISNAME 
+	     || tag == CGN::N || tag == CGN::BW || tag == CGN::ADJ );
   }
   return false;
 }
@@ -1155,6 +1156,7 @@ void wordStats::topFreqLookup(){
 }
 
 void wordStats::freqLookup(){
+  cerr << "zoek " << word << endl;
   map<string,cf_data>::const_iterator it = settings.word_freq_lex.find( lowercase(word) );
   if ( it != settings.word_freq_lex.end() ){
     word_freq = it->second.count;
@@ -1430,7 +1432,7 @@ void fill_word_lemma_buffers( const sentStats*,
 bool wordStats::isOverlapCandidate() const {
   if ( ( tag == CGN::VNW && prop != ISAANW ) ||
        ( tag == CGN::N ) ||
-       ( pos == "SPEC(deeleigen)" ) ||
+       ( prop == ISNAME ) ||
        ( tag == CGN::WW && wwform == HEAD_VERB ) )
     return true;
   else
