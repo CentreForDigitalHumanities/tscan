@@ -1156,7 +1156,6 @@ void wordStats::topFreqLookup(){
 }
 
 void wordStats::freqLookup(){
-  cerr << "zoek " << word << endl;
   map<string,cf_data>::const_iterator it = settings.word_freq_lex.find( lowercase(word) );
   if ( it != settings.word_freq_lex.end() ){
     word_freq = it->second.count;
