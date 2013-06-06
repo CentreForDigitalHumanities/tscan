@@ -643,7 +643,7 @@ void aggregate( multimap<DD_type,int>& out,
   }
 }
 
-enum WordProp { ISNAME, ISPUNCT, 
+enum WordProp { ISNAME, ISLET, 
 		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL, ISSUBJ,
 		ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
 		JUSTAWORD };
@@ -652,7 +652,7 @@ string toString( const WordProp& w ){
   switch ( w ){
   case ISNAME:
     return "naam";
-  case ISPUNCT:
+  case ISLET:
     return "punctuatie";
   case ISVD:
     return "voltooid_deelw";
@@ -1016,7 +1016,7 @@ bool wordStats::checkNominal( Word *w, xmlDoc *alpDoc ) const {
 
 WordProp wordStats::checkProps( const PosAnnotation* pa ) {
   if ( tag == CGN::LET )
-    prop = ISPUNCT;
+    prop = ISLET;
   else if ( tag == CGN::SPEC && pos.find("eigen") != string::npos )
     prop = ISNAME;
   else if ( tag == CGN::WW ){
@@ -1372,7 +1372,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
     }
   }
   isContent = checkContent();
-  if ( prop != ISPUNCT ){
+  if ( prop != ISLET ){
     size_t max = 0;
     vector<Morpheme*> morphemeV;
     vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
@@ -1698,7 +1698,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
 }
 
 void wordStats::wordSortHeader( ostream& os ) const {
-  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,";
+  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let";
 }
 
 void wordStats::wordSortToCSV( ostream& os ) const {
@@ -1711,7 +1711,9 @@ void wordStats::wordSortToCSV( ostream& os ) const {
      << (tag == CGN::TW ) << ","
      << (tag == CGN::N ) << ","
      << (tag == CGN::WW ) << ","
-     << (tag == CGN::TSW ) << ",";
+     << (tag == CGN::TSW ) << ","
+     << (tag == CGN::SPEC ) << ","
+     << (tag == CGN::LET ) << ",";
 }
 
 void wordStats::miscHeader( ostream& os ) const {
@@ -1809,6 +1811,8 @@ struct structStats: public basicStats {
     nounCnt(0),
     verbCnt(0),
     tswCnt(0),
+    specCnt(0),
+    letCnt(0),
     onderCnt(0),
     betrCnt(0),
     reeksCnt(0),
@@ -1934,6 +1938,8 @@ struct structStats: public basicStats {
   int nounCnt;
   int verbCnt;
   int tswCnt;
+  int specCnt;
+  int letCnt;
   int onderCnt;
   int betrCnt;
   int reeksCnt;
@@ -2042,6 +2048,8 @@ void structStats::merge( structStats *ss ){
   nounCnt += ss->nounCnt;
   verbCnt += ss->verbCnt;
   tswCnt += ss->tswCnt;
+  specCnt += ss->specCnt;
+  letCnt += ss->letCnt;
   onderCnt += ss->onderCnt;
   betrCnt += ss->betrCnt;
   reeksCnt += ss->reeksCnt;
@@ -2224,6 +2232,8 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "noun_count", toString(nounCnt) );
   addOneMetric( doc, el, "verb_count", toString(verbCnt) );
   addOneMetric( doc, el, "tsw_count", toString(tswCnt) );
+  addOneMetric( doc, el, "spec_count", toString(specCnt) );
+  addOneMetric( doc, el, "let_count", toString(letCnt) );
   addOneMetric( doc, el, "subord_count", toString(onderCnt) );
   addOneMetric( doc, el, "rel_count", toString(betrCnt) );
   addOneMetric( doc, el, "reeks_count", toString(reeksCnt) );
@@ -2665,7 +2675,7 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
 }
 
 void structStats::wordSortHeader( ostream& os ) const {
-  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,";
+  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let";
 }
 
 void structStats::wordSortToCSV( ostream& os ) const {
@@ -2678,7 +2688,9 @@ void structStats::wordSortToCSV( ostream& os ) const {
      << (twCnt/double(wordCnt)) * 1000 << ","
      << (nounCnt/double(wordCnt)) * 1000 << ","
      << (verbCnt/double(wordCnt)) * 1000 << ","
-     << (tswCnt/double(wordCnt)) * 1000 << ",";
+     << (tswCnt/double(wordCnt)) * 1000 << ","
+     << (specCnt/double(wordCnt)) * 1000 << ","
+     << (letCnt/double(wordCnt)) * 1000 << ",";
 }
 
 void structStats::miscHeader( ostream& os ) const {
@@ -3232,7 +3244,8 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
     if ( ws->lemma == "?" ){
       question = true;
     }
-    if ( ws->prop == ISPUNCT ){
+    if ( ws->prop == ISLET ){
+      letCnt++;
       sv.push_back( ws );
       continue;
     }
@@ -3328,26 +3341,46 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	contentCnt++;
       if ( ws->isNominal )
 	nominalCnt++;
-      if ( ws->tag == CGN::N )
+      switch ( ws->tag ){
+      case CGN::N:
 	nounCnt++;
-      else if ( ws->tag == CGN::ADJ )
+	break;
+      case CGN::ADJ:
 	adjCnt++;
-      else if ( ws->tag == CGN::WW )
+	break;
+      case CGN::WW:
 	verbCnt++;
-      else if ( ws->tag == CGN::VG )
+	break;
+      case CGN::VG:
 	vgCnt++;
-      else if ( ws->tag == CGN::TSW )
+	break;
+      case CGN::TSW:
 	tswCnt++;
-      else if ( ws->tag == CGN::BW )
+	break;
+      case CGN::LET:
+	letCnt++;
+	break;
+      case CGN::SPEC:
+	specCnt++;
+	break;
+      case CGN::BW:
 	bwCnt++;
-      else if ( ws->tag == CGN::VNW )
+	break;
+      case CGN::VNW:
 	vnwCnt++;
-      else if ( ws->tag == CGN::LID )
+	break;
+      case CGN::LID:
 	lidCnt++;
-      else if ( ws->tag == CGN::TW )
+	break;
+      case CGN::TW:
 	twCnt++;
-      else if ( ws->tag == CGN::VZ )
+	break;
+      case CGN::VZ:
 	vzCnt++;
+	break;
+      default:
+	break;
+      }
       if ( ws->isOnder )
 	onderCnt++;
       if ( ws->isImperative )
