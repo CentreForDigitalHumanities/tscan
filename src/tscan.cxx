@@ -2436,30 +2436,30 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
 void structStats::wordDifficultiesToCSV( ostream& os ) const {
   os << std::showpoint
      << ratio( charCnt, wordCnt ) << "," 
-     << ratio( wordCnt, charCnt ) <<  ",";
-  os << ratio( charCntExNames, (wordCnt-nameCnt) ) << ","
+     << ratio( wordCnt, charCnt ) <<  ","
+     << ratio( charCntExNames, (wordCnt-nameCnt) ) << ","
      << ratio( (wordCnt - nameCnt), charCntExNames ) <<  ","
      << ratio( morphCnt, wordCnt ) << "," 
      << ratio( wordCnt, morphCnt ) << ","
      << ratio( morphCntExNames, (wordCnt-nameCnt) ) << "," 
-     << ratio( (wordCnt-nameCnt), morphCntExNames ) << ",";
-  os << ratio( compPartCnt, wordCnt ) << ","
+     << ratio( (wordCnt-nameCnt), morphCntExNames ) << ","
+     << ratio( compPartCnt, wordCnt ) << ","
      << density( compCnt, wordCnt ) << ",";
 
-  os << f50Cnt/double(wordCnt) << ",";
-  os << f65Cnt/double(wordCnt) << ",";
-  os << f77Cnt/double(wordCnt) << ",";
-  os << f80Cnt/double(wordCnt) << ",";
+  os << ratio( f50Cnt, wordCnt ) << ",";
+  os << ratio( f65Cnt, wordCnt ) << ",";
+  os << ratio( f77Cnt, wordCnt ) << ",";
+  os << ratio( f80Cnt, wordCnt ) << ",";
   os << ratio( word_freq_log, wordCnt ) << ",";
   os << ratio( word_freq_log_n, (wordCnt-nameCnt) ) << ",";
   os << ratio( lemma_freq_log, wordCnt ) << ",";
   os << ratio( lemma_freq_log_n, (wordCnt-nameCnt) ) << ",";
-  os << top1000Cnt/double(wordCnt) << ",";
-  os << top2000Cnt/double(wordCnt) << ",";
-  os << top3000Cnt/double(wordCnt) << ",";
-  os << top5000Cnt/double(wordCnt) << ",";
-  os << top10000Cnt/double(wordCnt) << ",";
-  os << top20000Cnt/double(wordCnt) << ",";
+  os << ratio( top1000Cnt, wordCnt ) << ",";
+  os << ratio( top2000Cnt, wordCnt ) << ",";
+  os << ratio( top3000Cnt, wordCnt ) << ",";
+  os << ratio( top5000Cnt, wordCnt ) << ",";
+  os << ratio( top10000Cnt, wordCnt ) << ",";
+  os << ratio( top20000Cnt, wordCnt ) << ",";
 }
 
 void structStats::sentDifficultiesHeader( ostream& os ) const {
@@ -2473,8 +2473,8 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
 }
 
 void structStats::sentDifficultiesToCSV( ostream& os ) const {
-  os << wordCnt/double(sentCnt) << ","
-     << double(sentCnt)/wordCnt * 100.0 << ",";
+  os << ratio( wordCnt, sentCnt ) << ","
+     << ratio( sentCnt * 100, wordCnt )  << ",";
   os << ratio( wordCnt, npCnt ) << ",";
   os << density( onderCnt, wordCnt ) << ","
      << density( betrCnt, wordCnt ) << ","
@@ -2502,7 +2502,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   os << MMtoString( distances, VERB_COMP ) << ",";
   os << MMtoString( distances, NOUN_VC ) << ",";
   os << MMtoString( distances ) << ",";
-  os << getHighest( distances )/sentCnt << ",";
+  os << ratio( getHighest( distances ), sentCnt ) << ",";
 }
 
 void structStats::infoHeader( ostream& os ) const {
@@ -2521,7 +2521,7 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   os << ratio( vcModCnt, pastCnt + presentCnt ) << ","; 
   os << density( npModCnt, wordCnt ) << ",";
   os << ratio( npModCnt, pastCnt + presentCnt ) << ","; 
-  os << npCnt/double(wordCnt) << ",";
+  os << ratio( npCnt, wordCnt ) << ",";
   os << density( cnjCnt, crdCnt ) << ",";
 }
 
@@ -2556,9 +2556,9 @@ void structStats::coherenceToCSV( ostream& os ) const {
   }
   else {
     os << density( word_overlapCnt(), wordCnt ) << ","
-       << word_overlapCnt()/double(presentCnt+pastCnt) << ","
+       << ratio( word_overlapCnt(), (presentCnt+pastCnt) ) << ","
        << density( lemma_overlapCnt(), wordCnt ) << ","
-       << lemma_overlapCnt()/double(presentCnt+pastCnt) << ",";
+       << ratio( lemma_overlapCnt(), (presentCnt+pastCnt) )<< ",";
   }
   os << ratio( indefNpCnt, npCnt ) << ",";
   os << ratio( indefNpCnt, npCnt - indefNpCnt ) << ",";
