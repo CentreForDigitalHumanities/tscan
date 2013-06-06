@@ -643,6 +643,46 @@ void aggregate( multimap<DD_type,int>& out,
   }
 }
 
+struct ratio {
+  ratio( double d1, double d2 ){ 
+    if ( d2 == 0 )
+      r = NA;
+    else if ( d1 == NA || d2 == NA )
+      r = NA;
+    else
+      r = d1/d2; 
+  };
+  double r;
+};
+
+ostream& operator<<( ostream& os, const ratio& r ){
+  if ( r.r == NA )
+    os << "NA";
+  else
+    os << r.r;
+  return os;
+}
+
+struct density {
+  density( double d1, double d2 ){ 
+    if ( d2 == 0 )
+      d = NA;
+    else if ( d1 == NA || d2 == NA )
+      d = NA;
+    else
+      d = (d1/d2) * 1000;
+  };
+  double d;
+};
+
+ostream& operator<<( ostream& os, const density& d ){
+  if ( d.d == NA )
+    os << "NA";
+  else
+    os << d.d;
+  return os;
+}
+
 enum WordProp { ISNAME, ISLET, 
 		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL, ISSUBJ,
 		ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
@@ -1698,7 +1738,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
 }
 
 void wordStats::wordSortHeader( ostream& os ) const {
-  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let";
+  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let,";
 }
 
 void wordStats::wordSortToCSV( ostream& os ) const {
@@ -2199,6 +2239,15 @@ double getHighest( const multimap<DD_type, int>&mm ){
   return result;
 }
 
+template <class T>
+int at( const map<T,int>& m, const T key ){
+  typename map<T,int>::const_iterator it = m.find( key );
+  if ( it != m.end() )
+    return it->second;
+  else
+    return 0;
+}
+
 void structStats::addMetrics( ) const {
   FoliaElement *el = folia_node;
   Document *doc = el->doc();
@@ -2210,6 +2259,16 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "past_verb_count", toString(pastCnt) );
   addOneMetric( doc, el, "subjonct_count", toString(subjonctCnt) );
   addOneMetric( doc, el, "name_count", toString(nameCnt) );
+  int val = at( ners, PER_B );
+  addOneMetric( doc, el, "personal_name_count", toString(val) );
+  val = at( ners, LOC_B );
+  addOneMetric( doc, el, "location_name_count", toString(val) );
+  val = at( ners, ORG_B );
+  addOneMetric( doc, el, "organization_name_count", toString(val) );
+  val = at( ners, PRO_B );
+  addOneMetric( doc, el, "product_name_count", toString(val) );
+  val = at( ners, EVE_B );
+  addOneMetric( doc, el, "event_name_count", toString(val) );
   addOneMetric( doc, el, "pers_pron_1_count", toString(pron1Cnt) );
   addOneMetric( doc, el, "pers_pron_2_count", toString(pron2Cnt) );
   addOneMetric( doc, el, "pres_pron_3_count", toString(pron3Cnt) );
@@ -2376,44 +2435,25 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
 
 void structStats::wordDifficultiesToCSV( ostream& os ) const {
   os << std::showpoint
-     << charCnt/double(wordCnt) << "," 
-     << wordCnt/double(charCnt) <<  ",";
-  if ( wordCnt == nameCnt )
-    os << "NA,NA,"
-       << morphCnt/double(wordCnt) << "," 
-       << wordCnt/double(morphCnt) << ","
-       << "NA,NA,";
-  else {
-    os << charCntExNames/double(wordCnt-nameCnt) << ","
-       << double(wordCnt - nameCnt)/charCntExNames <<  ","
-       << morphCnt/double(wordCnt) << "," 
-       << wordCnt/double(morphCnt) << ","
-       << morphCntExNames/double(wordCnt-nameCnt) << "," 
-       << double(wordCnt-nameCnt)/double(morphCntExNames) << ",";
-  }
-  os << compPartCnt/double(wordCnt) << ","
-     << compCnt/double(wordCnt) *1000.0 << ",";
+     << ratio( charCnt, wordCnt ) << "," 
+     << ratio( wordCnt, charCnt ) <<  ",";
+  os << ratio( charCntExNames, (wordCnt-nameCnt) ) << ","
+     << ratio( (wordCnt - nameCnt), charCntExNames ) <<  ","
+     << ratio( morphCnt, wordCnt ) << "," 
+     << ratio( wordCnt, morphCnt ) << ","
+     << ratio( morphCntExNames, (wordCnt-nameCnt) ) << "," 
+     << ratio( (wordCnt-nameCnt), morphCntExNames ) << ",";
+  os << ratio( compPartCnt, wordCnt ) << ","
+     << density( compCnt, wordCnt ) << ",";
 
   os << f50Cnt/double(wordCnt) << ",";
   os << f65Cnt/double(wordCnt) << ",";
   os << f77Cnt/double(wordCnt) << ",";
   os << f80Cnt/double(wordCnt) << ",";
-  if ( word_freq_log == NA )
-    os << "NA,";
-  else
-    os << word_freq_log/double(wordCnt) << ",";
-  if ( wordCnt == nameCnt || word_freq_log_n == NA )
-    os << "NA" << ",";
-  else
-    os << word_freq_log_n/double(wordCnt-nameCnt) << ",";
-  if ( lemma_freq_log == NA )
-    os << "NA,";
-  else
-    os << lemma_freq_log/double(wordCnt) << ",";
-  if ( wordCnt == nameCnt || lemma_freq_log_n == NA )
-    os << "NA" << ",";
-  else
-    os << lemma_freq_log_n/double(wordCnt-nameCnt) << ",";
+  os << ratio( word_freq_log, wordCnt ) << ",";
+  os << ratio( word_freq_log_n, (wordCnt-nameCnt) ) << ",";
+  os << ratio( lemma_freq_log, wordCnt ) << ",";
+  os << ratio( lemma_freq_log_n, (wordCnt-nameCnt) ) << ",";
   os << top1000Cnt/double(wordCnt) << ",";
   os << top2000Cnt/double(wordCnt) << ",";
   os << top3000Cnt/double(wordCnt) << ",";
@@ -2435,30 +2475,21 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
 void structStats::sentDifficultiesToCSV( ostream& os ) const {
   os << wordCnt/double(sentCnt) << ","
      << double(sentCnt)/wordCnt * 100.0 << ",";
-  if ( npCnt == 0 )
-    os << "NA,";
-  else
-    os << wordCnt/double(npCnt) << ",";
-  os << onderCnt/double(wordCnt) * 1000 << ","
-     << betrCnt/double(wordCnt) * 1000 << ","
-     << (pastCnt + presentCnt)/double(wordCnt) * 1000 << ","
-     << (pastCnt + presentCnt)/double(sentCnt) << ","
-     << dLevel/double(sentCnt) << "," 
-     << dLevel_gt4/double(sentCnt) << ",";
-  if ( sentCnt == dLevel_gt4 )
-    os << "NA,";
-  else
-    os<< dLevel_gt4/double(sentCnt - dLevel_gt4) << ",";
-  os << nominalCnt/double(wordCnt) * 1000 << ","
-     << passiveCnt/double(wordCnt) * 1000 << ",";
-  if ( (pastCnt+presentCnt) == 0 )
-    os << "NA,";
-  else
-    os << passiveCnt/double(pastCnt+presentCnt) << ",";
-  os << propNegCnt/double(wordCnt) * 1000 << ","
-     << morphNegCnt/double(wordCnt) * 1000 << ","
-     << (propNegCnt+morphNegCnt)/double(wordCnt) * 1000 << ","
-     << multiNegCnt/double(sentCnt) * 1000 << ",";
+  os << ratio( wordCnt, npCnt ) << ",";
+  os << density( onderCnt, wordCnt ) << ","
+     << density( betrCnt, wordCnt ) << ","
+     << density( pastCnt + presentCnt, wordCnt ) << ","
+     << ratio( pastCnt + presentCnt, sentCnt ) << ","
+     << ratio( dLevel, sentCnt ) << "," 
+     << ratio( dLevel_gt4, sentCnt ) << ",";
+  os << ratio( dLevel_gt4, sentCnt - dLevel_gt4 ) << ",";
+  os << density( nominalCnt, wordCnt ) << ","
+     << density( passiveCnt, wordCnt ) << ",";
+  os << ratio( passiveCnt, pastCnt + presentCnt ) << ",";
+  os << density( propNegCnt, wordCnt ) << ","
+     << density( morphNegCnt, wordCnt ) << ","
+     << density( propNegCnt+morphNegCnt, wordCnt ) << ","
+     << density( multiNegCnt, sentCnt ) << ",";
   os << MMtoString( distances, SUB_VERB ) << ",";
   os << MMtoString( distances, OBJ1_VERB ) << ",";
   os << MMtoString( distances, OBJ2_VERB ) << ",";
@@ -2480,30 +2511,18 @@ void structStats::infoHeader( ostream& os ) const {
 }
  
 void structStats::informationDensityToCSV( ostream& os ) const {
-  os << unique_words.size()/double(wordCnt) << ",";
-  os << unique_lemmas.size()/double(wordCnt) << ",";
+  os << ratio( unique_words.size(), wordCnt ) << ",";
+  os << ratio( unique_lemmas.size(), wordCnt ) << ",";
   os << contentCnt/double(wordCnt - contentCnt) << ",";
-  os << contentCnt/double(wordCnt) * 1000 << ",";
-  if ( (pastCnt + presentCnt) == 0 )
-    os << "NA,";
-  else
-    os << contentCnt/double(pastCnt + presentCnt) << ",";
+  os << density( contentCnt, wordCnt ) << ",";
+  os << ratio( contentCnt, pastCnt + presentCnt ) << ",";
   os << rarity( settings.rarityLevel ) << ",";
-  os << vcModCnt/double(wordCnt) * 1000 << ",";
-  if ( (pastCnt + presentCnt) == 0 )
-    os << "NA,";
-  else
-    os << vcModCnt/double(pastCnt + presentCnt) << ",";
-  os << npModCnt/double(wordCnt) * 1000 << ",";
-  if ( (pastCnt + presentCnt) == 0 )
-    os << "NA,";
-  else
-    os << npModCnt/double(pastCnt + presentCnt) << ",";
+  os << density( vcModCnt, wordCnt ) << ",";
+  os << ratio( vcModCnt, pastCnt + presentCnt ) << ","; 
+  os << density( npModCnt, wordCnt ) << ",";
+  os << ratio( npModCnt, pastCnt + presentCnt ) << ","; 
   os << npCnt/double(wordCnt) << ",";
-  if ( crdCnt == 0 )
-    os << "NA,";
-  else
-    os << (cnjCnt/double(crdCnt)) * 1000 << ",";
+  os << density( cnjCnt, crdCnt ) << ",";
 }
 
  
@@ -2516,40 +2535,34 @@ void structStats::coherenceHeader( ostream& os ) const {
 }
 
 void structStats::coherenceToCSV( ostream& os ) const {
-  os << (tempConnCnt/double(wordCnt)) * 1000 << ","
-     << (reeksConnCnt/double(wordCnt)) * 1000 << ","
-     << (contConnCnt/double(wordCnt)) * 1000 << ","
-     << (compConnCnt/double(wordCnt)) * 1000 << ","
-     << (causeConnCnt/double(wordCnt)) * 1000 << ","
-     << (pronRefCnt/double(wordCnt)) * 1000 << ",";
+  os << density( tempConnCnt, wordCnt ) << ","
+     << density( reeksConnCnt, wordCnt ) << ","
+     << density( contConnCnt, wordCnt ) << ","
+     << density( compConnCnt, wordCnt ) << ","
+     << density( causeConnCnt, wordCnt ) << ","
+     << density( pronRefCnt, wordCnt ) << ",";
   if ( isSentence() ){
     os << double(wordOverlapCnt) << ",NA,"
        << double(lemmaOverlapCnt) << ",NA,";
   }
   else {
-    os << (wordOverlapCnt/double(wordCnt)) * 1000 << ","
+    os << density( wordOverlapCnt, wordCnt ) << ","
        << (wordOverlapCnt/double(sentCnt)) << ",";
-    os << (lemmaOverlapCnt/double(wordCnt)) * 1000 << ","
+    os << density( lemmaOverlapCnt, wordCnt ) << ","
        << (lemmaOverlapCnt/double(sentCnt)) << ",";
   }
   if ( !isDocument() ){
     os << "NA,NA,NA,NA,";
   }
   else {
-    os << (word_overlapCnt()/double(wordCnt)) * 1000 << ","
+    os << density( word_overlapCnt(), wordCnt ) << ","
        << word_overlapCnt()/double(presentCnt+pastCnt) << ","
-       << (lemma_overlapCnt()/double(wordCnt)) * 1000 << ","
+       << density( lemma_overlapCnt(), wordCnt ) << ","
        << lemma_overlapCnt()/double(presentCnt+pastCnt) << ",";
   }
-  if ( npCnt == 0 )
-    os << "NA,";
-  else
-    os << indefNpCnt/double(npCnt) << ",";
-  if ( npCnt == indefNpCnt )
-    os << "NA,";
-  else
-    os << indefNpCnt/double(npCnt - indefNpCnt) << ",";
-  os << (indefNpCnt/double(wordCnt)) * 1000 << ",";
+  os << ratio( indefNpCnt, npCnt ) << ",";
+  os << ratio( indefNpCnt, npCnt - indefNpCnt ) << ",";
+  os << density( indefNpCnt, wordCnt ) << ",";
 }
 
 void structStats::concreetHeader( ostream& os ) const {
@@ -2560,64 +2573,25 @@ void structStats::concreetHeader( ostream& os ) const {
 }
 
 void structStats::concreetToCSV( ostream& os ) const {
-  if ( (nounCnt + nameCnt) == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << strictConcreteNounCnt/double(nounCnt+nameCnt) << ",";
-  }
-  if ( broadAbstractNounCnt == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << strictConcreteNounCnt/double(broadAbstractNounCnt) << ",";
-  }
-  os << (strictConcreteNounCnt/double(wordCnt)) * 1000 << ",";
-  if ( (nounCnt + nameCnt) == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << broadConcreteNounCnt/double(nounCnt+nameCnt) << ",";
-  }
-  if ( broadAbstractNounCnt == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << broadConcreteNounCnt/double(broadAbstractNounCnt) << ",";
-  }
-  os << (broadConcreteNounCnt/double(wordCnt)) * 1000 << ",";
-  if ( adjCnt == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << strictConcreteAdjCnt/double(adjCnt) << ",";
-  }
-  if ( broadAbstractAdjCnt == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << strictConcreteAdjCnt/double(broadAbstractAdjCnt) << ",";
-  }
-  os << (strictConcreteAdjCnt/double(wordCnt)) * 1000 << ",";
-  if ( adjCnt == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << broadConcreteAdjCnt/double(adjCnt) << ",";
-  }
-  if ( broadAbstractAdjCnt == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << broadConcreteAdjCnt/double(broadAbstractAdjCnt) << ",";
-  }
-  os << (broadConcreteAdjCnt/double(wordCnt)) * 1000 << ",";
+  os << ratio( strictConcreteNounCnt, nounCnt+nameCnt ) << ",";
+  os << ratio( strictConcreteNounCnt, broadAbstractNounCnt ) << ",";
+  os << density( strictConcreteNounCnt, wordCnt ) << ",";
+  os << ratio( broadConcreteNounCnt, nounCnt+nameCnt ) << ",";
+  os << ratio( broadConcreteNounCnt, broadAbstractNounCnt ) << ",";
+  os << density( broadConcreteNounCnt, wordCnt ) << ",";
+  os << ratio( strictConcreteAdjCnt, adjCnt ) << ",";
+  os << ratio( strictConcreteAdjCnt, broadAbstractAdjCnt ) << ",";
+  os << density( strictConcreteAdjCnt, wordCnt ) << ",";
+  os << ratio( broadConcreteAdjCnt, adjCnt ) << ",";
+  os << ratio( broadConcreteAdjCnt, broadAbstractAdjCnt ) << ",";
+  os << density( broadConcreteAdjCnt, wordCnt ) << ",";
 }
 
 
 void structStats::persoonlijkheidHeader( ostream& os ) const {
   os << "pers_ref_d,pers_pron_1,pers_pron_2,pers_pron3,pers_pron,"
      << "names_p,names_r,names_d,"
+     << "pers_names_p, pers_names_d, loc_names_d, org_names_d, prod_names_d, event_names_d,"
      << "action_verbs_p,action_verbs_d,state_verbs_p,state_verbs_d,"
      << "process_verbs_p,process_verbs_d,human_nouns_p,human_nouns_d,"
      << "emo_adjs_p,emo_adjs_d,imperatives_p,imperatives_d,"
@@ -2625,72 +2599,62 @@ void structStats::persoonlijkheidHeader( ostream& os ) const {
 }
 
 void structStats::persoonlijkheidToCSV( ostream& os ) const {
-  os << (persRefCnt/double(wordCnt)) * 1000 << ",";
-  os << (pron1Cnt/double(wordCnt)) * 1000 << ",";
-  os << (pron2Cnt/double(wordCnt)) * 1000 << ",";
-  os << (pron3Cnt/double(wordCnt)) * 1000 << ",";
-  os << ((pron1Cnt+pron2Cnt+pron3Cnt)/double(wordCnt)) * 1000 << ",";
-  if ( nounCnt == 0 )
-    os << "NA,";
-  else
-    os << nameCnt/double(nounCnt) << ",";
-  if ( nameCnt == wordCnt )
-    os << "NA,";
-  else
-    os << nameCnt/double(wordCnt - nameCnt) << ",";
-  os << (nameCnt/double(wordCnt)) * 1000 << ",";
-  if ( verbCnt == 0 )
-    os << "NA,";
-  else
-    os << actionCnt/double(verbCnt) << ",";
-  os << (actionCnt/double(wordCnt)) * 1000 << ",";
-  if ( verbCnt == 0 )
-    os << "NA,";
-  else
-    os << stateCnt/double(verbCnt) << ",";
-  os << (stateCnt/double(wordCnt)) * 1000 << ",";
-  if ( verbCnt == 0 )
-    os << "NA,";
-  else
-    os << processCnt/double(verbCnt) << ",";
-  os << (processCnt/double(wordCnt)) * 1000 << ",";
-  if ( nounCnt == 0 )
-    os << "NA,";
-  else
-    os << humanCnt/double(nounCnt) << ",";
-  os << (humanCnt/double(wordCnt)) * 1000 << ",";
-  if ( adjCnt == 0 )
-    os << "NA,";
-  else
-    os << emoCnt/double(adjCnt) << ",";
-  os << (emoCnt/double(wordCnt)) * 1000 << ",";
-  os << impCnt/double(sentCnt) << ",";
-  os << (impCnt/double(wordCnt)) * 1000 << ",";
-  os << questCnt/double(sentCnt) << ",";
-  os << (questCnt/double(wordCnt)) * 1000 << ",";
-  if ( polarity == NA )
-    os << "NA,";
-  else
-    os << (polarity/double(wordCnt)) << ",";
+  os << density( persRefCnt, wordCnt ) << ",";
+  os << density( pron1Cnt, wordCnt ) << ",";
+  os << density( pron2Cnt, wordCnt ) << ",";
+  os << density( pron3Cnt, wordCnt ) << ",";
+  os << density( pron1Cnt+pron2Cnt+pron3Cnt, wordCnt ) << ",";
+
+  os << ratio( nameCnt, nounCnt ) << ",";
+  os << ratio( nameCnt, (wordCnt - nameCnt) ) << ",";
+  os << density( nameCnt, wordCnt ) << ",";
+
+  int val = at( ners, PER_B );
+  os << ratio( val, nameCnt ) << ",";
+  os << density( val, wordCnt ) << ",";
+  val = at( ners, LOC_B );
+  os << density( val, wordCnt ) << ",";
+  val = at( ners, ORG_B );
+  os << density( val, wordCnt ) << ",";
+  val = at( ners, PRO_B );
+  os << density( val, wordCnt ) << ",";
+  val = at( ners, EVE_B );
+  os << density( val, wordCnt ) << ",";
+
+  os << ratio( actionCnt, verbCnt ) << ",";
+  os << density( actionCnt, wordCnt) << ",";
+  os << ratio( stateCnt, verbCnt ) << ",";
+  os << density( stateCnt, wordCnt ) << ",";
+  os << ratio( processCnt, verbCnt ) << ",";
+  os << density( processCnt, wordCnt ) << ",";
+  os << ratio( humanCnt, nounCnt ) << ",";
+  os << density( humanCnt, wordCnt ) << ",";
+  os << ratio( emoCnt, adjCnt ) << ",";
+  os << density( emoCnt, wordCnt ) << ",";
+  os << ratio( impCnt, sentCnt ) << ",";
+  os << density( impCnt, wordCnt ) << ",";
+  os << ratio( questCnt, sentCnt ) << ",";
+  os << density( questCnt, wordCnt ) << ",";
+  os << ratio( polarity, wordCnt ) << ",";
 }
 
 void structStats::wordSortHeader( ostream& os ) const {
-  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let";
+  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let,";
 }
 
 void structStats::wordSortToCSV( ostream& os ) const {
-  os << (adjCnt/double(wordCnt)) * 1000 << ","
-     << (vgCnt/double(wordCnt)) * 1000 << ","
-     << (vnwCnt/double(wordCnt)) * 1000 << ","
-     << (lidCnt/double(wordCnt)) * 1000 << ","
-     << (vzCnt/double(wordCnt)) * 1000 << ","
-     << (bwCnt/double(wordCnt)) * 1000 << ","
-     << (twCnt/double(wordCnt)) * 1000 << ","
-     << (nounCnt/double(wordCnt)) * 1000 << ","
-     << (verbCnt/double(wordCnt)) * 1000 << ","
-     << (tswCnt/double(wordCnt)) * 1000 << ","
-     << (specCnt/double(wordCnt)) * 1000 << ","
-     << (letCnt/double(wordCnt)) * 1000 << ",";
+  os << density(adjCnt, wordCnt ) << ","
+     << density(vgCnt, wordCnt ) << ","
+     << density(vnwCnt, wordCnt ) << ","
+     << density(lidCnt, wordCnt ) << ","
+     << density(vzCnt, wordCnt ) << ","
+     << density(bwCnt, wordCnt ) << ","
+     << density(twCnt, wordCnt ) << ","
+     << density(nounCnt, wordCnt ) << ","
+     << density(verbCnt, wordCnt ) << ","
+     << density(tswCnt, wordCnt ) << ","
+     << density(specCnt, wordCnt ) << ","
+     << density(letCnt, wordCnt ) << ",";
 }
 
 void structStats::miscHeader( ostream& os ) const {
@@ -2702,72 +2666,25 @@ void structStats::miscHeader( ostream& os ) const {
 }
 
 void structStats::miscToCSV( ostream& os ) const {
-  if ( pastCnt == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << presentCnt/double(pastCnt) << ",";
-  }
-  os  << (presentCnt/double(wordCnt)) * 1000 << ","
-      << (modalCnt/double(wordCnt)) * 1000 << ",";
-  if ( pastCnt + presentCnt == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << modalCnt/double(presentCnt + pastCnt) << ",";
-  }
-  os << (timeCnt/double(wordCnt)) * 1000 << ",";
-  if ( pastCnt + presentCnt == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << timeCnt/double(presentCnt + pastCnt) << ",";
-  }
-  os << (koppelCnt/double(wordCnt)) * 1000 << ",";
-  if ( pastCnt + presentCnt == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << koppelCnt/double(presentCnt + pastCnt) << ",";
-  }
-  os << (archaicsCnt/double(wordCnt)) * 1000 << ","
-     << (vdCnt/double(wordCnt)) * 1000 << ",";
-  if ( pastCnt + presentCnt == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << vdCnt/double(pastCnt + presentCnt) << ",";
-  }
-  os << (odCnt/double(wordCnt)) * 1000 << ",";
-  if ( pastCnt + presentCnt == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << odCnt/double(pastCnt + presentCnt) << ",";
-  }
-  os << (infCnt/double(wordCnt)) * 1000 << ",";
-  if ( pastCnt + presentCnt == 0 ){
-    os << "NA,";
-  }
-  else {
-    os << infCnt/double(pastCnt + presentCnt) << ",";
-  }
-  if ( surprisal == NA )
-    os << "NA,";
-  else
-    os << surprisal/double(sentCnt) << ",";
-  if ( avg_prob10 == NA )
-    os << "NA,";
-  else
-    os << avg_prob10/double(sentCnt) << ",";
-  if ( entropy == NA )
-    os << "NA,";
-  else
-    os << entropy/double(sentCnt) << ",";
-  if ( perplexity == NA )
-    os << "NA,";
-  else
-    os << perplexity/double(sentCnt) << ",";
+  os << ratio( presentCnt, pastCnt ) << ",";
+  os  << density( presentCnt, wordCnt ) << ","
+      << density( modalCnt, wordCnt ) << ",";
+  os << ratio( modalCnt, (presentCnt + pastCnt) ) << ",";
+  os << density( timeCnt, wordCnt ) << ",";
+  os << ratio( timeCnt, (presentCnt + pastCnt) ) << ",";
+  os << density( koppelCnt, wordCnt ) << ",";
+  os << ratio( koppelCnt, presentCnt + pastCnt ) << ",";
+  os << density( archaicsCnt, wordCnt ) << ","
+     << density( vdCnt, wordCnt ) << ",";
+  os << ratio( vdCnt, (pastCnt + presentCnt) ) << ",";
+  os << density( odCnt, wordCnt ) << ",";
+  os << ratio( odCnt, pastCnt + presentCnt ) << ",";
+  os << density( infCnt, wordCnt ) << ",";
+  os << ratio( infCnt, (pastCnt + presentCnt) ) << ",";
+  os << ratio( surprisal, sentCnt ) << ",";
+  os << ratio( avg_prob10, sentCnt ) << ",";
+  os << ratio( entropy, sentCnt ) << ",";
+  os << ratio( perplexity, sentCnt ) << ",";
 }
 
 vector<const wordStats*> structStats::collectWords() const {
