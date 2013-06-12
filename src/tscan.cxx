@@ -538,7 +538,8 @@ void settingData::init( const Configuration& cf ){
   val = cf.lookUp( "surprisalPath" );
   if( !val.empty() ){
     surprisalPath = val + "/";
-    doSurprisal = true;
+    cerr << "surprisal parser PERMANENTLY disabled!" << endl;
+    //    doSurprisal = true;
   }
   val = cf.lookUp( "styleSheet" );
   if( !val.empty() ){
@@ -1913,7 +1914,7 @@ struct structStats: public basicStats {
     indefNpCnt(0),
     npSize(0),
     vcModCnt(0),
-    npModCnt(0),
+    adjNpModCnt(0),
     dLevel(-1),
     dLevel_gt4(0),
     impCnt(0),
@@ -2040,7 +2041,7 @@ struct structStats: public basicStats {
   int indefNpCnt;
   int npSize;
   int vcModCnt;
-  int npModCnt;
+  int adjNpModCnt;
   int dLevel;
   int dLevel_gt4;
   int impCnt;
@@ -2149,7 +2150,7 @@ void structStats::merge( structStats *ss ){
   }
   if ( ss->perplexity != NA ){
     if ( perplexity == NA )
-      perplexity = ss->surprisal;
+      perplexity = ss->perplexity;
     else
       perplexity += ss->perplexity;
   }
@@ -2180,7 +2181,7 @@ void structStats::merge( structStats *ss ){
   indefNpCnt += ss->indefNpCnt;
   npSize += ss->npSize;
   vcModCnt += ss->vcModCnt;
-  npModCnt += ss->npModCnt;
+  adjNpModCnt += ss->adjNpModCnt;
   if ( ss->dLevel >= 0 ){
     if ( dLevel < 0 )
       dLevel = ss->dLevel;
@@ -2366,7 +2367,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "np_count", toString(npCnt) );
   addOneMetric( doc, el, "np_size", toString(npSize) );
   addOneMetric( doc, el, "vc_modifier_count", toString(vcModCnt) );
-  addOneMetric( doc, el, "np_modifier_count", toString(npModCnt) );
+  addOneMetric( doc, el, "adj_np_modifier_count", toString(adjNpModCnt) );
 
   addOneMetric( doc, el, "character_count", toString(charCnt) );
   addOneMetric( doc, el, "character_count_min_names", toString(charCntExNames) );
@@ -2507,7 +2508,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 
 void structStats::infoHeader( ostream& os ) const {
   os << "word_ttr,lemma_ttr,content_words_r,content_words_d,content_words_g,"
-     << "rar_index,vc_mods_d,vc_mods_g,np_mods_d,np_mods_g,np_dens,conjuncts,";
+     << "rar_index,vc_mods_d,vc_mods_g,adj_np_mods_d,adj_np_mods_g,np_dens,conjuncts,";
 }
  
 void structStats::informationDensityToCSV( ostream& os ) const {
@@ -2519,8 +2520,8 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   os << rarity( settings.rarityLevel ) << ",";
   os << density( vcModCnt, wordCnt ) << ",";
   os << ratio( vcModCnt, pastCnt + presentCnt ) << ","; 
-  os << density( npModCnt, wordCnt ) << ",";
-  os << ratio( npModCnt, pastCnt + presentCnt ) << ","; 
+  os << density( adjNpModCnt, wordCnt ) << ",";
+  os << ratio( adjNpModCnt, pastCnt + presentCnt ) << ","; 
   os << ratio( npCnt, wordCnt ) << ",";
   os << density( cnjCnt, crdCnt ) << ",";
 }
@@ -3121,7 +3122,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	    dLevel_gt4 = 1;
 	  countCrdCnj( alpDoc, crdCnt, cnjCnt, reeksCnt );
 	  int np2Cnt;
-	  mod_stats( alpDoc, vcModCnt, np2Cnt, npModCnt );
+	  mod_stats( alpDoc, vcModCnt, np2Cnt, adjNpModCnt );
 	}
       }
     } // omp section
@@ -3158,7 +3159,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
     if ( pred ){
       ws->getSentenceOverlap( wordbuffer, lemmabuffer );
     }
-    if ( ws->lemma == "?" ){
+    if ( ws->lemma[ws->lemma.length()-1] == '?' ){
       question = true;
     }
     if ( ws->prop == ISLET ){

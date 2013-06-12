@@ -905,9 +905,9 @@ bool checkImp( Word *pv, xmlDoc *alp ){
   return !su_found;
 }
 
-void mod_stats( xmlDoc *doc, int& vcMod, int& npCnt, int& npMod ){
+void mod_stats( xmlDoc *doc, int& vcMod, int& npCnt, int& adjNpMod ){
   vcMod = 0;
-  npMod = 0;
+  adjNpMod = 0;
   vector<xmlNode*> nodes = getNodes( doc );
   for ( size_t i=0; i < nodes.size(); ++i ){
     KWargs atts = getAttributes( nodes[i] );
@@ -923,7 +923,7 @@ void mod_stats( xmlDoc *doc, int& vcMod, int& npCnt, int& npMod ){
       vector< xmlNode* > avnodes;
       getNodesValue( nodes[i]->children, avnodes, "pos", "adv" );
       getNodesValue( nodes[i]->children, avnodes, "pos", "adj" );
-      npMod += avnodes.size();
+      adjNpMod += avnodes.size();
     }
   }
 }
