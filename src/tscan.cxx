@@ -2490,7 +2490,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   os << density( propNegCnt, wordCnt ) << ","
      << density( morphNegCnt, wordCnt ) << ","
      << density( propNegCnt+morphNegCnt, wordCnt ) << ","
-     << density( multiNegCnt, sentCnt ) << ",";
+     << density( multiNegCnt, wordCnt ) << ",";
   os << MMtoString( distances, SUB_VERB ) << ",";
   os << MMtoString( distances, OBJ1_VERB ) << ",";
   os << MMtoString( distances, OBJ2_VERB ) << ",";
