@@ -8,7 +8,7 @@
 #       http://ilk.uvt.nl/~mvgompel
 #       Induction for Linguistic Knowledge Research Group
 #       Universiteit van Tilburg
-#       
+#
 #       Licensed under GPLv3
 #
 ###############################################################
@@ -54,8 +54,8 @@ if hostname == 'applejack': #final server in Nijmegen
     PORT = 80
     URLPREFIX = "tscan"
     USERS_MYSQL = {
-        'host': 'mysql-clamopener.science.ru.nl', 
-        'user': 'clamopener',        
+        'host': 'mysql-clamopener.science.ru.nl',
+        'user': 'clamopener',
         'password': D(open(environ['CLAMOPENER_KEYFILE']).read().strip()),
         'database': 'clamopener',
         'table': 'clamusers_clamusers',
@@ -65,21 +65,21 @@ if hostname == 'applejack': #final server in Nijmegen
 else: #local
     TSCANDIR = os.path.dirname(sys.argv[0])
     ROOT = "/tmp/tscan.clam/"
-    PORT= 8080 
+    PORT= 8080
     USERS = None
 
 
     #Directory to the tscan root (svn checkout)
-    
+
 
     #The URL of the system (If you start clam with the built-in webserver, you can override this with -P)
-    
+
 
 #The hostname of the system. Will be automatically determined if not set. (If you start clam with the built-in webserver, you can override this with -H)
 #Users *must* make use of this hostname and no other (even if it points to the same IP) for the web application to work.
 #HOST = 'localhost'
 
-#If the webservice runs in another webserver (e.g. apache, nginx, lighttpd), and it 
+#If the webservice runs in another webserver (e.g. apache, nginx, lighttpd), and it
 #doesn't run at the root of the server, you can specify a URL prefix here:
 #URLPREFIX = "/myservice/"
 
@@ -129,16 +129,16 @@ CUSTOM_FORMATS_MODULE = None
 
 # ======== PROFILE DEFINITIONS ===========
 
-PROFILES = [ 
+PROFILES = [
     Profile(
-        InputTemplate('textinput', PlainTextFormat,"Text Input",  
-            StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file', value='utf-8'),  
+        InputTemplate('textinput', PlainTextFormat,"Text Input",
+            StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file', value='utf-8'),
             #ChoiceParameter(id='language',name='Language',description='The language the text is in', choices=[('en','English'),('nl','Dutch'),('fr','French')]),
             #StringParameter(id='author',name='Author',description="The author's name", maxlength=100),
             #InputSource(id='sampledoc', label="Sample Document", path=ROOT+'/inputsources/sampledoc.txt', metadata=PlainTextFormat(None, encoding='utf-8',language='en')),
             #CharEncodingConverter(id='latin1',label='Convert from Latin-1',charset='iso-8859-1'),
             #PDFtoTextConverter(id='pdfconv',label='Convert from PDF Document'),
-            #MSWordConverter(id='docconv',label='Convert from MS Word Document'),            
+            #MSWordConverter(id='docconv',label='Convert from MS Word Document'),
             extension='.txt',
             #filename='filename.txt',
             #unique=True #set unique=True if the user may only upload a file for this input template once. Set multi=True if you the user may upload multiple of such files
@@ -147,16 +147,16 @@ PROFILES = [
         ),
         #------------------------------------------------------------------------------------------------------------------------
         OutputTemplate('foliaout',FoLiAXMLFormat,'Output analysis',
-            XSLTViewer(file=TSCANDIR + '/view/tscanview.xsl'),            
+            XSLTViewer(file=TSCANDIR + '/view/tscanview.xsl'),
             removeextension='.txt', #remove prior to adding
             extension='.xml',
             multi=True
         ),
-        OutputTemplate('xsl',XMLStyleSheet,'Stylesheet for Visualisation',            
+        OutputTemplate('xsl',XMLStyleSheet,'Stylesheet for Visualisation',
             filename='tscanview.xsl',
             unique=True
-        ),        
-    ) 
+        ),
+    )
 ]
 
 # ======== COMMAND ===========
@@ -166,14 +166,14 @@ PROFILES = [
 #absolute paths is preferred. The current working directory will be
 #set to the project directory.
 #
-#You can make use of the following special variables, 
+#You can make use of the following special variables,
 #which will be automatically set by CLAM:
 #     $INPUTDIRECTORY  - The directory where input files are uploaded.
 #     $OUTPUTDIRECTORY - The directory where the system should output
 #                        its output files.
-#     $STATUSFILE      - Filename of the .status file where the system 
-#                        should output status messages. 
-#     $DATAFILE        - Filename of the clam.xml file describing the 
+#     $STATUSFILE      - Filename of the .status file where the system
+#                        should output status messages.
+#     $DATAFILE        - Filename of the clam.xml file describing the
 #                        system and chosen configuration.
 #     $USERNAME        - The username of the currently logged in user
 #                        (set to "anonymous" if there is none)
@@ -185,22 +185,22 @@ COMMAND = TSCANDIR + "/webservice/tscanwrapper.py $DATAFILE $STATUSFILE $INPUTDI
 
 #The parameters are subdivided into several groups. In the form of a list of (groupname, parameters) tuples. The parameters are a list of instances from common/parameters.py
 
-wordfreqlist = [] 
+wordfreqlist = []
 for f in glob.glob(TSCANDIR + "/data/*words.freq"):
     wordfreqlist.append( (os.path.basename(f), os.path.basename(f)) )
 
 lemmafreqlist = []
 for f in glob.glob(TSCANDIR + "/data/*lemma.freq"):
     lemmafreqlist.append( (os.path.basename(f), os.path.basename(f)) )
-    
+
 
 topfreqlist = []
 for f in glob.glob(TSCANDIR + "/data/*20000.freq"):
     topfreqlist.append( (os.path.basename(f), os.path.basename(f)) )
-    
 
-PARAMETERS =  [ 
-    ('Parameters', [ 
+
+PARAMETERS =  [
+    ('Parameters', [
         IntegerParameter(id='rarityLevel',name='Rarity Level',description='Rarity level',default=4),
         IntegerParameter(id='overlapSize',name='Overlap Size',description='Overlap Size',default=50),
         FloatParameter(id='polarity_threshold',name='Polarity Threshold',description='Polarity Threshold',default=0.01),
@@ -209,9 +209,9 @@ PARAMETERS =  [
         #StringParameter(id='author',name='Author',description='Sign output metadata with the specified author name',maxlength=255),
         ChoiceParameter(id='usealpino',name='Use Alpino parser',description='Use Alpino parser?', choices=['yes','no'],default='yes'),
         ChoiceParameter(id='usewopr',name='Use Wopr',description='Use Wopr?', choices=['yes','no'],default='yes'),
-        ChoiceParameter(id='word_freq_lex', name='Word Frequency List', description="Word frequency list", choices=wordfreqlist),
-        ChoiceParameter(id='lemma_freq_lex', name='Lemma Frequency List', description="Lemma frequency list", choices=lemmafreqlist),
-        ChoiceParameter(id='top_freq_lex', name='Top Frequency List', description="Top frequency list", choices=topfreqlist),
+        ChoiceParameter(id='word_freq_lex', name='Word Frequency List', description="Word frequency list", choices=wordfreqlist, default="SoNaR500.wordfreqlist_words.freq"),
+        ChoiceParameter(id='lemma_freq_lex', name='Lemma Frequency List', description="Lemma frequency list", choices=lemmafreqlist, default="SoNaR500.wordfreqlist_lemma.freq"),
+        ChoiceParameter(id='top_freq_lex', name='Top Frequency List', description="Top frequency list", choices=topfreqlist, default="SoNaR500.wordfreqlist20000.freq"),
     ] )
 ]
 
@@ -220,7 +220,7 @@ PARAMETERS =  [
 # ======== DISPATCHING (ADVANCED! YOU CAN SAFELY SKIP THIS!) ========
 
 #The dispatcher to use (defaults to clamdispatcher.py), you almost never want to change this
-#DISPATCHER = 'clamdispatcher.py' 
+#DISPATCHER = 'clamdispatcher.py'
 
 #DISPATCHER_POLLINTERVAL = 30   #interval at which the dispatcher polls for resource consumption (default: 30 secs)
 #DISPATCHER_MAXRESMEM = 0    #maximum consumption of resident memory (in megabytes), processes that exceed this will be automatically aborted. (0 = unlimited, default)
