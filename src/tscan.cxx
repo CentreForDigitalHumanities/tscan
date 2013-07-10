@@ -3013,7 +3013,9 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
       DBG << "finished parsing" << endl;
       vector<Word*> wv = doc->words();
       if ( wv.size() !=  wordProbsV.size() ){
-	LOG << "OESP" << endl;
+	LOG << "unforseen mismatch between de number of words returned by WOPR"
+	    << endl << " and the number of words in the input sentence. "
+	    << endl;
 	return;
       }
       for ( size_t i=0; i < wv.size(); ++i ){
@@ -3028,7 +3030,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
       }
       vector<Sentence*> sv = doc->sentences();
       if ( sv.size() != 1 ){
-	LOG << "OESP 2" << endl;
+	throw logic_error( "The document returned by WOPR contains > 1 Sentence" ); 
 	return;
       }
       vector<MetricAnnotation*> mv = sv[0]->select<MetricAnnotation>();      
