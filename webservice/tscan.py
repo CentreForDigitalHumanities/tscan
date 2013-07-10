@@ -156,6 +156,50 @@ PROFILES = [
             filename='tscanview.xsl',
             unique=True
         ),
+        OutputTemplate('wordcsv', CSVFormat, 'Document statistics, per word',
+            SimpleTableViewer(delimiter=",",quotechar='"'),
+            removeextension='.txt', #remove prior to adding
+            extension='csv',
+            multi=True
+        ),
+        OutputTemplate('sencsv', CSVFormat, 'Document statistics, per sentence',
+            SimpleTableViewer(delimiter=",",quotechar='"'),
+            removeextension='.txt', #remove prior to adding
+            extension='csv',
+            multi=True
+        ),
+        OutputTemplate('parcsv', CSVFormat, 'Document statistics, per paragraph',
+            SimpleTableViewer(delimiter=",",quotechar='"'),
+            removeextension='.txt', #remove prior to adding
+            extension='csv',
+            multi=True
+        ),
+        OutputTemplate('doccsv', CSVFormat, 'Document statistics, entire document',
+            SimpleTableViewer(delimiter=",",quotechar='"'),
+            removeextension='.txt', #remove prior to adding
+            extension='csv',
+            multi=True
+        ),
+        OutputTemplate('totalwordcsv', CSVFormat, 'Aggregated statistics, per word',
+            SimpleTableViewer(delimiter=",",quotechar='"'),
+            filename='total.word.csv',
+            unique=True
+        ),
+        OutputTemplate('totalsencsv', CSVFormat, 'Aggregated statistics, per sentence',
+            SimpleTableViewer(delimiter=",",quotechar='"'),
+            filename='total.sen.csv',
+            unique=True
+        ),
+        OutputTemplate('totalparcsv', CSVFormat, 'Aggregated statistics, per paragraph',
+            SimpleTableViewer(delimiter=",",quotechar='"'),
+            filename='total.par.csv',
+            unique=True
+        ),
+        OutputTemplate('totaldoccsv', CSVFormat, 'Aggregated statistics, per document',
+            SimpleTableViewer(delimiter=",",quotechar='"'),
+            filename='total.doc.csv',
+            unique=True
+        )
     )
 ]
 
