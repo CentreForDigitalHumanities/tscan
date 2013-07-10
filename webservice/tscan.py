@@ -157,45 +157,53 @@ PROFILES = [
             unique=True
         ),
         OutputTemplate('wordcsv', CSVFormat, 'Document statistics, per word',
+            SetMetaField('encoding','utf-8'),
             SimpleTableViewer(delimiter=",",quotechar='"'),
             removeextension='.txt', #remove prior to adding
             extension='words.csv',
             multi=True
         ),
         OutputTemplate('sencsv', CSVFormat, 'Document statistics, per sentence',
+            SetMetaField('encoding','utf-8'),
             SimpleTableViewer(delimiter=",",quotechar='"'),
             removeextension='.txt', #remove prior to adding
             extension='sentences.csv',
             multi=True
         ),
         OutputTemplate('parcsv', CSVFormat, 'Document statistics, per paragraph',
+            SetMetaField('encoding','utf-8'),
             SimpleTableViewer(delimiter=",",quotechar='"'),
             removeextension='.txt', #remove prior to adding
             extension='paragraphs.csv',
             multi=True
         ),
         OutputTemplate('doccsv', CSVFormat, 'Document statistics, entire document',
+            SetMetaField('encoding','utf-8'),
             SimpleTableViewer(delimiter=",",quotechar='"'),
             removeextension='.txt', #remove prior to adding
             extension='document.csv',
             multi=True
         ),
         OutputTemplate('totalwordcsv', CSVFormat, 'Aggregated statistics, per word',
+            SetMetaField('encoding','utf-8'),
             SimpleTableViewer(delimiter=",",quotechar='"'),
             filename='total.word.csv',
             unique=True
         ),
         OutputTemplate('totalsencsv', CSVFormat, 'Aggregated statistics, per sentence',
+            SetMetaField('encoding','utf-8'),
             SimpleTableViewer(delimiter=",",quotechar='"'),
             filename='total.sen.csv',
             unique=True
         ),
         OutputTemplate('totalparcsv', CSVFormat, 'Aggregated statistics, per paragraph',
+            SetMetaField('encoding','utf-8'),
             SimpleTableViewer(delimiter=",",quotechar='"'),
             filename='total.par.csv',
             unique=True
         ),
         OutputTemplate('totaldoccsv', CSVFormat, 'Aggregated statistics, per document',
+            SetMetaField('encoding','utf-8'),
             SimpleTableViewer(delimiter=",",quotechar='"'),
             filename='total.doc.csv',
             unique=True
