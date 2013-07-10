@@ -159,25 +159,25 @@ PROFILES = [
         OutputTemplate('wordcsv', CSVFormat, 'Document statistics, per word',
             SimpleTableViewer(delimiter=",",quotechar='"'),
             removeextension='.txt', #remove prior to adding
-            extension='csv',
+            extension='words.csv',
             multi=True
         ),
         OutputTemplate('sencsv', CSVFormat, 'Document statistics, per sentence',
             SimpleTableViewer(delimiter=",",quotechar='"'),
             removeextension='.txt', #remove prior to adding
-            extension='csv',
+            extension='sentences.csv',
             multi=True
         ),
         OutputTemplate('parcsv', CSVFormat, 'Document statistics, per paragraph',
             SimpleTableViewer(delimiter=",",quotechar='"'),
             removeextension='.txt', #remove prior to adding
-            extension='csv',
+            extension='paragraphs.csv',
             multi=True
         ),
         OutputTemplate('doccsv', CSVFormat, 'Document statistics, entire document',
             SimpleTableViewer(delimiter=",",quotechar='"'),
             removeextension='.txt', #remove prior to adding
-            extension='csv',
+            extension='document.csv',
             multi=True
         ),
         OutputTemplate('totalwordcsv', CSVFormat, 'Aggregated statistics, per word',
