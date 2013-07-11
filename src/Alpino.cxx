@@ -241,8 +241,10 @@ void store_result( multimap<DD_type,int>& result, DD_type type,
     swap( pos1, pos2 );
   int dist = pos2-pos1-1;
   for ( int i=pos1; i <= pos2; ++i )
-    if ( puncts.find( i ) != puncts.end() )
+    if ( puncts.find( i ) != puncts.end() ){
+      //      cerr << "lower the dist, because of a punctuation" << endl;
       --dist;
+    }
   cerr << "store " << type << "(" << pos1 << "," << pos2 << ")=" << dist << endl;
   if ( dist >= 0 ){
     result.insert( make_pair( type, dist ) );
@@ -502,25 +504,26 @@ multimap<DD_type, int> getDependencyDist( Word *w, xmlDoc *alp,
     }
     else if ( head_rel == "cmp" &&
 	      ( head_pos == "comp" || head_pos == "comparative" ) ){
-      vector< xmlNode *> head_siblings = getSibblings( head_node );
-      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin(); 
-	    it != head_siblings.end(); 
-	    ++it ){
-	KWargs args = getAttributes( *it );
-	//	cerr << "bekijk " << args << endl;
-	if ( args["rel"] == "body" ){
-	  xmlNode *res = node_search( *it, "rel", "hd" );
-	  if ( res ){
-	    store_result( result, COMP_BODY, head_node, res, puncts );
-	  }
-	  res = node_search( *it, "rel", "cnj" );
-	  if ( res ){
-	    store_result( result, COMP_BODY, head_node, res, puncts );
+      string word = getAttribute( head_node, "word" );
+      if ( word != "te" ){
+	vector< xmlNode *> head_siblings = getSibblings( head_node );
+	for ( vector< xmlNode *>::const_iterator it=head_siblings.begin(); 
+	      it != head_siblings.end(); 
+	      ++it ){
+	  KWargs args = getAttributes( *it );
+	  if ( args["rel"] == "body" ){
+	    xmlNode *res = node_search( *it, "rel", "hd" );
+	    if ( res ){
+	      store_result( result, COMP_BODY, head_node, res, puncts );
+	    }
+	    res = node_search( *it, "rel", "cnj" );
+	    if ( res ){
+	      store_result( result, COMP_BODY, head_node, res, puncts );
+	    }
 	  }
 	}
       }
     }
-
   }
   return result;
 }

@@ -191,6 +191,41 @@ ostream& operator<<( ostream& os, const CGN::Type t ){
   os << toString( t );
   return os;
 }
+
+enum NerProp { NONER, LOC_B, LOC_I, EVE_B, EVE_I, ORG_B, ORG_I, 
+	       MISC_B, MISC_I, PER_B, PER_I, PRO_B, PRO_I };
+
+ostream& operator<<( ostream& os, const NerProp& n ){
+  switch ( n ){
+  case NONER:
+    break;
+  case LOC_B:
+  case LOC_I:
+    os << "LOC";
+    break;
+  case EVE_B:
+  case EVE_I:
+    os << "EVE";
+    break;
+  case ORG_B:
+  case ORG_I:
+    os << "ORG";
+    break;
+  case MISC_B:
+  case MISC_I:
+    os << "MISC";
+    break;
+  case PER_B:
+  case PER_I:
+    os << "PER";
+    break;
+  case PRO_B:
+  case PRO_I:
+    os << "PRO";
+    break;
+  };
+  return os;
+}
  
 struct settingData {
   void init( const Configuration& );
@@ -836,6 +871,7 @@ struct wordStats : public basicStats {
   bool isBetr;
   bool isPropNeg;
   bool isMorphNeg;
+  NerProp nerProp;
   ConnType connType;
   bool f50;
   bool f65;
@@ -1385,6 +1421,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false), connType(NOCONN),
+  nerProp(NONER),
   f50(false), f65(false), f77(false), f80(false),  compPartCnt(0), 
   top_freq(notFound), word_freq(0), lemma_freq(0),
   argRepeatCnt(0), wordOverlapCnt(0), lemmaRepeatCnt(0), lemmaOverlapCnt(0),
@@ -1475,12 +1512,21 @@ bool wordStats::isOverlapCandidate() const {
        ( prop == ISNAME ) ||
        ( tag == CGN::WW && wwform == HEAD_VERB ) )
     return true;
-  else
+  else {
+#ifdef DEBUG_OL
+    if ( tag == CGN::WW ){
+      cerr << "is overlapcandidate REJECTED " << toString(wwform) << " " << word << endl;
+    }
+    else if ( tag == CGN::VNW ){
+      cerr << "is overlapcandidate REJECTED " << toString(prop) << " " << word << endl;
+    }
+#endif
     return false;
+  }
 }
 
-void wordStats::getSentenceOverlap(const vector<string>& wordbuffer,
-				   const vector<string>& lemmabuffer ){
+void wordStats::getSentenceOverlap( const vector<string>& wordbuffer,
+				    const vector<string>& lemmabuffer ){
   if ( isOverlapCandidate() ){
     // get the words and lemmas' of the previous sentence
 #ifdef DEBUG_OL
@@ -1711,7 +1757,7 @@ void wordStats::concreetToCSV( ostream& os ) const {
 
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
   os << "pers_ref,pers_pron_1,pers_pron_2,pers_pron_3,pers_pron,"
-     << "name,"
+     << "name, NerPers, NerLoc, NerOrg, NerProd, NerEvent, NerMisc,"
      << "action_verb,state_verb,"
      << "process_verb,human_noun,"
      << "emo_adj,imperative,"
@@ -1725,6 +1771,12 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << (prop == ISPPRON3 ) << ","
      << (prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3) << ","
      << (prop == ISNAME) << ","
+     << (nerProp == PER_B || nerProp == PER_I ) << ","
+     << (nerProp == LOC_B || nerProp == LOC_I ) << ","
+     << (nerProp == ORG_B || nerProp == ORG_I ) << ","
+     << (nerProp == PRO_B || nerProp == PRO_I ) << ","
+     << (nerProp == EVE_B || nerProp == EVE_I ) << ","
+     << (nerProp == MISC_B || nerProp == MISC_I ) << ","
      << (sem_type == ACTION ) << ","
      << (sem_type == STATE ) << ","
      << (sem_type == PROCESS ) << ","
@@ -1791,41 +1843,6 @@ void wordStats::toCSV( ostream& os ) const {
   wordSortToCSV( os );
   miscToCSV( os );
   os << endl;
-}
-
-enum NerProp { NONER, LOC_B, LOC_I, EVE_B, EVE_I, ORG_B, ORG_I, 
-	       MISC_B, MISC_I, PER_B, PER_I, PRO_B, PRO_I };
-
-ostream& operator<<( ostream& os, const NerProp& n ){
-  switch ( n ){
-  case NONER:
-    break;
-  case LOC_B:
-  case LOC_I:
-    os << "LOC";
-    break;
-  case EVE_B:
-  case EVE_I:
-    os << "EVE";
-    break;
-  case ORG_B:
-  case ORG_I:
-    os << "ORG";
-    break;
-  case MISC_B:
-  case MISC_I:
-    os << "MISC";
-    break;
-  case PER_B:
-  case PER_I:
-    os << "PER";
-    break;
-  case PRO_B:
-  case PRO_I:
-    os << "PRO";
-    break;
-  };
-  return os;
 }
 
 struct structStats: public basicStats {
@@ -3116,8 +3133,9 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	      throw ValueError( "word doesn't have Frog POS tag info" );
 	    PosAnnotation *pa = posV[0];
 	    string posHead = pa->feat("head");
-	    if ( posHead == "LET" )
+	    if ( posHead == "LET" ){
 	      puncts.insert( i );
+	    }
 	  }
 	  dLevel = get_d_level( s, alpDoc );
 	  if ( dLevel > 4 )
@@ -3177,6 +3195,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	  surprisal += ws->surprisal;
       }
       NerProp ner = lookupNer( w[i], s );
+      ws->nerProp = ner;
       switch( ner ){
       case LOC_B:
       case EVE_B:
