@@ -40,7 +40,6 @@
 #include "ticcutils/Configuration.h"
 #include "tscan/Alpino.h"
 #include "tscan/decomp.h"
-#include "tscan/surprise.h"
 
 using namespace std;
 using namespace TiCC;
@@ -232,15 +231,12 @@ struct settingData {
   bool doAlpino;
   bool doAlpinoServer;
   bool doDecompound;
-  bool doSurprisal;
   bool doWopr;
   bool doXfiles;
   string decompounderPath;
-  string surprisalPath;
   string style;
   int rarityLevel;
   unsigned int overlapSize;
-  double polarity_threshold;
   map <string, SemType> adj_sem;
   map <string, SemType> noun_sem;
   map <string, SemType> verb_sem;
@@ -421,52 +417,6 @@ bool fill( CGN::Type tag, map<string,SemType>& m, const string& filename ){
   return false;
 }
 
-
-bool fill_pol( map<string,double>& m, istream& is ){
-  string line;
-  while( getline( is, line ) ){
-    vector<string> parts;
-    size_t n = split_at( line, parts, "\t" ); // split at tab
-    if ( n != 2 ){
-      cerr << "skip line: " << line << " (expected 2 values, got " 
-	   << n << ")" << endl;
-      continue;
-    }
-    double value = TiCC::stringTo<double>( parts[1] );
-    if ( abs(value) < settings.polarity_threshold ){
-      value = 0;
-    }
-    // parts[0] is something like "sympathiek a"
-    // is't not quite clear if there is exactly 1 space
-    // also there is "dolce far niente n"
-    // so we split again, and reconstruct using a colon before the pos.
-    vector<string> vals;
-    n = split_at( parts[0], vals, " " ); // split at space(s)
-    if ( n < 2 ){
-      cerr << "skip line: " << line << " (expected at least 2 values, got " 
-	   << n << ")" << endl;
-      continue;
-    }
-    string key;
-    for ( size_t i=0; i < n-1; ++i )
-      key += vals[i];
-    key += ":" + vals[n-1];
-    m[key] = value;
-  }
-  return true;
-}
-
-bool fill_pol( map<string,double>& m, const string& filename ){
-  ifstream is( filename.c_str() );
-  if ( is ){
-    return fill_pol( m, is );
-  }
-  else {
-    cerr << "couldn't open file: " << filename << endl;
-  }
-  return false;
-}
-
 bool fill_freqlex( map<string,cf_data>& m, istream& is ){
   string line;
   while( getline( is, line ) ){
@@ -569,13 +519,6 @@ void settingData::init( const Configuration& cf ){
     decompounderPath = val + "/";
     doDecompound = true;
   }
-  doSurprisal = false;
-  val = cf.lookUp( "surprisalPath" );
-  if( !val.empty() ){
-    surprisalPath = val + "/";
-    cerr << "surprisal parser PERMANENTLY disabled!" << endl;
-    //    doSurprisal = true;
-  }
   val = cf.lookUp( "styleSheet" );
   if( !val.empty() ){
     style = val;
@@ -608,18 +551,6 @@ void settingData::init( const Configuration& cf ){
   val = cf.lookUp( "verb_semtypes" );
   if ( !val.empty() ){
     if ( !fill( CGN::WW, verb_sem, cf.configDir() + "/" + val ) )
-      exit( EXIT_FAILURE );
-  }
-  val = cf.lookUp( "polarity_threshold" );
-  if ( val.empty() ){
-    polarity_threshold = 0.01;
-  }
-  else if ( !TiCC::stringTo( val, polarity_threshold ) ){ 
-    cerr << "invalid value for 'polarity_threshold' in config file" << endl;
-  }
-  val = cf.lookUp( "polarity_lex" );
-  if ( !val.empty() ){
-    if ( !fill_pol( pol_lex, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "staph_word_freq_lex" );
@@ -846,7 +777,6 @@ struct wordStats : public basicStats {
   ConnType checkConnective( ) const;
   bool checkNominal( Word *, xmlDoc * ) const;
   WordProp checkProps( const PosAnnotation* );
-  double checkPolarity( ) const;
   SemType checkSemProps( ) const;
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
@@ -887,8 +817,6 @@ struct wordStats : public basicStats {
   int lemmaOverlapCnt;
   double word_freq_log;
   double lemma_freq_log;
-  double polarity;
-  double surprisal;
   double logprob10;
   WordProp prop;
   SemType sem_type;
@@ -1166,23 +1094,6 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
   return prop;
 }
 
-double wordStats::checkPolarity( ) const {
-  string key = lowercase(word)+":";
-  if ( tag == CGN::N )
-    key += "n";
-  else if ( tag == CGN::ADJ )
-    key += "a";
-  else if ( tag == CGN::WW )
-    key += "v";
-  else
-    return NA;
-  map<string,double>::const_iterator it = settings.pol_lex.find( key );
-  if ( it != settings.pol_lex.end() ){
-    return it->second;
-  }
-  return NA;
-}
-
 SemType wordStats::checkSemProps( ) const {
   if ( tag == CGN::N ){
     SemType sem2 = UNFOUND;
@@ -1426,7 +1337,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
   top_freq(notFound), word_freq(0), lemma_freq(0),
   argRepeatCnt(0), wordOverlapCnt(0), lemmaRepeatCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NA), lemma_freq_log(NA),
-  polarity(NA), surprisal(NA), logprob10(NA), prop(JUSTAWORD), sem_type(UNFOUND)
+  logprob10(NA), prop(JUSTAWORD), sem_type(UNFOUND)
 {
   word = UnicodeToUTF8( w->text() );
   charCnt = w->text().length();
@@ -1475,7 +1386,6 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
       morphCntExNames = max;
     }
     if (alpDoc) isNominal = checkNominal( w, alpDoc );
-    polarity = checkPolarity();
     sem_type = checkSemProps();
     if ( sem_type == CONCRETE_HUMAN_NOUN ||
 	 prop == ISNAME ||
@@ -1626,10 +1536,6 @@ void wordStats::addMetrics( ) const {
 		"lemma_argument_repeat_count", toString( lemmaRepeatCnt ) );
   addOneMetric( doc, el, 
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
-  if ( polarity != NA  )
-    addOneMetric( doc, el, "polarity", toString(polarity) );
-  if ( surprisal != NA  )
-    addOneMetric( doc, el, "surprisal", toString(surprisal) );
   if ( logprob10 != NA  )
     addOneMetric( doc, el, "lprob10", toString(logprob10) );
   if ( prop != JUSTAWORD )
@@ -1761,7 +1667,7 @@ void wordStats::persoonlijkheidHeader( ostream& os ) const {
      << "action_verb,state_verb,"
      << "process_verb,human_noun,"
      << "emo_adj,imperative,"
-     << "question,polarity,";
+     << "question,";
 }
 
 void wordStats::persoonlijkheidToCSV( ostream& os ) const {
@@ -1784,10 +1690,6 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << (sem_type == EMO_ADJ ) << ","
      << isImperative << ","
      << "NA,";
-  if ( polarity == NA )
-    os << "NA,";
-  else
-    os << polarity << ",";
 }
 
 void wordStats::wordSortHeader( ostream& os ) const {
@@ -1811,7 +1713,7 @@ void wordStats::wordSortToCSV( ostream& os ) const {
 
 void wordStats::miscHeader( ostream& os ) const {
   os << "present_verb,modal,time_verb,copula,archaic,"
-     << "vol_deelw,onvol_deelw,infin,surprisal,wopr_logprob";
+     << "vol_deelw,onvol_deelw,infin,wopr_logprob";
 }
 
 void wordStats::miscToCSV( ostream& os ) const {
@@ -1823,10 +1725,6 @@ void wordStats::miscToCSV( ostream& os ) const {
      << (prop == ISVD ) << ","
      << (prop == ISOD) << ","
      << (prop == ISINF ) << ",";
-  if ( surprisal == NA )
-    os << "NA,";
-  else
-    os << surprisal << ",";
   if ( logprob10 == NA )
     os << "NA,";
   else
@@ -1908,8 +1806,6 @@ struct structStats: public basicStats {
     lemma_freq_n(0),
     lemma_freq_log(NA),
     lemma_freq_log_n(NA),
-    polarity(NA),
-    surprisal(NA),
     avg_prob10(NA),
     entropy(NA),
     perplexity(NA),
@@ -2035,8 +1931,6 @@ struct structStats: public basicStats {
   int lemma_freq_n; 
   double lemma_freq_log; 
   double lemma_freq_log_n; 
-  double polarity;
-  double surprisal;
   double avg_prob10;
   double entropy;
   double perplexity;
@@ -2141,18 +2035,6 @@ void structStats::merge( structStats *ss ){
   word_freq_n += ss->word_freq_n;
   lemma_freq += ss->lemma_freq;
   lemma_freq_n += ss->lemma_freq_n;
-  if ( ss->polarity != NA ){
-    if ( polarity == NA )
-      polarity = ss->polarity;
-    else
-      polarity += ss->polarity;
-  }
-  if ( ss->surprisal != NA ){
-    if ( surprisal == NA )
-      surprisal = ss->surprisal;
-    else
-      surprisal += ss->surprisal;
-  }
   if ( ss->avg_prob10 != NA ){
     if ( avg_prob10 == NA )
       avg_prob10 = ss->avg_prob10;
@@ -2356,10 +2238,6 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "log_lemma_freq", toString(lemma_freq_log) );
   if ( lemma_freq_log_n != NA  )
     addOneMetric( doc, el, "log_lemma_freq_no_names", toString(lemma_freq_log_n) );
-  if ( polarity != NA )
-    addOneMetric( doc, el, "polarity", toString(polarity) );
-  if ( surprisal != NA )
-    addOneMetric( doc, el, "surprisal", toString(surprisal) );
   if ( avg_prob10 != NA )
     addOneMetric( doc, el, "wopr_logprob", toString(avg_prob10) );
   if ( entropy != NA )
@@ -2613,7 +2491,7 @@ void structStats::persoonlijkheidHeader( ostream& os ) const {
      << "action_verbs_p,action_verbs_d,state_verbs_p,state_verbs_d,"
      << "process_verbs_p,process_verbs_d,human_nouns_p,human_nouns_d,"
      << "emo_adjs_p,emo_adjs_d,imperatives_p,imperatives_d,"
-     << "questions_p,questions_d,polarity,";
+     << "questions_p,questions_d,";
 }
 
 void structStats::persoonlijkheidToCSV( ostream& os ) const {
@@ -2653,7 +2531,6 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << density( impCnt, wordCnt ) << ",";
   os << ratio( questCnt, sentCnt ) << ",";
   os << density( questCnt, wordCnt ) << ",";
-  os << ratio( polarity, wordCnt ) << ",";
 }
 
 void structStats::wordSortHeader( ostream& os ) const {
@@ -2679,7 +2556,7 @@ void structStats::miscHeader( ostream& os ) const {
   os << "present_verbs_r,present_verbs_d,modals_d_,modals_g,"
      << "time_verbs_d,time_verbs_g,copula_d,copula_g,"
      << "archaics,vol_deelw_d,vol_deelw_g,"
-     << "onvol_deelw_d,onvol_deelw_g,infin_d,infin_g,surprisal,"
+     << "onvol_deelw_d,onvol_deelw_g,infin_d,infin_g,"
      << "wopr_logprob,wopr_entropy,wopr_perplexity,";
 }
 
@@ -2699,7 +2576,6 @@ void structStats::miscToCSV( ostream& os ) const {
   os << ratio( odCnt, pastCnt + presentCnt ) << ",";
   os << density( infCnt, wordCnt ) << ",";
   os << ratio( infCnt, (pastCnt + presentCnt) ) << ",";
-  os << ratio( surprisal, sentCnt ) << ",";
   os << ratio( avg_prob10, sentCnt ) << ",";
   os << ratio( entropy, sentCnt ) << ",";
   os << ratio( perplexity, sentCnt ) << ",";
@@ -3090,21 +2966,12 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
   id = s->id();
   text = UnicodeToUTF8( s->toktext() );
   vector<Word*> w = s->words();
-  vector<double> surprisalV(w.size(),NA);
   vector<double> woprProbsV(w.size(),NA);
   double sentProb = NA;
   double sentEntropy = NA;
   double sentPerplexity = NA;
   xmlDoc *alpDoc = 0;
   set<size_t> puncts;
-  if ( settings.doSurprisal 
-       && w.size() != 1 ){ // the surpisal parser chokes on 1 word sentences
-    surprisalV = runSurprisal( s, workdir_name, settings.surprisalPath );
-    if ( surprisalV.size() != w.size() ){
-      cerr << "MISMATCH! " << surprisalV.size() << " != " <<  w.size()<< endl;
-      surprisalV.clear();
-    }
-  }
 #pragma omp parallel sections 
   {
 #pragma omp section
@@ -3173,7 +3040,6 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
   }
   for ( size_t i=0; i < w.size(); ++i ){
     wordStats *ws = new wordStats( w[i], alpDoc, puncts );
-    ws->surprisal = surprisalV[i];
     if ( woprProbsV[i] != -99 )
       ws->logprob10 = woprProbsV[i];
     if ( pred ){
@@ -3188,12 +3054,6 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
       continue;
     }
     else {
-      if ( settings.doSurprisal ){
-	if ( surprisal == NA )
-	  surprisal = ws->surprisal;
-	else
-	  surprisal += ws->surprisal;
-      }
       NerProp ner = lookupNer( w[i], s );
       ws->nerProp = ner;
       switch( ner ){
@@ -3373,12 +3233,6 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	++top20000Cnt;
       default:
 	break;
-      }
-      if ( ws->polarity != NA ){
-	if ( polarity == NA )
-	  polarity = ws->polarity;
-	else
-	  polarity += ws->polarity;
       }
       switch ( ws->sem_type ){
       case CONCRETE_HUMAN_NOUN:
@@ -3874,9 +3728,6 @@ int main(int argc, char *argv[]) {
     if ( skip.find_first_of("aA") != string::npos ){
       settings.doAlpino = false;
       settings.doAlpinoServer = false;
-    }
-    if ( skip.find_first_of("sS") != string::npos ){
-      settings.doSurprisal = false;
     }
     if ( skip.find_first_of("dD") != string::npos ){
       settings.doDecompound = false;
