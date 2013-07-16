@@ -739,7 +739,11 @@ struct basicStats {
   virtual string text() const { return ""; };
   virtual CGN::Type postag() const { return CGN::UNASS; };
   virtual ConnType getConnType() const { return NOCONN; };
+  virtual void setConnType( ConnType t ){ 
+    throw logic_error("settConnType only valid for words" );
+  };
   virtual vector<const wordStats*> collectWords() const = 0;
+
   FoliaElement *folia_node;
   string category;
   int charCnt;
@@ -772,6 +776,7 @@ struct wordStats : public basicStats {
   string text() const { return word; };
   CGN::Type postag() const { return tag; };
   ConnType getConnType() const { return connType; };
+  void setConnType( ConnType t ){ connType = t; };
   void addMetrics( ) const;
   bool checkContent() const;
   ConnType checkConnective( ) const;
@@ -2702,20 +2707,22 @@ bool sentStats::checkAls( size_t index ){
   if ( als == "als" ){
     if ( index == 0 ){
       // eerste woord, terugkijken kan dus niet
-      causeConnCnt++;      
+      sv[0]->setConnType( CAUSAAL );
     }
     else {
       for ( size_t i = index-1; i+1 != 0; --i ){
 	string word = lowercase( sv[i]->text() );
 	if ( compAlsSet.find( word ) != compAlsSet.end() ){
 	  // kijk naar "evenmin ... als" constructies
-	  compConnCnt++;      
+	  sv[i]->setConnType( COMPARATIEF );
+	  sv[index]->setConnType( COMPARATIEF );
 	  //	cerr << "ALS comparatief:" << word << endl;
 	  return true;
 	}
 	else if ( reeksAlsSet.find( word ) != reeksAlsSet.end() ){
 	  // kijk naar "zowel ... als" constructies
-	  reeksConnCnt++;      
+	  sv[i]->setConnType( REEKS );
+	  sv[index]->setConnType( REEKS );
 	  //	cerr << "ALS opsommend:" << word << endl;
 	  return true;
 	}
@@ -2724,11 +2731,11 @@ bool sentStats::checkAls( size_t index ){
 	if ( sv[index-1]->postag() == CGN::ADJ ){
 	  // "groter als"
 	  //	cerr << "ALS comparatief: ADJ: " << sv[index-1]->text() << endl;
-	  compConnCnt++;
+	  sv[index]->setConnType( COMPARATIEF );
 	}
 	else {
 	  //	cerr << "ALS causaal: " << sv[index-1]->text() << endl;
-	  causeConnCnt++;
+	  sv[index]->setConnType( CAUSAAL );
 	}
 	return true;
       }
@@ -2736,7 +2743,7 @@ bool sentStats::checkAls( size_t index ){
     if ( index < sv.size() &&
 	 sv[index+1]->postag() == CGN::TW ){
       // "als eerste" "als dertigste"
-      compConnCnt++;
+      sv[index]->setConnType( COMPARATIEF );
       return true;
     }
   }
@@ -2875,6 +2882,27 @@ void sentStats::resolveConnectives(){
     }
     if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
       propNegCnt++;
+    }
+  }
+  for ( size_t i=0; i < sv.size(); ++i ){
+    switch( sv[i]->getConnType() ){
+    case TEMPOREEL:
+      tempConnCnt++;
+      break;
+    case REEKS:
+      reeksConnCnt++;
+      break;
+    case CONTRASTIEF:
+      contConnCnt++;
+      break;
+    case COMPARATIEF:
+      compConnCnt++;
+      break;
+    case CAUSAAL:
+      causeConnCnt++;
+      break;
+    default:
+      break;
     }
   }
 }
@@ -3190,25 +3218,6 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	propNegCnt++;
       if ( ws->isMorphNeg )
 	morphNegCnt++;
-      switch( ws->connType ){
-      case TEMPOREEL:
-	tempConnCnt++;
-	break;
-      case REEKS:
-	reeksConnCnt++;
-	break;
-      case CONTRASTIEF:
-	contConnCnt++;
-	break;
-      case COMPARATIEF:
-	compConnCnt++;
-	break;
-      case CAUSAAL:
-	causeConnCnt++;
-	break;
-      default:
-	break;
-      }
       if ( ws->f50 )
 	f50Cnt++;
       if ( ws->f65 )
@@ -3288,11 +3297,11 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
   if ( alpDoc ){
     xmlFreeDoc( alpDoc );
   }
+  resolveConnectives();
   if ( question )
     questCnt = 1;
   if ( (morphNegCnt + propNegCnt) > 1 )
     multiNegCnt = 1;
-  resolveConnectives();
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
   else
