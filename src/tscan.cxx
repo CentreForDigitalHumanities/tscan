@@ -740,7 +740,10 @@ struct basicStats {
   virtual CGN::Type postag() const { return CGN::UNASS; };
   virtual ConnType getConnType() const { return NOCONN; };
   virtual void setConnType( ConnType t ){ 
-    throw logic_error("settConnType only valid for words" );
+    throw logic_error("settConnType() only valid for words" );
+  };
+  virtual void setMultiConn(){ 
+    throw logic_error("settMultiConn() only valid for words" );
   };
   virtual vector<const wordStats*> collectWords() const = 0;
 
@@ -777,6 +780,7 @@ struct wordStats : public basicStats {
   CGN::Type postag() const { return tag; };
   ConnType getConnType() const { return connType; };
   void setConnType( ConnType t ){ connType = t; };
+  void setMultiConn(){ isMultiConn = true; };
   void addMetrics( ) const;
   bool checkContent() const;
   ConnType checkConnective( ) const;
@@ -808,6 +812,7 @@ struct wordStats : public basicStats {
   bool isMorphNeg;
   NerProp nerProp;
   ConnType connType;
+  bool isMultiConn;
   bool f50;
   bool f65;
   bool f77;
@@ -846,7 +851,7 @@ ConnType wordStats::checkConnective() const {
       "ineens", "ingaande", "inmiddels", "medio", "meer", "meestal", 
       "meteen", "morgen", "morgenavond", "morgenmiddag", "morgennacht", 
       "morgenochtend", "morgenvroeg", "na", "nadat", "naderhand", 
-      "nadezen", "nadien", "olim", "omstreeks", 
+      "nadezen", "nadien", "olim", 
       "onderwijl", "onlangs", "opeens", "overdag", "overmorgen", 
       "pardoes", "pas", "plotsklaps", "recentelijk", "reeds", "sedert", 
       "sedert", "sedertdien", "sinds", "sinds", "sindsdien", "steeds", 
@@ -870,7 +875,7 @@ ConnType wordStats::checkConnective() const {
 
   static string vg_contrastList[] = 
     { "alhoewel", "althans", "anderzijds", "behalve", 
-      "behoudens", "daarentegen", "desondanks", "doch",
+      "behoudens", "daarentegen", "daarvan", "desondanks", "doch",
       "echter", "enerzijds", "evengoed", "evenwel", 
       "hoewel", "hoezeer", "integendeel", "niettegenstaande", 
       "niettemin", "nochtans", "ofschoon", "ondanks",
@@ -880,7 +885,7 @@ ConnType wordStats::checkConnective() const {
 				     vg_contrastList + sizeof(vg_contrastList)/sizeof(string) );
   static string bw_contrastList[] = 
     { "al", "alhoewel", "althans", "anderzijds", "behalve", 
-      "behoudens", "daarentegen", "desondanks", "doch",
+      "behoudens", "daarentegen", "daarvan", "desondanks", "doch",
       "echter", "enerzijds", "evengoed", "evenwel", 
       "hoewel", "hoezeer", "integendeel", "maar", "niettegenstaande", 
       "niettemin", "nochtans", "ofschoon", "ondanks", 
@@ -1336,7 +1341,8 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
   basicStats( w, "WORD" ), wwform(::NO_VERB),
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
-  isBetr(false), isPropNeg(false), isMorphNeg(false), connType(NOCONN),
+  isBetr(false), isPropNeg(false), isMorphNeg(false), 
+  connType(NOCONN), isMultiConn(false), 
   nerProp(NONER),
   f50(false), f65(false), f77(false), f80(false),  compPartCnt(0), 
   top_freq(notFound), word_freq(0), lemma_freq(0),
@@ -1385,6 +1391,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
     isPropNeg = checkPropNeg();
     isMorphNeg = checkMorphNeg();
     connType = checkConnective();
+    //    cerr << "checkConn " << word << " = " << connType << endl;
     morphCnt = max;
     if ( prop != ISNAME ){
       charCntExNames = charCnt;
@@ -1505,6 +1512,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "morph_negative", "true" );
   if ( connType != NOCONN )
     addOneMetric( doc, el, "connective", toString(connType) );
+  if ( isMultiConn )
+    addOneMetric( doc, el, "multi_connective", "true" );
   if ( f50 )
     addOneMetric( doc, el, "f50", "true" );
   if ( f65 )
@@ -1629,7 +1638,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
 }
 
 void wordStats::coherenceHeader( ostream& os ) const {
-  os << "temporeel,reeks,contrastief,comparatief,causaal,referential_pron,";
+  os << "temporeel,reeks,contrastief,comparatief,causaal,multiword,referential_pron,";
 } 
 
 void wordStats::coherenceToCSV( ostream& os ) const {
@@ -1638,6 +1647,7 @@ void wordStats::coherenceToCSV( ostream& os ) const {
      << (connType==CONTRASTIEF) << ","
      << (connType==COMPARATIEF) << ","
      << (connType==CAUSAAL) << ","
+     << isMultiConn << ","
      << isPronRef << ",";
 }
 
@@ -2203,11 +2213,11 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "reeks_count", toString(reeksCnt) );
   addOneMetric( doc, el, "cnj_count", toString(cnjCnt) );
   addOneMetric( doc, el, "crd_count", toString(crdCnt) );
-  addOneMetric( doc, el, "temporals_count", toString(tempConnCnt) );
+  addOneMetric( doc, el, "temporal_connector_count", toString(tempConnCnt) );
   addOneMetric( doc, el, "reeks_connector_count", toString(reeksConnCnt) );
-  addOneMetric( doc, el, "contrast_count", toString(contConnCnt) );
-  addOneMetric( doc, el, "comparatief_count", toString(compConnCnt) );
-  addOneMetric( doc, el, "causaal_count", toString(causeConnCnt) );
+  addOneMetric( doc, el, "contrast_connector_count", toString(contConnCnt) );
+  addOneMetric( doc, el, "comparatief_connector_count", toString(compConnCnt) );
+  addOneMetric( doc, el, "causaal_connector_count", toString(causeConnCnt) );
   addOneMetric( doc, el, "prop_neg_count", toString(propNegCnt) );
   addOneMetric( doc, el, "morph_neg_count", toString(morphNegCnt) );
   addOneMetric( doc, el, "multiple_neg_count", toString(multiNegCnt) );
@@ -2601,10 +2611,11 @@ struct sentStats : public structStats {
   sentStats( Sentence *, const sentStats* );
   bool isSentence() const { return true; };
   void resolveConnectives();
+  void incrementConnCnt( ConnType );
   void addMetrics( ) const;
   bool checkAls( size_t );
-  void check2Connectives( const string& );
-  void check3Connectives( const string& );
+  ConnType check2Connectives( const string& );
+  ConnType check3Connectives( const string& );
 };
 
 void fill_word_lemma_buffers( const sentStats* ss, 
@@ -2750,23 +2761,23 @@ bool sentStats::checkAls( size_t index ){
   return false;
 }
 
-void sentStats::check2Connectives( const string& mword ){
+ConnType sentStats::check2Connectives( const string& mword ){
   static string temporal2List[] = {"de dato", "na dato"};
   static set<string> temporals_2( temporal2List, 
 				  temporal2List + sizeof(temporal2List)/sizeof(string) );
   
   static string reeks2List[] = 
     { "daarbij komt", "dan wel",
-      "ten eerste", "ten tweede", "ten derde", "ten vierde", 
+      "ten eerste", "ten tweede", "ten derde", "ten vierde",
       "met name" };
   static set<string> reeks_2( reeks2List, 
 			      reeks2List + sizeof(reeks2List)/sizeof(string) );
   
-  static string contrast2List[] = { "ook al", "zij het" };
+  static string contrast2List[] = { "in plaats", "ook al", "zij het" };
   static set<string> contrastief_2( contrast2List, 
 				    contrast2List + sizeof(contrast2List)/sizeof(string) );
   
-  static string compar2List[] = { };
+  static string compar2List[] = { "meer dan", "minder dan" };
   static set<string> comparatief_2( compar2List, 
 				    compar2List + sizeof(compar2List)/sizeof(string) );
   
@@ -2777,29 +2788,25 @@ void sentStats::check2Connectives( const string& mword ){
 				causes2List + sizeof(causes2List)/sizeof(string) );
   ConnType conn = NOCONN;
   if ( temporals_2.find( mword ) != temporals_2.end() ){
-    tempConnCnt++;
     conn = TEMPOREEL;
   }
   else if ( reeks_2.find( mword ) != reeks_2.end() ){
-    reeksConnCnt++;
     conn = REEKS;
   }
   else if ( contrastief_2.find( mword ) != contrastief_2.end() ){
-    contConnCnt++;
     conn = CONTRASTIEF;
   }
   else if ( comparatief_2.find( mword ) != comparatief_2.end() ){
-    compConnCnt++;
     conn = COMPARATIEF;
   }
   else if ( causals_2.find( mword ) != causals_2.end() ){
-    causeConnCnt++;
     conn = CAUSAAL;
   }
-  //   cerr << "2-conn = " << conn << endl;
+  //  cerr << "2-conn " << mword << " = " << conn << endl;
+  return conn;
 }
 
-void sentStats::check3Connectives( const string& mword ){
+ConnType sentStats::check3Connectives( const string& mword ){
   static string temporal3List[] = {"a la minute", "hic et nunc"};
   static set<string> temporals_3( temporal3List, 
 				  temporal3List + sizeof(temporal3List)/sizeof(string) );
@@ -2813,7 +2820,7 @@ void sentStats::check3Connectives( const string& mword ){
   static set<string> contrastief_3( contrast3List, 
 				    contrast3List + sizeof(contrast3List)/sizeof(string) );
   
-  static string compar3List[] = {};
+  static string compar3List[] = {"net zo min" };
   static set<string> comparatief_3( compar3List, 
 				    compar3List + sizeof(compar3List)/sizeof(string) );
   
@@ -2822,26 +2829,43 @@ void sentStats::check3Connectives( const string& mword ){
 				causes3List + sizeof(causes3List)/sizeof(string) );
   ConnType conn = NOCONN;
   if ( temporals_3.find( mword ) != temporals_3.end() ){
-    tempConnCnt++;
     conn = TEMPOREEL;
   }
   else if ( reeks_3.find( mword ) != reeks_3.end() ) {
-    reeksConnCnt++;
     conn = REEKS;
   }
   else if ( contrastief_3.find( mword ) != contrastief_3.end() ){
-    contConnCnt++;
     conn = CONTRASTIEF;
   }
   else if ( comparatief_3.find( mword ) != comparatief_3.end() ){
-    compConnCnt++;
     conn = COMPARATIEF;
   }
   else if ( causals_3.find( mword ) != causals_3.end() ){
-    causeConnCnt++;
     conn = CAUSAAL;
   }
-  //   cerr << "3-conn = " << conn << endl;
+  //  cerr << "3-conn " << mword << " = " << conn << endl;
+  return conn;
+}
+
+void sentStats::incrementConnCnt( ConnType t ){
+  switch ( t ){
+  case TEMPOREEL:
+    tempConnCnt++;
+    break;
+  case REEKS:
+    reeksConnCnt++;
+    break;
+  case CONTRASTIEF:
+    contConnCnt++;
+    break;
+  case COMPARATIEF:
+    compConnCnt++;
+    break;
+  case CAUSAAL:
+    break;
+  default:
+    break;
+  }
 }
 
 void sentStats::resolveConnectives(){
@@ -2852,11 +2876,14 @@ void sentStats::resolveConnectives(){
       if ( !checkAls( i ) ){
 	// "als" is speciaal als het matcht met eerdere woorden.
 	// (evenmin ... als) (zowel ... als ) etc.
-	// In dat gevalt nie meer zoeken naar "als ..."
+	// In dat geval niet meer zoeken naar "als ..."
 	//      cerr << "zoek op " << multiword2 << endl;
-	if ( sv[i+1]->getConnType() == NOCONN ){
-	  // no result yet
-	  check2Connectives( multiword2 );
+	ConnType conn = check2Connectives( multiword2 );
+	if ( conn != NOCONN ){
+	  sv[i]->setMultiConn();
+	  sv[i+1]->setMultiConn();
+	  sv[i]->setConnType( conn );
+	  sv[i+1]->setConnType( NOCONN );
 	}
       }
       if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
@@ -2865,20 +2892,28 @@ void sentStats::resolveConnectives(){
       string multiword3 = multiword2 + " "
 	+ lowercase( sv[i+2]->text() );
       //      cerr << "zoek op " << multiword3 << endl;
-      if ( sv[sv.size()-1]->getConnType() == NOCONN ){
-	// no result yet
-	check3Connectives( multiword3 );
+      ConnType conn = check3Connectives( multiword3 );
+      if ( conn != NOCONN ){
+	sv[i]->setMultiConn();
+	sv[i+1]->setMultiConn();
+	sv[i+2]->setMultiConn();
+	sv[i]->setConnType( conn );
+	sv[i+1]->setConnType( NOCONN );
+	sv[i+2]->setConnType( NOCONN );
       }
       if ( negatives_long.find( multiword3 ) != negatives_long.end() )
 	propNegCnt++;
     }
     // don't forget the last 2 words
     string multiword2 = lowercase( sv[sv.size()-2]->text() )
-    + " " + lowercase( sv[sv.size()-1]->text() );
+      + " " + lowercase( sv[sv.size()-1]->text() );
     //    cerr << "zoek op " << multiword2 << endl;
-    if ( sv[sv.size()-1]->getConnType() == NOCONN ){
-      // no result yet
-      check2Connectives( multiword2 );
+    ConnType conn = check2Connectives( multiword2 );
+    if ( conn != NOCONN ){
+      sv[sv.size()-2]->setMultiConn();
+      sv[sv.size()-1]->setMultiConn();
+      sv[sv.size()-2]->setConnType( conn );
+      sv[sv.size()-1]->setConnType( NOCONN );
     }
     if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
       propNegCnt++;
