@@ -851,38 +851,35 @@ ConnType wordStats::checkConnective() const {
       "ineens", "ingaande", "inmiddels", "medio", "meer", "meestal", 
       "meteen", "morgen", "morgenavond", "morgenmiddag", "morgennacht", 
       "morgenochtend", "morgenvroeg", "na", "nadat", "naderhand", 
-      "nadezen", "nadien", "olim", 
-      "onderwijl", "onlangs", "opeens", "overdag", "overmorgen", 
+      "nadezen", "nadien", "net", "nooit", "olim", "onderwijl", 
+      "onlangs", "ooit", "opeens", "overdag", "overmorgen", "omstreeks",
       "pardoes", "pas", "plotsklaps", "recentelijk", "reeds", "sedert", 
-      "sedert", "sedertdien", "sinds", "sinds", "sindsdien", "steeds", 
-      "strakjes", "straks", "subiet", "tegelijk", "tegelijkertijd", 
+      "sedertdien", "sinds", "sindsdien", "steeds", 
+      "strakjes", "straks", "subiet", "tegelijk", "tegelijkertijd", "ten",
       "terstond", "tevoren", "tezelfdertijd", "thans", "toen", "toenmaals", 
-      "toentertijd", "totdat", "uiterlijk", "vanavond", "vandaag", 
+      "toentertijd", "tot", "totdat", "uiterlijk", "vanavond", "vandaag", 
       "vanmiddag", "vanmorgen", "vannacht", "vanochtend", "vervolgens",
       "vooraf", "vooraleer", "vooralsnog", "voordat", "voorheen", "weldra", 
       "weleer", "zodra", "zo-even", "zojuist", "zonet", "zopas" };
   static set<string> temporals( temporalList, 
 				temporalList + sizeof(temporalList)/sizeof(string) );
 
-  static string vz_temporalList[] = 
-    { };
-  static set<string> vz_temporals( vz_temporalList, 
-				   vz_temporalList + sizeof(vz_temporalList)/sizeof(string) );
-
   static string reeksList[] = 
-    {"alsmede", "alsook", "annex", "bovendien", "buitendien", "daarenboven",
-     "daarnaast", "en", "evenals", "eveneens", "evenmin", "hetzij", "bovenal",
-     "hierenboven", "noch", "of", "ofwel", "ook", "respectievelijk", "zelfs",
-     "tevens", "vooral", "waarnaast", "verder", "voornamelijk", "voorts",
-     "zowel" };
+    {"alsmede", "alsook", "annex", 
+     "bovenal", "bovendien", "buitendien", "daarenboven",
+     "daarnaast", 
+     "en", "evenals", "eveneens", "evenmin", 
+     "hetzij", "hierenboven", 
+     "noch", 
+     "of", "ofwel", "ook", 
+     "respectievelijk", 
+     "tevens", 
+     "verder", "vooral", "voornamelijk", "voorts",
+     "waarnaast", 
+     "zelfs", "zowel" };
   static set<string> reeks( reeksList, 
 			    reeksList + sizeof(reeksList)/sizeof(string) );
-
-  static string vz_reeksList[] = 
-    {};
-  static set<string> vz_reeks( vz_reeksList, 
-			       vz_reeksList + sizeof(vz_reeksList)/sizeof(string) );
-
+  
   static string vg_contrastList[] = 
     { "alhoewel", "althans", "anderzijds", "behalve", 
       "behoudens", "daarentegen", "daarvan", "desondanks", "doch",
@@ -904,26 +901,17 @@ ConnType wordStats::checkConnective() const {
   static set<string> bw_contrastief( bw_contrastList, 
 				     bw_contrastList + sizeof(bw_contrastList)/sizeof(string) );
   
-  static string vz_contrastList[] = 
-    { "ondanks" };
-  static set<string> vz_contrastief( vz_contrastList, 
-				     vz_contrastList + sizeof(vz_contrastList)/sizeof(string) );
   
   static string vg_comparList[] = 
     { "alsof", "dan", "meer", "meest", 
-      "minder", "minst", "naargelang", "naarmate", "net", "zoals" };
+      "minder", "minst", "naargelang", "naarmate", "zoals" };
   static set<string> vg_comparatief( vg_comparList, 
 				     vg_comparList + sizeof(vg_comparList)/sizeof(string) );
   static string bw_comparList[] = 
     { "alsof", "meer", "meest", 
-      "minder", "minst", "naargelang", "naarmate", "net", "zoals" };
+      "minder", "minst", "naargelang", "naarmate", "zoals" };
   static set<string> bw_comparatief( bw_comparList, 
 				     bw_comparList + sizeof(bw_comparList)/sizeof(string) );
-
-  static string vz_comparList[] = 
-    {};
-  static set<string> vz_comparatief( vz_comparList, 
-				     vz_comparList + sizeof(vz_comparList)/sizeof(string) );
 
   static string causesList[] = 
     { "aangezien", "anders", "bijgevolg", 
@@ -941,11 +929,6 @@ ConnType wordStats::checkConnective() const {
       "zodoende", "zolang" };
   static set<string> causals( causesList, 
 			      causesList + sizeof(causesList)/sizeof(string) );
-
-  static string vz_causesList[] = 
-    { };
-  static set<string> vz_causals( vz_causesList, 
-				 vz_causesList + sizeof(vz_causesList)/sizeof(string) );
 
   string lword = lowercase( word );
   if ( tag == CGN::VG ){
@@ -973,15 +956,15 @@ ConnType wordStats::checkConnective() const {
       return CAUSAAL;
   }
   else if ( tag == CGN::VZ ){
-    if ( vz_temporals.find( lword ) != vz_temporals.end() )
+    if ( temporals.find( lword ) != temporals.end() )
       return TEMPOREEL;
-    else if ( vz_reeks.find( lword ) != vz_reeks.end() )
+    else if ( reeks.find( lword ) != reeks.end() )
       return REEKS;
-    else if ( vz_contrastief.find( lword ) != vz_contrastief.end() )
+    else if ( bw_contrastief.find( lword ) != bw_contrastief.end() )
       return CONTRASTIEF;
-    else if ( vz_comparatief.find( lword ) != vz_comparatief.end() )
+    else if ( vg_comparatief.find( lword ) != vg_comparatief.end() )
       return COMPARATIEF;
-    else if ( vz_causals.find( lword ) != vz_causals.end() )
+    else if ( causals.find( lword ) != causals.end() )
       return CAUSAAL;
   }
   return NOCONN;
