@@ -1,7 +1,7 @@
 #! /bin/sh
 export PORT=6666
-export TIMEOUT=20000
-export MEMLIMIT=1000M
+export TIMEOUT=30000
+export MEMLIMIT=1500M
 export TMPDIR=/tmp
 
 ## this one is for parsing
