@@ -864,6 +864,11 @@ ConnType wordStats::checkConnective() const {
   static set<string> temporals( temporalList, 
 				temporalList + sizeof(temporalList)/sizeof(string) );
 
+  static string vz_temporalList[] = 
+    { };
+  static set<string> vz_temporals( vz_temporalList, 
+				   vz_temporalList + sizeof(vz_temporalList)/sizeof(string) );
+
   static string reeksList[] = 
     {"alsmede", "alsook", "annex", "bovendien", "buitendien", "daarenboven",
      "daarnaast", "en", "evenals", "eveneens", "evenmin", "hetzij", "bovenal",
@@ -872,6 +877,11 @@ ConnType wordStats::checkConnective() const {
      "zowel" };
   static set<string> reeks( reeksList, 
 			    reeksList + sizeof(reeksList)/sizeof(string) );
+
+  static string vz_reeksList[] = 
+    {};
+  static set<string> vz_reeks( vz_reeksList, 
+			       vz_reeksList + sizeof(vz_reeksList)/sizeof(string) );
 
   static string vg_contrastList[] = 
     { "alhoewel", "althans", "anderzijds", "behalve", 
@@ -894,6 +904,11 @@ ConnType wordStats::checkConnective() const {
   static set<string> bw_contrastief( bw_contrastList, 
 				     bw_contrastList + sizeof(bw_contrastList)/sizeof(string) );
   
+  static string vz_contrastList[] = 
+    { "ondanks" };
+  static set<string> vz_contrastief( vz_contrastList, 
+				     vz_contrastList + sizeof(vz_contrastList)/sizeof(string) );
+  
   static string vg_comparList[] = 
     { "alsof", "dan", "meer", "meest", 
       "minder", "minst", "naargelang", "naarmate", "net", "zoals" };
@@ -904,6 +919,11 @@ ConnType wordStats::checkConnective() const {
       "minder", "minst", "naargelang", "naarmate", "net", "zoals" };
   static set<string> bw_comparatief( bw_comparList, 
 				     bw_comparList + sizeof(bw_comparList)/sizeof(string) );
+
+  static string vz_comparList[] = 
+    {};
+  static set<string> vz_comparatief( vz_comparList, 
+				     vz_comparList + sizeof(vz_comparList)/sizeof(string) );
 
   static string causesList[] = 
     { "aangezien", "anders", "bijgevolg", 
@@ -921,6 +941,11 @@ ConnType wordStats::checkConnective() const {
       "zodoende", "zolang" };
   static set<string> causals( causesList, 
 			      causesList + sizeof(causesList)/sizeof(string) );
+
+  static string vz_causesList[] = 
+    { };
+  static set<string> vz_causals( vz_causesList, 
+				 vz_causesList + sizeof(vz_causesList)/sizeof(string) );
 
   string lword = lowercase( word );
   if ( tag == CGN::VG ){
@@ -945,6 +970,18 @@ ConnType wordStats::checkConnective() const {
     else if ( bw_comparatief.find( lword ) != bw_comparatief.end() )
       return COMPARATIEF;
     else if ( causals.find( lword ) != causals.end() )
+      return CAUSAAL;
+  }
+  else if ( tag == CGN::VZ ){
+    if ( vz_temporals.find( lword ) != vz_temporals.end() )
+      return TEMPOREEL;
+    else if ( vz_reeks.find( lword ) != vz_reeks.end() )
+      return REEKS;
+    else if ( vz_contrastief.find( lword ) != vz_contrastief.end() )
+      return CONTRASTIEF;
+    else if ( vz_comparatief.find( lword ) != vz_comparatief.end() )
+      return COMPARATIEF;
+    else if ( vz_causals.find( lword ) != vz_causals.end() )
       return CAUSAAL;
   }
   return NOCONN;
