@@ -27,33 +27,33 @@
 
 #ifndef ALPINO_H
 #define ALPINO_H
-xmlDoc *AlpinoParse( folia::Sentence *, const std::string& );
-xmlNode *getAlpWord( xmlDoc *, const folia::Word * );
-bool checkImp( folia::Word *, xmlDoc * );
-void countCrdCnj( xmlDoc *, int&, int& );
-void mod_stats( xmlDoc *, int&, int&, int& );
-
-bool checkImp( folia::Word *, xmlDoc * );
 
 enum DD_type { SUB_VERB, OBJ1_VERB, OBJ2_VERB, VERB_PP, VERB_VC,
 	       VERB_COMP, NOUN_DET, PREP_OBJ1, CRD_CNJ, COMP_BODY, NOUN_VC };
 
 std::string toString( const DD_type& );
-
 inline std::ostream& operator<< (std::ostream&os, const DD_type& t ){
   os << toString( t );
   return os;
 }
 
-
-std::multimap<DD_type,int> getDependencyDist( folia::Word *, xmlDoc *, 
-					      const std::set<size_t>& );
-int get_d_level( folia::Sentence *s, xmlDoc *alp );
-int indef_npcount( xmlDoc *alp );
-
 enum WWform { NO_VERB, PASSIVE_VERB, MODAL_VERB, TIME_VERB,
 	      COPULA, HEAD_VERB };
-std::string toString( const WWform );
-WWform classifyVerb( folia::Word *, xmlDoc * );
+std::string toString( const WWform& );
+inline std::ostream& operator<< (std::ostream&os, const WWform& wf ){
+  os << toString( wf );
+  return os;
+}
+
+xmlDoc *AlpinoParse( folia::Sentence *, const std::string& );
+xmlNode *getAlpWordNode( xmlDoc *, const folia::Word * );
+bool checkImp( const xmlNode * );
+void countCrdCnj( xmlDoc *, int&, int& );
+void mod_stats( xmlDoc *, int&, int&, int& );
+int get_d_level( folia::Sentence *s, xmlDoc *alp );
+int indef_npcount( xmlDoc *alp );
+WWform classifyVerb( const xmlNode *, const std::string& );
+std::multimap<DD_type,int> getDependencyDist( const xmlNode *,
+					      const std::set<size_t>& );
 
 #endif // ALPINO_H

@@ -762,7 +762,7 @@ struct basicStats {
 };
 
 struct wordStats : public basicStats {
-  wordStats( Word *, xmlDoc *, const set<size_t>& );
+  wordStats( Word *, const xmlNode *, const set<size_t>& );
   void CSVheader( ostream&, const string& ) const;
   void wordDifficultiesHeader( ostream& ) const;
   void wordDifficultiesToCSV( ostream& ) const;
@@ -789,7 +789,7 @@ struct wordStats : public basicStats {
   void addMetrics( ) const;
   bool checkContent() const;
   ConnType checkConnective( ) const;
-  bool checkNominal( Word *, xmlDoc * ) const;
+  bool checkNominal( const xmlNode * ) const;
   WordProp checkProps( const PosAnnotation* );
   SemType checkSemProps( ) const;
   bool checkPropNeg() const;
@@ -1008,7 +1008,7 @@ bool match_tail( const string& word, const string& tail ){
   return true;
 }
 
-bool wordStats::checkNominal( Word *w, xmlDoc *alpDoc ) const {
+bool wordStats::checkNominal( const xmlNode *alpWord ) const {
   static string morphList[] = { "ing", "sel", "nis", "enis", "heid", "te", 
 				"schap", "dom", "sie", "iek", "iteit", "age",
 				"esse",	"name" };
@@ -1037,19 +1037,16 @@ bool wordStats::checkNominal( Word *w, xmlDoc *alpDoc ) const {
     return true;
   }
   else {
-    xmlNode *node = getAlpWord( alpDoc, w );
-    if ( node ){
-      KWargs args = getAttributes( node );
-      if ( args["pos"] == "verb" ){
-	// Alpino heeft de voor dit feature prettige eigenschap dat het nogal
-	// eens nominalisaties wil taggen als werkwoord dat onder een 
-	// NP knoop hangt 
-	node = node->parent;
-	KWargs args = getAttributes( node );
-	if ( args["cat"] == "np" )
-	  return true;
+    KWargs args = getAttributes( alpWord );
+    if ( args["pos"] == "verb" ){
+      // Alpino heeft de voor dit feature prettige eigenschap dat het nogal
+      // eens nominalisaties wil taggen als werkwoord dat onder een 
+      // NP knoop hangt 
+      alpWord = alpWord->parent;
+      KWargs args = getAttributes( alpWord );
+      if ( args["cat"] == "np" )
+	return true;
       }
-    }
   }
   return false;
 }
@@ -1362,7 +1359,7 @@ bool isLijdend( const multimap<DD_type,int>& distances ){
 }
 
 
-wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
+wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts ):
   basicStats( w, "WORD" ), wwform(::NO_VERB),
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
@@ -1386,13 +1383,13 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
   tag = CGN::toCGN( pa->feat("head") );
   lemma = w->lemma( frog_lemma_set );
   prop = checkProps( pa );
-  if ( alpDoc ){
-    distances = getDependencyDist( w, alpDoc, puncts);
+  if ( alpWord ){
+    distances = getDependencyDist( alpWord, puncts);
     if ( tag == CGN::WW ){
-      wwform = classifyVerb( w, alpDoc );
+      wwform = classifyVerb( alpWord, lemma );
       if ( prop == ISPVTGW || prop == ISPVVERL &&
 	   !isLijdend( distances ) ){
-	isImperative = checkImp( w, alpDoc );
+	isImperative = checkImp( alpWord );
       }
     }
   }
@@ -1422,7 +1419,7 @@ wordStats::wordStats( Word *w, xmlDoc *alpDoc, const set<size_t>& puncts ):
       charCntExNames = charCnt;
       morphCntExNames = max;
     }
-    if (alpDoc) isNominal = checkNominal( w, alpDoc );
+    if ( alpWord ) isNominal = checkNominal( alpWord );
     sem_type = checkSemProps();
     if ( sem_type == CONCRETE_HUMAN_NOUN ||
 	 prop == ISNAME ||
@@ -3124,7 +3121,8 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 #endif
   }
   for ( size_t i=0; i < w.size(); ++i ){
-    wordStats *ws = new wordStats( w[i], alpDoc, puncts );
+    xmlNode *alpWord = getAlpWordNode( alpDoc, w[i] );
+    wordStats *ws = new wordStats( w[i], alpWord, puncts );
     if ( woprProbsV[i] != -99 )
       ws->logprob10 = woprProbsV[i];
     if ( pred ){

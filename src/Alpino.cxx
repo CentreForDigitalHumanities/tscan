@@ -39,7 +39,7 @@ using namespace std;
 using namespace folia;
 using namespace TiCC;
 
-xmlNode *getAlpWord( xmlNode *node, const string& pos ){
+xmlNode *getAlpWordPos( xmlNode *node, const string& pos ){
   xmlNode *result = 0;
   xmlNode *pnt = node->children;
   while ( pnt ){
@@ -56,11 +56,11 @@ xmlNode *getAlpWord( xmlNode *node, const string& pos ){
 	  result = pnt;
 	}
 	else {
-	  result = getAlpWord( pnt, pos );
+	  result = getAlpWordPos( pnt, pos );
 	}
       }
       else {
-	result = getAlpWord( pnt, pos );
+	result = getAlpWordPos( pnt, pos );
       }
     }
     if ( result )
@@ -70,7 +70,7 @@ xmlNode *getAlpWord( xmlNode *node, const string& pos ){
   return result;
 }
 
-xmlNode *getAlpWord( xmlDoc *doc, const Word *w ){
+xmlNode *getAlpWordNode( xmlDoc *doc, const Word *w ){
   string id = w->id();
   string::size_type ppos = id.find_last_of( '.' );
   string posS = id.substr( ppos + 1 );
@@ -80,11 +80,11 @@ xmlNode *getAlpWord( xmlDoc *doc, const Word *w ){
   }
   else {
     xmlNode *root = xmlDocGetRootElement( doc );
-    return getAlpWord( root, posS );
+    return getAlpWordPos( root, posS );
   }
 }
 
-vector< xmlNode*> getSibblings( xmlNode *node ){
+vector< xmlNode*> getSibblings( const xmlNode *node ){
   vector<xmlNode *> result;
   xmlNode *pnt = node->parent->children;
   while ( pnt ){
@@ -186,11 +186,6 @@ const string koppelA[] = { "zijn", "worden", "blijven", "lijken", "schijnen",
 set<string> modals = set<string>( modalA, modalA + 10 );
 set<string> koppels = set<string>( koppelA, koppelA + 9 );
 
-int get_begin( xmlNode *n ){
-  string bpos = getAttribute( n, "begin" );
-  return TiCC::stringTo<int>( bpos );
-}
-
 string toString( const DD_type& t ){
   string result;
   switch ( t ){
@@ -233,8 +228,14 @@ string toString( const DD_type& t ){
   return result;
 }
   
+int get_begin( const xmlNode *n ){
+  string bpos = getAttribute( n, "begin" );
+  return TiCC::stringTo<int>( bpos );
+}
+
 void store_result( multimap<DD_type,int>& result, DD_type type, 
-		   xmlNode *n1, xmlNode*n2, const set<size_t>& puncts ){
+		   const xmlNode *n1, const xmlNode*n2, 
+		   const set<size_t>& puncts ){
   int pos1 = get_begin( n1 );
   int pos2 = get_begin( n2 );
   if ( pos1 > pos2 )
@@ -251,10 +252,9 @@ void store_result( multimap<DD_type,int>& result, DD_type type,
   }
 }
 
-multimap<DD_type, int> getDependencyDist( Word *w, xmlDoc *alp, 
+multimap<DD_type, int> getDependencyDist( const xmlNode *head_node, 
 					  const set<size_t>& puncts ){
   multimap<DD_type,int> result;
-  xmlNode *head_node = getAlpWord( alp, w );
   if ( head_node ){
     KWargs atts = getAttributes( head_node );
     string head_rel = atts["rel"];
@@ -274,7 +274,7 @@ multimap<DD_type, int> getDependencyDist( Word *w, xmlDoc *alp,
 	    if ( args["index"] != "" &&
 		 args["pos"] == "" && args["cat"] == "" ){
 	      //	      cerr << "geval 2 " << endl;
-	      vector<xmlNode*> inodes = getIndexNodes( alp );
+	      vector<xmlNode*> inodes = getIndexNodes( head_node->doc );
 	      for ( size_t i=0; i < inodes.size(); ++i ){
 		KWargs iatts = getAttributes(inodes[i]);
 		if ( iatts["index"] == args["index"] ){
@@ -321,7 +321,7 @@ multimap<DD_type, int> getDependencyDist( Word *w, xmlDoc *alp,
 	    xmlNode *target = *it;
 	    if ( args["index"] != "" &&
 		 args["pos"] == "" && args["cat"] == "" ){
-	      vector<xmlNode*> inodes = getIndexNodes( alp );
+	      vector<xmlNode*> inodes = getIndexNodes( head_node->doc );
 	      for ( size_t i=0; i < inodes.size(); ++i ){
 		string myindex = getAttribute( inodes[i], "index" );
 		if ( args["index"] == myindex ){
@@ -363,7 +363,7 @@ multimap<DD_type, int> getDependencyDist( Word *w, xmlDoc *alp,
 	    xmlNode *target = *it;
 	    if ( args["index"] != "" &&
 		 args["pos"] == "" && args["cat"] == "" ){
-	      vector<xmlNode*> inodes = getIndexNodes( alp );
+	      vector<xmlNode*> inodes = getIndexNodes( head_node->doc);
 	      for ( size_t i=0; i < inodes.size(); ++i ){
 		string myindex = getAttribute( inodes[i], "index" );
 		if ( args["index"] == myindex ){
@@ -528,7 +528,7 @@ multimap<DD_type, int> getDependencyDist( Word *w, xmlDoc *alp,
   return result;
 }
 
-string toString( const WWform wf ){
+string toString( const WWform& wf ){
   switch ( wf ){
   case PASSIVE_VERB:
     return "passiefww";
@@ -550,12 +550,9 @@ string toString( const WWform wf ){
   }
 }
 
-WWform classifyVerb( Word *w, xmlDoc *alp ){
-  xmlNode *wnode = getAlpWord( alp, w );
-  //  cerr << "classify VERB " << w->text() << endl;
+WWform classifyVerb( const xmlNode *wnode, const string& lemma ){
   if ( wnode ){
     vector< xmlNode *> siblinglist = getSibblings( wnode );
-    string lemma = w->lemma();
     //    cerr << "classify VERB lemma=" << lemma << endl;
     if ( lemma == "zijn" || lemma == "worden" ){
       xmlNode *obj_node = 0;
@@ -896,8 +893,7 @@ int get_d_level( Sentence *s, xmlDoc *alp ){
   return 0;
 }
 
-bool checkImp( Word *pv, xmlDoc *alp ){
-  xmlNode *alp_node = getAlpWord( alp, pv );
+bool checkImp( const xmlNode *alp_node ){
   vector< xmlNode *> siblings = getSibblings( alp_node );
   bool su_found = false;
   for ( size_t i=0; i < siblings.size(); ++i ){
