@@ -45,12 +45,12 @@ inline std::ostream& operator<< (std::ostream&os, const WWform& wf ){
   return os;
 }
 
-xmlDoc *AlpinoParse( folia::Sentence *, const std::string& );
+xmlDoc *AlpinoParse( const folia::Sentence *, const std::string& );
 xmlNode *getAlpWordNode( xmlDoc *, const folia::Word * );
 bool checkImp( const xmlNode * );
 void countCrdCnj( xmlDoc *, int&, int& );
 void mod_stats( xmlDoc *, int&, int&, int& );
-int get_d_level( folia::Sentence *s, xmlDoc *alp );
+int get_d_level( const folia::Sentence *s, xmlDoc *alp );
 int indef_npcount( xmlDoc *alp );
 WWform classifyVerb( const xmlNode *, const std::string& );
 std::multimap<DD_type,int> getDependencyDist( const xmlNode *,

@@ -676,7 +676,7 @@ vector<xmlNode *> getNodesValue( xmlDoc *doc, const string& att,
   return result;
 }
 
-int get_d_level( Sentence *s, xmlDoc *alp ){
+int get_d_level( const Sentence *s, xmlDoc *alp ){
   vector<PosAnnotation*> poslist;
   vector<Word*> wordlist = s->words();
   int pv_counter = 0;
@@ -942,7 +942,7 @@ void countCrdCnj( xmlDoc *doc, int& crdCnt, int& cnjCnt ){
   }
 }
 
-xmlDoc *AlpinoParse( folia::Sentence *s, const string& dirname ){
+xmlDoc *AlpinoParse( const folia::Sentence *s, const string& dirname ){
   string txt = folia::UnicodeToUTF8(s->toktext());
   //  cerr << "parse line: " << txt << endl;
   string txtfile = dirname + "parse.txt";
