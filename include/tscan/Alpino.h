@@ -30,7 +30,7 @@
 xmlDoc *AlpinoParse( folia::Sentence *, const std::string& );
 xmlNode *getAlpWord( xmlDoc *, const folia::Word * );
 bool checkImp( folia::Word *, xmlDoc * );
-void countCrdCnj( xmlDoc *, int&, int&, int& );
+void countCrdCnj( xmlDoc *, int&, int& );
 void mod_stats( xmlDoc *, int&, int&, int& );
 
 bool checkImp( folia::Word *, xmlDoc * );

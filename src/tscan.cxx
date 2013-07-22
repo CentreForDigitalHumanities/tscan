@@ -1812,7 +1812,6 @@ struct structStats: public basicStats {
     letCnt(0),
     onderCnt(0),
     betrCnt(0),
-    opsomCnt(0),
     cnjCnt(0),
     crdCnt(0),
     tempConnCnt(0),
@@ -1937,7 +1936,6 @@ struct structStats: public basicStats {
   int letCnt;
   int onderCnt;
   int betrCnt;
-  int opsomCnt;
   int cnjCnt;
   int crdCnt;
   int tempConnCnt;
@@ -2045,7 +2043,6 @@ void structStats::merge( structStats *ss ){
   letCnt += ss->letCnt;
   onderCnt += ss->onderCnt;
   betrCnt += ss->betrCnt;
-  opsomCnt += ss->opsomCnt;
   cnjCnt += ss->cnjCnt;
   crdCnt += ss->crdCnt;
   tempConnCnt += ss->tempConnCnt;
@@ -2236,7 +2233,6 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "let_count", toString(letCnt) );
   addOneMetric( doc, el, "subord_count", toString(onderCnt) );
   addOneMetric( doc, el, "rel_count", toString(betrCnt) );
-  addOneMetric( doc, el, "reeks_count", toString(opsomCnt) );
   addOneMetric( doc, el, "cnj_count", toString(cnjCnt) );
   addOneMetric( doc, el, "crd_count", toString(crdCnt) );
   addOneMetric( doc, el, "temporal_connector_count", toString(tempConnCnt) );
@@ -3096,7 +3092,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	  dLevel = get_d_level( s, alpDoc );
 	  if ( dLevel > 4 )
 	    dLevel_gt4 = 1;
-	  countCrdCnj( alpDoc, crdCnt, cnjCnt, opsomCnt );
+	  countCrdCnj( alpDoc, crdCnt, cnjCnt );
 	  int np2Cnt;
 	  mod_stats( alpDoc, vcModCnt, np2Cnt, adjNpModCnt );
 	}

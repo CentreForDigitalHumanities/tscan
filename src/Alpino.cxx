@@ -931,7 +931,7 @@ void mod_stats( xmlDoc *doc, int& vcMod, int& npCnt, int& adjNpMod ){
   }
 }
 
-void countCrdCnj( xmlDoc *doc, int& crdCnt, int& cnjCnt, int& reeksCnt ){
+void countCrdCnj( xmlDoc *doc, int& crdCnt, int& cnjCnt ){
   vector<xmlNode*> nodes = getNodes( doc );
   for ( size_t i=0; i < nodes.size(); ++i ){
     string rel = getAttribute( nodes[i], "rel" );
