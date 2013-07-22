@@ -686,15 +686,20 @@ string toString( const WordProp& w ){
   }
 }
 
-enum ConnType { NOCONN, TEMPOREEL, REEKS, CONTRASTIEF, COMPARATIEF, CAUSAAL }; 
+ostream& operator<<( ostream& os, const WordProp& p ){
+  os << toString( p );
+  return os;
+}
+
+enum ConnType { NOCONN, TEMPOREEL, OPSOMMEND, CONTRASTIEF, COMPARATIEF, CAUSAAL }; 
 
 string toString( const ConnType& c ){
   if ( c == NOCONN )
     return "Not_a_connector";
   else if ( c == TEMPOREEL )
     return "temporeel";
-  else if ( c == REEKS )
-    return "reeks";
+  else if ( c == OPSOMMEND )
+    return "opsommend";
   else if ( c == CONTRASTIEF )
     return "contrastief";
   else if ( c == COMPARATIEF )
@@ -852,7 +857,7 @@ ConnType wordStats::checkConnective() const {
       "meteen", "morgen", "morgenavond", "morgenmiddag", "morgennacht", 
       "morgenochtend", "morgenvroeg", "na", "nadat", "naderhand", 
       "nadezen", "nadien", "net", "olim", "onderwijl", 
-      "onlangs", "opeens", "overdag", "overmorgen", "omstreeks",
+      "onlangs", "opeens", "overdag", "overmorgen", "omstopsom",
       "pardoes", "pas", "plotsklaps", "recentelijk", "reeds", "sedert", 
       "sedertdien", "sinds", "sindsdien", "steeds", 
       "strakjes", "straks", "subiet", "tegelijk", "tegelijkertijd", "ten",
@@ -864,10 +869,10 @@ ConnType wordStats::checkConnective() const {
   static set<string> temporals( temporalList, 
 				temporalList + sizeof(temporalList)/sizeof(string) );
 
-  static string reeksList[] = 
+  static string opsomList[] = 
     {"alsmede", "alsook", "annex", 
-     "bovenal", "bovendien", "buitendien", "daarenboven",
-     "daarnaast", 
+     "bovenal", "bovendien", "buitendien", 
+     "daarenboven","daarnaast", 
      "en", "evenals", "eveneens", "evenmin", 
      "hetzij", "hierenboven", 
      "noch", 
@@ -877,8 +882,8 @@ ConnType wordStats::checkConnective() const {
      "verder", "vooral", "voornamelijk", "voorts",
      "waarnaast", 
      "zelfs", "zowel" };
-  static set<string> reeks( reeksList, 
-			    reeksList + sizeof(reeksList)/sizeof(string) );
+  static set<string> opsom( opsomList, 
+			    opsomList + sizeof(opsomList)/sizeof(string) );
   
   static string vg_contrastList[] = 
     { "alhoewel", "althans", "anderzijds", "behalve", 
@@ -934,8 +939,8 @@ ConnType wordStats::checkConnective() const {
   if ( tag == CGN::VG ){
     if ( temporals.find( lword ) != temporals.end() )
       return TEMPOREEL;
-    else if ( reeks.find( lword ) != reeks.end() )
-      return REEKS;
+    else if ( opsom.find( lword ) != opsom.end() )
+      return OPSOMMEND;
     else if ( vg_contrastief.find( lword ) != vg_contrastief.end() )
       return CONTRASTIEF;
     else if ( vg_comparatief.find( lword ) != vg_comparatief.end() )
@@ -946,8 +951,8 @@ ConnType wordStats::checkConnective() const {
   else if ( tag == CGN::BW ){
     if ( temporals.find( lword ) != temporals.end() )
       return TEMPOREEL;
-    else if ( reeks.find( lword ) != reeks.end() )
-      return REEKS;
+    else if ( opsom.find( lword ) != opsom.end() )
+      return OPSOMMEND;
     else if ( bw_contrastief.find( lword ) != bw_contrastief.end() )
       return CONTRASTIEF;
     else if ( bw_comparatief.find( lword ) != bw_comparatief.end() )
@@ -958,8 +963,8 @@ ConnType wordStats::checkConnective() const {
   else if ( tag == CGN::VZ ){
     if ( temporals.find( lword ) != temporals.end() )
       return TEMPOREEL;
-    else if ( reeks.find( lword ) != reeks.end() )
-      return REEKS;
+    else if ( opsom.find( lword ) != opsom.end() )
+      return OPSOMMEND;
     else if ( bw_contrastief.find( lword ) != bw_contrastief.end() )
       return CONTRASTIEF;
     else if ( vg_comparatief.find( lword ) != vg_comparatief.end() )
@@ -1452,15 +1457,16 @@ bool wordStats::isOverlapCandidate() const {
   if ( ( tag == CGN::VNW && prop != ISAANW ) ||
        ( tag == CGN::N ) ||
        ( prop == ISNAME ) ||
-       ( tag == CGN::WW && wwform == HEAD_VERB ) )
+       ( tag == CGN::WW && wwform == HEAD_VERB ) ){
     return true;
+  }
   else {
 #ifdef DEBUG_OL
     if ( tag == CGN::WW ){
-      cerr << "is overlapcandidate REJECTED " << toString(wwform) << " " << word << endl;
+      cerr << "WW overlapcandidate REJECTED " << toString(wwform) << " " << word << endl;
     }
     else if ( tag == CGN::VNW ){
-      cerr << "is overlapcandidate REJECTED " << toString(prop) << " " << word << endl;
+      cerr << "VNW overlapcandidate REJECTED " << toString(prop) << " " << word << endl;
     }
 #endif
     return false;
@@ -1663,7 +1669,7 @@ void wordStats::coherenceHeader( ostream& os ) const {
 
 void wordStats::coherenceToCSV( ostream& os ) const {
   os << (connType==TEMPOREEL?1:0) << ","
-     << (connType==REEKS?1:0) << ","
+     << (connType==OPSOMMEND?1:0) << ","
      << (connType==CONTRASTIEF) << ","
      << (connType==COMPARATIEF) << ","
      << (connType==CAUSAAL) << ","
@@ -1806,11 +1812,11 @@ struct structStats: public basicStats {
     letCnt(0),
     onderCnt(0),
     betrCnt(0),
-    reeksCnt(0),
+    opsomCnt(0),
     cnjCnt(0),
     crdCnt(0),
     tempConnCnt(0),
-    reeksConnCnt(0),
+    opsomConnCnt(0),
     contConnCnt(0),
     compConnCnt(0),
     causeConnCnt(0),
@@ -1931,11 +1937,11 @@ struct structStats: public basicStats {
   int letCnt;
   int onderCnt;
   int betrCnt;
-  int reeksCnt;
+  int opsomCnt;
   int cnjCnt;
   int crdCnt;
   int tempConnCnt;
-  int reeksConnCnt;
+  int opsomConnCnt;
   int contConnCnt;
   int compConnCnt;
   int causeConnCnt;
@@ -2039,11 +2045,11 @@ void structStats::merge( structStats *ss ){
   letCnt += ss->letCnt;
   onderCnt += ss->onderCnt;
   betrCnt += ss->betrCnt;
-  reeksCnt += ss->reeksCnt;
+  opsomCnt += ss->opsomCnt;
   cnjCnt += ss->cnjCnt;
   crdCnt += ss->crdCnt;
   tempConnCnt += ss->tempConnCnt;
-  reeksConnCnt += ss->reeksConnCnt;
+  opsomConnCnt += ss->opsomConnCnt;
   contConnCnt += ss->contConnCnt;
   compConnCnt += ss->compConnCnt;
   causeConnCnt += ss->causeConnCnt;
@@ -2230,11 +2236,11 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "let_count", toString(letCnt) );
   addOneMetric( doc, el, "subord_count", toString(onderCnt) );
   addOneMetric( doc, el, "rel_count", toString(betrCnt) );
-  addOneMetric( doc, el, "reeks_count", toString(reeksCnt) );
+  addOneMetric( doc, el, "reeks_count", toString(opsomCnt) );
   addOneMetric( doc, el, "cnj_count", toString(cnjCnt) );
   addOneMetric( doc, el, "crd_count", toString(crdCnt) );
   addOneMetric( doc, el, "temporal_connector_count", toString(tempConnCnt) );
-  addOneMetric( doc, el, "reeks_connector_count", toString(reeksConnCnt) );
+  addOneMetric( doc, el, "reeks_connector_count", toString(opsomConnCnt) );
   addOneMetric( doc, el, "contrast_connector_count", toString(contConnCnt) );
   addOneMetric( doc, el, "comparatief_connector_count", toString(compConnCnt) );
   addOneMetric( doc, el, "causaal_connector_count", toString(causeConnCnt) );
@@ -2467,7 +2473,7 @@ void structStats::coherenceHeader( ostream& os ) const {
 
 void structStats::coherenceToCSV( ostream& os ) const {
   os << density( tempConnCnt, wordCnt ) << ","
-     << density( reeksConnCnt, wordCnt ) << ","
+     << density( opsomConnCnt, wordCnt ) << ","
      << density( contConnCnt, wordCnt ) << ","
      << density( compConnCnt, wordCnt ) << ","
      << density( causeConnCnt, wordCnt ) << ","
@@ -2730,9 +2736,9 @@ bool sentStats::checkAls( size_t index ){
   static string compAlsList[] = { "net", "evenmin", "zomin" };
   static set<string> compAlsSet( compAlsList, 
 				 compAlsList + sizeof(compAlsList)/sizeof(string) );
-  static string reeksAlsList[] = { "zowel" };
-  static set<string> reeksAlsSet( reeksAlsList, 
-				  reeksAlsList + sizeof(reeksAlsList)/sizeof(string) );
+  static string opsomAlsList[] = { "zowel" };
+  static set<string> opsomAlsSet( opsomAlsList, 
+				  opsomAlsList + sizeof(opsomAlsList)/sizeof(string) );
   
   string als = lowercase( sv[index]->text() );
   if ( als == "als" ){
@@ -2750,10 +2756,10 @@ bool sentStats::checkAls( size_t index ){
 	  //	cerr << "ALS comparatief:" << word << endl;
 	  return true;
 	}
-	else if ( reeksAlsSet.find( word ) != reeksAlsSet.end() ){
+	else if ( opsomAlsSet.find( word ) != opsomAlsSet.end() ){
 	  // kijk naar "zowel ... als" constructies
-	  sv[i]->setConnType( REEKS );
-	  sv[index]->setConnType( REEKS );
+	  sv[i]->setConnType( OPSOMMEND );
+	  sv[index]->setConnType( OPSOMMEND );
 	  //	cerr << "ALS opsommend:" << word << endl;
 	  return true;
 	}
@@ -2786,12 +2792,12 @@ ConnType sentStats::check2Connectives( const string& mword ){
   static set<string> temporals_2( temporal2List, 
 				  temporal2List + sizeof(temporal2List)/sizeof(string) );
   
-  static string reeks2List[] = 
+  static string opsom2List[] = 
     { "daarbij komt", "dan wel",
       "ten eerste", "ten tweede", "ten derde", "ten vierde",
       "met name" };
-  static set<string> reeks_2( reeks2List, 
-			      reeks2List + sizeof(reeks2List)/sizeof(string) );
+  static set<string> opsom_2( opsom2List, 
+			      opsom2List + sizeof(opsom2List)/sizeof(string) );
   
   static string contrast2List[] = { "in plaats", "ook al", "zij het" };
   static set<string> contrastief_2( contrast2List, 
@@ -2810,8 +2816,8 @@ ConnType sentStats::check2Connectives( const string& mword ){
   if ( temporals_2.find( mword ) != temporals_2.end() ){
     conn = TEMPOREEL;
   }
-  else if ( reeks_2.find( mword ) != reeks_2.end() ){
-    conn = REEKS;
+  else if ( opsom_2.find( mword ) != opsom_2.end() ){
+    conn = OPSOMMEND;
   }
   else if ( contrastief_2.find( mword ) != contrastief_2.end() ){
     conn = CONTRASTIEF;
@@ -2831,9 +2837,9 @@ ConnType sentStats::check3Connectives( const string& mword ){
   static set<string> temporals_3( temporal3List, 
 				  temporal3List + sizeof(temporal3List)/sizeof(string) );
   
-  static string reeks3List[] = { "om te beginnen" };
-  static set<string> reeks_3( reeks3List, 
-			      reeks3List + sizeof(reeks3List)/sizeof(string) );
+  static string opsom3List[] = { "om te beginnen" };
+  static set<string> opsom_3( opsom3List, 
+			      opsom3List + sizeof(opsom3List)/sizeof(string) );
   
   static string contrast3List[] = 
     { "in plaats daarvan", "in tegenstelling tot", "zij het dat" };
@@ -2851,8 +2857,8 @@ ConnType sentStats::check3Connectives( const string& mword ){
   if ( temporals_3.find( mword ) != temporals_3.end() ){
     conn = TEMPOREEL;
   }
-  else if ( reeks_3.find( mword ) != reeks_3.end() ) {
-    conn = REEKS;
+  else if ( opsom_3.find( mword ) != opsom_3.end() ) {
+    conn = OPSOMMEND;
   }
   else if ( contrastief_3.find( mword ) != contrastief_3.end() ){
     conn = CONTRASTIEF;
@@ -2872,8 +2878,8 @@ void sentStats::incrementConnCnt( ConnType t ){
   case TEMPOREEL:
     tempConnCnt++;
     break;
-  case REEKS:
-    reeksConnCnt++;
+  case OPSOMMEND:
+    opsomConnCnt++;
     break;
   case CONTRASTIEF:
     contConnCnt++;
@@ -2944,8 +2950,8 @@ void sentStats::resolveConnectives(){
     case TEMPOREEL:
       tempConnCnt++;
       break;
-    case REEKS:
-      reeksConnCnt++;
+    case OPSOMMEND:
+      opsomConnCnt++;
       break;
     case CONTRASTIEF:
       contConnCnt++;
@@ -3090,7 +3096,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	  dLevel = get_d_level( s, alpDoc );
 	  if ( dLevel > 4 )
 	    dLevel_gt4 = 1;
-	  countCrdCnj( alpDoc, crdCnt, cnjCnt, reeksCnt );
+	  countCrdCnj( alpDoc, crdCnt, cnjCnt, opsomCnt );
 	  int np2Cnt;
 	  mod_stats( alpDoc, vcModCnt, np2Cnt, adjNpModCnt );
 	}

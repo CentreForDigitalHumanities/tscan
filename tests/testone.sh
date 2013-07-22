@@ -11,7 +11,7 @@ KNOWNFAIL="\033[1;33m  KNOWN FAILURES  \033[0m"
 
 export comm="$VG $tscan_bin/tscan"
 
-for file in $1
+for file in $@
 do if test -e $file
     then 
 	\rm -f $file.diff
