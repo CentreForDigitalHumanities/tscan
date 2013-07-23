@@ -1,8 +1,7 @@
 # $Id $
 # $URL$
 config_DATA = adjs_semtype.data  nouns_semtype.data \
-	polarity_lexicon.data  verbs_semtype.data \
-	dcoi_staphformat.freq \
+	verbs_semtype.data dcoi_staphformat.freq \
 	freqlist_sonarnews_lemma.freq freqlist_sonarnews_words20000.freq \
 	freqlist_sonarnews_words.freq freqlist_staphorsius_CLIB_lemma.freq \
 	freqlist_staphorsius_CLIB_words.freq \
