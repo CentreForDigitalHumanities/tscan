@@ -885,7 +885,7 @@ ConnType wordStats::checkConnective() const {
   static set<string> opsom( opsomList, 
 			    opsomList + sizeof(opsomList)/sizeof(string) );
   
-  static string vg_contrastList[] = 
+  static string contrastList[] = 
     { "alhoewel", "althans", "anderzijds", "behalve", 
       "behoudens", "daarentegen", "daarvan", "desondanks", "doch",
       "echter", "enerzijds", "evengoed", "evenwel", 
@@ -893,30 +893,23 @@ ConnType wordStats::checkConnective() const {
       "niettemin", "nochtans", "ofschoon", "ondanks",
       "ondertussen", "ongeacht", "tenzij", "terwijl",
       "uitgezonderd", "weliswaar" };
-  static set<string> vg_contrastief( vg_contrastList, 
-				     vg_contrastList + sizeof(vg_contrastList)/sizeof(string) );
+  static set<string> contrastief( contrastList, 
+				  contrastList + sizeof(contrastList)/sizeof(string) );
   static string bw_contrastList[] = 
-    { "al", "alhoewel", "althans", "anderzijds", "behalve", 
-      "behoudens", "daarentegen", "daarvan", "desondanks", "doch",
-      "echter", "enerzijds", "evengoed", "evenwel", 
-      "hoewel", "hoezeer", "integendeel", "maar", "niettegenstaande", 
-      "niettemin", "nochtans", "ofschoon", "ondanks", 
-      "ondertussen", "ongeacht", "tenzij", "terwijl", 
-      "uitgezonderd", "weliswaar" };
+    { "al", "maar" };
   static set<string> bw_contrastief( bw_contrastList, 
 				     bw_contrastList + sizeof(bw_contrastList)/sizeof(string) );
   
   
   static string vg_comparList[] = 
-    { "alsof", "dan", "meer", "meest", 
-      "minder", "minst", "naargelang", "naarmate", "zoals" };
+    { "dan" };
   static set<string> vg_comparatief( vg_comparList, 
 				     vg_comparList + sizeof(vg_comparList)/sizeof(string) );
-  static string bw_comparList[] = 
+  static string comparList[] = 
     { "alsof", "meer", "meest", 
       "minder", "minst", "naargelang", "naarmate", "zoals" };
-  static set<string> bw_comparatief( bw_comparList, 
-				     bw_comparList + sizeof(bw_comparList)/sizeof(string) );
+  static set<string> comparatief( comparList, 
+				  comparList + sizeof(comparList)/sizeof(string) );
 
   static string causesList[] = 
     { "aangezien", "anders", "bijgevolg", 
@@ -934,43 +927,26 @@ ConnType wordStats::checkConnective() const {
       "zodoende", "zolang" };
   static set<string> causals( causesList, 
 			      causesList + sizeof(causesList)/sizeof(string) );
-
+  if ( tag != CGN::VG && tag != CGN::VZ && tag != CGN::BW )
+    return NOCONN;
   string lword = lowercase( word );
+  if ( temporals.find( lword ) != temporals.end() )
+    return TEMPOREEL;
+  else if ( opsom.find( lword ) != opsom.end() )
+    return OPSOMMEND;
+  else if ( contrastief.find( lword ) != contrastief.end() )
+    return CONTRASTIEF;
+  else if ( comparatief.find( lword ) != comparatief.end() )
+    return COMPARATIEF;
+  else if ( causals.find( lword ) != causals.end() )
+    return CAUSAAL;
   if ( tag == CGN::VG ){
-    if ( temporals.find( lword ) != temporals.end() )
-      return TEMPOREEL;
-    else if ( opsom.find( lword ) != opsom.end() )
-      return OPSOMMEND;
-    else if ( vg_contrastief.find( lword ) != vg_contrastief.end() )
-      return CONTRASTIEF;
-    else if ( vg_comparatief.find( lword ) != vg_comparatief.end() )
+    if ( vg_comparatief.find( lword ) != vg_comparatief.end() )
       return COMPARATIEF;
-    else if ( causals.find( lword ) != causals.end() )
-      return CAUSAAL;
   }
   else if ( tag == CGN::BW ){
-    if ( temporals.find( lword ) != temporals.end() )
-      return TEMPOREEL;
-    else if ( opsom.find( lword ) != opsom.end() )
-      return OPSOMMEND;
-    else if ( bw_contrastief.find( lword ) != bw_contrastief.end() )
+    if ( bw_contrastief.find( lword ) != bw_contrastief.end() )
       return CONTRASTIEF;
-    else if ( bw_comparatief.find( lword ) != bw_comparatief.end() )
-      return COMPARATIEF;
-    else if ( causals.find( lword ) != causals.end() )
-      return CAUSAAL;
-  }
-  else if ( tag == CGN::VZ ){
-    if ( temporals.find( lword ) != temporals.end() )
-      return TEMPOREEL;
-    else if ( opsom.find( lword ) != opsom.end() )
-      return OPSOMMEND;
-    else if ( bw_contrastief.find( lword ) != bw_contrastief.end() )
-      return CONTRASTIEF;
-    else if ( vg_comparatief.find( lword ) != vg_comparatief.end() )
-      return COMPARATIEF;
-    else if ( causals.find( lword ) != causals.end() )
-      return CAUSAAL;
   }
   return NOCONN;
 }
