@@ -246,21 +246,15 @@ struct settingData {
   map<string, cf_data> lemma_freq_lex;
   map<string, top_val> top_freq_lex;
   map<CGN::Type, set<string> > temporals1;
-  set<string> temporals2;
-  set<string> temporals3;
+  set<string> multi_temporals;
   map<CGN::Type, set<string> > causals1;
-  set<string> causals2;
-  set<string> causals3;
+  set<string> multi_causals;
   map<CGN::Type, set<string> > opsommers1;
-  set<string> opsommers2;
-  set<string> opsommers3;
+  set<string> multi_opsommers;
   map<CGN::Type, set<string> > contrast1;
-  set<string> contrast2;
-  set<string> contrast3;
+  set<string> multi_contrast;
   map<CGN::Type, set<string> > compars1;
-  set<string> compars2;
-  set<string> compars3;
-
+  set<string> multi_compars;
 };
 
 settingData settings;
@@ -504,7 +498,7 @@ bool fill_topvals( map<string,top_val>& m, const string& filename ){
 }
 
 bool fill_connectors( map<CGN::Type,set<string> >& c1, 
-		      set<string>& c2, set<string>& c3,
+		      set<string>& cM,
 		      istream& is ){
   string line;
   while( getline( is, line ) ){
@@ -540,27 +534,24 @@ bool fill_connectors( map<CGN::Type,set<string> >& c1,
     if ( n == 1 ){
       c1[tag].insert( vec[0] );
     }
-    if ( n > 1 && tag != CGN::UNASS ){
+    else if ( n > 1 && tag != CGN::UNASS ){
       cerr << "skip line: " << line 
 	   << " (no GCN tag info allowed for multiword entries) " << endl;
       continue;
     }
-    if ( n == 2 ){
-      c2.insert( vec[0] );
-    }
-    if ( n == 3 ){
-      c3.insert( vec[0] );
+    else {
+      cM.insert( vec[0] );
     }
   }
   return true;
 }
 
 bool fill_connectors( map<CGN::Type, set<string> >& c1, 
-		      set<string>& c2, set<string>& c3,
+		      set<string>& cM, 
 		      const string& filename ){
   ifstream is( filename.c_str() );
   if ( is ){
-    return fill_connectors( c1, c2, c3, is );
+    return fill_connectors( c1, cM, is );
   }
   else {
     cerr << "couldn't open file: " << filename << endl;
@@ -656,27 +647,27 @@ void settingData::init( const Configuration& cf ){
   }
   val = cf.lookUp( "temporals" );
   if ( !val.empty() ){
-    if ( !fill_connectors( temporals1, temporals2, temporals3, cf.configDir() + "/" + val ) )
+    if ( !fill_connectors( temporals1, multi_temporals, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "opsommers" );
   if ( !val.empty() ){
-    if ( !fill_connectors( opsommers1, opsommers2, opsommers3, cf.configDir() + "/" + val ) )
+    if ( !fill_connectors( opsommers1, multi_opsommers, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "contrast" );
   if ( !val.empty() ){
-    if ( !fill_connectors( contrast1, contrast2, contrast3, cf.configDir() + "/" + val ) )
+    if ( !fill_connectors( contrast1, multi_contrast, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "compars" );
   if ( !val.empty() ){
-    if ( !fill_connectors( compars1, compars2, compars3, cf.configDir() + "/" + val ) )
+    if ( !fill_connectors( compars1, multi_compars, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "causals" );
   if ( !val.empty() ){
-    if ( !fill_connectors( causals1, causals2, causals3, cf.configDir() + "/" + val ) )
+    if ( !fill_connectors( causals1, multi_causals, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
 }
@@ -2651,8 +2642,7 @@ struct sentStats : public structStats {
   void incrementConnCnt( ConnType );
   void addMetrics( ) const;
   bool checkAls( size_t );
-  ConnType check2Connectives( const string& );
-  ConnType check3Connectives( const string& );
+  ConnType checkMultiConnectives( const string& );
 };
 
 void fill_word_lemma_buffers( const sentStats* ss, 
@@ -2798,46 +2788,24 @@ bool sentStats::checkAls( size_t index ){
   return false;
 }
 
-ConnType sentStats::check2Connectives( const string& mword ){
+ConnType sentStats::checkMultiConnectives( const string& mword ){
   ConnType conn = NOCONN;
-  if ( settings.temporals2.find( mword ) != settings.temporals2.end() ){
+  if ( settings.multi_temporals.find( mword ) != settings.multi_temporals.end() ){
     conn = TEMPOREEL;
   }
-  else if ( settings.opsommers2.find( mword ) != settings.opsommers2.end() ){
+  else if ( settings.multi_opsommers.find( mword ) != settings.multi_opsommers.end() ){
     conn = OPSOMMEND;
   }
-  else if ( settings.contrast2.find( mword ) != settings.contrast2.end() ){
+  else if ( settings.multi_contrast.find( mword ) != settings.multi_contrast.end() ){
     conn = CONTRASTIEF;
   }
-  else if ( settings.compars2.find( mword ) != settings.compars2.end() ){
+  else if ( settings.multi_compars.find( mword ) != settings.multi_compars.end() ){
     conn = COMPARATIEF;
   }
-  else if ( settings.causals2.find( mword ) != settings.causals2.end() ){
+  else if ( settings.multi_causals.find( mword ) != settings.multi_causals.end() ){
     conn = CAUSAAL;
   }
-  //  cerr << "2-conn " << mword << " = " << conn << endl;
-  return conn;
-}
-
-ConnType sentStats::check3Connectives( const string& mword ){
-  ConnType conn = NOCONN;
-  if ( settings.temporals3.find( mword ) 
-       != settings.temporals3.end() ){
-    conn = TEMPOREEL;
-  }
-  else if ( settings.opsommers3.find( mword ) != settings.opsommers3.end() ) {
-    conn = OPSOMMEND;
-  }
-  else if ( settings.contrast3.find( mword ) != settings.contrast3.end() ){
-    conn = CONTRASTIEF;
-  }
-  else if ( settings.compars3.find( mword ) != settings.compars3.end() ){
-    conn = COMPARATIEF;
-  }
-  else if ( settings.causals3.find( mword ) != settings.causals3.end() ){
-    conn = CAUSAAL;
-  }
-  //  cerr << "3-conn " << mword << " = " << conn << endl;
+  //  cerr << "multi-conn " << mword << " = " << conn << endl;
   return conn;
 }
 
@@ -2872,7 +2840,7 @@ void sentStats::resolveConnectives(){
 	// (evenmin ... als) (zowel ... als ) etc.
 	// In dat geval niet meer zoeken naar "als ..."
 	//      cerr << "zoek op " << multiword2 << endl;
-	ConnType conn = check2Connectives( multiword2 );
+	ConnType conn = checkMultiConnectives( multiword2 );
 	if ( conn != NOCONN ){
 	  sv[i]->setMultiConn();
 	  sv[i+1]->setMultiConn();
@@ -2886,7 +2854,7 @@ void sentStats::resolveConnectives(){
       string multiword3 = multiword2 + " "
 	+ lowercase( sv[i+2]->text() );
       //      cerr << "zoek op " << multiword3 << endl;
-      ConnType conn = check3Connectives( multiword3 );
+      ConnType conn = checkMultiConnectives( multiword3 );
       if ( conn != NOCONN ){
 	sv[i]->setMultiConn();
 	sv[i+1]->setMultiConn();
@@ -2902,7 +2870,7 @@ void sentStats::resolveConnectives(){
     string multiword2 = lowercase( sv[sv.size()-2]->text() )
       + " " + lowercase( sv[sv.size()-1]->text() );
     //    cerr << "zoek op " << multiword2 << endl;
-    ConnType conn = check2Connectives( multiword2 );
+    ConnType conn = checkMultiConnectives( multiword2 );
     if ( conn != NOCONN ){
       sv[sv.size()-2]->setMultiConn();
       sv[sv.size()-1]->setMultiConn();
