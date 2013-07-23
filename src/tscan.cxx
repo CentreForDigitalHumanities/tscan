@@ -245,6 +245,22 @@ struct settingData {
   map<string, cf_data> word_freq_lex;
   map<string, cf_data> lemma_freq_lex;
   map<string, top_val> top_freq_lex;
+  map<CGN::Type, set<string> > temporals1;
+  set<string> temporals2;
+  set<string> temporals3;
+  map<CGN::Type, set<string> > causals1;
+  set<string> causals2;
+  set<string> causals3;
+  map<CGN::Type, set<string> > opsommers1;
+  set<string> opsommers2;
+  set<string> opsommers3;
+  map<CGN::Type, set<string> > contrast1;
+  set<string> contrast2;
+  set<string> contrast3;
+  map<CGN::Type, set<string> > compars1;
+  set<string> compars2;
+  set<string> compars3;
+
 };
 
 settingData settings;
@@ -487,6 +503,71 @@ bool fill_topvals( map<string,top_val>& m, const string& filename ){
   return false;
 }
 
+bool fill_connectors( map<CGN::Type,set<string> >& c1, 
+		      set<string>& c2, set<string>& c3,
+		      istream& is ){
+  string line;
+  while( getline( is, line ) ){
+    // a line is supposed to be :
+    // a comment, starting with '#'
+    // like: '# comment'
+    // OR an entry of 1, 2 or 3 words seperated by a single space
+    // like: 'dus' OR 'de facto'
+    // OR the same followed by a TAB ('\t') and a CGN tag
+    // like: 'maar   BW'
+    line = TiCC::trim( line );
+    if ( line.empty() || line[0] == '#' )
+      continue;
+    vector<string> vec;
+    int n = split_at( line, vec, "\t" );
+    if ( n == 0 || n > 2 ){
+      cerr << "skip line: " << line << " (expected 1 or 2 values, got " 
+	   << n << ")" << endl;
+      continue;
+    }
+    CGN::Type tag = CGN::UNASS;
+    if ( n == 2 ){
+      tag = CGN::toCGN( vec[1] );
+    }
+    vector<string> dum;
+    n = split_at( vec[0], dum, " " );
+    if ( n < 1 || n > 3 ){
+      cerr << "skip line: " << line 
+	   << " (expected 1, 2 or 3 values in the first part: " << vec[0] 
+	   << ", got " << n << ")" << endl;
+      continue;
+    }
+    if ( n == 1 ){
+      c1[tag].insert( vec[0] );
+    }
+    if ( n > 1 && tag != CGN::UNASS ){
+      cerr << "skip line: " << line 
+	   << " (no GCN tag info allowed for multiword entries) " << endl;
+      continue;
+    }
+    if ( n == 2 ){
+      c2.insert( vec[0] );
+    }
+    if ( n == 3 ){
+      c3.insert( vec[0] );
+    }
+  }
+  return true;
+}
+
+bool fill_connectors( map<CGN::Type, set<string> >& c1, 
+		      set<string>& c2, set<string>& c3,
+		      const string& filename ){
+  ifstream is( filename.c_str() );
+  if ( is ){
+    return fill_connectors( c1, c2, c3, is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
 void settingData::init( const Configuration& cf ){
   doAlpino = false;
   doAlpinoServer = false;
@@ -571,6 +652,31 @@ void settingData::init( const Configuration& cf ){
   val = cf.lookUp( "top_freq_lex" );
   if ( !val.empty() ){
     if ( !fill_topvals( top_freq_lex, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "temporals" );
+  if ( !val.empty() ){
+    if ( !fill_connectors( temporals1, temporals2, temporals3, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "opsommers" );
+  if ( !val.empty() ){
+    if ( !fill_connectors( opsommers1, opsommers2, opsommers3, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "contrast" );
+  if ( !val.empty() ){
+    if ( !fill_connectors( contrast1, contrast2, contrast3, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "compars" );
+  if ( !val.empty() ){
+    if ( !fill_connectors( compars1, compars2, compars3, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "causals" );
+  if ( !val.empty() ){
+    if ( !fill_connectors( causals1, causals2, causals3, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
 }
@@ -845,109 +951,45 @@ vector<const wordStats*> wordStats::collectWords() const {
   return result;
 }
 
+
 ConnType wordStats::checkConnective() const {
-  static string temporalList[] = 
-    { "aanstonds", "achtereenvolgens", "alvast", "alvorens", "anno", 
-      "bijtijds", "binnenkort", "daarnet", "daarstraks", "daartussendoor",
-      "dadelijk", "destijds", "eensklaps", "eer", "eerdaags", 
-      "eergisteren", "eerlang", "eerst", "eertijds", "eindelijk", 
-      "ertussendoor", "gisteren", "heden", "hedenavond", "hedenmiddag", 
-      "hedenmorgen", "hedennacht", "hedenochtend", "hoelang", "indertijd", 
-      "ineens", "ingaande", "inmiddels", "medio", "meer", "meestal", 
-      "meteen", "morgen", "morgenavond", "morgenmiddag", "morgennacht", 
-      "morgenochtend", "morgenvroeg", "na", "nadat", "naderhand", 
-      "nadezen", "nadien", "net", "olim", "onderwijl", 
-      "onlangs", "opeens", "overdag", "overmorgen", "omstopsom",
-      "pardoes", "pas", "plotsklaps", "recentelijk", "reeds", "sedert", 
-      "sedertdien", "sinds", "sindsdien", "steeds", 
-      "strakjes", "straks", "subiet", "tegelijk", "tegelijkertijd", "ten",
-      "terstond", "tevoren", "tezelfdertijd", "thans", "toen", "toenmaals", 
-      "toentertijd", "tot", "totdat", "uiterlijk", "vanavond", "vandaag", 
-      "vanmiddag", "vanmorgen", "vannacht", "vanochtend", "vervolgens",
-      "vooraf", "vooraleer", "vooralsnog", "voordat", "voorheen", "weldra", 
-      "weleer", "zodra", "zo-even", "zojuist", "zonet", "zopas" };
-  static set<string> temporals( temporalList, 
-				temporalList + sizeof(temporalList)/sizeof(string) );
-
-  static string opsomList[] = 
-    {"alsmede", "alsook", "annex", 
-     "bovenal", "bovendien", "buitendien", 
-     "daarenboven","daarnaast", 
-     "en", "evenals", "eveneens", "evenmin", 
-     "hetzij", "hierenboven", 
-     "noch", 
-     "of", "ofwel", "ook", 
-     "respectievelijk", 
-     "tevens", 
-     "verder", "vooral", "voornamelijk", "voorts",
-     "waarnaast", 
-     "zelfs", "zowel" };
-  static set<string> opsom( opsomList, 
-			    opsomList + sizeof(opsomList)/sizeof(string) );
-  
-  static string contrastList[] = 
-    { "alhoewel", "althans", "anderzijds", "behalve", 
-      "behoudens", "daarentegen", "daarvan", "desondanks", "doch",
-      "echter", "enerzijds", "evengoed", "evenwel", 
-      "hoewel", "hoezeer", "integendeel", "niettegenstaande", 
-      "niettemin", "nochtans", "ofschoon", "ondanks",
-      "ondertussen", "ongeacht", "tenzij", "terwijl",
-      "uitgezonderd", "weliswaar" };
-  static set<string> contrastief( contrastList, 
-				  contrastList + sizeof(contrastList)/sizeof(string) );
-  static string bw_contrastList[] = 
-    { "al", "maar" };
-  static set<string> bw_contrastief( bw_contrastList, 
-				     bw_contrastList + sizeof(bw_contrastList)/sizeof(string) );
-  
-  
-  static string vg_comparList[] = 
-    { "dan" };
-  static set<string> vg_comparatief( vg_comparList, 
-				     vg_comparList + sizeof(vg_comparList)/sizeof(string) );
-  static string comparList[] = 
-    { "alsof", "meer", "meest", 
-      "minder", "minst", "naargelang", "naarmate", "zoals" };
-  static set<string> comparatief( comparList, 
-				  comparList + sizeof(comparList)/sizeof(string) );
-
-  static string causesList[] = 
-    { "aangezien", "anders", "bijgevolg", 
-      "daar", "daardoor", "daarmee", "daarom", 
-      "daartoe", "daarvoor", "dankzij", "derhalve",
-      "dientengevolge", "doordat", "dus", "ergo", 
-      "ermee", "erom", "ertoe", "getuige", 
-      "gezien", "hierdoor", "hiermee", "hierom", 
-      "hiertoe", "hiervoor", "immers", "indien", 
-      "ingeval", "ingevolge", "krachtens", "middels", 
-      "mits", "namelijk", "nu", "om", "omdat", 
-      "opdat", "teneinde", "vanwege", "vermits", 
-      "waardoor", "waarmee", "waarom", "waartoe",
-      "wanneer", "want", "wegens", "zodat", 
-      "zodoende", "zolang" };
-  static set<string> causals( causesList, 
-			      causesList + sizeof(causesList)/sizeof(string) );
   if ( tag != CGN::VG && tag != CGN::VZ && tag != CGN::BW )
     return NOCONN;
   string lword = lowercase( word );
-  if ( temporals.find( lword ) != temporals.end() )
+  if ( settings.temporals1[tag].find( lword ) 
+       != settings.temporals1[tag].end() ){
     return TEMPOREEL;
-  else if ( opsom.find( lword ) != opsom.end() )
+  }
+  else if ( settings.temporals1[CGN::UNASS].find( lword ) 
+	    != settings.temporals1[CGN::UNASS].end() ){
+    return TEMPOREEL;
+  }
+  else if ( settings.opsommers1[tag].find( lword ) 
+	    != settings.opsommers1[tag].end() ){
     return OPSOMMEND;
-  else if ( contrastief.find( lword ) != contrastief.end() )
+  }
+  else if ( settings.opsommers1[CGN::UNASS].find( lword ) 
+	    != settings.opsommers1[CGN::UNASS].end() ){
+    return OPSOMMEND;
+  }
+  else if ( settings.contrast1[tag].find( lword ) 
+	    != settings.contrast1[tag].end() )
     return CONTRASTIEF;
-  else if ( comparatief.find( lword ) != comparatief.end() )
+  else if ( settings.contrast1[CGN::UNASS].find( lword ) 
+	    != settings.contrast1[CGN::UNASS].end() )
+    return CONTRASTIEF;
+  else if ( settings.compars1[tag].find( lword ) 
+	    != settings.compars1[tag].end() )
     return COMPARATIEF;
-  else if ( causals.find( lword ) != causals.end() )
+  else if ( settings.compars1[CGN::UNASS].find( lword ) 
+	    != settings.compars1[CGN::UNASS].end() )
+    return COMPARATIEF;
+  else if ( settings.causals1[tag].find( lword ) 
+	    != settings.causals1[tag].end() )
     return CAUSAAL;
-  if ( tag == CGN::VG ){
-    if ( vg_comparatief.find( lword ) != vg_comparatief.end() )
-      return COMPARATIEF;
-  }
-  else if ( tag == CGN::BW ){
-    if ( bw_contrastief.find( lword ) != bw_contrastief.end() )
-      return CONTRASTIEF;
-  }
+  else if ( settings.causals1[CGN::UNASS].find( lword ) 
+	    != settings.causals1[CGN::UNASS].end() )
+    return CAUSAAL;
   return NOCONN;
 }
 
@@ -2757,44 +2799,20 @@ bool sentStats::checkAls( size_t index ){
 }
 
 ConnType sentStats::check2Connectives( const string& mword ){
-  static string temporal2List[] = {"de dato", "na dato"};
-  static set<string> temporals_2( temporal2List, 
-				  temporal2List + sizeof(temporal2List)/sizeof(string) );
-  
-  static string opsom2List[] = 
-    { "daarbij komt", "dan wel",
-      "ten eerste", "ten tweede", "ten derde", "ten vierde",
-      "met name" };
-  static set<string> opsom_2( opsom2List, 
-			      opsom2List + sizeof(opsom2List)/sizeof(string) );
-  
-  static string contrast2List[] = { "in plaats", "ook al", "zij het" };
-  static set<string> contrastief_2( contrast2List, 
-				    contrast2List + sizeof(contrast2List)/sizeof(string) );
-  
-  static string compar2List[] = { "meer dan", "minder dan" };
-  static set<string> comparatief_2( compar2List, 
-				    compar2List + sizeof(compar2List)/sizeof(string) );
-  
-  static string causes2List[] = 
-    { "dan ook", "tengevolge van", "vandaar dat", "zo ja", 
-      "zo nee", "zo niet" };
-  static set<string> causals_2( causes2List, 
-				causes2List + sizeof(causes2List)/sizeof(string) );
   ConnType conn = NOCONN;
-  if ( temporals_2.find( mword ) != temporals_2.end() ){
+  if ( settings.temporals2.find( mword ) != settings.temporals2.end() ){
     conn = TEMPOREEL;
   }
-  else if ( opsom_2.find( mword ) != opsom_2.end() ){
+  else if ( settings.opsommers2.find( mword ) != settings.opsommers2.end() ){
     conn = OPSOMMEND;
   }
-  else if ( contrastief_2.find( mword ) != contrastief_2.end() ){
+  else if ( settings.contrast2.find( mword ) != settings.contrast2.end() ){
     conn = CONTRASTIEF;
   }
-  else if ( comparatief_2.find( mword ) != comparatief_2.end() ){
+  else if ( settings.compars2.find( mword ) != settings.compars2.end() ){
     conn = COMPARATIEF;
   }
-  else if ( causals_2.find( mword ) != causals_2.end() ){
+  else if ( settings.causals2.find( mword ) != settings.causals2.end() ){
     conn = CAUSAAL;
   }
   //  cerr << "2-conn " << mword << " = " << conn << endl;
@@ -2802,40 +2820,21 @@ ConnType sentStats::check2Connectives( const string& mword ){
 }
 
 ConnType sentStats::check3Connectives( const string& mword ){
-  static string temporal3List[] = {"a la minute", "hic et nunc"};
-  static set<string> temporals_3( temporal3List, 
-				  temporal3List + sizeof(temporal3List)/sizeof(string) );
-  
-  static string opsom3List[] = { "om te beginnen" };
-  static set<string> opsom_3( opsom3List, 
-			      opsom3List + sizeof(opsom3List)/sizeof(string) );
-  
-  static string contrast3List[] = 
-    { "in plaats daarvan", "in tegenstelling tot", "zij het dat" };
-  static set<string> contrastief_3( contrast3List, 
-				    contrast3List + sizeof(contrast3List)/sizeof(string) );
-  
-  static string compar3List[] = {"net zo min" };
-  static set<string> comparatief_3( compar3List, 
-				    compar3List + sizeof(compar3List)/sizeof(string) );
-  
-  static string causes3List[] = { "met behulp van" };
-  static set<string> causals_3( causes3List, 
-				causes3List + sizeof(causes3List)/sizeof(string) );
   ConnType conn = NOCONN;
-  if ( temporals_3.find( mword ) != temporals_3.end() ){
+  if ( settings.temporals3.find( mword ) 
+       != settings.temporals3.end() ){
     conn = TEMPOREEL;
   }
-  else if ( opsom_3.find( mword ) != opsom_3.end() ) {
+  else if ( settings.opsommers3.find( mword ) != settings.opsommers3.end() ) {
     conn = OPSOMMEND;
   }
-  else if ( contrastief_3.find( mword ) != contrastief_3.end() ){
+  else if ( settings.contrast3.find( mword ) != settings.contrast3.end() ){
     conn = CONTRASTIEF;
   }
-  else if ( comparatief_3.find( mword ) != comparatief_3.end() ){
+  else if ( settings.compars3.find( mword ) != settings.compars3.end() ){
     conn = COMPARATIEF;
   }
-  else if ( causals_3.find( mword ) != causals_3.end() ){
+  else if ( settings.causals3.find( mword ) != settings.causals3.end() ){
     conn = CAUSAAL;
   }
   //  cerr << "3-conn " << mword << " = " << conn << endl;
