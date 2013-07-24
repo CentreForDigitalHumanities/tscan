@@ -550,36 +550,25 @@ string toString( const WWform& wf ){
   }
 }
 
+//#define WW_DEBUG
+
 WWform classifyVerb( const xmlNode *wnode, const string& lemma ){
   if ( wnode ){
     vector< xmlNode *> siblinglist = getSibblings( wnode );
-    //    cerr << "classify VERB lemma=" << lemma << endl;
+#ifdef WW_DEBUG
+    cerr << "classify VERB lemma=" << lemma << endl;
+#endif
     if ( lemma == "zijn" || lemma == "worden" ){
-      xmlNode *obj_node = 0;
-      xmlNode *su_node = 0;
-      for ( size_t i=0; i < siblinglist.size(); ++i ){
-	KWargs atts = getAttributes( siblinglist[i] );
-	if ( atts["rel"] == "su" ){
-	  su_node = siblinglist[i];
-	  //	  cerr << "Found a SU node!" << getAttributes(su_node) << endl;
-	}
-      }
-      for ( size_t i=0; i < siblinglist.size(); ++i ){
-	KWargs atts = getAttributes( siblinglist[i] );
-	if ( atts["rel"] == "vc" && atts["cat"] == "ppart" ){
-	  obj_node = node_search( siblinglist[i], "rel", "obj1" );
-	  if ( obj_node ){
-	    //	    cerr << "found an obj node! " << getAttributes(obj_node) << endl;
-	    string oindex = getAttribute( obj_node, "index" );
-	    if ( !oindex.empty() ){
-	      string sindex = getAttribute( su_node, "index" );
-	      if ( sindex == oindex ){
-		//		cerr << "resultaat = passiefww" << endl;
-		return PASSIVE_VERB;
-	      }
-	    }
-	  }
-	}
+#ifdef WW_DEBUG
+      cerr << "passief? lemma=" << lemma << endl;
+      cerr << "attributes: " << getAttributes( wnode ) << endl;
+#endif
+      string sc = getAttribute( wnode, "sc" );
+      if ( sc == "passive" ){
+#ifdef WW_DEBUG
+	cerr << "sc=\"passive\" ==> resultaat = passiefww" << endl;
+#endif
+	return PASSIVE_VERB;
       }
     }
     if ( koppels.find( lemma ) != koppels.end() ){
