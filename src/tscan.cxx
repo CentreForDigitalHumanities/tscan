@@ -1356,18 +1356,6 @@ void argument_overlap( const string w_or_l,
   }
 }
 
-bool isLijdend( const multimap<DD_type,int>& distances ){
-  multimap<DD_type,int>::const_iterator it = distances.begin();
-  while ( it != distances.end() ){
-    if ( it->first == OBJ2_VERB && it->second > 0 ){
-      return true;
-    }
-    ++it;
-  }
-  return false;
-}
-
-
 wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts ):
   basicStats( w, "WORD" ), wwform(::NO_VERB),
   isPersRef(false), isPronRef(false),
