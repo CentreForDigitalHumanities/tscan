@@ -1396,8 +1396,8 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
     distances = getDependencyDist( alpWord, puncts);
     if ( tag == CGN::WW ){
       wwform = classifyVerb( alpWord, lemma );
-      if ( prop == ISPVTGW || prop == ISPVVERL &&
-	   !isLijdend( distances ) ){
+      if ( (prop == ISPVTGW || prop == ISPVVERL) &&
+	   wwform != PASSIVE_VERB ){
 	isImperative = checkImp( alpWord );
       }
     }
@@ -2990,7 +2990,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
   sentCnt = 1;
   id = s->id();
   text = UnicodeToUTF8( s->toktext() );
-  LOG << "analyse sentence=" << text << endl;
+  LOG << "analyse tokenized sentence=" << text << endl;
   vector<Word*> w = s->words();
   vector<double> woprProbsV(w.size(),NA);
   double sentProb = NA;
