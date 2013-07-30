@@ -1021,8 +1021,8 @@ bool match_tail( const string& word, const string& tail ){
 
 bool wordStats::checkNominal( const xmlNode *alpWord ) const {
   static string morphList[] = { "ing", "sel", "nis", "enis", "heid", "te", 
-				"schap", "dom", "sie", "iek", "iteit", "age",
-				"esse",	"name" };
+				"schap", "dom", "sie", "ie", "iek", "iteit", 
+				"isme", "age", "atie", "esse",	"name" };
   static set<string> morphs( morphList, 
 			     morphList + sizeof(morphList)/sizeof(string) );
 #ifdef DEBUG_NOMINAL
@@ -1046,45 +1046,50 @@ bool wordStats::checkNominal( const xmlNode *alpWord ) const {
 #endif
       return true;
     }
-    bool matched = match_tail( last_morph, "ose" ) ||
-      match_tail( last_morph, "ase" ) ||
-      match_tail( last_morph, "ese" ) ||
-      match_tail( last_morph, "isme" ) ||
-      match_tail( last_morph, "sie" ) ||
-      match_tail( last_morph, "tie" );
-    if ( matched ){
+    
+    if ( last_morph.size() > 4 ){
+      // avoid false positives for words like oase, base, rose, fase 
+      bool matched = match_tail( last_morph, "ose" ) ||
+	match_tail( last_morph, "ase" ) ||
+	match_tail( last_morph, "ese" ) ||
+	match_tail( last_morph, "isme" ) ||
+	match_tail( last_morph, "sie" ) ||
+	match_tail( last_morph, "tie" );
+      if ( matched ){
 #ifdef DEBUG_NOMINAL
-      cerr << "check Nominal, MATCHED tail of morpheme " << last_morph << endl; 
+	cerr << "check Nominal, MATCHED tail of morpheme " << last_morph << endl; 
+#endif
+	return true;
+      }
+    }
+  }
+  if ( morphemes.size() < 2 && word.size() > 4 ){
+    bool matched = match_tail( word, "ose" ) ||
+      match_tail( word, "ase" ) ||
+      match_tail( word, "ese" ) ||
+      match_tail( word, "isme" ) ||
+      match_tail( word, "sie" ) ||
+      match_tail( word, "tie" );
+    if (matched ){
+#ifdef DEBUG_NOMINAL
+      cerr << "check Nominal, MATCHED tail " <<  word << endl;    
 #endif
       return true;
     }
   }
-  bool matched = match_tail( word, "ose" ) ||
-    match_tail( word, "ase" ) ||
-    match_tail( word, "ese" ) ||
-    match_tail( word, "isme" ) ||
-    match_tail( word, "sie" ) ||
-    match_tail( word, "tie" );
-  if (matched ){
+
+  string pos = getAttribute( alpWord, "pos" );
+  if ( pos == "verb" ){
+    // Alpino heeft de voor dit feature prettige eigenschap dat het nogal
+    // eens nominalisaties wil taggen als werkwoord dat onder een 
+    // NP knoop hangt 
+    alpWord = alpWord->parent;
+    string cat = getAttribute( alpWord, "cat" );
+    if ( cat == "np" ){
 #ifdef DEBUG_NOMINAL
-    cerr << "check Nominal, MATCHED tail " <<  word << endl;    
+      cerr << "Alpino says NOMINAL!" << endl;
 #endif
-    return true;
-  }
-  else {
-    string pos = getAttribute( alpWord, "pos" );
-    if ( pos == "verb" ){
-      // Alpino heeft de voor dit feature prettige eigenschap dat het nogal
-      // eens nominalisaties wil taggen als werkwoord dat onder een 
-      // NP knoop hangt 
-      alpWord = alpWord->parent;
-      string cat = getAttribute( alpWord, "cat" );
-      if ( cat == "np" ){
-#ifdef DEBUG_NOMINAL
-	cerr << "Alpino says NOMINAL!" << endl;
-#endif
-	return true;
-      }
+      return true;
     }
   }
 #ifdef DEBUG_NOMINAL
