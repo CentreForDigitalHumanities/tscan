@@ -1020,7 +1020,7 @@ bool match_tail( const string& word, const string& tail ){
 //#define DEBUG_NOMINAL
 
 bool wordStats::checkNominal( const xmlNode *alpWord ) const {
-  static string morphList[] = { "ing", "sel", "nis", "enis", "heid", "te", 
+  static string morphList[] = { "ing", "sel", "nis", "enis", "heid", "te",
 				"schap", "dom", "sie", "ie", "iek", "iteit", 
 				"isme", "age", "atie", "esse",	"name" };
   static set<string> morphs( morphList, 
@@ -1029,6 +1029,7 @@ bool wordStats::checkNominal( const xmlNode *alpWord ) const {
   cerr << "check Nominal " << word << " tag=" << tag << " morphemes=" << morphemes << endl;
 #endif
   if ( tag == CGN::N && morphemes.size() > 1 ){
+    // morphemes.size() > 1 check mijdt false hits voor "dom", "schap".
     string last_morph = morphemes[morphemes.size()-1];
 #ifdef DEBUG_NOMINAL
     cerr << "check morphemes, last= " << last_morph << endl;
@@ -1040,7 +1041,6 @@ bool wordStats::checkNominal( const xmlNode *alpWord ) const {
     cerr << "check morphemes, last= " << last_morph << endl;
 #endif
     if ( morphs.find( last_morph ) != morphs.end() ){
-	// morphemes.size() > 1 check mijdt false hits voor "dom", "schap".
 #ifdef DEBUG_NOMINAL
       cerr << "check Nominal, MATCHED morpheme " << last_morph << endl;
 #endif
@@ -1454,13 +1454,13 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
       charCntExNames = charCnt;
       morphCntExNames = max;
     }
-    if ( alpWord ) isNominal = checkNominal( alpWord );
     sem_type = checkSemProps();
     if ( sem_type == CONCRETE_HUMAN_NOUN ||
 	 prop == ISNAME ||
 	 prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3 ){
       isPersRef = true;
     }
+    if ( alpWord ) isNominal = checkNominal( alpWord );
     topFreqLookup();
     staphFreqLookup();
     if ( isContent ){
