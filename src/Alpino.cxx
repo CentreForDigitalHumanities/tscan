@@ -3,7 +3,7 @@
   $URL$
 
   Copyright (c) 1998 - 2013
- 
+
   This file is part of tscan
 
   tscan is free software; you can redistribute it and/or modify
@@ -20,14 +20,14 @@
   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
   For questions and suggestions, see:
-      
+
   or send mail to:
-      
+
 */
 
 #include <cstdio> // for remove()
 #include <cstring> // for strerror()
-#include <unistd.h> 
+#include <unistd.h>
 #include <iostream>
 #include <fstream>
 #include "config.h"
@@ -227,14 +227,14 @@ string toString( const DD_type& t ){
   }
   return result;
 }
-  
+
 int get_begin( const xmlNode *n ){
   string bpos = getAttribute( n, "begin" );
   return TiCC::stringTo<int>( bpos );
 }
 
-void store_result( multimap<DD_type,int>& result, DD_type type, 
-		   const xmlNode *n1, const xmlNode*n2, 
+void store_result( multimap<DD_type,int>& result, DD_type type,
+		   const xmlNode *n1, const xmlNode*n2,
 		   const set<size_t>& puncts ){
   int pos1 = get_begin( n1 );
   int pos2 = get_begin( n2 );
@@ -252,7 +252,7 @@ void store_result( multimap<DD_type,int>& result, DD_type type,
   }
 }
 
-multimap<DD_type, int> getDependencyDist( const xmlNode *head_node, 
+multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
 					  const set<size_t>& puncts ){
   multimap<DD_type,int> result;
   if ( head_node ){
@@ -262,8 +262,8 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
     string head_pos = atts["pos"];
     if ( head_rel == "hd" && head_pos == "verb" ){
       vector< xmlNode *> head_siblings = getSibblings( head_node );
-      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin(); 
-	    it != head_siblings.end(); 
+      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
+	    it != head_siblings.end();
 	    ++it ){
 	KWargs args = getAttributes( *it );
 	//	cerr << "bekijk " << args << endl;
@@ -289,7 +289,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
 		  string root = getAttribute( res, "root" );
 		  if ( !root.empty() ){
 		    //		    cerr << "geval 3A " << endl;
-		    target = res; 
+		    target = res;
 		  }
 		}
 		else {
@@ -334,7 +334,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
 		if ( res ){
 		  string root = getAttribute( res, "root" );
 		  if ( !root.empty() ){
-		    target = res; 
+		    target = res;
 		  }
 		}
 		else {
@@ -376,7 +376,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
 		if ( res ){
 		  string root = getAttribute( res, "root" );
 		  if ( !root.empty() ){
-		    target = res; 
+		    target = res;
 		  }
 		}
 		else {
@@ -423,8 +423,8 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
     else if ( head_rel == "hd" && head_pos == "noun" &&
 	      getAttribute( head_node->parent, "cat" ) == "np" ){
       vector< xmlNode *> head_siblings = getSibblings( head_node );
-      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin(); 
-	    it != head_siblings.end(); 
+      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
+	    it != head_siblings.end();
 	    ++it ){
 	KWargs args = getAttributes( *it );
 	//	cerr << "bekijk " << args << endl;
@@ -438,9 +438,9 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
 	      store_result( result, NOUN_DET, head_node, res, puncts );
 	    }
 	    res = node_search( *it, "rel", "mpw" );
-	    // determiners kunnen voor Alpino net als een onderwerp of lijdend 
-	    // voorwerp samengesteld zijn uit meerdere woorden... 
-	    // weet alleen even geen voorbeeld... 
+	    // determiners kunnen voor Alpino net als een onderwerp of lijdend
+	    // voorwerp samengesteld zijn uit meerdere woorden...
+	    // weet alleen even geen voorbeeld...
 	    if ( res ){
 	      string root = getAttribute( *it, "root" );
 	      if ( !root.empty() )
@@ -456,11 +456,11 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
 	}
       }
     }
-    else if ( head_rel == "hd" && head_pos == "prep" 
+    else if ( head_rel == "hd" && head_pos == "prep"
 	      && getAttribute( head_node->parent, "cat" ) == "pp" ){
       vector< xmlNode *> head_siblings = getSibblings( head_node );
-      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin(); 
-	    it != head_siblings.end(); 
+      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
+	    it != head_siblings.end();
 	    ++it ){
 	KWargs args = getAttributes( *it );
 	//	cerr << "bekijk " << args << endl;
@@ -484,8 +484,8 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
     }
     else if ( head_rel == "crd" ){
       vector< xmlNode *> head_siblings = getSibblings( head_node );
-      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin(); 
-	    it != head_siblings.end(); 
+      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
+	    it != head_siblings.end();
 	    ++it ){
 	KWargs args = getAttributes( *it );
 	//	cerr << "bekijk " << args << endl;
@@ -507,8 +507,8 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
       string word = getAttribute( head_node, "word" );
       if ( word != "te" ){
 	vector< xmlNode *> head_siblings = getSibblings( head_node );
-	for ( vector< xmlNode *>::const_iterator it=head_siblings.begin(); 
-	      it != head_siblings.end(); 
+	for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
+	      it != head_siblings.end();
 	      ++it ){
 	  KWargs args = getAttributes( *it );
 	  if ( args["rel"] == "body" ){
@@ -586,7 +586,7 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma ){
 	if ( atts["rel"] == "su" ){
 	  static string schijn_words[] = { "zon", "ster", "maan", "lamp", "licht" };
 	  static set<string> sws( schijn_words, schijn_words+5 );
-	  xmlNode *node = node_search( siblinglist[i], 
+	  xmlNode *node = node_search( siblinglist[i],
 				       "root", sws );
 	  if ( node ){
 	    //	    cerr << "resultaat 1 = hoofdww" << endl;
@@ -601,7 +601,7 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma ){
     if ( modals.find( lemma ) != modals.end() ){
       //      cerr << "resultaat = modaalww" << endl;
       return MODAL_VERB;
-    }      
+    }
     if ( lemma == "hebben" ){
       for ( size_t i=0; i < siblinglist.size(); ++i ){
 	KWargs atts = getAttributes( siblinglist[i] );
@@ -644,7 +644,7 @@ vector<xmlNode *> getNodes( xmlDoc *doc ){
   return result;
 }
 
-void getNodesValue( xmlNode *pnt, vector<xmlNode*>& result, 
+void getNodesValue( xmlNode *pnt, vector<xmlNode*>& result,
 		    const string& att, const string& val ){
   while ( pnt ){
     if ( pnt->type == XML_ELEMENT_NODE && Name(pnt) == "node" ){
@@ -657,7 +657,7 @@ void getNodesValue( xmlNode *pnt, vector<xmlNode*>& result,
   }
 }
 
-vector<xmlNode *> getNodesValue( xmlDoc *doc, const string& att, 
+vector<xmlNode *> getNodesValue( xmlDoc *doc, const string& att,
 				  const string& val ){
   xmlNode *pnt = xmlDocGetRootElement( doc );
   vector<xmlNode*> result;
@@ -694,18 +694,18 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
     }
   }
   if ( pv_counter - neven_counter > 2 ){
-    // op niveau 7 staan zinnen met meerdere bijzinnen, maar deelzinnen die 
+    // op niveau 7 staan zinnen met meerdere bijzinnen, maar deelzinnen die
     // in nevenschikking staan tellen hiervoor niet mee
     return 7;
   }
 
   // < 7
   vector<xmlNode *> nodelist = getNodes( alp );
-  for ( size_t i=0; i < nodelist.size(); ++i ){  
+  for ( size_t i=0; i < nodelist.size(); ++i ){
     // we kijken of het om een level 6 zin gaat:
-    // Zinnen met een betrekkelijke bijzin die het subject modificeert 
+    // Zinnen met een betrekkelijke bijzin die het subject modificeert
     //    ("De man, die erg op Pietje leek, zette het op een lopen.")
-    // Het onderwerp van de zin is genominaliseerd 
+    // Het onderwerp van de zin is genominaliseerd
     //    ("Het weigeren van Pietje was voor Jantje reden om ermee te stoppen.")
     xmlNode *node = nodelist[i];
     KWargs atts = getAttributes( node );
@@ -716,10 +716,10 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
       if ( attsp["rel"] == "su" )
 	return 6;
     }
-    else if ( atts["rel"] == "su" && 
-	      ( atts["cat"] == "cp" 
+    else if ( atts["rel"] == "su" &&
+	      ( atts["cat"] == "cp"
 		|| atts["cat"] == "whsub" || atts["cat"] == "whrel"
-		|| atts["cat"] == "ti"  || atts["cat"] == "oti" 
+		|| atts["cat"] == "ti"  || atts["cat"] == "oti"
 		|| atts["cat"] == "inf" ) ){
       //      cerr << "HIT SU node " << atts << endl;
       return 6;
@@ -732,11 +732,11 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
 	return 6;
     }
   }
-  
+
   // < 6
   for ( size_t i=0; i < poslist.size(); ++i ){
     // we kijken of het om een level 5 zin gaat
-    // Zinnen met ondergeschikte bijzinnen 
+    // Zinnen met ondergeschikte bijzinnen
     //     ("Pietje wilde naar huis, omdat het regende.")
     string pos = poslist[i]->feat("head");
     if ( pos == "VG" ){
@@ -749,23 +749,23 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
   }
 
   // < 5
-  for ( size_t i=0; i < nodelist.size(); ++i ){  
+  for ( size_t i=0; i < nodelist.size(); ++i ){
     // we kijken of het om een level 4 zin gaat
     //  "Non-finite complement with its own understood subject". Kan ik even geen voorbeeld van bedenken :p
-    // comparatieven met een object van vergelijking 
-    //    ("Pietje is groter dan Jantje.")                           
+    // comparatieven met een object van vergelijking
+    //    ("Pietje is groter dan Jantje.")
     KWargs atts = getAttributes( nodelist[i] );
     if ( atts["rel"] == "obcomp" )
       return 4;
-  }  
+  }
   vector<xmlNode*> vcnodes;
-  for ( size_t i=0; i < nodelist.size(); ++i ){  
+  for ( size_t i=0; i < nodelist.size(); ++i ){
     KWargs atts = getAttributes( nodelist[i] );
     if ( atts["rel"] == "vc" )
       vcnodes.push_back( nodelist[i] );
-  }  
+  }
   bool found4 = false;
-  for ( size_t i=0; i < vcnodes.size(); ++i ){  
+  for ( size_t i=0; i < vcnodes.size(); ++i ){
     xmlNode *node = vcnodes[i];
     xmlNode *pnt = node->children;
     string index;
@@ -792,16 +792,16 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
 
   // < 4
   //  cerr << "DLEVEL < 4 " << endl;
-  for ( size_t i=0; i < nodelist.size(); ++i ){ 
+  for ( size_t i=0; i < nodelist.size(); ++i ){
     // we kijken of het om een level 3 zin gaat
-    // Zinnen met een objectsmodificerende betrekkelijke bijzin: 
+    // Zinnen met een objectsmodificerende betrekkelijke bijzin:
     //    "Ik keek naar de man die de straat overstak."
-    // Bijzin als object van het hoofdww: 
+    // Bijzin als object van het hoofdww:
     //     "Ik wist dat hij boos was"
-    // Subject extraposition: zinnen met een uitgesteld onderwerp 
+    // Subject extraposition: zinnen met een uitgesteld onderwerp
     //     "Het verbaast me dat je dat weet."
-    //   Kun je in Alpino detecteren met aan het 'sup' label voor een 
-    //   voorlopig onderwerp 
+    //   Kun je in Alpino detecteren met aan het 'sup' label voor een
+    //   voorlopig onderwerp
     KWargs atts = getAttributes( nodelist[i] );
     //    cerr << "bekijk " << atts << endl;
     if ( atts["rel"] == "mod" && atts["cat"] == "rel" ){
@@ -818,8 +818,8 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
       if ( attsp["rel"] == "obj1" && attsp["cat"] == "np" )
 	return 3;
     }
-    else if ( atts["rel"] == "vc" && 
-	      ( atts["cat"] == "cp" || 
+    else if ( atts["rel"] == "vc" &&
+	      ( atts["cat"] == "cp" ||
 		atts["cat"] == "whsub" ) ){
       //      cerr << "case VC" << endl;
       return 3;
@@ -829,8 +829,8 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
       return 3;
     }
   }
-  
-  // < 3 
+
+  // < 3
   for ( size_t i=0; i < poslist.size(); ++i ){
     // we kijken of het om een level 2 zin gaat
     // zinnen met nevenschikkingen
@@ -844,17 +844,17 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
 	return 2;
     }
   }
-  
+
   // < 2
-  for ( size_t i=0; i < nodelist.size(); ++i ){ 
+  for ( size_t i=0; i < nodelist.size(); ++i ){
     // we kijken of het om een level 1 zin gaat
     // Zinnen met een infinitief waarbij infinitief en persoonsvorm hetzelfde
-    // onderwerp hebben 
+    // onderwerp hebben
     //     ("Pietje vergat zijn haar te kammen.")
     KWargs atts = getAttributes( nodelist[i] );
     if ( atts["rel"] == "vc" ){
       //      cerr << "VC node " << atts << endl;
-      if ( atts["cat"] == "ti" 
+      if ( atts["cat"] == "ti"
 	   || atts["cat"] == "oti"
 	   || atts["cat"] == "inf" ){
 	xmlNode *su_node = node_search( nodelist[i], "rel", "su" );
@@ -877,7 +877,7 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
       }
     }
   }
-  
+
   // < 1
   return 0;
 }
@@ -931,6 +931,11 @@ void countCrdCnj( xmlDoc *doc, int& crdCnt, int& cnjCnt ){
   }
 }
 
+bool isSmallCnj( const xmlNode *eNode ){
+  cerr << "test EN " << getAttributes( eNode ) << endl;
+  return false;
+}
+
 xmlDoc *AlpinoParse( const folia::Sentence *s, const string& dirname ){
   string txt = folia::UnicodeToUTF8(s->toktext());
   //  cerr << "parse line: " << txt << endl;
@@ -938,7 +943,7 @@ xmlDoc *AlpinoParse( const folia::Sentence *s, const string& dirname ){
   ofstream os( txtfile.c_str() );
   os << txt;
   os.close();
-  string parseCmd = "Alpino -fast -flag treebank " + dirname + 
+  string parseCmd = "Alpino -fast -flag treebank " + dirname +
     " end_hook=xml -parse < " + txtfile + " -notk > /dev/null 2>&1";
   // cerr << "run: " << parseCmd << endl;
   int res = system( parseCmd.c_str() );

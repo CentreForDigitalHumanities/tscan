@@ -3,7 +3,7 @@
   $URL$
 
   Copyright (c) 1998 - 2013
- 
+
   This file is part of tscan
 
   tscan is free software; you can redistribute it and/or modify
@@ -20,15 +20,15 @@
   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
   For questions and suggestions, see:
-      
+
   or send mail to:
-      
+
 */
 
 #include <string>
 #include <algorithm>
-#include <sys/types.h> 
-#include <sys/stat.h> 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "config.h"
 #ifdef HAVE_OPENMP
 #include "omp.h"
@@ -69,10 +69,10 @@ struct cf_data {
 
 enum top_val { top1000, top2000, top3000, top5000, top10000, top20000, notFound  };
 
-enum SemType { UNFOUND, ABSTRACT_NOUN, ABSTRACT_ADJ, 
-	       BROAD_NOUN, BROAD_ADJ, EMO_ADJ, 
-	       CONCRETE_NOUN, CONCRETE_ADJ, 
-	       CONCRETE_HUMAN_NOUN,  
+enum SemType { UNFOUND, ABSTRACT_NOUN, ABSTRACT_ADJ,
+	       BROAD_NOUN, BROAD_ADJ, EMO_ADJ,
+	       CONCRETE_NOUN, CONCRETE_ADJ,
+	       CONCRETE_HUMAN_NOUN,
 	       STATE, ACTION, PROCESS, WEIRD };
 
 string toString( const SemType st ){
@@ -152,7 +152,7 @@ namespace CGN {
       return VZ;
     else if ( s == "VG" )
       return VG;
-    else 
+    else
       return UNASS;
   }
 
@@ -191,7 +191,7 @@ ostream& operator<<( ostream& os, const CGN::Type t ){
   return os;
 }
 
-enum NerProp { NONER, LOC_B, LOC_I, EVE_B, EVE_I, ORG_B, ORG_I, 
+enum NerProp { NONER, LOC_B, LOC_I, EVE_B, EVE_I, ORG_B, ORG_I,
 	       MISC_B, MISC_I, PER_B, PER_I, PRO_B, PRO_I };
 
 ostream& operator<<( ostream& os, const NerProp& n ){
@@ -225,7 +225,7 @@ ostream& operator<<( ostream& os, const NerProp& n ){
   };
   return os;
 }
- 
+
 struct settingData {
   void init( const Configuration& );
   bool doAlpino;
@@ -255,6 +255,9 @@ struct settingData {
   set<string> multi_contrast;
   map<CGN::Type, set<string> > compars1;
   set<string> multi_compars;
+  set<string> vzexpr2;
+  set<string> vzexpr3;
+  set<string> vzexpr4;
 };
 
 settingData settings;
@@ -312,7 +315,7 @@ bool fill( CGN::Type tag, map<string,SemType>& m, istream& is ){
     vector<string> parts;
     int n = split_at( line, parts, "\t" ); // split at tab
     if ( n != 2 ){
-      cerr << "skip line: " << line << " (expected 2 values, got " 
+      cerr << "skip line: " << line << " (expected 2 values, got "
 	   << n << ")" << endl;
       continue;
     }
@@ -362,7 +365,7 @@ bool fill( CGN::Type tag, map<string,SemType>& m, istream& is ){
 	  }
 	  else if ( concr_cnt > hum_cnt )
 	    res = CONCRETE_NOUN;
-	  else 
+	  else
 	    res = CONCRETE_HUMAN_NOUN;
 	  if ( res == UNFOUND ){
 	    if ( stats[BROAD_NOUN] > 0 )
@@ -393,7 +396,7 @@ bool fill( CGN::Type tag, map<string,SemType>& m, istream& is ){
 	    }
 	    else if ( broad_cnt > emo_cnt )
 	      res = BROAD_ADJ;
-	    else 
+	    else
 	      res = EMO_ADJ;
 	    if ( res == UNFOUND ){
 	      if ( stats[ABSTRACT_ADJ] > 0 ){
@@ -433,7 +436,7 @@ bool fill_freqlex( map<string,cf_data>& m, istream& is ){
     vector<string> parts;
     size_t n = split_at( line, parts, "\t" ); // split at tabs
     if ( n != 4 ){
-      cerr << "skip line: " << line << " (expected 4 values, got " 
+      cerr << "skip line: " << line << " (expected 4 values, got "
 	   << n << ")" << endl;
       continue;
     }
@@ -477,7 +480,7 @@ bool fill_topvals( map<string,top_val>& m, istream& is ){
     vector<string> parts;
     size_t n = split_at( line, parts, "\t" ); // split at tabs
     if ( n != 4 ){
-      cerr << "skip line: " << line << " (expected 2 values, got " 
+      cerr << "skip line: " << line << " (expected 2 values, got "
 	   << n << ")" << endl;
       continue;
     }
@@ -497,7 +500,7 @@ bool fill_topvals( map<string,top_val>& m, const string& filename ){
   return false;
 }
 
-bool fill_connectors( map<CGN::Type,set<string> >& c1, 
+bool fill_connectors( map<CGN::Type,set<string> >& c1,
 		      set<string>& cM,
 		      istream& is ){
   string line;
@@ -515,7 +518,7 @@ bool fill_connectors( map<CGN::Type,set<string> >& c1,
     vector<string> vec;
     int n = split_at( line, vec, "\t" );
     if ( n == 0 || n > 2 ){
-      cerr << "skip line: " << line << " (expected 1 or 2 values, got " 
+      cerr << "skip line: " << line << " (expected 1 or 2 values, got "
 	   << n << ")" << endl;
       continue;
     }
@@ -526,8 +529,8 @@ bool fill_connectors( map<CGN::Type,set<string> >& c1,
     vector<string> dum;
     n = split_at( vec[0], dum, " " );
     if ( n < 1 || n > 3 ){
-      cerr << "skip line: " << line 
-	   << " (expected 1, 2 or 3 values in the first part: " << vec[0] 
+      cerr << "skip line: " << line
+	   << " (expected 1, 2 or 3 values in the first part: " << vec[0]
 	   << ", got " << n << ")" << endl;
       continue;
     }
@@ -535,7 +538,7 @@ bool fill_connectors( map<CGN::Type,set<string> >& c1,
       c1[tag].insert( vec[0] );
     }
     else if ( n > 1 && tag != CGN::UNASS ){
-      cerr << "skip line: " << line 
+      cerr << "skip line: " << line
 	   << " (no GCN tag info allowed for multiword entries) " << endl;
       continue;
     }
@@ -546,12 +549,65 @@ bool fill_connectors( map<CGN::Type,set<string> >& c1,
   return true;
 }
 
-bool fill_connectors( map<CGN::Type, set<string> >& c1, 
-		      set<string>& cM, 
+bool fill_connectors( map<CGN::Type, set<string> >& c1,
+		      set<string>& cM,
 		      const string& filename ){
   ifstream is( filename.c_str() );
   if ( is ){
     return fill_connectors( c1, cM, is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
+bool fill_vzexpr( set<string>& vz2, set<string>& vz3, set<string>& vz4,
+		  istream& is ){
+  string line;
+  while( getline( is, line ) ){
+    // a line is supposed to be :
+    // a comment, starting with '#'
+    // like: '# comment'
+    // OR an entry of 2, 3 or 4 words seperated by whitespace
+    line = TiCC::trim( line );
+    if ( line.empty() || line[0] == '#' )
+      continue;
+    vector<string> vec;
+    int n = split_at_first_of( line, vec, " \t" );
+    if ( n == 0 || n > 4 ){
+      cerr << "skip line: " << line << " (expected 2, 3 or 4 values, got "
+	   << n << ")" << endl;
+      continue;
+    }
+    switch ( n ){
+    case 2: {
+      string line = vec[0] + " " + vec[1];
+      vz2.insert( line );
+    }
+      break;
+    case 3: {
+      string line = vec[0] + " " + vec[1] + " " + vec[2];
+      vz3.insert( line );
+    }
+      break;
+    case 4: {
+      string line = vec[0] + " " + vec[1] + " " + vec[2] + " " + vec[3];
+      vz4.insert( line );
+    }
+      break;
+    default:
+      throw logic_error( "switch out of range" );
+    }
+  }
+  return true;
+}
+
+bool fill_vzexpr( set<string>& vz2, set<string>& vz3, set<string>& vz4,
+		  const string& filename ){
+  ifstream is( filename.c_str() );
+  if ( is ){
+    return fill_vzexpr( vz2, vz3, vz4 , is );
   }
   else {
     cerr << "couldn't open file: " << filename << endl;
@@ -599,14 +655,14 @@ void settingData::init( const Configuration& cf ){
   if ( val.empty() ){
     rarityLevel = 10;
   }
-  else if ( !TiCC::stringTo( val, rarityLevel ) ){ 
+  else if ( !TiCC::stringTo( val, rarityLevel ) ){
     cerr << "invalid value for 'rarityLevel' in config file" << endl;
   }
   val = cf.lookUp( "overlapSize" );
   if ( val.empty() ){
     overlapSize = 50;
   }
-  else if ( !TiCC::stringTo( val, overlapSize ) ){ 
+  else if ( !TiCC::stringTo( val, overlapSize ) ){
     cerr << "invalid value for 'overlapSize' in config file" << endl;
     exit( EXIT_FAILURE );
   }
@@ -670,6 +726,11 @@ void settingData::init( const Configuration& cf ){
     if ( !fill_connectors( causals1, multi_causals, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
+  val = cf.lookUp( "voorzetselexpr" );
+  if ( !val.empty() ){
+    if ( !fill_vzexpr( vzexpr2, vzexpr3, vzexpr4, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
 }
 
 inline void usage(){
@@ -698,7 +759,7 @@ void aggregate( M& out, const M& in ){
   }
 }
 
-void aggregate( multimap<DD_type,int>& out, 
+void aggregate( multimap<DD_type,int>& out,
 		const multimap<DD_type,int>& in ){
   multimap<DD_type,int>::const_iterator ii = in.begin();
   while ( ii != in.end() ){
@@ -708,13 +769,13 @@ void aggregate( multimap<DD_type,int>& out,
 }
 
 struct ratio {
-  ratio( double d1, double d2 ){ 
+  ratio( double d1, double d2 ){
     if ( d2 == 0 )
       r = NA;
     else if ( d1 == NA || d2 == NA )
       r = NA;
     else
-      r = d1/d2; 
+      r = d1/d2;
   };
   double r;
 };
@@ -728,7 +789,7 @@ ostream& operator<<( ostream& os, const ratio& r ){
 }
 
 struct density {
-  density( double d1, double d2 ){ 
+  density( double d1, double d2 ){
     if ( d2 == 0 )
       d = NA;
     else if ( d1 == NA || d2 == NA )
@@ -747,7 +808,7 @@ ostream& operator<<( ostream& os, const density& d ){
   return os;
 }
 
-enum WordProp { ISNAME, ISLET, 
+enum WordProp { ISNAME, ISLET,
 		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL, ISSUBJ,
 		ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
 		JUSTAWORD };
@@ -788,7 +849,7 @@ ostream& operator<<( ostream& os, const WordProp& p ){
   return os;
 }
 
-enum ConnType { NOCONN, TEMPOREEL, OPSOMMEND, CONTRASTIEF, COMPARATIEF, CAUSAAL }; 
+enum ConnType { NOCONN, TEMPOREEL, OPSOMMEND, CONTRASTIEF, COMPARATIEF, CAUSAAL };
 
 string toString( const ConnType& c ){
   if ( c == NOCONN )
@@ -803,7 +864,7 @@ string toString( const ConnType& c ){
     return "comparatief";
   else if ( c == CAUSAAL )
     return "causaal";
-  else 
+  else
     throw "no translation for ConnType";
 }
 
@@ -811,9 +872,9 @@ struct sentStats;
 struct wordStats;
 
 struct basicStats {
-  basicStats( FoliaElement *el, const string& cat ): 
+  basicStats( FoliaElement *el, const string& cat ):
     folia_node( el ),
-    category( cat ), 
+    category( cat ),
     charCnt(0),charCntExNames(0),
     morphCnt(0), morphCntExNames(0)
   {};
@@ -841,10 +902,10 @@ struct basicStats {
   virtual string text() const { return ""; };
   virtual CGN::Type postag() const { return CGN::UNASS; };
   virtual ConnType getConnType() const { return NOCONN; };
-  virtual void setConnType( ConnType t ){ 
+  virtual void setConnType( ConnType t ){
     throw logic_error("settConnType() only valid for words" );
   };
-  virtual void setMultiConn(){ 
+  virtual void setMultiConn(){
     throw logic_error("settMultiConn() only valid for words" );
   };
   virtual vector<const wordStats*> collectWords() const = 0;
@@ -885,7 +946,8 @@ struct wordStats : public basicStats {
   void setMultiConn(){ isMultiConn = true; };
   void addMetrics( ) const;
   bool checkContent() const;
-  ConnType checkConnective( ) const;
+  ConnType checkConnective( const xmlNode * ) const;
+  ConnType check_en_connection( const xmlNode * ) const;
   bool checkNominal( const xmlNode * ) const;
   WordProp checkProps( const PosAnnotation* );
   SemType checkSemProps( ) const;
@@ -942,43 +1004,61 @@ vector<const wordStats*> wordStats::collectWords() const {
   return result;
 }
 
+ConnType wordStats::check_en_connection( const xmlNode *alpWord ) const {
+  if ( alpWord == 0 ){
+    return OPSOMMEND;
+  }
+  else {
+    cerr << "EN check: " << endl;
+    if ( isSmallCnj( alpWord ) )
+      return NOCONN;
+    else
+      return OPSOMMEND;
+  }
+}
 
-ConnType wordStats::checkConnective() const {
+ConnType wordStats::checkConnective( const xmlNode *alpWord ) const {
   if ( tag != CGN::VG && tag != CGN::VZ && tag != CGN::BW )
     return NOCONN;
   string lword = lowercase( word );
-  if ( settings.temporals1[tag].find( lword ) 
+  if ( settings.temporals1[tag].find( lword )
        != settings.temporals1[tag].end() ){
     return TEMPOREEL;
   }
-  else if ( settings.temporals1[CGN::UNASS].find( lword ) 
+  else if ( settings.temporals1[CGN::UNASS].find( lword )
 	    != settings.temporals1[CGN::UNASS].end() ){
     return TEMPOREEL;
   }
-  else if ( settings.opsommers1[tag].find( lword ) 
+  else if ( settings.opsommers1[tag].find( lword )
 	    != settings.opsommers1[tag].end() ){
+    if ( lword == "en" ){
+      return check_en_connection( alpWord );
+    }
     return OPSOMMEND;
   }
-  else if ( settings.opsommers1[CGN::UNASS].find( lword ) 
+  else if ( settings.opsommers1[CGN::UNASS].find( lword )
 	    != settings.opsommers1[CGN::UNASS].end() ){
+    if ( lword == "en" ){
+      return check_en_connection( alpWord );
+    }
     return OPSOMMEND;
   }
-  else if ( settings.contrast1[tag].find( lword ) 
+  else if ( settings.contrast1[tag].find( lword )
 	    != settings.contrast1[tag].end() )
     return CONTRASTIEF;
-  else if ( settings.contrast1[CGN::UNASS].find( lword ) 
+  else if ( settings.contrast1[CGN::UNASS].find( lword )
 	    != settings.contrast1[CGN::UNASS].end() )
     return CONTRASTIEF;
-  else if ( settings.compars1[tag].find( lword ) 
+  else if ( settings.compars1[tag].find( lword )
 	    != settings.compars1[tag].end() )
     return COMPARATIEF;
-  else if ( settings.compars1[CGN::UNASS].find( lword ) 
+  else if ( settings.compars1[CGN::UNASS].find( lword )
 	    != settings.compars1[CGN::UNASS].end() )
     return COMPARATIEF;
-  else if ( settings.causals1[tag].find( lword ) 
+  else if ( settings.causals1[tag].find( lword )
 	    != settings.causals1[tag].end() )
     return CAUSAAL;
-  else if ( settings.causals1[CGN::UNASS].find( lword ) 
+  else if ( settings.causals1[CGN::UNASS].find( lword )
 	    != settings.causals1[CGN::UNASS].end() )
     return CAUSAAL;
   return NOCONN;
@@ -991,7 +1071,7 @@ bool wordStats::checkContent() const {
     }
   }
   else {
-    return ( prop == ISNAME 
+    return ( prop == ISNAME
 	     || tag == CGN::N || tag == CGN::BW || tag == CGN::ADJ );
   }
   return false;
@@ -1021,9 +1101,9 @@ bool match_tail( const string& word, const string& tail ){
 
 bool wordStats::checkNominal( const xmlNode *alpWord ) const {
   static string morphList[] = { "ing", "sel", "nis", "enis", "heid", "te",
-				"schap", "dom", "sie", "ie", "iek", "iteit", 
+				"schap", "dom", "sie", "ie", "iek", "iteit",
 				"isme", "age", "atie", "esse",	"name" };
-  static set<string> morphs( morphList, 
+  static set<string> morphs( morphList,
 			     morphList + sizeof(morphList)/sizeof(string) );
 #ifdef DEBUG_NOMINAL
   cerr << "check Nominal " << word << " tag=" << tag << " morphemes=" << morphemes << endl;
@@ -1046,9 +1126,9 @@ bool wordStats::checkNominal( const xmlNode *alpWord ) const {
 #endif
       return true;
     }
-    
+
     if ( last_morph.size() > 4 ){
-      // avoid false positives for words like oase, base, rose, fase 
+      // avoid false positives for words like oase, base, rose, fase
       bool matched = match_tail( last_morph, "ose" ) ||
 	match_tail( last_morph, "ase" ) ||
 	match_tail( last_morph, "ese" ) ||
@@ -1057,7 +1137,7 @@ bool wordStats::checkNominal( const xmlNode *alpWord ) const {
 	match_tail( last_morph, "tie" );
       if ( matched ){
 #ifdef DEBUG_NOMINAL
-	cerr << "check Nominal, MATCHED tail of morpheme " << last_morph << endl; 
+	cerr << "check Nominal, MATCHED tail of morpheme " << last_morph << endl;
 #endif
 	return true;
       }
@@ -1072,7 +1152,7 @@ bool wordStats::checkNominal( const xmlNode *alpWord ) const {
       match_tail( word, "tie" );
     if (matched ){
 #ifdef DEBUG_NOMINAL
-      cerr << "check Nominal, MATCHED tail " <<  word << endl;    
+      cerr << "check Nominal, MATCHED tail " <<  word << endl;
 #endif
       return true;
     }
@@ -1081,8 +1161,8 @@ bool wordStats::checkNominal( const xmlNode *alpWord ) const {
   string pos = getAttribute( alpWord, "pos" );
   if ( pos == "verb" ){
     // Alpino heeft de voor dit feature prettige eigenschap dat het nogal
-    // eens nominalisaties wil taggen als werkwoord dat onder een 
-    // NP knoop hangt 
+    // eens nominalisaties wil taggen als werkwoord dat onder een
+    // NP knoop hangt
     alpWord = alpWord->parent;
     string cat = getAttribute( alpWord, "cat" );
     if ( cat == "np" ){
@@ -1097,7 +1177,7 @@ bool wordStats::checkNominal( const xmlNode *alpWord ) const {
 #endif
   return false;
 }
-  
+
 WordProp wordStats::checkProps( const PosAnnotation* pa ) {
   if ( tag == CGN::LET )
     prop = ISLET;
@@ -1132,12 +1212,12 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
   else if ( tag == CGN::VNW ){
     string vwtype = pa->feat("vwtype");
     isBetr = vwtype == "betr";
-    if ( lowercase( word ) != "men" 
+    if ( lowercase( word ) != "men"
 	 && lowercase( word ) != "er"
 	 && lowercase( word ) != "het" ){
       string cas = pa->feat("naamval");
       archaic = ( cas == "gen" || cas == "dat" );
-      if ( vwtype == "pers" || vwtype == "refl" 
+      if ( vwtype == "pers" || vwtype == "refl"
 	   || vwtype == "pr" || vwtype == "bez" ) {
 	string persoon = pa->feat("persoon");
 	if ( !persoon.empty() ){
@@ -1150,7 +1230,7 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
 	    isPronRef = ( vwtype == "pers" || vwtype == "bez" );
 	  }
 	  else {
-	    cerr << "PANIEK: een onverwachte PRONOUN persoon : " << persoon 
+	    cerr << "PANIEK: een onverwachte PRONOUN persoon : " << persoon
 		 << " for word " << word << endl;
 	    exit(3);
 	  }
@@ -1266,22 +1346,22 @@ const string negativesA[] = { "geeneens", "geenszins", "kwijt", "nergens",
 			      "nimmermeer", "noch", "ongeacht", "slechts",
 			      "tenzij", "ternauwernood", "uitgezonderd",
 			      "weinig", "zelden", "zeldzaam", "zonder" };
-static set<string> negatives = set<string>( negativesA, 
+static set<string> negatives = set<string>( negativesA,
 					    negativesA + sizeof(negativesA)/sizeof(string) );
 
-const string neg_longA[] = { "afgezien van", 
+const string neg_longA[] = { "afgezien van",
 			     "zomin als",
 			     "met uitzondering van"};
-static set<string> negatives_long = set<string>( neg_longA, 
+static set<string> negatives_long = set<string>( neg_longA,
 						 neg_longA + sizeof(neg_longA)/sizeof(string) );
 
 const string negmorphA[] = { "mis", "de", "non", "on" };
-static set<string> negmorphs = set<string>( negmorphA, 
+static set<string> negmorphs = set<string>( negmorphA,
 					    negmorphA + sizeof(negmorphA)/sizeof(string) );
 
 const string negminusA[] = { "mis-", "non-", "niet-", "anti-",
 			     "ex-", "on-", "oud-" };
-static vector<string> negminus = vector<string>( negminusA, 
+static vector<string> negminus = vector<string>( negminusA,
 						 negminusA + sizeof(negminusA)/sizeof(string) );
 
 bool wordStats::checkPropNeg() const {
@@ -1291,7 +1371,7 @@ bool wordStats::checkPropNeg() const {
   }
   else if ( tag == CGN::BW &&
 	    ( lword == "moeilijk" || lword == "weg" ) ){
-    // "moeilijk" en "weg" mochten kennelijk alleen als bijwoord worden 
+    // "moeilijk" en "weg" mochten kennelijk alleen als bijwoord worden
     // meegeteld (in het geval van weg natuurlijk duidelijk ivm "de weg")
     return true;
   }
@@ -1318,8 +1398,8 @@ bool wordStats::checkMorphNeg() const {
   return false;
 }
 
-void argument_overlap( const string w_or_l, 
-		       const vector<string>& buffer, 
+void argument_overlap( const string w_or_l,
+		       const vector<string>& buffer,
 		       int& arg_cnt, int& arg_overlap_cnt ){
   // calculate the overlap of the Word or Lemma with the buffer
   if ( buffer.empty() )
@@ -1327,29 +1407,29 @@ void argument_overlap( const string w_or_l,
   // cerr << "test overlap, lemma/word= " << w_or_l << endl;
   // cerr << "buffer=" << buffer << endl;
   static string vnw_1sA[] = {"ik", "mij", "me", "mijn" };
-  static set<string> vnw_1s = set<string>( vnw_1sA, 
+  static set<string> vnw_1s = set<string>( vnw_1sA,
 					   vnw_1sA + sizeof(vnw_1sA)/sizeof(string) );
   static string vnw_2sA[] = {"jij", "je", "jou", "jouw" };
-  static set<string> vnw_2s = set<string>( vnw_2sA, 
+  static set<string> vnw_2s = set<string>( vnw_2sA,
 					   vnw_2sA + sizeof(vnw_2sA)/sizeof(string) );
   static string vnw_3smA[] = {"hij", "hem", "zijn" };
-  static set<string> vnw_3sm = set<string>( vnw_3smA, 
+  static set<string> vnw_3sm = set<string>( vnw_3smA,
 					    vnw_3smA + sizeof(vnw_3smA)/sizeof(string) );
   static string vnw_3sfA[] = {"zij", "ze", "haar"};
-  static set<string> vnw_3sf = set<string>( vnw_3sfA, 
+  static set<string> vnw_3sf = set<string>( vnw_3sfA,
 					    vnw_3sfA + sizeof(vnw_3sfA)/sizeof(string) );
   static string vnw_1pA[] = {"wij", "we", "ons", "onze"};
-  static set<string> vnw_1p = set<string>( vnw_1pA, 
+  static set<string> vnw_1p = set<string>( vnw_1pA,
 					   vnw_1pA + sizeof(vnw_1pA)/sizeof(string) );
   static string vnw_2pA[] = {"jullie"};
-  static set<string> vnw_2p = set<string>( vnw_2pA, 
+  static set<string> vnw_2p = set<string>( vnw_2pA,
 					   vnw_2pA + sizeof(vnw_2pA)/sizeof(string) );
   static string vnw_3pA[] = {"zij", "ze", "hen", "hun"};
-  static set<string> vnw_3p = set<string>( vnw_3pA, 
+  static set<string> vnw_3p = set<string>( vnw_3pA,
 					   vnw_3pA + sizeof(vnw_3pA)/sizeof(string) );
 
-  ++arg_cnt; // we tellen ook het totaal aantal (mogelijke) argumenten om 
-  // later op te kunnen delen 
+  ++arg_cnt; // we tellen ook het totaal aantal (mogelijke) argumenten om
+  // later op te kunnen delen
   // (aantal overlappende argumenten op totaal aantal argumenten)
   for( size_t i=0; i < buffer.size(); ++i ){
     if ( w_or_l == buffer[i] ){
@@ -1363,7 +1443,7 @@ void argument_overlap( const string w_or_l,
     }
     else if ( vnw_2s.find( w_or_l ) != vnw_2s.end() &&
 	      vnw_2s.find( buffer[i] ) != vnw_2s.end() ){
-      ++arg_overlap_cnt;	
+      ++arg_overlap_cnt;
       break;
     }
     else if ( vnw_3sm.find( w_or_l ) != vnw_3sm.end() &&
@@ -1373,7 +1453,7 @@ void argument_overlap( const string w_or_l,
     }
     else if ( vnw_3sf.find( w_or_l ) != vnw_3sf.end() &&
 	      vnw_3sf.find( buffer[i] ) != vnw_3sf.end() ){
-      ++arg_overlap_cnt;	
+      ++arg_overlap_cnt;
       break;
     }
     else if ( vnw_1p.find( w_or_l ) != vnw_1p.end() &&
@@ -1383,12 +1463,12 @@ void argument_overlap( const string w_or_l,
    }
     else if ( vnw_2p.find( w_or_l ) != vnw_2p.end() &&
 	      vnw_2p.find( buffer[i] ) != vnw_2p.end() ){
-      ++arg_overlap_cnt;	
+      ++arg_overlap_cnt;
       break;
     }
     else if ( vnw_3p.find( w_or_l ) != vnw_3p.end() &&
 	      vnw_3p.find( buffer[i] ) != vnw_3p.end() ){
-      ++arg_overlap_cnt;	
+      ++arg_overlap_cnt;
       break;
     }
   }
@@ -1398,10 +1478,10 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
   basicStats( w, "WORD" ), wwform(::NO_VERB),
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
-  isBetr(false), isPropNeg(false), isMorphNeg(false), 
-  connType(NOCONN), isMultiConn(false), 
+  isBetr(false), isPropNeg(false), isMorphNeg(false),
+  connType(NOCONN), isMultiConn(false),
   nerProp(NONER),
-  f50(false), f65(false), f77(false), f80(false),  compPartCnt(0), 
+  f50(false), f65(false), f77(false), f80(false),  compPartCnt(0),
   top_freq(notFound), word_freq(0), lemma_freq(0),
   argRepeatCnt(0), wordOverlapCnt(0), lemmaRepeatCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NA), lemma_freq_log(NA),
@@ -1436,8 +1516,8 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
     for ( size_t q=0; q < ml.size(); ++q ){
       vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set );
       if ( m.size() > max ){
-	// a hack: we assume the longest morpheme list to 
-	// be the best choice. 
+	// a hack: we assume the longest morpheme list to
+	// be the best choice.
 	morphemeV = m;
 	max = m.size();
       }
@@ -1447,7 +1527,7 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
     }
     isPropNeg = checkPropNeg();
     isMorphNeg = checkMorphNeg();
-    connType = checkConnective();
+    connType = checkConnective( alpWord );
     //    cerr << "checkConn " << word << " = " << connType << endl;
     morphCnt = max;
     if ( prop != ISNAME ){
@@ -1467,7 +1547,7 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
       freqLookup();
     }
     if ( settings.doDecompound )
-      compPartCnt = runDecompoundWord( word, workdir_name, 
+      compPartCnt = runDecompoundWord( word, workdir_name,
 				       settings.decompounderPath );
   }
 }
@@ -1475,12 +1555,12 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
 void addOneMetric( Document *doc, FoliaElement *parent,
 		   const string& cls, const string& val ){
   MetricAnnotation *m = new MetricAnnotation( doc,
-					      "class='" + cls + "', value='" 
+					      "class='" + cls + "', value='"
 					      + val + "'" );
   parent->append( m );
 }
 
-void fill_word_lemma_buffers( const sentStats*, 
+void fill_word_lemma_buffers( const sentStats*,
 			      vector<string>&, vector<string>& );
 
 //#define DEBUG_OL
@@ -1521,7 +1601,7 @@ void wordStats::getSentenceOverlap( const vector<string>& wordbuffer,
     // }
     if ( tmp2 != wordOverlapCnt ){
       cerr << " OVERLAPPED " << endl;
-    }    
+    }
     else
       cerr << endl;
     cerr << "call lemma sentenceOverlap, lemma= " << lowercase(lemma);
@@ -1600,13 +1680,13 @@ void wordStats::addMetrics( ) const {
   addOneMetric( doc, el, "lemma_freq", toString(lemma_freq) );
   if ( lemma_freq_log != NA )
     addOneMetric( doc, el, "log_lemma_freq", toString(lemma_freq_log) );
-  addOneMetric( doc, el, 
+  addOneMetric( doc, el,
 		"argument_repeat_count", toString( argRepeatCnt ) );
-  addOneMetric( doc, el, 
+  addOneMetric( doc, el,
 		"word_overlap_count", toString( wordOverlapCnt ) );
-  addOneMetric( doc, el, 
+  addOneMetric( doc, el,
 		"lemma_argument_repeat_count", toString( lemmaRepeatCnt ) );
-  addOneMetric( doc, el, 
+  addOneMetric( doc, el,
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
   if ( logprob10 != NA  )
     addOneMetric( doc, el, "lprob10", toString(logprob10) );
@@ -1637,7 +1717,7 @@ void wordStats::wordDifficultiesHeader( ostream& os ) const {
 
 void wordStats::wordDifficultiesToCSV( ostream& os ) const {
   os << std::showpoint
-     << double(charCnt) << "," 
+     << double(charCnt) << ","
      << 1.0/double(charCnt) <<  ",";
   if ( prop == ISNAME ){
     os << "NA,NA,";
@@ -1650,7 +1730,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
     os << 1.0 << "," << 1.0 << ",";
   }
   else {
-    os << double(morphCnt) << "," 
+    os << double(morphCnt) << ","
        << 1.0/double(morphCnt) << ",";
   }
   if ( prop == ISNAME ){
@@ -1661,7 +1741,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
       os << 1.0 << "," << 1.0 << ",";
     }
     else {
-      os << double(morphCnt) << "," 
+      os << double(morphCnt) << ","
 	 << 1.0/double(morphCnt) << ",";
     }
   }
@@ -1697,7 +1777,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
 
 void wordStats::coherenceHeader( ostream& os ) const {
   os << "temporeel,reeks,contrastief,comparatief,causaal,multiword,referential_pron,";
-} 
+}
 
 void wordStats::coherenceToCSV( ostream& os ) const {
   os << (connType==TEMPOREEL?1:0) << ","
@@ -1731,7 +1811,7 @@ void wordStats::concreetToCSV( ostream& os ) const {
   }
   else {
     os << "0,0,0,0,";
-  } 
+  }
 }
 
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
@@ -1817,16 +1897,16 @@ void wordStats::toCSV( ostream& os ) const {
 }
 
 struct structStats: public basicStats {
-  structStats( FoliaElement *el, const string& cat ): 
+  structStats( FoliaElement *el, const string& cat ):
     basicStats( el, cat ),
     wordCnt(0),
     sentCnt(0),
     vdCnt(0),odCnt(0),
     infCnt(0), presentCnt(0), pastCnt(0), subjonctCnt(0),
     nameCnt(0),
-    pron1Cnt(0), pron2Cnt(0), pron3Cnt(0), 
+    pron1Cnt(0), pron2Cnt(0), pron3Cnt(0),
     passiveCnt(0),modalCnt(0),timeCnt(0),koppelCnt(0),
-    persRefCnt(0), pronRefCnt(0), 
+    persRefCnt(0), pronRefCnt(0),
     archaicsCnt(0),
     contentCnt(0),
     nominalCnt(0),
@@ -1903,7 +1983,8 @@ struct structStats: public basicStats {
     dLevel(-1),
     dLevel_gt4(0),
     impCnt(0),
-    questCnt(0)
+    questCnt(0),
+    prepExprCnt(0)
  {};
   ~structStats();
   void addMetrics( ) const;
@@ -1988,20 +2069,20 @@ struct structStats: public basicStats {
   int f80Cnt;
   int compCnt;
   int compPartCnt;
-  int top1000Cnt; 
-  int top2000Cnt; 
-  int top3000Cnt; 
-  int top5000Cnt; 
-  int top10000Cnt; 
-  int top20000Cnt; 
-  int word_freq; 
-  int word_freq_n; 
-  double word_freq_log; 
+  int top1000Cnt;
+  int top2000Cnt;
+  int top3000Cnt;
+  int top5000Cnt;
+  int top10000Cnt;
+  int top20000Cnt;
+  int word_freq;
+  int word_freq_n;
+  double word_freq_log;
   double word_freq_log_n;
-  int lemma_freq; 
-  int lemma_freq_n; 
-  double lemma_freq_log; 
-  double lemma_freq_log_n; 
+  int lemma_freq;
+  int lemma_freq_n;
+  double lemma_freq_log;
+  double lemma_freq_log_n;
   double avg_prob10;
   double entropy;
   double perplexity;
@@ -2028,6 +2109,7 @@ struct structStats: public basicStats {
   int dLevel_gt4;
   int impCnt;
   int questCnt;
+  int prepExprCnt;
   map<CGN::Type,int> heads;
   map<string,int> unique_words;
   map<string,int> unique_lemmas;
@@ -2082,6 +2164,7 @@ void structStats::merge( structStats *ss ){
   contConnCnt += ss->contConnCnt;
   compConnCnt += ss->compConnCnt;
   causeConnCnt += ss->causeConnCnt;
+  prepExprCnt += ss->prepExprCnt;
   propNegCnt += ss->propNegCnt;
   morphNegCnt += ss->morphNegCnt;
   multiNegCnt += ss->multiNegCnt;
@@ -2172,8 +2255,8 @@ string MMtoString( const multimap<DD_type, int>& mm, DD_type t ){
   size_t len = mm.count(t);
   if ( len > 0 ){
     int result = 0;
-    for( multimap<DD_type, int>::const_iterator pos = mm.lower_bound(t); 
-	 pos != mm.upper_bound(t); 
+    for( multimap<DD_type, int>::const_iterator pos = mm.lower_bound(t);
+	 pos != mm.upper_bound(t);
 	 ++pos ){
       result += pos->second;
     }
@@ -2187,8 +2270,8 @@ string MMtoString( const multimap<DD_type, int>& mm ){
   size_t len = mm.size();
   if ( len > 0 ){
     int result = 0;
-    for( multimap<DD_type, int>::const_iterator pos = mm.begin(); 
-	 pos != mm.end(); 
+    for( multimap<DD_type, int>::const_iterator pos = mm.begin();
+	 pos != mm.end();
 	 ++pos ){
       result += pos->second;
     }
@@ -2200,7 +2283,7 @@ string MMtoString( const multimap<DD_type, int>& mm ){
 
 double getHighest( const multimap<DD_type, int>&mm ){
   double result = 0.0;
-  for( multimap<DD_type, int>::const_iterator pos = mm.begin(); 
+  for( multimap<DD_type, int>::const_iterator pos = mm.begin();
        pos != mm.end();
        ++pos ){
     if ( pos->second > result )
@@ -2275,13 +2358,14 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "prop_neg_count", toString(propNegCnt) );
   addOneMetric( doc, el, "morph_neg_count", toString(morphNegCnt) );
   addOneMetric( doc, el, "multiple_neg_count", toString(multiNegCnt) );
-  addOneMetric( doc, el, 
+  addOneMetric( doc, el, "voorzetsel_expression_count", toString(prepExprCnt) );
+  addOneMetric( doc, el,
 		"argument_repeat_count", toString( argRepeatCnt ) );
-  addOneMetric( doc, el, 
+  addOneMetric( doc, el,
 		"word_overlap_count", toString( wordOverlapCnt ) );
-  addOneMetric( doc, el, 
+  addOneMetric( doc, el,
 		"lemma_argument_repeat_count", toString( lemmaRepeatCnt ) );
-  addOneMetric( doc, el, 
+  addOneMetric( doc, el,
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
   addOneMetric( doc, el, "freq50", toString(f50Cnt) );
   addOneMetric( doc, el, "freq65", toString(f65Cnt) );
@@ -2400,13 +2484,13 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
 
 void structStats::wordDifficultiesToCSV( ostream& os ) const {
   os << std::showpoint
-     << ratio( charCnt, wordCnt ) << "," 
+     << ratio( charCnt, wordCnt ) << ","
      << ratio( wordCnt, charCnt ) <<  ","
      << ratio( charCntExNames, (wordCnt-nameCnt) ) << ","
      << ratio( (wordCnt - nameCnt), charCntExNames ) <<  ","
-     << ratio( morphCnt, wordCnt ) << "," 
+     << ratio( morphCnt, wordCnt ) << ","
      << ratio( wordCnt, morphCnt ) << ","
-     << ratio( morphCntExNames, (wordCnt-nameCnt) ) << "," 
+     << ratio( morphCntExNames, (wordCnt-nameCnt) ) << ","
      << ratio( (wordCnt-nameCnt), morphCntExNames ) << ","
      << ratio( compPartCnt, wordCnt ) << ","
      << density( compCnt, wordCnt ) << ",";
@@ -2445,7 +2529,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
      << density( betrCnt, wordCnt ) << ","
      << density( pastCnt + presentCnt, wordCnt ) << ","
      << ratio( pastCnt + presentCnt, sentCnt ) << ","
-     << ratio( dLevel, sentCnt ) << "," 
+     << ratio( dLevel, sentCnt ) << ","
      << ratio( dLevel_gt4, sentCnt ) << ",";
   os << ratio( dLevel_gt4, sentCnt - dLevel_gt4 ) << ",";
   os << density( nominalCnt, wordCnt ) << ","
@@ -2474,7 +2558,7 @@ void structStats::infoHeader( ostream& os ) const {
   os << "word_ttr,lemma_ttr,content_words_r,content_words_d,content_words_g,"
      << "rar_index,vc_mods_d,vc_mods_g,adj_np_mods_d,adj_np_mods_g,np_dens,conjuncts,";
 }
- 
+
 void structStats::informationDensityToCSV( ostream& os ) const {
   os << ratio( unique_words.size(), wordCnt ) << ",";
   os << ratio( unique_lemmas.size(), wordCnt ) << ",";
@@ -2483,14 +2567,14 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   os << ratio( contentCnt, pastCnt + presentCnt ) << ",";
   os << rarity( settings.rarityLevel ) << ",";
   os << density( vcModCnt, wordCnt ) << ",";
-  os << ratio( vcModCnt, pastCnt + presentCnt ) << ","; 
+  os << ratio( vcModCnt, pastCnt + presentCnt ) << ",";
   os << density( adjNpModCnt, wordCnt ) << ",";
-  os << ratio( adjNpModCnt, pastCnt + presentCnt ) << ","; 
+  os << ratio( adjNpModCnt, pastCnt + presentCnt ) << ",";
   os << ratio( npCnt, wordCnt ) << ",";
   os << density( cnjCnt, crdCnt ) << ",";
 }
 
- 
+
 void structStats::coherenceHeader( ostream& os ) const {
   os << "temporals,reeks,contrast,comparatief,causal,referential_prons,"
      << "argument_overlap_d,argument_overlap_g,lem_argument_overlap_d,"
@@ -2654,7 +2738,7 @@ vector<const wordStats*> structStats::collectWords() const {
   vector<const wordStats*> result;
   vector<basicStats *>::const_iterator it = sv.begin();
   while ( it != sv.end() ){
-    vector<const wordStats*> tmp = (*it)->collectWords(); 
+    vector<const wordStats*> tmp = (*it)->collectWords();
     result.insert( result.end(), tmp.begin(), tmp.end() );
     ++it;
   }
@@ -2669,9 +2753,10 @@ struct sentStats : public structStats {
   void addMetrics( ) const;
   bool checkAls( size_t );
   ConnType checkMultiConnectives( const string& );
+  void resolvePrepExpr();
 };
 
-void fill_word_lemma_buffers( const sentStats* ss, 
+void fill_word_lemma_buffers( const sentStats* ss,
 			      vector<string>& wv,
 			      vector<string>& lv ){
   vector<basicStats*> bv = ss->sv;
@@ -2700,13 +2785,13 @@ NerProp lookupNer( const Word *w, const Sentence * s ){
 	    result = ORG_I;
 	}
 	else if ( cls == "eve" ){
-	  if ( j == 0 )	  
+	  if ( j == 0 )
 	    result = EVE_B;
 	  else
 	    result = EVE_I;
 	}
 	else if ( cls == "loc" ){
-	  if ( j == 0 )	  
+	  if ( j == 0 )
 	    result = LOC_B;
 	  else
 	    result = LOC_I;
@@ -2718,13 +2803,13 @@ NerProp lookupNer( const Word *w, const Sentence * s ){
 	    result = MISC_I;
 	}
 	else if ( cls == "per" ){
-	  if ( j == 0 )	  
+	  if ( j == 0 )
 	    result = PER_B;
 	  else
 	    result = PER_I;
 	}
 	else if ( cls == "pro" ){
-	  if ( j == 0 )	  
+	  if ( j == 0 )
 	    result = PRO_B;
 	  else
 	    result = PRO_I;
@@ -2761,12 +2846,12 @@ void np_length( Sentence *s, int& npcount, int& indefcount, int& size ) {
 
 bool sentStats::checkAls( size_t index ){
   static string compAlsList[] = { "net", "evenmin", "zomin" };
-  static set<string> compAlsSet( compAlsList, 
+  static set<string> compAlsSet( compAlsList,
 				 compAlsList + sizeof(compAlsList)/sizeof(string) );
   static string opsomAlsList[] = { "zowel" };
-  static set<string> opsomAlsSet( opsomAlsList, 
+  static set<string> opsomAlsSet( opsomAlsList,
 				  opsomAlsList + sizeof(opsomAlsList)/sizeof(string) );
-  
+
   string als = lowercase( sv[index]->text() );
   if ( als == "als" ){
     if ( index == 0 ){
@@ -2930,7 +3015,39 @@ void sentStats::resolveConnectives(){
   }
 }
 
-void orderWopr( const string& txt, vector<double>& wordProbsV, 
+void sentStats::resolvePrepExpr(){
+  if ( sv.size() > 2 ){
+    for ( size_t i=0; i < sv.size()-1; ++i ){
+      string word = lowercase( sv[i]->text() );
+      string mw2 = word + " " + lowercase( sv[i+1]->text() );
+      cerr << "ZOEK VZ expr: '" << mw2 << "'" << endl;
+      if ( settings.vzexpr2.find( mw2 ) != settings.vzexpr2.end() ){
+	cerr << "FOUND!" << endl;
+	++prepExprCnt;
+      }
+      if ( i < sv.size() - 2 ){
+	string mw3 = mw2 + " "
+	  + lowercase( sv[i+2]->text() );
+	cerr << "ZOEK VZ expr: '" << mw3 << "'" << endl;
+	if ( settings.vzexpr3.find( mw3 ) != settings.vzexpr3.end() ){
+	  cerr << "FOUND!" << endl;
+	  ++prepExprCnt;
+	}
+	if ( i < sv.size() - 3 ){
+	  string mw4 = mw3 + " "
+	    + lowercase( sv[i+3]->text() );
+	  cerr << "ZOEK VZ expr: '" << mw4 << "'" << endl;
+	  if ( settings.vzexpr4.find( mw4 ) != settings.vzexpr4.end() ){
+	    cerr << "FOUND!" << endl;
+	    ++prepExprCnt;
+	  }
+	}
+      }
+    }
+  }
+}
+
+void orderWopr( const string& txt, vector<double>& wordProbsV,
 		double& sentProb, double& entropy, double& perplexity ){
   string host = config.lookUp( "host", "wopr" );
   string port = config.lookUp( "port", "wopr" );
@@ -2953,7 +3070,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
     DBG << "start FoLiA parsing" << endl;
     doc = new Document();
     try {
-      doc->readFromString( result );      
+      doc->readFromString( result );
       DBG << "finished parsing" << endl;
       vector<Word*> wv = doc->words();
       if ( wv.size() !=  wordProbsV.size() ){
@@ -2974,10 +3091,10 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
       }
       vector<Sentence*> sv = doc->sentences();
       if ( sv.size() != 1 ){
-	throw logic_error( "The document returned by WOPR contains > 1 Sentence" ); 
+	throw logic_error( "The document returned by WOPR contains > 1 Sentence" );
 	return;
       }
-      vector<MetricAnnotation*> mv = sv[0]->select<MetricAnnotation>();      
+      vector<MetricAnnotation*> mv = sv[0]->select<MetricAnnotation>();
       if ( mv.size() > 0 ){
 	for ( size_t j=0; j < mv.size(); ++j ){
 	  if ( mv[j]->cls() == "avg_prob10" ){
@@ -3003,7 +3120,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
     }
     catch ( std::exception& e ){
       LOG << "FoLiaParsing failed:" << endl
-	  << e.what() << endl;	  
+	  << e.what() << endl;
     }
   }
   LOG << "finished Wopr" << endl;
@@ -3011,7 +3128,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 
 xmlDoc *AlpinoServerParse( Sentence *);
 
-sentStats::sentStats( Sentence *s, const sentStats* pred ): 
+sentStats::sentStats( Sentence *s, const sentStats* pred ):
   structStats( s, "ZIN" ){
   sentCnt = 1;
   id = s->id();
@@ -3024,7 +3141,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
   double sentPerplexity = NA;
   xmlDoc *alpDoc = 0;
   set<size_t> puncts;
-#pragma omp parallel sections 
+#pragma omp parallel sections
   {
 #pragma omp section
     {
@@ -3123,7 +3240,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
       }
       wordCnt++;
       heads[ws->tag]++;
-      
+
       argRepeatCnt += ws->argRepeatCnt;
       wordOverlapCnt += ws->wordOverlapCnt;
       lemmaRepeatCnt += ws->lemmaRepeatCnt;
@@ -3323,6 +3440,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
     xmlFreeDoc( alpDoc );
   }
   resolveConnectives();
+  resolvePrepExpr();
   if ( question )
     questCnt = 1;
   if ( (morphNegCnt + propNegCnt) > 1 )
@@ -3363,7 +3481,7 @@ struct parStats: public structStats {
   void addMetrics( ) const;
 };
 
-parStats::parStats( Paragraph *p ): 
+parStats::parStats( Paragraph *p ):
   structStats( p, "PARAGRAAF" )
 {
   sentCnt = 0;
@@ -3396,7 +3514,7 @@ parStats::parStats( Paragraph *p ):
 void parStats::addMetrics( ) const {
   FoliaElement *el = folia_node;
   structStats::addMetrics( );
-  addOneMetric( el->doc(), el, 
+  addOneMetric( el->doc(), el,
 		"sentence_count", toString(sentCnt) );
 }
 
@@ -3436,7 +3554,7 @@ void docStats::calculate_doc_overlap( Document *doc ){
     }
 #endif
     if ( (*it)->isOverlapCandidate() ){
-      string word = lowercase( (*it)->word );  
+      string word = lowercase( (*it)->word );
       string lemma = lowercase( (*it)->lemma );
       if ( count < settings.overlapSize ){
 	wordbuffer.push_back( word );
@@ -3446,7 +3564,7 @@ void docStats::calculate_doc_overlap( Document *doc ){
 #ifdef DEBUG_DOL
 	int tmp = doc_word_overlapCnt;
 #endif
-	argument_overlap( word, wordbuffer, 
+	argument_overlap( word, wordbuffer,
 			  doc_word_argCnt, doc_word_overlapCnt );
 #ifdef DEBUG_DOL
 	if ( doc_word_overlapCnt > tmp ){
@@ -3458,7 +3576,7 @@ void docStats::calculate_doc_overlap( Document *doc ){
 #ifdef DEBUG_DOL
 	tmp = doc_lemma_overlapCnt;
 #endif
-	argument_overlap( lemma, lemmabuffer, 
+	argument_overlap( lemma, lemmabuffer,
 			  doc_lemma_argCnt, doc_lemma_overlapCnt );
 #ifdef DEBUG_DOL
 	if ( doc_lemma_overlapCnt > tmp ){
@@ -3475,14 +3593,14 @@ void docStats::calculate_doc_overlap( Document *doc ){
 docStats::docStats( Document *doc ):
   structStats( 0, "DOCUMENT" ),
   doc_word_argCnt(0), doc_word_overlapCnt(0),
-  doc_lemma_argCnt(0), doc_lemma_overlapCnt(0) 
+  doc_lemma_argCnt(0), doc_lemma_overlapCnt(0)
 {
   sentCnt = 0;
-  doc->declare( AnnotationType::METRIC, 
-		"metricset", 
+  doc->declare( AnnotationType::METRIC,
+		"metricset",
 		"annotator='tscan'" );
-  doc->declare( AnnotationType::POS, 
-		"tscan-set", 
+  doc->declare( AnnotationType::POS,
+		"tscan-set",
 		"annotator='tscan'" );
   if ( !settings.style.empty() ){
     doc->replaceStyle( "text/xsl", settings.style );
@@ -3510,9 +3628,9 @@ docStats::docStats( Document *doc ):
     lemma_freq_log_n = NA;
   else
     lemma_freq_log_n = log10( lemma_freq_n / (contentCnt-nameCnt) );
-  
+
   calculate_doc_overlap( doc );
-  
+
 }
 
 string docStats::rarity( int level ) const {
@@ -3530,27 +3648,27 @@ string docStats::rarity( int level ) const {
 void docStats::addMetrics( ) const {
   FoliaElement *el = folia_node;
   structStats::addMetrics( );
-  addOneMetric( el->doc(), el, 
+  addOneMetric( el->doc(), el,
 		"sentence_count", toString( sentCnt ) );
-  addOneMetric( el->doc(), el, 
+  addOneMetric( el->doc(), el,
 		"paragraph_count", toString( sv.size() ) );
-  addOneMetric( el->doc(), el, 
+  addOneMetric( el->doc(), el,
 		"word_ttr", toString( unique_words.size()/double(wordCnt) ) );
-  addOneMetric( el->doc(), el, 
+  addOneMetric( el->doc(), el,
 		"lemma_ttr", toString( unique_lemmas.size()/double(wordCnt) ) );
-  addOneMetric( el->doc(), el, 
+  addOneMetric( el->doc(), el,
 		"rar_index", rarity( settings.rarityLevel ) );
-  addOneMetric( el->doc(), el, 
+  addOneMetric( el->doc(), el,
 		"document_word_argument_count", toString( doc_word_argCnt ) );
-  addOneMetric( el->doc(), el, 
+  addOneMetric( el->doc(), el,
 		"document_word_argument_overlap_count", toString( doc_word_overlapCnt ) );
-  addOneMetric( el->doc(), el, 
+  addOneMetric( el->doc(), el,
 		"document_lemma_argument_count", toString( doc_lemma_argCnt ) );
-  addOneMetric( el->doc(), el, 
+  addOneMetric( el->doc(), el,
 		"document_lemma_argument_overlap_count", toString( doc_lemma_overlapCnt ) );
 }
 
-void docStats::toCSV( const string& name, 
+void docStats::toCSV( const string& name,
 		      csvKind what ) const {
   if ( what == DOC_CSV ){
     string fname = name + ".document.csv";
@@ -3655,7 +3773,7 @@ Document *getFrogResult( istream& is ){
     }
     catch ( std::exception& e ){
       LOG << "FoLiaParsing failed:" << endl
-	   << e.what() << endl;	  
+	   << e.what() << endl;
     }
   }
   return doc;
@@ -3679,7 +3797,7 @@ xmlDoc *AlpinoServerParse( Sentence *sent ){
     result += s + "\n";
   }
   DBG << "received data [" << result << "]" << endl;
-  xmlDoc *doc = xmlReadMemory( result.c_str(), result.length(), 
+  xmlDoc *doc = xmlReadMemory( result.c_str(), result.length(),
 			       0, 0, XML_PARSE_NOBLANKS );
   string txtfile = workdir_name + "1.xml";
   xmlSaveFormatFileEnc( txtfile.c_str(), doc, "UTF8", 1 );
@@ -3716,7 +3834,7 @@ int main(int argc, char *argv[]) {
 #ifdef HAVE_OPENMP
     int num = TiCC::stringTo<int>( val );
     if ( num < 1 || num > 4 ){
-      cerr << "wrong value for 'threads' option. (must be >=1 and <= 4 )" 
+      cerr << "wrong value for 'threads' option. (must be >=1 and <= 4 )"
 	   << endl;
       exit(EXIT_FAILURE);
     }
@@ -3816,7 +3934,7 @@ int main(int argc, char *argv[]) {
       // cerr << analyse << endl;
     }
   }
-  
+
   exit(EXIT_SUCCESS);
 }
 
