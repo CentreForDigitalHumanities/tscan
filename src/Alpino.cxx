@@ -933,6 +933,19 @@ void countCrdCnj( xmlDoc *doc, int& crdCnt, int& cnjCnt ){
 
 bool isSmallCnj( const xmlNode *eNode ){
   cerr << "test EN " << getAttributes( eNode ) << endl;
+  vector< xmlNode *> sl = getSibblings( eNode );
+  for ( size_t i=0; i < sl.size(); ++i ){
+    cerr << "sibbling: " << getAttributes( sl[i] ) << endl;
+    if ( sl[i] == eNode )
+      continue;
+    string pos = getAttribute( sl[i], "pos" );
+    if ( !pos.empty() ){
+      cerr << "POS = " << pos << endl;
+      if ( pos == "adj" || pos == "noun" || pos == "verb" ){
+	return true;
+      }
+    }
+  }
   return false;
 }
 
