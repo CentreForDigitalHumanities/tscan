@@ -2705,7 +2705,7 @@ void structStats::wordSortToCSV( ostream& os ) const {
 }
 
 void structStats::miscHeader( ostream& os ) const {
-  os << "present_verbs_r,present_verbs_d,modals_d_,modals_g,"
+  os << "VZ_d, VZ_g, present_verbs_r,present_verbs_d,modals_d_,modals_g,"
      << "time_verbs_d,time_verbs_g,copula_d,copula_g,"
      << "archaics,vol_deelw_d,vol_deelw_g,"
      << "onvol_deelw_d,onvol_deelw_g,infin_d,infin_g,"
@@ -2713,6 +2713,8 @@ void structStats::miscHeader( ostream& os ) const {
 }
 
 void structStats::miscToCSV( ostream& os ) const {
+  os << density( prepExprCnt, wordCnt ) << ",";
+  os << ratio( prepExprCnt, sentCnt ) << ",";
   os << ratio( presentCnt, pastCnt ) << ",";
   os  << density( presentCnt, wordCnt ) << ","
       << density( modalCnt, wordCnt ) << ",";
