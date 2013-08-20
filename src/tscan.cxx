@@ -1009,7 +1009,6 @@ ConnType wordStats::check_en_connection( const xmlNode *alpWord ) const {
     return OPSOMMEND;
   }
   else {
-    cerr << "EN check: " << endl;
     if ( isSmallCnj( alpWord ) )
       return NOCONN;
     else
@@ -3020,26 +3019,26 @@ void sentStats::resolvePrepExpr(){
     for ( size_t i=0; i < sv.size()-1; ++i ){
       string word = lowercase( sv[i]->text() );
       string mw2 = word + " " + lowercase( sv[i+1]->text() );
-      cerr << "ZOEK VZ expr: '" << mw2 << "'" << endl;
       if ( settings.vzexpr2.find( mw2 ) != settings.vzexpr2.end() ){
-	cerr << "FOUND!" << endl;
 	++prepExprCnt;
+	i += 1;
+	continue;
       }
       if ( i < sv.size() - 2 ){
 	string mw3 = mw2 + " "
 	  + lowercase( sv[i+2]->text() );
-	cerr << "ZOEK VZ expr: '" << mw3 << "'" << endl;
 	if ( settings.vzexpr3.find( mw3 ) != settings.vzexpr3.end() ){
-	  cerr << "FOUND!" << endl;
 	  ++prepExprCnt;
+	  i += 2;
+	  continue;
 	}
 	if ( i < sv.size() - 3 ){
 	  string mw4 = mw3 + " "
 	    + lowercase( sv[i+3]->text() );
-	  cerr << "ZOEK VZ expr: '" << mw4 << "'" << endl;
 	  if ( settings.vzexpr4.find( mw4 ) != settings.vzexpr4.end() ){
-	    cerr << "FOUND!" << endl;
 	    ++prepExprCnt;
+	    i += 3;
+	    continue;
 	  }
 	}
       }
