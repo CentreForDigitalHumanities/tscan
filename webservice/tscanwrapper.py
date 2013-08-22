@@ -88,6 +88,14 @@ f.write("lemma_freq_lex=\"" + clamdata['lemma_freq_lex'] + "\"\n") #freqlist_sta
 f.write("staph_word_freq_lex=\"freqlist_staphorsius_CLIB_words.freq\"\n")  #freqlist_staphorsius_CLIB_words.freq
 f.write("top_freq_lex=\"" + clamdata['top_freq_lex'] + "\"\n")  #freqlist_staphorsius_CLIB_words.freq
 
+f.write("voorzetselexpr=\"voorzetseluitdrukkingen.txt\"\n")
+f.write("temporals=\"temporals_connectors.txt\"\n")
+f.write("opsom=\"opsom_connectors.txt\"\n")
+f.write("contrast=\"contrast_connectors.txt\"\n")
+f.write("compar=\"compar_connectors.txt\"\n")
+f.write("causal=\"causal_connectors.txt\"\n")
+
+
 f.write("[[frog]]\n") #Frog server should already be runnning, start manually
 f.write("port=7345\n")
 f.write("host=localhost\n\n")
