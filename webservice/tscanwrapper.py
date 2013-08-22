@@ -118,9 +118,12 @@ os.system('svn info ' + TSCANDIR + ' >&2')
 #-- Iterate over all input files? --
 
 for inputfile in clamdata.inputfiles('textinput'):
+   if '"' in str(inputfile):
+       clam.common.status.write(statusfile, "Failed, filename has a &quot;, illegal!",100) # status update
+       sys.exit(2)
    inputtemplate = inputfile.metadata.inputtemplate
    clam.common.status.write(statusfile, "Processing " + os.path.basename(str(inputfile)),50) # status update
-   ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg -t ' + str(inputfile) + ' -o ' + outputdir + '/' + os.path.basename(str(inputfile).replace('.txt','') + '.xml'))
+   ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg -t \"' + str(inputfile) + '\" -o \"' + outputdir + '/' + os.path.basename(str(inputfile).replace('.txt','') + '.xml') + '"')
    if ref != 0:
         clam.common.status.write(statusfile, "Failed",50) # status update
 
