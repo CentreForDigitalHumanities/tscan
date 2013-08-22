@@ -3,7 +3,7 @@
   $URL$
 
   Copyright (c) 1998 - 2013
- 
+
   This file is part of tscan
 
   tscan is free software; you can redistribute it and/or modify
@@ -20,9 +20,9 @@
   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
   For questions and suggestions, see:
-      
+
   or send mail to:
-      
+
 */
 
 #ifndef ALPINO_H
@@ -55,5 +55,6 @@ int indef_npcount( xmlDoc *alp );
 WWform classifyVerb( const xmlNode *, const std::string& );
 std::multimap<DD_type,int> getDependencyDist( const xmlNode *,
 					      const std::set<size_t>& );
+bool isSmallCnj( const xmlNode *);
 
 #endif // ALPINO_H
