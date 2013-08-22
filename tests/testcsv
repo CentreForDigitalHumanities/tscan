@@ -1,0 +1,65 @@
+# /bin/sh
+
+\rm -f *.diff
+\rm -f *.tmp
+\rm -f *.out*
+
+if [ "$tscan_bin" = "" ];
+then echo "tscan_bin not set";
+     exit;
+fi
+
+OK="\033[1;32m OK  \033[0m"
+FAIL="\033[1;31m  FAILED  \033[0m"
+KNOWNFAIL="\033[1;33m  KNOWN FAILURES  \033[0m"
+
+export comm="$VG $tscan_bin/tscan"
+
+for file in $1
+do if test -e $file
+    then 
+    	\rm -f $file.tscan.xml
+	echo "Tscanning  $file "
+	$comm -t $file > $file.out 2> $file.err
+	diff -w $file.words.csv $file.words.ok >& $file.words.diff
+	if [ $? -ne 0 ];
+	then 	    
+	    echo -e words $FAIL;	
+	    echo "word CSV differences logged in $file.words.diff";
+	else
+	  echo -e words $OK
+	  rm $file.words.diff
+	fi
+	diff -w $file.sentences.csv $file.sentences.ok >& $file.sentences.diff
+	if [ $? -ne 0 ];
+	then 	
+	    echo -e sentences $FAIL;	
+	    echo "sentence CSV differences logged in $file.sentences.diff";
+	else
+	  echo -e sentences $OK
+	  rm $file.sentences.diff
+	fi
+	diff -w $file.paragraphs.csv $file.paragraphs.ok >& $file.paragraphs.diff
+	if [ $? -ne 0 ];
+	then 	
+	    echo -e paragraphs $FAIL;	
+	    echo "paragraph CSV differences logged in $file.paragraphs.diff";
+	else
+	  echo -e paragraphs $OK
+	  rm $file.paragraphs.diff
+	fi
+	diff -w $file.document.csv $file.document.ok >& $file.document.diff
+	if [ $? -ne 0 ];
+	then 	
+	    echo -e document $FAIL;	
+	    echo "document CSV differences logged in $file.document.diff";
+	else
+	  echo -e document $OK
+	  rm $file.document.diff
+	fi
+
+    else
+	echo "file $file not found"
+    fi
+done
+

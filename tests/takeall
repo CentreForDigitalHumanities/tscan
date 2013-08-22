@@ -1,0 +1,13 @@
+# /bin/sh
+
+\rm -f *.diff
+\rm -f *.tmp
+\rm -f *.out*
+
+for file in *.example
+do
+echo try $file
+mv $file.tscan.xml $file.ok
+echo done $file
+done
+
