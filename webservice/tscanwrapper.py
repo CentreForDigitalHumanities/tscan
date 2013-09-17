@@ -92,8 +92,8 @@ f.write("voorzetselexpr=\"voorzetseluitdrukkingen.txt\"\n")
 f.write("temporals=\"temporal_connectors.lst\"\n")
 f.write("opsommers=\"opsom_connectors.lst\"\n")
 f.write("contrast=\"contrast_connectors.lst\"\n")
-f.write("compar=\"compar_connectors.lst\"\n")
-f.write("causal=\"causal_connectors.lst\"\n")
+f.write("compars=\"compar_connectors.lst\"\n")
+f.write("causals=\"causal_connectors.lst\"\n")
 
 
 f.write("[[frog]]\n") #Frog server should already be runnning, start manually
