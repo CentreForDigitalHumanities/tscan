@@ -2625,13 +2625,13 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << ratio( strictConcreteNounCnt, broadAbstractNounCnt ) << ",";
   os << density( strictConcreteNounCnt, wordCnt ) << ",";
   os << ratio( broadConcreteNounCnt, nounCnt+nameCnt ) << ",";
-  os << ratio( broadConcreteNounCnt, broadAbstractNounCnt ) << ",";
+  os << ratio( broadConcreteNounCnt, strictAbstractNounCnt ) << ",";
   os << density( broadConcreteNounCnt, wordCnt ) << ",";
   os << ratio( strictConcreteAdjCnt, adjCnt ) << ",";
   os << ratio( strictConcreteAdjCnt, broadAbstractAdjCnt ) << ",";
   os << density( strictConcreteAdjCnt, wordCnt ) << ",";
   os << ratio( broadConcreteAdjCnt, adjCnt ) << ",";
-  os << ratio( broadConcreteAdjCnt, broadAbstractAdjCnt ) << ",";
+  os << ratio( broadConcreteAdjCnt, strictAbstractAdjCnt ) << ",";
   os << density( broadConcreteAdjCnt, wordCnt ) << ",";
 }
 
@@ -3399,11 +3399,11 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	broadConcreteAdjCnt++;
 	break;
       case ABSTRACT_NOUN:
-	strictAbstractNounCnt++; // UNUSED
+	strictAbstractNounCnt++;
 	broadAbstractNounCnt++;
 	break;
       case ABSTRACT_ADJ:
-	strictAbstractAdjCnt++; // UNUSED
+	strictAbstractAdjCnt++;
 	broadAbstractAdjCnt++;
 	break;
       case BROAD_NOUN:
