@@ -2846,7 +2846,7 @@ void np_length( Sentence *s, int& npcount, int& indefcount, int& size ) {
 }
 
 bool sentStats::checkAls( size_t index ){
-  static string compAlsList[] = { "net", "evenmin", "zomin" };
+  static string compAlsList[] = { "net", "evenmin", "zo", "zomin" };
   static set<string> compAlsSet( compAlsList,
 				 compAlsList + sizeof(compAlsList)/sizeof(string) );
   static string opsomAlsList[] = { "zowel" };
@@ -3209,7 +3209,10 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 #endif
   }
   for ( size_t i=0; i < w.size(); ++i ){
-    xmlNode *alpWord = getAlpWordNode( alpDoc, w[i] );
+    xmlNode *alpWord = 0;
+    if ( alpDoc ){
+      alpWord = getAlpWordNode( alpDoc, w[i] );
+    }
     wordStats *ws = new wordStats( w[i], alpWord, puncts );
     if ( woprProbsV[i] != -99 )
       ws->logprob10 = woprProbsV[i];
