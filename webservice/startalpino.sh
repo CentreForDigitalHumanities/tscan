@@ -1,6 +1,6 @@
 #! /bin/sh
 export PORT=6666
-export TIMEOUT=30000
+export TIMEOUT=60000
 export MEMLIMIT=1500M
 export TMPDIR=/tmp
 
