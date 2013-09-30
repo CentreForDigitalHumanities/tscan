@@ -1,7 +1,7 @@
 #! /bin/bash
 if [ `hostname` == "applejack" ]; then
 	FROGPATH="/vol/customopt/uvt-ru/"
-    LOGFILE= "/scratch2/www/webservices-lst/live/writable/tscan/frog.log"
+    LOGFILE="/scratch2/www/webservices-lst/live/writable/tscan/frog.log"
 else
 	FROGPATH="/home/sloot/usr/local/"
     LOGFILE="/tmp/frog-tscan.log"
