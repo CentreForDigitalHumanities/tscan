@@ -42,6 +42,17 @@ clamdata = clam.common.data.getclamdata(datafile)
 
 clam.common.status.write(statusfile, "Starting...")
 
+if not 'word_freq_lex' in clamdata:
+    print >>sys.stderr, "Missing parameter: word_freq_lex"
+    sys.exit(2)
+if not 'lemma_freq_lex' in clamdata:
+    print >>sys.stderr, "Missing parameter: lemma_freq_lex"
+    sys.exit(2)
+if not 'top_freq_lex' in clamdata:
+    print >>sys.stderr, "Missing parameter: top_freq_lex"
+    sys.exit(2)
+
+
 
 #Write configuration file
 
