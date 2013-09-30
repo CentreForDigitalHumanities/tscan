@@ -246,7 +246,7 @@ void store_result( multimap<DD_type,int>& result, DD_type type,
       //      cerr << "lower the dist, because of a punctuation" << endl;
       --dist;
     }
-  cerr << "store " << type << "(" << pos1 << "," << pos2 << ")=" << dist << endl;
+  //  cerr << "store " << type << "(" << pos1 << "," << pos2 << ")=" << dist << endl;
   if ( dist >= 0 ){
     result.insert( make_pair( type, dist ) );
   }
