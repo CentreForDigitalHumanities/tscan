@@ -941,7 +941,10 @@ bool isSmallCnj( const xmlNode *eNode ){
     string pos = getAttribute( sl[i], "pos" );
     if ( !pos.empty() ){
       cerr << "POS = " << pos << endl;
-      if ( pos == "adj" || pos == "noun" || pos == "verb" ){
+      if ( pos == "adj" || pos == "noun"
+	   || pos == "verb" || pos == "name"
+	   || pos == "bw" || pos  == "tsw"
+	   || pos == "vnw" || pos == "tw" ){
 	return true;
       }
     }
