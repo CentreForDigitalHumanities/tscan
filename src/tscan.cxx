@@ -770,9 +770,8 @@ void aggregate( multimap<DD_type,int>& out,
 
 struct ratio {
   ratio( double d1, double d2 ){
-    if ( d2 == 0 )
-      r = NA;
-    else if ( d1 == NA || d2 == NA )
+    if ( d1 < 0 || d2 == 0 ||
+	 d1 == NA || d2 == NA )
       r = NA;
     else
       r = d1/d2;
