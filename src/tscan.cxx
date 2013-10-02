@@ -789,9 +789,7 @@ ostream& operator<<( ostream& os, const ratio& r ){
 
 struct density {
   density( double d1, double d2 ){
-    if ( d2 == 0 )
-      d = NA;
-    else if ( d1 == NA || d2 == NA )
+    if ( d1 < 0 || d2 == 0 || d1 == NA || d2 == NA )
       d = NA;
     else
       d = (d1/d2) * 1000;
@@ -1899,6 +1897,7 @@ struct structStats: public basicStats {
     basicStats( el, cat ),
     wordCnt(0),
     sentCnt(0),
+    parseFailCnt(0),
     vdCnt(0),odCnt(0),
     infCnt(0), presentCnt(0), pastCnt(0), subjonctCnt(0),
     nameCnt(0),
@@ -2014,6 +2013,7 @@ struct structStats: public basicStats {
   string text;
   int wordCnt;
   int sentCnt;
+  int parseFailCnt;
   int vdCnt;
   int odCnt;
   int infCnt;
@@ -2124,6 +2124,10 @@ structStats::~structStats(){
 }
 
 void structStats::merge( structStats *ss ){
+  if ( ss->parseFailCnt == -1 ) // not parsed
+    parseFailCnt = -1;
+  else
+    parseFailCnt += ss->parseFailCnt;
   wordCnt += ss->wordCnt;
   sentCnt += ss->sentCnt;
   charCnt += ss->charCnt;
@@ -2280,7 +2284,7 @@ string MMtoString( const multimap<DD_type, int>& mm ){
 }
 
 double getHighest( const multimap<DD_type, int>&mm ){
-  double result = 0.0;
+  double result = NA;
   for( multimap<DD_type, int>::const_iterator pos = mm.begin();
        pos != mm.end();
        ++pos ){
@@ -2297,6 +2301,13 @@ int at( const map<T,int>& m, const T key ){
     return it->second;
   else
     return 0;
+}
+
+string toMString( double d ){
+  if ( d == NA )
+    return "NA";
+  else
+    return toString( d );
 }
 
 void structStats::addMetrics( ) const {
@@ -2346,8 +2357,8 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "let_count", toString(letCnt) );
   addOneMetric( doc, el, "subord_count", toString(onderCnt) );
   addOneMetric( doc, el, "rel_count", toString(betrCnt) );
-  addOneMetric( doc, el, "cnj_count", toString(cnjCnt) );
-  addOneMetric( doc, el, "crd_count", toString(crdCnt) );
+  // addOneMetric( doc, el, "cnj_count", toString(cnjCnt) );
+  // addOneMetric( doc, el, "crd_count", toString(crdCnt) );
   addOneMetric( doc, el, "temporal_connector_count", toString(tempConnCnt) );
   addOneMetric( doc, el, "reeks_connector_count", toString(opsomConnCnt) );
   addOneMetric( doc, el, "contrast_connector_count", toString(contConnCnt) );
@@ -2441,14 +2452,14 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "verb_comp_dist", MMtoString( distances, VERB_COMP ) );
   addOneMetric( doc, el, "noun_vc_dist", MMtoString( distances, NOUN_VC ) );
   addOneMetric( doc, el, "deplen", MMtoString( distances ) );
-  addOneMetric( doc, el, "max_deplen", toString( getHighest( distances )/sentCnt ) );
+  addOneMetric( doc, el, "max_deplen", toMString( getHighest( distances )/sentCnt ) );
   for ( size_t i=0; i < sv.size(); ++i ){
     sv[i]->addMetrics();
   }
 }
 
 void structStats::CSVheader( ostream& os, const string& intro ) const {
-  os << intro << ",";
+  os << intro << ",parse_failure,";
   wordDifficultiesHeader( os );
   sentDifficultiesHeader( os );
   infoHeader( os );
@@ -2461,6 +2472,7 @@ void structStats::CSVheader( ostream& os, const string& intro ) const {
 }
 
 void structStats::toCSV( ostream& os ) const {
+  os << parseFailCnt << ",";
   wordDifficultiesToCSV( os );
   sentDifficultiesToCSV( os );
   informationDensityToCSV( os );
@@ -2554,13 +2566,13 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 
 void structStats::infoHeader( ostream& os ) const {
   os << "word_ttr,lemma_ttr,content_words_r,content_words_d,content_words_g,"
-     << "rar_index,vc_mods_d,vc_mods_g,adj_np_mods_d,adj_np_mods_g,np_dens,conjuncts,";
+     << "rar_index,vc_mods_d,vc_mods_g,adj_np_mods_d,adj_np_mods_g,np_dens,";
 }
 
 void structStats::informationDensityToCSV( ostream& os ) const {
   os << ratio( unique_words.size(), wordCnt ) << ",";
   os << ratio( unique_lemmas.size(), wordCnt ) << ",";
-  os << contentCnt/double(wordCnt - contentCnt) << ",";
+  os << ratio( contentCnt, wordCnt - contentCnt ) << ",";
   os << density( contentCnt, wordCnt ) << ",";
   os << ratio( contentCnt, pastCnt + presentCnt ) << ",";
   os << rarity( settings.rarityLevel ) << ",";
@@ -2569,7 +2581,6 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   os << density( adjNpModCnt, wordCnt ) << ",";
   os << ratio( adjNpModCnt, pastCnt + presentCnt ) << ",";
   os << ratio( npCnt, wordCnt ) << ",";
-  os << density( cnjCnt, crdCnt ) << ",";
 }
 
 
@@ -2594,9 +2605,9 @@ void structStats::coherenceToCSV( ostream& os ) const {
   }
   else {
     os << density( wordOverlapCnt, wordCnt ) << ","
-       << (wordOverlapCnt/double(sentCnt)) << ",";
+       << ratio( wordOverlapCnt, sentCnt ) << ",";
     os << density( lemmaOverlapCnt, wordCnt ) << ","
-       << (lemmaOverlapCnt/double(sentCnt)) << ",";
+       << ratio( lemmaOverlapCnt, sentCnt ) << ",";
   }
   if ( !isDocument() ){
     os << "NA,NA,NA,NA,";
@@ -3130,7 +3141,6 @@ xmlDoc *AlpinoServerParse( Sentence *);
 
 sentStats::sentStats( Sentence *s, const sentStats* pred ):
   structStats( s, "ZIN" ){
-  sentCnt = 1;
   id = s->id();
   text = UnicodeToUTF8( s->toktext() );
   LOG << "analyse tokenized sentence=" << text << endl;
@@ -3141,6 +3151,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
   double sentPerplexity = NA;
   xmlDoc *alpDoc = 0;
   set<size_t> puncts;
+  parseFailCnt = -1; // not parsed (yet)
 #pragma omp parallel sections
   {
 #pragma omp section
@@ -3163,6 +3174,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	  LOG << "done with Alpino parser" << endl;
 	}
 	if ( alpDoc ){
+	  parseFailCnt = 0; // OK
 	  for( size_t i=0; i < w.size(); ++i ){
 	    vector<PosAnnotation*> posV = w[i]->select<PosAnnotation>(frog_pos_set);
 	    if ( posV.size() != 1 )
@@ -3176,9 +3188,12 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	  dLevel = get_d_level( s, alpDoc );
 	  if ( dLevel > 4 )
 	    dLevel_gt4 = 1;
-	  countCrdCnj( alpDoc, crdCnt, cnjCnt );
+	  //	  countCrdCnj( alpDoc, crdCnt, cnjCnt );
 	  int np2Cnt;
 	  mod_stats( alpDoc, vcModCnt, np2Cnt, adjNpModCnt );
+	}
+	else {
+	  parseFailCnt = 1; // failed
 	}
       }
     } // omp section
@@ -3191,6 +3206,11 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
     } // omp section
   } // omp sections
 
+  if ( parseFailCnt == 1 ){
+    // glorious fail
+    return;
+  }
+  sentCnt = 1; // so only count the sentence when not failed
   if ( sentProb != -99 ){
     avg_prob10 = sentProb;
   }
