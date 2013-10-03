@@ -21,11 +21,11 @@ class LSAProtocol(basic.LineReceiver):
 
         try:
             index1 = self.word_id.dict[word1]
-            index2 = self.word_id.dict[word1]
+            index2 = self.word_id.dict[word2]
         except KeyError:
             self.sendLine("NOTFOUNDERROR")
 
-        cossim = numpy.dot(gensim.matutils.unitvec(US[index1, :]),gensim.matutils.unitvec(US[index2, :]))
+        cossim = numpy.dot(gensim.matutils.unitvec(self.US[index1, :]),gensim.matutils.unitvec(self.US[index2, :]))
         self.sendLine(str(cossim))
 
 class LSAFactory(protocol.ServerFactory):
