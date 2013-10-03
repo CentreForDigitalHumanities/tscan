@@ -226,6 +226,72 @@ ostream& operator<<( ostream& os, const NerProp& n ){
   return os;
 }
 
+enum AfkType { NO_A, AANDOENING_A, POLITIEK_A, ZORG_A, ONDERWIJS_A,
+	       JURIDISCH_A, OVERIGE_INSTANTIES_A, WETTEN_A, CHEMIE_A,
+	       OMROEPEN_A, POLITIE_ZIEKENHUIS_A, GENERIEK_A };
+
+AfkType stringTo( const string& s ){
+  if ( s == "none" )
+    return NO_A;
+  if ( s == "aandoening" )
+    return AANDOENING_A;
+  if ( s == "politiek" )
+    return POLITIEK_A;
+  if ( s == "zorg" )
+    return ZORG_A;
+  if ( s == "onderwijs" )
+    return ONDERWIJS_A;
+  if ( s == "juridisch" )
+    return JURIDISCH_A;
+  if ( s == "overige_instanties" )
+    return OVERIGE_INSTANTIES_A;
+  if ( s == "wetten" )
+    return WETTEN_A;
+  if ( s == "chemie" )
+    return CHEMIE_A;
+  if ( s == "omroepen" )
+    return OMROEPEN_A;
+  if ( s == "politie_ziekenhuis" )
+    return POLITIE_ZIEKENHUIS_A;
+  if ( s == "generiek" )
+    return GENERIEK_A;
+};
+
+string toString( const AfkType& afk ){
+  switch ( afk ){
+  case NO_A:
+    return "none";
+  case AANDOENING_A:
+    return "aandoening";
+  case POLITIEK_A:
+    return "politiek";
+  case ZORG_A:
+    return "zorg";
+  case ONDERWIJS_A:
+    return "onderwijs";
+  case JURIDISCH_A:
+    return "juridisch";
+  case OVERIGE_INSTANTIES_A:
+    return "overige_instanties";
+  case WETTEN_A:
+    return "wetten";
+  case CHEMIE_A:
+    return "chemie";
+  case OMROEPEN_A:
+    return "omroepen";
+  case POLITIE_ZIEKENHUIS_A:
+    return "politie_ziekenhuis";
+  case GENERIEK_A:
+    return "generiek";
+  };
+}
+
+ostream& operator<<( ostream& os, const AfkType& afk ){
+  os << toString( afk );
+  return os;
+}
+
+
 struct settingData {
   void init( const Configuration& );
   bool doAlpino;
@@ -258,6 +324,7 @@ struct settingData {
   set<string> vzexpr2;
   set<string> vzexpr3;
   set<string> vzexpr4;
+  map<string,AfkType> afkos;
 };
 
 settingData settings;
@@ -615,6 +682,41 @@ bool fill_vzexpr( set<string>& vz2, set<string>& vz3, set<string>& vz4,
   return false;
 }
 
+bool fill( map<string,AfkType>& afkos, istream& is ){
+  string line;
+  while( getline( is, line ) ){
+    // a line is supposed to be :
+    // a comment, starting with '#'
+    // like: '# comment'
+    // OR an entry of 2 words seperated by whitespace
+    line = TiCC::trim( line );
+    if ( line.empty() || line[0] == '#' )
+      continue;
+    vector<string> vec;
+    int n = split_at_first_of( line, vec, " \t" );
+    if ( n != 2 ){
+      cerr << "skip line: " << line << " (expected 2 values, got "
+	   << n << ")" << endl;
+      continue;
+    }
+    AfkType at = stringTo( vec[1] );
+    if ( at != NO_A )
+      afkos[vec[0]] = at;
+  }
+  return true;
+}
+
+bool fill( map<string,AfkType>& afks, const string& filename ){
+  ifstream is( filename.c_str() );
+  if ( is ){
+    return fill( afks , is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
 void settingData::init( const Configuration& cf ){
   doAlpino = false;
   doAlpinoServer = false;
@@ -729,6 +831,11 @@ void settingData::init( const Configuration& cf ){
   val = cf.lookUp( "voorzetselexpr" );
   if ( !val.empty() ){
     if ( !fill_vzexpr( vzexpr2, vzexpr3, vzexpr4, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "afkortingen" );
+  if ( !val.empty() ){
+    if ( !fill( afkos, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
 }
@@ -948,6 +1055,7 @@ struct wordStats : public basicStats {
   bool checkNominal( const xmlNode * ) const;
   WordProp checkProps( const PosAnnotation* );
   SemType checkSemProps( ) const;
+  AfkType checkAfk( ) const;
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
   void staphFreqLookup();
@@ -993,6 +1101,7 @@ struct wordStats : public basicStats {
   SemType sem_type;
   vector<string> morphemes;
   multimap<DD_type,int> distances;
+  AfkType afkType;
 };
 
 vector<const wordStats*> wordStats::collectWords() const {
@@ -1290,6 +1399,14 @@ SemType wordStats::checkSemProps( ) const {
   return UNFOUND;
 }
 
+AfkType wordStats::checkAfk() const {
+  map<string,AfkType>::const_iterator sit = settings.afkos.find( word );
+  if ( sit != settings.afkos.end() ){
+    return sit->second;
+  }
+  return NO_A;
+}
+
 void wordStats::topFreqLookup(){
   map<string,top_val>::const_iterator it = settings.top_freq_lex.find( lowercase(word) );
   top_freq = notFound;
@@ -1481,7 +1598,7 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
   top_freq(notFound), word_freq(0), lemma_freq(0),
   argRepeatCnt(0), wordOverlapCnt(0), lemmaRepeatCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NA), lemma_freq_log(NA),
-  logprob10(NA), prop(JUSTAWORD), sem_type(UNFOUND)
+  logprob10(NA), prop(JUSTAWORD), sem_type(UNFOUND),afkType(NO_A)
 {
   word = UnicodeToUTF8( w->text() );
   charCnt = w->text().length();
@@ -1536,7 +1653,9 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
 	 prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3 ){
       isPersRef = true;
     }
-    if ( alpWord ) isNominal = checkNominal( alpWord );
+    afkType = checkAfk();
+    if ( alpWord )
+      isNominal = checkNominal( alpWord );
     topFreqLookup();
     staphFreqLookup();
     if ( isContent ){
@@ -1690,6 +1809,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "property", toString(prop) );
   if ( sem_type != UNFOUND )
     addOneMetric( doc, el, "semtype", toString(sem_type) );
+  if ( afkType != NO_A )
+    addOneMetric( doc, el, "afktype", toString(afkType) );
 }
 
 void wordStats::CSVheader( ostream& os, const string& intro ) const {
@@ -1842,7 +1963,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
 }
 
 void wordStats::wordSortHeader( ostream& os ) const {
-  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let,";
+  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let,afk_type,";
 }
 
 void wordStats::wordSortToCSV( ostream& os ) const {
@@ -1857,7 +1978,8 @@ void wordStats::wordSortToCSV( ostream& os ) const {
      << (tag == CGN::WW ) << ","
      << (tag == CGN::TSW ) << ","
      << (tag == CGN::SPEC ) << ","
-     << (tag == CGN::LET ) << ",";
+     << (tag == CGN::LET ) << ","
+     << toString(afkType) << ",";
 }
 
 void wordStats::miscHeader( ostream& os ) const {
@@ -2112,6 +2234,7 @@ struct structStats: public basicStats {
   map<string,int> unique_words;
   map<string,int> unique_lemmas;
   map<NerProp, int> ners;
+  map<AfkType, int> afks;
   multimap<DD_type,int> distances;
 };
 
@@ -2250,6 +2373,7 @@ void structStats::merge( structStats *ss ){
   aggregate( unique_words, ss->unique_words );
   aggregate( unique_lemmas, ss->unique_lemmas );
   aggregate( ners, ss->ners );
+  aggregate( afks, ss->afks );
   aggregate( distances, ss->distances );
 }
 
@@ -2331,6 +2455,36 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "product_name_count", toString(val) );
   val = at( ners, EVE_B );
   addOneMetric( doc, el, "event_name_count", toString(val) );
+  val = at( afks, POLITIEK_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "aandoening_afk_count", toString(val) );
+  }
+  val = at( afks, JURIDISCH_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "juridisch_afk_count", toString(val) );
+  }
+  val = at( afks, ONDERWIJS_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "onderwijs_afk_count", toString(val) );
+  }
+  val = at( afks, OMROEPEN_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "omroepen_afk_count", toString(val) );
+  }
+  val = at( afks, GENERIEK_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "generiek_afk_count", toString(val) );
+  }
+  val = at( afks, OVERIGE_INSTANTIES_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "instanties_afk_count", toString(val) );
+  }
+  val = at( afks, ZORG_A ) + at( afks, AANDOENING_A ) + at( afks, CHEMIE_A )
+    + at( afks, WETTEN_A ) + at( afks, POLITIE_ZIEKENHUIS_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "overige_afk_count", toString(val) );
+  }
+
   addOneMetric( doc, el, "pers_pron_1_count", toString(pron1Cnt) );
   addOneMetric( doc, el, "pers_pron_2_count", toString(pron2Cnt) );
   addOneMetric( doc, el, "pres_pron_3_count", toString(pron3Cnt) );
@@ -2696,7 +2850,8 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
 }
 
 void structStats::wordSortHeader( ostream& os ) const {
-  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let,";
+  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let,"
+     << "afk_pol, afk_jur, afk_ond, afk_omr, afk_gen, afk_inst, afk_overig,";
 }
 
 void structStats::wordSortToCSV( ostream& os ) const {
@@ -2712,6 +2867,16 @@ void structStats::wordSortToCSV( ostream& os ) const {
      << density(tswCnt, wordCnt ) << ","
      << density(specCnt, wordCnt ) << ","
      << density(letCnt, wordCnt ) << ",";
+  int rest_val = at( afks, ZORG_A ) + at( afks, AANDOENING_A ) +
+    at( afks, CHEMIE_A ) + at( afks, WETTEN_A ) +
+    at( afks, POLITIE_ZIEKENHUIS_A );
+  os << at( afks, POLITIEK_A ) << ","
+     << at( afks, JURIDISCH_A ) << ","
+     << at( afks, ONDERWIJS_A ) << ","
+     << at( afks, OMROEPEN_A ) << ","
+     << at( afks, GENERIEK_A ) << ","
+     << at( afks, OVERIGE_INSTANTIES_A ) << ","
+     << rest_val << ",";
 }
 
 void structStats::miscHeader( ostream& os ) const {
@@ -3263,7 +3428,9 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
       }
       wordCnt++;
       heads[ws->tag]++;
-
+      if ( ws->afkType != NO_A ){
+	++afks[ws->afkType];
+      }
       argRepeatCnt += ws->argRepeatCnt;
       wordOverlapCnt += ws->wordOverlapCnt;
       lemmaRepeatCnt += ws->lemmaRepeatCnt;
