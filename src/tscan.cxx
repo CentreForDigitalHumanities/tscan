@@ -1400,9 +1400,11 @@ SemType wordStats::checkSemProps( ) const {
 }
 
 AfkType wordStats::checkAfk() const {
-  map<string,AfkType>::const_iterator sit = settings.afkos.find( word );
-  if ( sit != settings.afkos.end() ){
-    return sit->second;
+  if ( tag == CGN::N || tag == CGN::SPEC) {
+    map<string,AfkType>::const_iterator sit = settings.afkos.find( word );
+    if ( sit != settings.afkos.end() ){
+      return sit->second;
+    }
   }
   return NO_A;
 }
