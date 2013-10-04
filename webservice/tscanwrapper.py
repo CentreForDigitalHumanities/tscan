@@ -100,6 +100,7 @@ f.write("staph_word_freq_lex=\"freqlist_staphorsius_CLIB_words.freq\"\n")  #freq
 f.write("top_freq_lex=\"" + clamdata['top_freq_lex'] + "\"\n")  #freqlist_staphorsius_CLIB_words.freq
 
 f.write("voorzetselexpr=\"voorzetseluitdrukkingen.txt\"\n")
+f.write("afkortingen=\"afkortingen.lst\"\n")
 f.write("temporals=\"temporal_connectors.lst\"\n")
 f.write("opsommers=\"opsom_connectors.lst\"\n")
 f.write("contrast=\"contrast_connectors.lst\"\n")
