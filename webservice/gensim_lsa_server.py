@@ -48,22 +48,23 @@ if __name__ == '__main__':
         sys.exit(2)
 
 
-	dict_file = 'newspaper_contentlemma_dictionary_filtered.dict'
-	#bow_corp_file = 'newspaper_contentlemma_corpus_as_vectors_filtered.mm' //not used?
-	lsa_file = 'lsa_newspaper_lemma_model_700_filtered_tfidf.lsi'
+    #dict_file = 'newspaper_contentlemma_dictionary_filtered.dict'
+    #bow_corp_file = 'newspaper_contentlemma_corpus_as_vectors_filtered.mm' //not used?
+    #lsa_file = 'lsa_newspaper_lemma_model_700_filtered_tfidf.lsi'
 
-	# Inladen van eerder gecreëerde corpus, dictionary en lsa objecten
-	#corpus = corpora.MmCorpus(bow_corp_file) # I don't see the need for this one?
-	lsi = models.LsiModel.load(lsa_file)
-	dictionary = corpora.Dictionary.load(dict_file)
+    # Inladen van eerder gecreëerde corpus, dictionary en lsa objecten
+    #corpus = corpora.MmCorpus(bow_corp_file) # I don't see the need for this one?
+    lsi = models.LsiModel.load(lsa_file)
+    dictionary = corpora.Dictionary.load(dict_file)
 
-	# ik wil op woorden kunnen zoeken in een dictionary om de woord ID op te vragen, dus we moeten key,values omdraaien
-	word_id_dict = {}
-	for k,v in dictionary.iteritems():
-		word_id_dict[v] = k
+    # ik wil op woorden kunnen zoeken in een dictionary om de woord ID op te vragen, dus we moeten key,values omdraaien
+    word_id_dict = {}
+    for k,v in dictionary.iteritems():
+        word_id_dict[v] = k
 
-	U = lsi.projection.u
-	S = lsi.projection.s
+    U = lsi.projection.u
+    S = lsi.projection.s
 
-	US=numpy.multiply(U,S)
+    US=numpy.multiply(U,S)
     LSAServer(word_id_dict, US, port)
+
