@@ -694,14 +694,35 @@ bool fill( map<string,AfkType>& afkos, istream& is ){
       continue;
     vector<string> vec;
     int n = split_at_first_of( line, vec, " \t" );
-    if ( n != 2 ){
-      cerr << "skip line: " << line << " (expected 2 values, got "
+    if ( n < 2 ){
+      cerr << "skip line: " << line << " (expected at least 2 values, got "
 	   << n << ")" << endl;
       continue;
     }
-    AfkType at = stringTo( vec[1] );
-    if ( at != NO_A )
-      afkos[vec[0]] = at;
+    if ( n == 2 ){
+      AfkType at = stringTo( vec[1] );
+      if ( at != NO_A )
+	afkos[vec[0]] = at;
+    }
+    else if ( n == 3 ){
+      AfkType at = stringTo( vec[2] );
+      if ( at != NO_A ){
+	string s = vec[0] + " " + vec[1];
+	afkos[s] = at;
+      }
+    }
+    else if ( n == 4 ){
+      AfkType at = stringTo( vec[3] );
+      if ( at != NO_A ){
+	string s = vec[0] + " " + vec[1] + " " + vec[2];
+	afkos[s] = at;
+      }
+    }
+    else {
+      cerr << "skip line: " << line << " (expected at most 4 values, got "
+	   << n << ")" << endl;
+      continue;
+    }
   }
   return true;
 }
@@ -2101,6 +2122,7 @@ struct structStats: public basicStats {
     npSize(0),
     vcModCnt(0),
     adjNpModCnt(0),
+    npModCnt(0),
     dLevel(-1),
     dLevel_gt4(0),
     impCnt(0),
@@ -2227,6 +2249,7 @@ struct structStats: public basicStats {
   int npSize;
   int vcModCnt;
   int adjNpModCnt;
+  int npModCnt;
   int dLevel;
   int dLevel_gt4;
   int impCnt;
@@ -2361,6 +2384,7 @@ void structStats::merge( structStats *ss ){
   npSize += ss->npSize;
   vcModCnt += ss->vcModCnt;
   adjNpModCnt += ss->adjNpModCnt;
+  npModCnt += ss->npModCnt;
   if ( ss->dLevel >= 0 ){
     if ( dLevel < 0 )
       dLevel = ss->dLevel;
@@ -2581,6 +2605,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "np_size", toString(npSize) );
   addOneMetric( doc, el, "vc_modifier_count", toString(vcModCnt) );
   addOneMetric( doc, el, "adj_np_modifier_count", toString(adjNpModCnt) );
+  addOneMetric( doc, el, "np_modifier_count", toString(npModCnt) );
 
   addOneMetric( doc, el, "character_count", toString(charCnt) );
   addOneMetric( doc, el, "character_count_min_names", toString(charCntExNames) );
@@ -2722,7 +2747,9 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 
 void structStats::infoHeader( ostream& os ) const {
   os << "word_ttr,lemma_ttr,content_words_r,content_words_d,content_words_g,"
-     << "rar_index,vc_mods_d,vc_mods_g,adj_np_mods_d,adj_np_mods_g,np_dens,";
+     << "rar_index,vc_mods_d,vc_mods_g,"
+     << "adj_np_mods_d,adj_np_mods_g, np_mods_d,np_mods_g,"
+     << "overige_np_mods_d,overige_np_mods_g,np_dens,";
 }
 
 void structStats::informationDensityToCSV( ostream& os ) const {
@@ -2736,6 +2763,10 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   os << ratio( vcModCnt, pastCnt + presentCnt ) << ",";
   os << density( adjNpModCnt, wordCnt ) << ",";
   os << ratio( adjNpModCnt, pastCnt + presentCnt ) << ",";
+  os << density( npModCnt, wordCnt ) << ",";
+  os << ratio( npModCnt, pastCnt + presentCnt ) << ",";
+  os << density( (npModCnt-adjNpModCnt), wordCnt ) << ",";
+  os << ratio( (npModCnt-adjNpModCnt), pastCnt + presentCnt ) << ",";
   os << ratio( npCnt, wordCnt ) << ",";
 }
 
@@ -3355,9 +3386,8 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	  dLevel = get_d_level( s, alpDoc );
 	  if ( dLevel > 4 )
 	    dLevel_gt4 = 1;
-	  //	  countCrdCnj( alpDoc, crdCnt, cnjCnt );
-	  int np2Cnt;
-	  mod_stats( alpDoc, vcModCnt, np2Cnt, adjNpModCnt );
+	  mod_stats( alpDoc, vcModCnt,
+		     adjNpModCnt, npModCnt );
 	}
 	else {
 	  parseFailCnt = 1; // failed

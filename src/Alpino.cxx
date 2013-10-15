@@ -644,12 +644,12 @@ vector<xmlNode *> getNodes( xmlDoc *doc ){
   return result;
 }
 
-void getNodesValue( xmlNode *pnt, vector<xmlNode*>& result,
+void getNodesValue( xmlNode *pnt, set<xmlNode*>& result,
 		    const string& att, const string& val ){
   while ( pnt ){
     if ( pnt->type == XML_ELEMENT_NODE && Name(pnt) == "node" ){
       if ( getAttribute( pnt, att ) == val )
-	result.push_back( pnt );
+	result.insert( pnt );
       if ( getAttribute( pnt->children, "root" ) == "" )
 	getNodesValue( pnt->children, result, att, val );
     }
@@ -657,10 +657,10 @@ void getNodesValue( xmlNode *pnt, vector<xmlNode*>& result,
   }
 }
 
-vector<xmlNode *> getNodesValue( xmlDoc *doc, const string& att,
-				  const string& val ){
+set<xmlNode *> getNodesValue( xmlDoc *doc, const string& att,
+ 			      const string& val ){
   xmlNode *pnt = xmlDocGetRootElement( doc );
-  vector<xmlNode*> result;
+  set<xmlNode*> result;
   getNodesValue( pnt->children, result, att, val );
   return result;
 }
@@ -893,10 +893,13 @@ bool checkImp( const xmlNode *alp_node ){
   return !su_found;
 }
 
-void mod_stats( xmlDoc *doc, int& vcMod, int& npCnt, int& adjNpMod ){
+void mod_stats( xmlDoc *doc, int& vcMod,
+		int& adjNpMod, int& npMod ){
   vcMod = 0;
   adjNpMod = 0;
   vector<xmlNode*> nodes = getNodes( doc );
+  set< xmlNode* > anodes;
+  set< xmlNode* > nnodes;
   for ( size_t i=0; i < nodes.size(); ++i ){
     KWargs atts = getAttributes( nodes[i] );
     if ( atts["rel"] == "hd" && atts["pos"] == "verb" ){
@@ -907,13 +910,17 @@ void mod_stats( xmlDoc *doc, int& vcMod, int& npCnt, int& adjNpMod ){
       }
     }
     if ( atts["cat"] == "np" ) {
-      ++npCnt;
-      vector< xmlNode* > avnodes;
-      getNodesValue( nodes[i]->children, avnodes, "pos", "adv" );
-      getNodesValue( nodes[i]->children, avnodes, "pos", "adj" );
-      adjNpMod += avnodes.size();
+      getNodesValue( nodes[i]->children, anodes, "pos", "adv" );
+      getNodesValue( nodes[i]->children, anodes, "pos", "adj" );
+      getNodesValue( nodes[i]->children, nnodes, "rel", "mod" );
+      getNodesValue( nodes[i]->children, nnodes, "rel", "app" );
+      getNodesValue( nodes[i]->children, nnodes, "rel", "vc" );
     }
   }
+  cerr << "found: " << anodes.size() << " ADJ nodes" << endl;
+  adjNpMod += anodes.size();
+  cerr << "found: " << nnodes.size() << " MOD nodes" << endl;
+  npMod += nnodes.size();
 }
 
 void countCrdCnj( xmlDoc *doc, int& crdCnt, int& cnjCnt ){
@@ -934,19 +941,21 @@ void countCrdCnj( xmlDoc *doc, int& crdCnt, int& cnjCnt ){
 bool isSmallCnj( const xmlNode *eNode ){
   cerr << "test EN " << getAttributes( eNode ) << endl;
   vector< xmlNode *> sl = getSibblings( eNode );
+  string pos;
   for ( size_t i=0; i < sl.size(); ++i ){
     cerr << "sibbling: " << getAttributes( sl[i] ) << endl;
     if ( sl[i] == eNode )
       continue;
-    string pos = getAttribute( sl[i], "pos" );
-    if ( !pos.empty() ){
-      cerr << "POS = " << pos << endl;
-      if ( pos == "adj" || pos == "noun"
-	   || pos == "verb" || pos == "name"
-	   || pos == "bw" || pos  == "tsw"
-	   || pos == "vnw" || pos == "tw" ){
-	return true;
-      }
+    string the_pos = getAttribute( sl[i], "pos" );
+    if ( the_pos.empty() )
+      continue;
+    cerr << "POS = " << the_pos << endl;
+    if ( the_pos == pos ){
+      cerr << " equal!" << endl;
+      return true;
+    }
+    if ( pos.empty() ){
+      pos = the_pos;
     }
   }
   return false;
