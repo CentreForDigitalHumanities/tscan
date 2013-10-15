@@ -2961,6 +2961,7 @@ struct sentStats : public structStats {
   sentStats( Sentence *, const sentStats* );
   bool isSentence() const { return true; };
   void resolveConnectives();
+  void resolveMultiWordAfks();
   void incrementConnCnt( ConnType );
   void addMetrics( ) const;
   bool checkAls( size_t );
@@ -3223,6 +3224,41 @@ void sentStats::resolveConnectives(){
       break;
     default:
       break;
+    }
+  }
+}
+
+void sentStats::resolveMultiWordAfks(){
+  if ( sv.size() > 1 ){
+    for ( size_t i=0; i < sv.size()-2; ++i ){
+      string word = sv[i]->text();
+      string multiword2 = word + " " + sv[i+1]->text();
+      string multiword3 = multiword2 + " " + sv[i+2]->text();
+      AfkType at = NO_A;
+      map<string,AfkType>::const_iterator sit
+	= settings.afkos.find( multiword3 );
+      if ( sit == settings.afkos.end() ){
+	sit = settings.afkos.find( multiword2 );
+      }
+      else {
+	cerr << "FOUND a 3-word AFK: '" << multiword3 << "'" << endl;
+      }
+      if ( sit != settings.afkos.end() ){
+	cerr << "FOUND a 2-word AFK: '" << multiword2 << "'" << endl;
+	at = sit->second;
+      }
+      if ( at != NO_A ){
+	++afks[at];
+      }
+    }
+    // don't forget the last 2 words
+    string multiword2 = sv[sv.size()-2]->text() + " " + sv[sv.size()-1]->text();
+    map<string,AfkType>::const_iterator sit
+      = settings.afkos.find( multiword2 );
+    if ( sit != settings.afkos.end() ){
+      cerr << "FOUND a 2-word AFK: '" << multiword2 << "'" << endl;
+      AfkType at = sit->second;
+      ++afks[at];
     }
   }
 }
@@ -3665,6 +3701,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
     xmlFreeDoc( alpDoc );
   }
   resolveConnectives();
+  resolveMultiWordAfks();
   resolvePrepExpr();
   if ( question )
     questCnt = 1;
