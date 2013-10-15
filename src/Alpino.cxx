@@ -917,9 +917,9 @@ void mod_stats( xmlDoc *doc, int& vcMod,
       getNodesValue( nodes[i]->children, nnodes, "rel", "vc" );
     }
   }
-  cerr << "found: " << anodes.size() << " ADJ nodes" << endl;
+  cerr << "found: " << nnodes.size() << " MOD nodes, of which "
+       << anodes.size() << " are ADJ nodes" << endl;
   adjNpMod += anodes.size();
-  cerr << "found: " << nnodes.size() << " MOD nodes" << endl;
   npMod += nnodes.size();
 }
 
@@ -949,15 +949,18 @@ bool isSmallCnj( const xmlNode *eNode ){
     string the_pos = getAttribute( sl[i], "pos" );
     if ( the_pos.empty() )
       continue;
-    cerr << "POS = " << the_pos << endl;
     if ( the_pos == pos ){
-      cerr << " equal!" << endl;
+      cerr << "POS = " << the_pos
+	   << " equals previous ==> Small conjunct detected" << endl;
       return true;
+    }
+    else {
     }
     if ( pos.empty() ){
       pos = the_pos;
     }
   }
+  cerr << "No small conjunct detected" << endl;
   return false;
 }
 
