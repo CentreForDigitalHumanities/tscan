@@ -2746,15 +2746,18 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 }
 
 void structStats::infoHeader( ostream& os ) const {
-  os << "word_ttr,lemma_ttr,content_words_r,content_words_d,content_words_g,"
+  os << "word_ttr,lemma_ttr,ttr_namen, ttr_inhoudswoorden,"
+     << "content_words_r,content_words_d,content_words_g,"
      << "rar_index,vc_mods_d,vc_mods_g,"
      << "adj_np_mods_d,adj_np_mods_g, np_mods_d,np_mods_g,"
-     << "overige_np_mods_d,overige_np_mods_g,np_dens,";
+     << "ov_np_mods_d,ov_np_mods_g,np_dens,";
 }
 
 void structStats::informationDensityToCSV( ostream& os ) const {
   os << ratio( unique_words.size(), wordCnt ) << ",";
   os << ratio( unique_lemmas.size(), wordCnt ) << ",";
+  os << ratio( nameCnt, wordCnt ) << ",";
+  os << ratio( contentCnt, wordCnt ) << ",";
   os << ratio( contentCnt, wordCnt - contentCnt ) << ",";
   os << density( contentCnt, wordCnt ) << ",";
   os << ratio( contentCnt, pastCnt + presentCnt ) << ",";
