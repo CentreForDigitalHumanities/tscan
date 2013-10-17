@@ -385,7 +385,7 @@
   	selectpar(this);
   	setmetrics('#parmetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />','label':'<xsl:call-template name="metriclabel" />','desc':'<xsl:call-template name="metricdescription" />'},</xsl:for-each>]);  	
   </xsl:attribute>
-  <xsl:apply-templates />
+  <xsl:apply-templates select=".//folia:s"/>
  </p>
 </xsl:template>
 
