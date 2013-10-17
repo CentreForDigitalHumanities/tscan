@@ -11,22 +11,23 @@ AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CXX
-AC_PROG_RANLIB
+
 # libtool stuff
-# unfortunately, a lot of old libtools hang around.
-# so LT_INIT and LT_PREREQ cannot be used for now
-#LT_PREREQ([2.2.0])
-#LT_INIT
 AC_PROG_LIBTOOL
-AC_SUBST([LIBTOOL_DEPS])
+LT_INIT
 
 # Checks for libraries.
 
 # Checks for header files.
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_STDBOOL
+AC_C_INLINE
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
 
 # Checks for library functions.
+AC_CHECK_FUNCS([mkdir])
 
 OPENMP_CHECK( [CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
 	       AC_DEFINE(HAVE_OPENMP, 1 , Define to 1 if you have OpenMP )],
@@ -47,7 +48,7 @@ AX_ICU_CHECK( [3.6],
 	      [AC_MSG_FAILURE( "No ICU development environment found. Please check if libicu-dev or the like is installed" )] )
 
 AC_ARG_WITH(timbl,
-       [  --with-timbl=DIR       use timbl installed in <DIR>; 
+       [  --with-timbl=DIR       use timbl installed in <DIR>;
                note that you can install timbl in a non-default directory with
                ./configure --prefix=<DIR> in the timbl installation directory],
        [PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$withval/lib/pkgconfig"],
@@ -58,7 +59,7 @@ CXXFLAGS="$CXXFLAGS $timbl_CFLAGS"
 LIBS="$timbl_LIBS $LIBS"
 
 AC_ARG_WITH(timblserver,
-       [  --with-timblserver=DIR       use timblserver installed in <DIR>; 
+       [  --with-timblserver=DIR       use timblserver installed in <DIR>;
                note that you can install timbl in a non-default directory with
                ./configure --prefix=<DIR> in the timbl installation directory],
        [PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$withval/lib/pkgconfig"])
@@ -69,7 +70,7 @@ LIBS="$timblserver_LIBS $LIBS"
 
 
 AC_ARG_WITH(ticcutils,
-       [  --with-ticcutils=DIR       use ticcutils installed in <DIR>; 
+       [  --with-ticcutils=DIR       use ticcutils installed in <DIR>;
                note that you can install ticcutils in a non-default directory w
 ith
                ./configure --prefix=<DIR> in the ticcutils installation directo
@@ -86,7 +87,7 @@ CXXFLAGS="$CXXFLAGS $XML2_CFLAGS"
 LIBS="$LIBS $XML2_LIBS"
 
 AC_ARG_WITH(folia,
-       [  --with-folia=DIR       use libfolia installed in <DIR>; 
+       [  --with-folia=DIR       use libfolia installed in <DIR>;
                note that you can install folia in a non-default directory with
                ./configure --prefix=<DIR> in the folia installation directory],
        [PKG_CONFIG_PATH="$withval/lib/pkgconfig:$PKG_CONFIG_PATH"],
