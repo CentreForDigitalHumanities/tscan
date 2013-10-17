@@ -453,8 +453,8 @@
 </xsl:template>
 
 <xsl:template match="folia:w">
-<xsl:if test="not(ancestor::folia:original) and not(ancestor::folia:suggestion) and not(ancestor::folia:alternative)">
-<span id="{@xml:id}" class="word"><xsl:attribute name="onclick">selectword(this); setmetrics('#wordmetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />','label':'<xsl:call-template name="metriclabel" />','desc':'<xsl:call-template name="metricdescription" />' },</xsl:for-each>]);</xsl:attribute><span class="t"><xsl:value-of select=".//folia:t[1]"/></span><xsl:call-template name="tokenannotations" /></span>
+<xsl:if test="not(ancestor::folia:original) and not(ancestor::folia:suggestion) and not(ancestor::folia:alternative) and not(ancestor-or-self::*/auth)">
+    <span id="{@xml:id}" class="word"><xsl:attribute name="onclick">selectword(this); setmetrics('#wordmetrics',[<xsl:for-each select="folia:metric">{'<xsl:value-of select="@class" />':'<xsl:value-of select="@value" />','label':'<xsl:call-template name="metriclabel" />','desc':'<xsl:call-template name="metricdescription" />' },</xsl:for-each>]);</xsl:attribute><xsl:call-template name="textcontent" /><xsl:call-template name="tokenannotations" /></span>
 <xsl:choose>
    <xsl:when test="@space = 'no'"></xsl:when>
    <xsl:otherwise>
@@ -462,6 +462,11 @@
    </xsl:otherwise>
 </xsl:choose>
 </xsl:if>
+</xsl:template>
+
+<xsl:template name="textcontent">
+    <span class="t"><xsl:value-of select="string(.//folia:t[not(ancestor-or-self::*/@auth)
+        and not(ancestor::folia:morpheme) and not(ancestor::folia:str) and not(@class)])"/></span>
 </xsl:template>
 
 <xsl:template name="tokenannotations">
