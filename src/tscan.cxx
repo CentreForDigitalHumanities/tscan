@@ -1072,7 +1072,7 @@ struct wordStats : public basicStats {
   void addMetrics( ) const;
   bool checkContent() const;
   ConnType checkConnective( const xmlNode * ) const;
-  ConnType check_en_connection( const xmlNode * ) const;
+  ConnType check_small_connector( const xmlNode * ) const;
   bool checkNominal( const xmlNode * ) const;
   WordProp checkProps( const PosAnnotation* );
   SemType checkSemProps( ) const;
@@ -1131,7 +1131,7 @@ vector<const wordStats*> wordStats::collectWords() const {
   return result;
 }
 
-ConnType wordStats::check_en_connection( const xmlNode *alpWord ) const {
+ConnType wordStats::check_small_connector( const xmlNode *alpWord ) const {
   if ( alpWord == 0 ){
     return OPSOMMEND;
   }
@@ -1157,15 +1157,15 @@ ConnType wordStats::checkConnective( const xmlNode *alpWord ) const {
   }
   else if ( settings.opsommers1[tag].find( lword )
 	    != settings.opsommers1[tag].end() ){
-    if ( lword == "en" ){
-      return check_en_connection( alpWord );
+    if ( lword == "en" || lword == "of" ){
+      return check_small_connector( alpWord );
     }
     return OPSOMMEND;
   }
   else if ( settings.opsommers1[CGN::UNASS].find( lword )
 	    != settings.opsommers1[CGN::UNASS].end() ){
-    if ( lword == "en" ){
-      return check_en_connection( alpWord );
+    if ( lword == "en" || lword == "of" ){
+      return check_small_connector( alpWord );
     }
     return OPSOMMEND;
   }
