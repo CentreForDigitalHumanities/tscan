@@ -2256,6 +2256,8 @@ struct structStats: public basicStats {
   int questCnt;
   int prepExprCnt;
   map<CGN::Type,int> heads;
+  map<string,int> unique_names;
+  map<string,int> unique_contents;
   map<string,int> unique_words;
   map<string,int> unique_lemmas;
   map<NerProp, int> ners;
@@ -2396,6 +2398,8 @@ void structStats::merge( structStats *ss ){
   questCnt += ss->questCnt;
   sv.push_back( ss );
   aggregate( heads, ss->heads );
+  aggregate( unique_names, ss->unique_names );
+  aggregate( unique_contents, ss->unique_contents );
   aggregate( unique_words, ss->unique_words );
   aggregate( unique_lemmas, ss->unique_lemmas );
   aggregate( ners, ss->ners );
@@ -2756,8 +2760,8 @@ void structStats::infoHeader( ostream& os ) const {
 void structStats::informationDensityToCSV( ostream& os ) const {
   os << ratio( unique_words.size(), wordCnt ) << ",";
   os << ratio( unique_lemmas.size(), wordCnt ) << ",";
-  os << ratio( nameCnt, wordCnt ) << ",";
-  os << ratio( contentCnt, wordCnt ) << ",";
+  os << ratio( unique_names.size(), nameCnt ) << ",";
+  os << ratio( unique_contents.size(), contentCnt ) << ",";
   os << ratio( contentCnt, wordCnt - contentCnt ) << ",";
   os << density( contentCnt, wordCnt ) << ",";
   os << ratio( contentCnt, pastCnt + presentCnt ) << ",";
@@ -3525,6 +3529,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
       switch ( ws->prop ){
       case ISNAME:
 	nameCnt++;
+	unique_names[lowercase(ws->word)] +=1;
 	break;
       case ISVD:
 	vdCnt++;
@@ -3567,8 +3572,10 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	pronRefCnt++;
       if ( ws->archaic )
 	archaicsCnt++;
-      if ( ws->isContent )
+      if ( ws->isContent ){
 	contentCnt++;
+	unique_contents[lowercase(ws->word)] +=1;
+      }
       if ( ws->isNominal )
 	nominalCnt++;
       switch ( ws->tag ){
@@ -3918,6 +3925,14 @@ void docStats::addMetrics( ) const {
 		"word_ttr", toString( unique_words.size()/double(wordCnt) ) );
   addOneMetric( el->doc(), el,
 		"lemma_ttr", toString( unique_lemmas.size()/double(wordCnt) ) );
+  if ( nameCnt != 0 ){
+    addOneMetric( el->doc(), el,
+		  "names_ttr", toString( unique_names.size()/double(nameCnt) ) );
+  }
+  if ( contentCnt != 0 ){
+    addOneMetric( el->doc(), el,
+		  "content_word_ttr", toString( unique_contents.size()/double(contentCnt) ) );
+  }
   addOneMetric( el->doc(), el,
 		"rar_index", rarity( settings.rarityLevel ) );
   addOneMetric( el->doc(), el,
