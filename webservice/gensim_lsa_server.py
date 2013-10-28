@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os, numpy, sys
-from gensim import corpora, models, similarities
+from gensim import corpora, models, similarities, matutils
 from twisted.internet import protocol, reactor #No Python 3 support yet :(
 from twisted.protocols import basic
 
@@ -20,23 +20,25 @@ class LSAProtocol(basic.LineReceiver):
             self.sendLine("INPUTERROR")
 
         try:
-            index1 = self.word_id.dict[word1]
-            index2 = self.word_id.dict[word2]
+            index1 = word_id_dict[word1]
+            index2 = word_id_dict[word2]
         except KeyError:
             self.sendLine("NOTFOUNDERROR")
 
-        cossim = numpy.dot(gensim.matutils.unitvec(self.US[index1, :]),gensim.matutils.unitvec(self.US[index2, :]))
+        cossim = numpy.dot(matutils.unitvec(US[index1, :]),matutils.unitvec(US[index2, :]))
         self.sendLine(str(cossim))
 
 class LSAFactory(protocol.ServerFactory):
-    protocol = LSAProtocol
+    word_id_dict = {}
     def __init__(self, word_id_dict, US):
         self.word_id_dict = word_id_dict
         self.US = US
 
 class LSAServer(object):
     def __init__(self, word_id_dict, US, port=65430):
-        reactor.listenTCP(port, LSAFactory(word_id_dict, US))
+        factory = LSAFactory(word_id_dict, US)
+        factory.protocol = LSAProtocol;
+        reactor.listenTCP(port, factory )
         reactor.run()
 
 if __name__ == '__main__':
