@@ -14,22 +14,28 @@ from twisted.protocols import basic
 
 class LSAProtocol(basic.LineReceiver):
     def lineReceived(self, line):
+        # print( "LSA received " + line );
         try:
             word1, word2 = line.strip().split("\t")
         except:
             self.sendLine("INPUTERROR")
+            return
 
+        # print( "LSA words: " + word1 + "-" + word2 );
         try:
             index1 = word_id_dict[word1]
             index2 = word_id_dict[word2]
         except KeyError:
-            self.sendLine("NOTFOUNDERROR")
-
-        cossim = numpy.dot(matutils.unitvec(US[index1, :]),matutils.unitvec(US[index2, :]))
+            self.sendLine(str(0))
+            return
+        # print( "LSA indices: " + str(index1) + "-" + str(index2) );
+        try:
+            cossim = numpy.dot(matutils.unitvec(US[index1, :]),matutils.unitvec(US[index2, :]))
+        except:
+            cossim = 0
         self.sendLine(str(cossim))
 
 class LSAFactory(protocol.ServerFactory):
-    word_id_dict = {}
     def __init__(self, word_id_dict, US):
         self.word_id_dict = word_id_dict
         self.US = US
@@ -49,7 +55,7 @@ if __name__ == '__main__':
         print >>sys.stderr,"Usage: port dict_file lsa_file"
         sys.exit(2)
 
-
+    print( "reading the data files. (takes some time...)" );
     #dict_file = 'newspaper_contentlemma_dictionary_filtered.dict'
     #bow_corp_file = 'newspaper_contentlemma_corpus_as_vectors_filtered.mm' //not used?
     #lsa_file = 'lsa_newspaper_lemma_model_700_filtered_tfidf.lsi'
@@ -68,5 +74,6 @@ if __name__ == '__main__':
     S = lsi.projection.s
 
     US=numpy.multiply(U,S)
+    print( "starting the server!" );
     LSAServer(word_id_dict, US, port)
 
