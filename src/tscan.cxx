@@ -184,7 +184,7 @@ namespace CGN {
       return "UNASSIGNED";
     }
   }
-};
+}
 
 ostream& operator<<( ostream& os, const CGN::Type t ){
   os << toString( t );
@@ -255,7 +255,8 @@ AfkType stringTo( const string& s ){
     return POLITIE_ZIEKENHUIS_A;
   if ( s == "generiek" )
     return GENERIEK_A;
-};
+  return NO_A;
+}
 
 string toString( const AfkType& afk ){
   switch ( afk ){
@@ -283,6 +284,8 @@ string toString( const AfkType& afk ){
     return "politie_ziekenhuis";
   case GENERIEK_A:
     return "generiek";
+  default:
+    return "PANIEK";
   };
 }
 
@@ -374,6 +377,8 @@ SemType classifySem( CGN::Type tag, const string& s ){
     else
       return WEIRD;
   }
+  else
+    return UNFOUND;
 }
 
 bool fill( CGN::Type tag, map<string,SemType>& m, istream& is ){
@@ -1027,8 +1032,11 @@ struct basicStats {
   virtual string text() const { return ""; };
   virtual CGN::Type postag() const { return CGN::UNASS; };
   virtual ConnType getConnType() const { return NOCONN; };
-  virtual void setConnType( ConnType t ){
+  virtual void setConnType( ConnType ){
     throw logic_error("settConnType() only valid for words" );
+  };
+  virtual void setLSAsuc( double ){
+    throw logic_error("settLSAsuc() only valid for words" );
   };
   virtual void setMultiConn(){
     throw logic_error("settMultiConn() only valid for words" );
@@ -1069,6 +1077,7 @@ struct wordStats : public basicStats {
   ConnType getConnType() const { return connType; };
   void setConnType( ConnType t ){ connType = t; };
   void setMultiConn(){ isMultiConn = true; };
+  void setLSAsuc( double d ){ lsa_suc = d; };
   void addMetrics( ) const;
   bool checkContent() const;
   ConnType checkConnective( const xmlNode * ) const;
@@ -1103,6 +1112,7 @@ struct wordStats : public basicStats {
   NerProp nerProp;
   ConnType connType;
   bool isMultiConn;
+  double lsa_suc;
   bool f50;
   bool f65;
   bool f77;
@@ -1615,8 +1625,8 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false),
-  connType(NOCONN), isMultiConn(false),
-  nerProp(NONER),
+  nerProp(NONER), connType(NOCONN), isMultiConn(false),
+  lsa_suc(0),
   f50(false), f65(false), f77(false), f80(false),  compPartCnt(0),
   top_freq(notFound), word_freq(0), lemma_freq(0),
   argRepeatCnt(0), wordOverlapCnt(0), lemmaRepeatCnt(0), lemmaOverlapCnt(0),
@@ -1790,6 +1800,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "connective", toString(connType) );
   if ( isMultiConn )
     addOneMetric( doc, el, "multi_connective", "true" );
+  if ( lsa_suc )
+    addOneMetric( doc, el, "lsa_opvolger", toString(lsa_suc) );
   if ( f50 )
     addOneMetric( doc, el, "f50", "true" );
   if ( f65 )
@@ -1852,7 +1864,7 @@ void wordStats::wordDifficultiesHeader( ostream& os ) const {
      << "sdpw,sdens,freq50,freq65,freq77,freq80,"
      << "word_freq_log,word_freq_log_zn,"
      << "lemfreq_log,lemfreq_log_zn,"
-     << "freq1000,freq2000,freq3000,freq5000,freq10000,freq20000,";
+     << "freq1000,freq2000,freq3000,freq5000,freq10000,freq20000,so_suc,";
 }
 
 void wordStats::wordDifficultiesToCSV( ostream& os ) const {
@@ -1913,6 +1925,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
   os << (top_freq<=top5000?1:0) << ",";
   os << (top_freq<=top10000?1:0) << ",";
   os << (top_freq<=top20000?1:0) << ",";
+  os << lsa_suc << ",";
 }
 
 void wordStats::coherenceHeader( ostream& os ) const {
@@ -2965,6 +2978,7 @@ struct sentStats : public structStats {
   sentStats( Sentence *, const sentStats* );
   bool isSentence() const { return true; };
   void resolveConnectives();
+  void resolveLSAwords();
   void resolveMultiWordAfks();
   void incrementConnCnt( ConnType );
   void addMetrics( ) const;
@@ -3232,6 +3246,54 @@ void sentStats::resolveConnectives(){
   }
 }
 
+bool getLSAwords( const vector<string>& words, vector<double>& res ){
+  res.clear();
+  res.resize(words.size());
+  string host = config.lookUp( "host", "lsa" );
+  string port = config.lookUp( "port", "lsa" );
+  Sockets::ClientSocket client;
+  if ( !client.connect( host, port ) ){
+    LOG << "failed to open LSA connection: "<< host << ":" << port << endl;
+    LOG << "Reason: " << client.getMessage() << endl;
+    exit( EXIT_FAILURE );
+  }
+  for ( size_t i=0; i < words.size()-1; ++i ){
+    string call = words[i] + "\t" + words[i+1];
+    LOG << "calling LSA: '" << call << "'" << endl;
+    client.write( call + "\r\n" );
+    string s;
+    if ( !client.read(s) ){
+      LOG << "LSA connection failed " << endl;
+      exit( EXIT_FAILURE );
+    }
+    LOG << "received data [" << s << "]" << endl;
+    double result;
+    if ( !stringTo( s , result ) ){
+      LOG << "LSA result conversion failed: " << s << endl;
+      result = 0;
+    }
+    LOG << "LSA result: " << result << endl;
+    res[i] = result;
+  }
+  return true;
+}
+
+void sentStats::resolveLSAwords(){
+  if ( sv.size() > 1 ){
+    vector<string> v;
+    for ( size_t i=0; i < sv.size(); ++i ){
+      string word = lowercase( sv[i]->text() );
+      v.push_back(word);
+    }
+    vector<double> res;
+    if ( getLSAwords( v, res ) ){
+      for ( size_t i=0; i < sv.size(); ++i ){
+	sv[i]->setLSAsuc(res[i]);
+      }
+    }
+  }
+}
+
 void sentStats::resolveMultiWordAfks(){
   if ( sv.size() > 1 ){
     for ( size_t i=0; i < sv.size()-2; ++i ){
@@ -3478,6 +3540,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
     if ( pred ){
       ws->getSentenceOverlap( wordbuffer, lemmabuffer );
     }
+
     if ( ws->lemma[ws->lemma.length()-1] == '?' ){
       question = true;
     }
@@ -3708,6 +3771,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
     xmlFreeDoc( alpDoc );
   }
   resolveConnectives();
+  resolveLSAwords();
   resolveMultiWordAfks();
   resolvePrepExpr();
   if ( question )
@@ -3795,7 +3859,7 @@ struct docStats : public structStats {
   void addMetrics( ) const;
   int word_overlapCnt() const { return doc_word_overlapCnt; };
   int lemma_overlapCnt() const { return doc_lemma_overlapCnt; };
-  void calculate_doc_overlap( Document *doc );
+  void calculate_doc_overlap();
   int doc_word_argCnt;
   int doc_word_overlapCnt;
   int doc_lemma_argCnt;
@@ -3804,13 +3868,13 @@ struct docStats : public structStats {
 
 //#define DEBUG_DOL
 
-void docStats::calculate_doc_overlap( Document *doc ){
+void docStats::calculate_doc_overlap( ){
   vector<const wordStats*> wv2 = collectWords();
   if ( wv2.size() < settings.overlapSize )
     return;
   vector<string> wordbuffer;
   vector<string> lemmabuffer;
-  int count = 0;
+  size_t count = 0;
   for ( vector<const wordStats*>::const_iterator it = wv2.begin();
 	it != wv2.end();
 	++it ){
@@ -3898,7 +3962,7 @@ docStats::docStats( Document *doc ):
   else
     lemma_freq_log_n = log10( lemma_freq_n / (contentCnt-nameCnt) );
 
-  calculate_doc_overlap( doc );
+  calculate_doc_overlap( );
 
 }
 
