@@ -941,7 +941,7 @@ ostream& operator<<( ostream& os, const density& d ){
 enum WordProp { ISNAME, ISLET,
 		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL, ISSUBJ,
 		ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
-		JUSTAWORD };
+		JUSTAWORD, NOTAWORD };
 
 string toString( const WordProp& w ){
   switch ( w ){
@@ -969,6 +969,8 @@ string toString( const WordProp& w ){
     return "voornaamwoord_3";
   case  ISAANW:
     return "aanwijzend";
+  case  NOTAWORD:
+    return "GEEN_WOORD";
   default:
     return "default";
   }
@@ -1030,7 +1032,9 @@ struct basicStats {
   virtual void toCSV( ostream& ) const =0;
   virtual void addMetrics( ) const = 0;
   virtual string text() const { return ""; };
+  virtual string ltext() const { return ""; };
   virtual CGN::Type postag() const { return CGN::UNASS; };
+  virtual WordProp wordProperty() const { return NOTAWORD; };
   virtual ConnType getConnType() const { return NOCONN; };
   virtual void setConnType( ConnType ){
     throw logic_error("settConnType() only valid for words" );
@@ -1073,6 +1077,7 @@ struct wordStats : public basicStats {
   void miscToCSV( ostream& ) const;
   void toCSV( ostream& ) const;
   string text() const { return word; };
+  string ltext() const { return lword; };
   CGN::Type postag() const { return tag; };
   ConnType getConnType() const { return connType; };
   void setConnType( ConnType t ){ connType = t; };
@@ -1084,6 +1089,7 @@ struct wordStats : public basicStats {
   ConnType check_small_connector( const xmlNode * ) const;
   bool checkNominal( const xmlNode * ) const;
   WordProp checkProps( const PosAnnotation* );
+  WordProp wordProperty() const { return prop; };
   SemType checkSemProps( ) const;
   AfkType checkAfk( ) const;
   bool checkPropNeg() const;
@@ -1095,6 +1101,7 @@ struct wordStats : public basicStats {
   bool isOverlapCandidate() const;
   vector<const wordStats*> collectWords() const;
   string word;
+  string lword;
   string pos;
   CGN::Type tag;
   string lemma;
@@ -1156,7 +1163,6 @@ ConnType wordStats::check_small_connector( const xmlNode *alpWord ) const {
 ConnType wordStats::checkConnective( const xmlNode *alpWord ) const {
   if ( tag != CGN::VG && tag != CGN::VZ && tag != CGN::BW )
     return NOCONN;
-  string lword = lowercase( word );
   if ( settings.temporals1[tag].find( lword )
        != settings.temporals1[tag].end() ){
     return TEMPOREEL;
@@ -1348,9 +1354,9 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
   else if ( tag == CGN::VNW ){
     string vwtype = pa->feat("vwtype");
     isBetr = vwtype == "betr";
-    if ( lowercase( word ) != "men"
-	 && lowercase( word ) != "er"
-	 && lowercase( word ) != "het" ){
+    if ( lword != "men"
+	 && lword != "er"
+	 && lword != "het" ){
       string cas = pa->feat("naamval");
       archaic = ( cas == "gen" || cas == "dat" );
       if ( vwtype == "pers" || vwtype == "refl"
@@ -1441,7 +1447,7 @@ AfkType wordStats::checkAfk() const {
 }
 
 void wordStats::topFreqLookup(){
-  map<string,top_val>::const_iterator it = settings.top_freq_lex.find( lowercase(word) );
+  map<string,top_val>::const_iterator it = settings.top_freq_lex.find( lword );
   top_freq = notFound;
   if ( it != settings.top_freq_lex.end() ){
     top_freq = it->second;
@@ -1449,7 +1455,7 @@ void wordStats::topFreqLookup(){
 }
 
 void wordStats::freqLookup(){
-  map<string,cf_data>::const_iterator it = settings.word_freq_lex.find( lowercase(word) );
+  map<string,cf_data>::const_iterator it = settings.word_freq_lex.find( lword );
   if ( it != settings.word_freq_lex.end() ){
     word_freq = it->second.count;
     word_freq_log = log10(word_freq);
@@ -1470,7 +1476,7 @@ void wordStats::freqLookup(){
 }
 
 void wordStats::staphFreqLookup(){
-  map<string,cf_data>::const_iterator it = settings.staph_word_freq_lex.find( lowercase(word) );
+  map<string,cf_data>::const_iterator it = settings.staph_word_freq_lex.find( lword );
   if ( it != settings.staph_word_freq_lex.end() ){
     double freq = it->second.freq;
     if ( freq <= 50 )
@@ -1511,7 +1517,6 @@ static vector<string> negminus = vector<string>( negminusA,
 						 negminusA + sizeof(negminusA)/sizeof(string) );
 
 bool wordStats::checkPropNeg() const {
-  string lword = lowercase( word );
   if ( negatives.find( lword ) != negatives.end() ){
     return true;
   }
@@ -1535,7 +1540,6 @@ bool wordStats::checkMorphNeg() const {
     return true;
   }
   else {
-    string lword = lowercase( word );
     for ( size_t i=0; i < negminus.size(); ++i ){
       if ( word.find( negminus[i] ) != string::npos )
 	return true;
@@ -1633,8 +1637,10 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
   word_freq_log(NA), lemma_freq_log(NA),
   logprob10(NA), prop(JUSTAWORD), sem_type(UNFOUND),afkType(NO_A)
 {
-  word = UnicodeToUTF8( w->text() );
-  charCnt = w->text().length();
+  UnicodeString us = w->text();
+  charCnt = us.length();
+  word = UnicodeToUTF8( us );
+  lword = UnicodeToUTF8( us.toLower() );
 
   vector<PosAnnotation*> posV = w->select<PosAnnotation>(frog_pos_set);
   if ( posV.size() != 1 )
@@ -1738,11 +1744,11 @@ void wordStats::getSentenceOverlap( const vector<string>& wordbuffer,
   if ( isOverlapCandidate() ){
     // get the words and lemmas' of the previous sentence
 #ifdef DEBUG_OL
-    cerr << "call word sentenceOverlap, word = " << lowercase(word);
+    cerr << "call word sentenceOverlap, word = " << lword;
     int tmp1 = argRepeatCnt;
     int tmp2 = wordOverlapCnt;
 #endif
-    argument_overlap( lowercase(word), wordbuffer, argRepeatCnt, wordOverlapCnt );
+    argument_overlap( lword, wordbuffer, argRepeatCnt, wordOverlapCnt );
 #ifdef DEBUG_OL
     // if ( tmp1 != argRepeatCnt ){
     //   cerr << "argument repeated " << argRepeatCnt - tmp1 << endl;
@@ -2116,6 +2122,14 @@ struct structStats: public basicStats {
     avg_prob10(NA),
     entropy(NA),
     perplexity(NA),
+    lsa_word_suc(NA),
+    lsa_word_net(NA),
+    lsa_sent_suc(NA),
+    lsa_sent_net(NA),
+    lsa_par_suc(NA),
+    lsa_par_net(NA),
+    lsa_par_context(NA),
+    lsa_doc_context(NA),
     broadConcreteNounCnt(0),
     strictConcreteNounCnt(0),
     broadAbstractNounCnt(0),
@@ -2243,6 +2257,14 @@ struct structStats: public basicStats {
   double avg_prob10;
   double entropy;
   double perplexity;
+  double lsa_word_suc;
+  double lsa_word_net;
+  double lsa_sent_suc;
+  double lsa_sent_net;
+  double lsa_par_suc;
+  double lsa_par_net;
+  double lsa_par_context;
+  double lsa_doc_context;
   int broadConcreteNounCnt;
   int strictConcreteNounCnt;
   int broadAbstractNounCnt;
@@ -2603,6 +2625,10 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "wopr_entropy", toString(entropy) );
   if ( perplexity != NA )
     addOneMetric( doc, el, "wopr_perplexity", toString(perplexity) );
+  if ( lsa_word_suc != NA )
+    addOneMetric( doc, el, "lsa_word_suc", toString(lsa_word_suc) );
+  if ( lsa_word_net != NA )
+    addOneMetric( doc, el, "lsa_word_net", toString(lsa_word_net) );
   addOneMetric( doc, el, "concrete_broad_noun", toString(broadConcreteNounCnt) );
   addOneMetric( doc, el, "concrete_strict_noun", toString(strictConcreteNounCnt) );
   addOneMetric( doc, el, "abstract_broad_noun", toString(broadAbstractNounCnt) );
@@ -2687,7 +2713,8 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
      << "sdpw,sdens,freq50,freq65,freq77,freq80,"
      << "word_freq_log,word_freq_log_zn,"
      << "lemma_freq_log,lemma_freq_log_zn,"
-     << "freq1000,freq2000,freq3000,freq5000,freq10000,freq20000,";
+     << "freq1000,freq2000,freq3000,freq5000,freq10000,freq20000,"
+     << "so_word_suc,so_word_net,";
 }
 
 void structStats::wordDifficultiesToCSV( ostream& os ) const {
@@ -2717,6 +2744,7 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
   os << ratio( top5000Cnt, wordCnt ) << ",";
   os << ratio( top10000Cnt, wordCnt ) << ",";
   os << ratio( top20000Cnt, wordCnt ) << ",";
+  os << lsa_word_suc << "," << lsa_word_net << ",";
 }
 
 void structStats::sentDifficultiesHeader( ostream& os ) const {
@@ -2994,7 +3022,7 @@ void fill_word_lemma_buffers( const sentStats* ss,
   for ( size_t i=0; i < bv.size(); ++i ){
     wordStats *w = dynamic_cast<wordStats*>(bv[i]);
     if ( w->isOverlapCandidate() ){
-      wv.push_back( lowercase( w->word ) );
+      wv.push_back( w->lword );
       lv.push_back( lowercase( w->lemma ) );
     }
   }
@@ -3083,7 +3111,7 @@ bool sentStats::checkAls( size_t index ){
   static set<string> opsomAlsSet( opsomAlsList,
 				  opsomAlsList + sizeof(opsomAlsList)/sizeof(string) );
 
-  string als = lowercase( sv[index]->text() );
+  string als = sv[index]->ltext();
   if ( als == "als" ){
     if ( index == 0 ){
       // eerste woord, terugkijken kan dus niet
@@ -3091,7 +3119,7 @@ bool sentStats::checkAls( size_t index ){
     }
     else {
       for ( size_t i = index-1; i+1 != 0; --i ){
-	string word = lowercase( sv[i]->text() );
+	string word = sv[i]->ltext();
 	if ( compAlsSet.find( word ) != compAlsSet.end() ){
 	  // kijk naar "evenmin ... als" constructies
 	  sv[i]->setConnType( COMPARATIEF );
@@ -3175,8 +3203,8 @@ void sentStats::incrementConnCnt( ConnType t ){
 void sentStats::resolveConnectives(){
   if ( sv.size() > 1 ){
     for ( size_t i=0; i < sv.size()-2; ++i ){
-      string word = lowercase( sv[i]->text() );
-      string multiword2 = word + " " + lowercase( sv[i+1]->text() );
+      string word = sv[i]->ltext();
+      string multiword2 = word + " " + sv[i+1]->ltext();
       if ( !checkAls( i ) ){
 	// "als" is speciaal als het matcht met eerdere woorden.
 	// (evenmin ... als) (zowel ... als ) etc.
@@ -3193,8 +3221,7 @@ void sentStats::resolveConnectives(){
       if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
 	propNegCnt++;
       }
-      string multiword3 = multiword2 + " "
-	+ lowercase( sv[i+2]->text() );
+      string multiword3 = multiword2 + " " + sv[i+2]->ltext();
       //      cerr << "zoek op " << multiword3 << endl;
       ConnType conn = checkMultiConnectives( multiword3 );
       if ( conn != NOCONN ){
@@ -3209,8 +3236,8 @@ void sentStats::resolveConnectives(){
 	propNegCnt++;
     }
     // don't forget the last 2 words
-    string multiword2 = lowercase( sv[sv.size()-2]->text() )
-      + " " + lowercase( sv[sv.size()-1]->text() );
+    string multiword2 = sv[sv.size()-2]->ltext() + " "
+      + sv[sv.size()-1]->ltext();
     //    cerr << "zoek op " << multiword2 << endl;
     ConnType conn = checkMultiConnectives( multiword2 );
     if ( conn != NOCONN ){
@@ -3246,9 +3273,15 @@ void sentStats::resolveConnectives(){
   }
 }
 
-bool getLSAwords( const vector<string>& words, vector<double>& res ){
-  res.clear();
-  res.resize(words.size());
+
+bool getLSAwords( const vector<basicStats*>& words,
+		  vector<double>& lsa_suc,
+		  double& lsa_net,
+		  int& lets ){
+  lets = 0;
+  lsa_net = 0;
+  lsa_suc.clear();
+  lsa_suc.resize(words.size());
   string host = config.lookUp( "host", "lsa" );
   string port = config.lookUp( "port", "lsa" );
   Sockets::ClientSocket client;
@@ -3257,39 +3290,81 @@ bool getLSAwords( const vector<string>& words, vector<double>& res ){
     LOG << "Reason: " << client.getMessage() << endl;
     exit( EXIT_FAILURE );
   }
+  size_t count = 0;
   for ( size_t i=0; i < words.size()-1; ++i ){
-    string call = words[i] + "\t" + words[i+1];
-    LOG << "calling LSA: '" << call << "'" << endl;
-    client.write( call + "\r\n" );
-    string s;
-    if ( !client.read(s) ){
-      LOG << "LSA connection failed " << endl;
-      exit( EXIT_FAILURE );
+    for ( size_t j=i+1; j < words.size(); ++j ){
+      if ( words[i]->wordProperty() == ISLET ){
+	continue;
+      }
+      if ( words[j]->wordProperty() == ISLET ){
+	if ( i == 0 )
+	  ++lets;
+	continue;
+      }
+      ++count;
+      string word1 = words[i]->ltext();
+      string word2 = words[j]->ltext();
+      if ( j == i+1 ){
+	string call = word1 + "\t" + word2;
+	//	LOG << "calling LSA: '" << call << "'" << endl;
+	client.write( call + "\r\n" );
+	string s;
+	if ( !client.read(s) ){
+	  LOG << "LSA connection failed " << endl;
+	  exit( EXIT_FAILURE );
+	}
+	//	LOG << "received data [" << s << "]" << endl;
+	double result;
+	if ( !stringTo( s , result ) ){
+	  LOG << "LSA result conversion failed: " << s << endl;
+	  result = 0;
+	}
+	//	LOG << "LSA result: " << result << endl;
+	LOG << "LSA: '" << call << "' ==> " << result << endl;
+	lsa_suc[i] = result;
+	lsa_net += result;
+      }
+      else {
+	string call = word1 + "\t" + word2;
+	//	LOG << "calling LSA: '" << call << "'" << endl;
+	client.write( call + "\r\n" );
+	string s;
+	if ( !client.read(s) ){
+	  LOG << "LSA connection failed " << endl;
+	  exit( EXIT_FAILURE );
+	}
+	//	LOG << "received data [" << s << "]" << endl;
+	double result;
+	if ( !stringTo( s , result ) ){
+	  LOG << "LSA result conversion failed: " << s << endl;
+	  result = 0;
+	}
+	//	LOG << "LSA result: " << result << endl;
+	LOG << "LSA: '" << call << "' ==> " << result << endl;
+	lsa_net += result;
+      }
     }
-    LOG << "received data [" << s << "]" << endl;
-    double result;
-    if ( !stringTo( s , result ) ){
-      LOG << "LSA result conversion failed: " << s << endl;
-      result = 0;
-    }
-    LOG << "LSA result: " << result << endl;
-    res[i] = result;
   }
+  LOG << "LSA-NET count = " << count << endl;
+  lsa_net = lsa_net/count;
+  LOG << "LSA-NET result = " << lsa_net << endl;
+  LOG << "LETS = " << lets << endl;
   return true;
 }
 
 void sentStats::resolveLSAwords(){
   if ( sv.size() > 1 ){
-    vector<string> v;
-    for ( size_t i=0; i < sv.size(); ++i ){
-      string word = lowercase( sv[i]->text() );
-      v.push_back(word);
-    }
     vector<double> res;
-    if ( getLSAwords( v, res ) ){
+    double net;
+    int lets;
+    if ( getLSAwords( sv, res, net, lets ) ){
+      double suc = 0;
       for ( size_t i=0; i < sv.size(); ++i ){
 	sv[i]->setLSAsuc(res[i]);
+	suc += res[i];
       }
+      lsa_word_suc = suc/(sv.size()-lets);
+      lsa_word_net = net;
     }
   }
 }
@@ -3332,24 +3407,22 @@ void sentStats::resolveMultiWordAfks(){
 void sentStats::resolvePrepExpr(){
   if ( sv.size() > 2 ){
     for ( size_t i=0; i < sv.size()-1; ++i ){
-      string word = lowercase( sv[i]->text() );
-      string mw2 = word + " " + lowercase( sv[i+1]->text() );
+      string word = sv[i]->ltext();
+      string mw2 = word + " " + sv[i+1]->ltext();
       if ( settings.vzexpr2.find( mw2 ) != settings.vzexpr2.end() ){
 	++prepExprCnt;
 	i += 1;
 	continue;
       }
       if ( i < sv.size() - 2 ){
-	string mw3 = mw2 + " "
-	  + lowercase( sv[i+2]->text() );
+	string mw3 = mw2 + " " + sv[i+2]->ltext();
 	if ( settings.vzexpr3.find( mw3 ) != settings.vzexpr3.end() ){
 	  ++prepExprCnt;
 	  i += 2;
 	  continue;
 	}
 	if ( i < sv.size() - 3 ){
-	  string mw4 = mw3 + " "
-	    + lowercase( sv[i+3]->text() );
+	  string mw4 = mw3 + " " + sv[i+3]->ltext();
 	  if ( settings.vzexpr4.find( mw4 ) != settings.vzexpr4.end() ){
 	    ++prepExprCnt;
 	    i += 3;
@@ -3577,7 +3650,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
       charCntExNames += ws->charCntExNames;
       morphCnt += ws->morphCnt;
       morphCntExNames += ws->morphCntExNames;
-      unique_words[lowercase(ws->word)] += 1;
+      unique_words[ws->lword] += 1;
       unique_lemmas[ws->lemma] += 1;
       aggregate( distances, ws->distances );
       if ( ws->compPartCnt > 0 )
@@ -3592,7 +3665,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
       switch ( ws->prop ){
       case ISNAME:
 	nameCnt++;
-	unique_names[lowercase(ws->word)] +=1;
+	unique_names[ws->lword] +=1;
 	break;
       case ISVD:
 	vdCnt++;
@@ -3637,7 +3710,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
 	archaicsCnt++;
       if ( ws->isContent ){
 	contentCnt++;
-	unique_contents[lowercase(ws->word)] +=1;
+	unique_contents[ws->lword] +=1;
       }
       if ( ws->isNominal )
 	nominalCnt++;
@@ -3820,12 +3893,22 @@ parStats::parStats( Paragraph *p ):
   sentCnt = 0;
   id = p->id();
   vector<Sentence*> sents = p->sentences();
-  sentStats *prev = 0;;
+  sentStats *prev = 0;
+  double suc=0;
+  double net=0;
   for ( size_t i=0; i < sents.size(); ++i ){
     sentStats *ss = new sentStats( sents[i], prev );
     prev = ss;
     merge( ss );
+    if ( ss->lsa_word_suc != NA ){
+      suc += ss->lsa_word_suc;
+    }
+    if ( ss->lsa_word_net != NA ){
+      net += ss->lsa_word_net;
+    }
   }
+  lsa_word_suc = suc/sents.size();
+  lsa_word_net = net/sents.size();
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
   else
@@ -3860,6 +3943,7 @@ struct docStats : public structStats {
   int word_overlapCnt() const { return doc_word_overlapCnt; };
   int lemma_overlapCnt() const { return doc_lemma_overlapCnt; };
   void calculate_doc_overlap();
+  void gatherLSAinfo( Document * );
   int doc_word_argCnt;
   int doc_word_overlapCnt;
   int doc_lemma_argCnt;
@@ -3887,25 +3971,25 @@ void docStats::calculate_doc_overlap( ){
     }
 #endif
     if ( (*it)->isOverlapCandidate() ){
-      string word = lowercase( (*it)->word );
+      string lword =  (*it)->ltext();
       string lemma = lowercase( (*it)->lemma );
       if ( count < settings.overlapSize ){
-	wordbuffer.push_back( word );
+	wordbuffer.push_back( lword );
 	lemmabuffer.push_back( lemma );
       }
       else {
 #ifdef DEBUG_DOL
 	int tmp = doc_word_overlapCnt;
 #endif
-	argument_overlap( word, wordbuffer,
+	argument_overlap( lword, wordbuffer,
 			  doc_word_argCnt, doc_word_overlapCnt );
 #ifdef DEBUG_DOL
 	if ( doc_word_overlapCnt > tmp ){
-	  cerr << "word OVERLAP " << word << endl;
+	  cerr << "word OVERLAP " << lword << endl;
 	}
 #endif
 	wordbuffer.erase(wordbuffer.begin());
-	wordbuffer.push_back( word );
+	wordbuffer.push_back( lword );
 #ifdef DEBUG_DOL
 	tmp = doc_lemma_overlapCnt;
 #endif
@@ -3920,6 +4004,13 @@ void docStats::calculate_doc_overlap( ){
 	lemmabuffer.push_back( lemma );
       }
     }
+  }
+}
+
+void docStats::gatherLSAinfo( Document *doc ){
+  vector<Word*> wv = doc->words();
+  set<string> bow;
+  for ( size_t i=0; i < wv.size(); ++i ){
   }
 }
 
@@ -3938,13 +4029,24 @@ docStats::docStats( Document *doc ):
   if ( !settings.style.empty() ){
     doc->replaceStyle( "text/xsl", settings.style );
   }
+  gatherLSAinfo( doc );
   vector<Paragraph*> pars = doc->paragraphs();
   if ( pars.size() > 0 )
     folia_node = pars[0]->parent();
+  double suc=0;
+  double net=0;
   for ( size_t i=0; i != pars.size(); ++i ){
     parStats *ps = new parStats( pars[i] );
     merge( ps );
+    if ( ps->lsa_word_suc != NA ){
+      suc += ps->lsa_word_suc;
+    }
+    if ( ps->lsa_word_net != NA ){
+      net += ps->lsa_word_net;
+    }
   }
+  lsa_word_suc = suc/pars.size();
+  lsa_word_net = net/pars.size();
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
   else
