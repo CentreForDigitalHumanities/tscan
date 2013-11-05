@@ -3944,10 +3944,18 @@ parStats::parStats( Paragraph *p,
       sent_net += ss->lsa_sent_net;
     }
   }
-  lsa_word_suc = word_suc/sents.size();
-  lsa_word_net = word_net/sents.size();
-  lsa_sent_suc = sent_suc/sents.size();
-  lsa_sent_net = sent_net/sents.size();
+  if ( word_suc > 0 ){
+    lsa_word_suc = word_suc/sents.size();
+  }
+  if ( word_net > 0 ){
+    lsa_word_net = word_net/sents.size();
+  }
+  if ( sent_suc > 0 ){
+    lsa_sent_suc = sent_suc/sents.size();
+  }
+  if ( sent_net > 0 ){
+    lsa_sent_net = sent_net/sents.size();
+  }
   resolveLSAsentences( LSA_sent_dists );
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
@@ -4337,10 +4345,18 @@ docStats::docStats( Document *doc ):
       par_net += ps->lsa_par_net;
     }
   }
-  lsa_word_suc = word_suc/pars.size();
-  lsa_word_net = word_net/pars.size();
-  lsa_sent_suc = sent_suc/pars.size();
-  lsa_sent_net = sent_net/pars.size();
+  if ( word_suc > 0 ){
+    lsa_word_suc = word_suc/pars.size();
+  }
+  if ( word_net > 0 ){
+    lsa_word_net = word_net/pars.size();
+  }
+  if ( sent_suc > 0 ){
+    lsa_sent_suc = sent_suc/pars.size();
+  }
+  if ( sent_net > 0 ){
+    lsa_sent_net = sent_net/pars.size();
+  }
   if ( par_suc > 0 ){
     lsa_par_suc = par_suc/pars.size();
   }
