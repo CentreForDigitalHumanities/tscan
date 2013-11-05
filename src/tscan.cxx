@@ -1008,8 +1008,15 @@ struct basicStats {
     folia_node( el ),
     category( cat ),
     charCnt(0),charCntExNames(0),
-    morphCnt(0), morphCntExNames(0)
-  {};
+    morphCnt(0), morphCntExNames(0),
+    lsa_opv(0)
+  { if ( el ){
+      id = el->id();
+    }
+    else {
+      id = "document";
+    }
+  };
   virtual ~basicStats(){};
   virtual void CSVheader( ostream&, const string& ) const = 0;
   virtual void wordDifficultiesHeader( ostream& ) const = 0;
@@ -1039,20 +1046,20 @@ struct basicStats {
   virtual void setConnType( ConnType ){
     throw logic_error("settConnType() only valid for words" );
   };
-  virtual void setLSAsuc( double ){
-    throw logic_error("settLSAsuc() only valid for words" );
-  };
   virtual void setMultiConn(){
     throw logic_error("settMultiConn() only valid for words" );
   };
   virtual vector<const wordStats*> collectWords() const = 0;
 
+  void setLSAsuc( double d ){ lsa_opv = d; };
   FoliaElement *folia_node;
   string category;
+  string id;
   int charCnt;
   int charCntExNames;
   int morphCnt;
   int morphCntExNames;
+  double lsa_opv;
   vector<basicStats *> sv;
 };
 
@@ -1082,7 +1089,6 @@ struct wordStats : public basicStats {
   ConnType getConnType() const { return connType; };
   void setConnType( ConnType t ){ connType = t; };
   void setMultiConn(){ isMultiConn = true; };
-  void setLSAsuc( double d ){ lsa_suc = d; };
   void addMetrics( ) const;
   bool checkContent() const;
   ConnType checkConnective( const xmlNode * ) const;
@@ -1119,7 +1125,6 @@ struct wordStats : public basicStats {
   NerProp nerProp;
   ConnType connType;
   bool isMultiConn;
-  double lsa_suc;
   bool f50;
   bool f65;
   bool f77;
@@ -1625,12 +1630,11 @@ void argument_overlap( const string w_or_l,
 }
 
 wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts ):
-  basicStats( w, "WORD" ), wwform(::NO_VERB),
+  basicStats( w, "word" ), wwform(::NO_VERB),
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false),
   nerProp(NONER), connType(NOCONN), isMultiConn(false),
-  lsa_suc(0),
   f50(false), f65(false), f77(false), f80(false),  compPartCnt(0),
   top_freq(notFound), word_freq(0), lemma_freq(0),
   argRepeatCnt(0), wordOverlapCnt(0), lemmaRepeatCnt(0), lemmaOverlapCnt(0),
@@ -1806,8 +1810,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "connective", toString(connType) );
   if ( isMultiConn )
     addOneMetric( doc, el, "multi_connective", "true" );
-  if ( lsa_suc )
-    addOneMetric( doc, el, "lsa_opvolger", toString(lsa_suc) );
+  if ( lsa_opv )
+    addOneMetric( doc, el, "lsa_word_suc", toString(lsa_opv) );
   if ( f50 )
     addOneMetric( doc, el, "f50", "true" );
   if ( f65 )
@@ -1931,7 +1935,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
   os << (top_freq<=top5000?1:0) << ",";
   os << (top_freq<=top10000?1:0) << ",";
   os << (top_freq<=top20000?1:0) << ",";
-  os << lsa_suc << ",";
+  os << lsa_opv << ",";
 }
 
 void wordStats::coherenceHeader( ostream& os ) const {
@@ -2182,7 +2186,6 @@ struct structStats: public basicStats {
   virtual int word_overlapCnt() const { return -1; };
   virtual int lemma_overlapCnt() const { return-1; };
   vector<const wordStats*> collectWords() const;
-  string id;
   string text;
   int wordCnt;
   int sentCnt;
@@ -2595,6 +2598,20 @@ void structStats::addMetrics( ) const {
 		"lemma_argument_repeat_count", toString( lemmaRepeatCnt ) );
   addOneMetric( doc, el,
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
+  if ( lsa_opv )
+    addOneMetric( doc, el, "lsa_" + category + "_suc", toString(lsa_opv) );
+  if ( lsa_word_suc != NA )
+    addOneMetric( doc, el, "lsa_word_suc_avg", toString(lsa_word_suc) );
+  if ( lsa_word_net != NA )
+    addOneMetric( doc, el, "lsa_word_net_avg", toString(lsa_word_net) );
+  if ( lsa_sent_suc != NA )
+    addOneMetric( doc, el, "lsa_sent_suc_avg", toString(lsa_sent_suc) );
+  if ( lsa_sent_net != NA )
+    addOneMetric( doc, el, "lsa_sent_net_avg", toString(lsa_sent_net) );
+  if ( lsa_par_suc != NA )
+    addOneMetric( doc, el, "lsa_par_suc_avg", toString(lsa_par_suc) );
+  if ( lsa_par_net != NA )
+    addOneMetric( doc, el, "lsa_par_net_avg", toString(lsa_par_net) );
   addOneMetric( doc, el, "freq50", toString(f50Cnt) );
   addOneMetric( doc, el, "freq65", toString(f65Cnt) );
   addOneMetric( doc, el, "freq77", toString(f77Cnt) );
@@ -2625,10 +2642,6 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "wopr_entropy", toString(entropy) );
   if ( perplexity != NA )
     addOneMetric( doc, el, "wopr_perplexity", toString(perplexity) );
-  if ( lsa_word_suc != NA )
-    addOneMetric( doc, el, "lsa_word_suc", toString(lsa_word_suc) );
-  if ( lsa_word_net != NA )
-    addOneMetric( doc, el, "lsa_word_net", toString(lsa_word_net) );
   addOneMetric( doc, el, "concrete_broad_noun", toString(broadConcreteNounCnt) );
   addOneMetric( doc, el, "concrete_strict_noun", toString(strictConcreteNounCnt) );
   addOneMetric( doc, el, "abstract_broad_noun", toString(broadAbstractNounCnt) );
@@ -3003,10 +3016,10 @@ vector<const wordStats*> structStats::collectWords() const {
 }
 
 struct sentStats : public structStats {
-  sentStats( Sentence *, const sentStats* );
+  sentStats( Sentence *, const sentStats*, const map<string,double>& );
   bool isSentence() const { return true; };
   void resolveConnectives();
-  void resolveLSAwords();
+  void resolveLSAwords( const map<string,double>& );
   void resolveMultiWordAfks();
   void incrementConnCnt( ConnType );
   void addMetrics( ) const;
@@ -3273,8 +3286,10 @@ void sentStats::resolveConnectives(){
   }
 }
 
+//#define DEBUG_LSA
 
-bool getLSAwords( const vector<basicStats*>& words,
+bool getLSAwords( const map<string,double>& LSAword_dists,
+		  const vector<basicStats*>& words,
 		  vector<double>& lsa_suc,
 		  double& lsa_net,
 		  int& lets ){
@@ -3282,15 +3297,7 @@ bool getLSAwords( const vector<basicStats*>& words,
   lsa_net = 0;
   lsa_suc.clear();
   lsa_suc.resize(words.size());
-  string host = config.lookUp( "host", "lsa" );
-  string port = config.lookUp( "port", "lsa" );
-  Sockets::ClientSocket client;
-  if ( !client.connect( host, port ) ){
-    LOG << "failed to open LSA connection: "<< host << ":" << port << endl;
-    LOG << "Reason: " << client.getMessage() << endl;
-    exit( EXIT_FAILURE );
-  }
-  size_t count = 0;
+  size_t node_count = 0;
   for ( size_t i=0; i < words.size()-1; ++i ){
     for ( size_t j=i+1; j < words.size(); ++j ){
       if ( words[i]->wordProperty() == ISLET ){
@@ -3301,70 +3308,89 @@ bool getLSAwords( const vector<basicStats*>& words,
 	  ++lets;
 	continue;
       }
-      ++count;
+      ++node_count;
       string word1 = words[i]->ltext();
       string word2 = words[j]->ltext();
-      if ( j == i+1 ){
-	string call = word1 + "\t" + word2;
-	//	LOG << "calling LSA: '" << call << "'" << endl;
-	client.write( call + "\r\n" );
-	string s;
-	if ( !client.read(s) ){
-	  LOG << "LSA connection failed " << endl;
-	  exit( EXIT_FAILURE );
+      string call = word1 + "\t" + word2;
+      double result = 0;
+      map<string,double>::const_iterator it = LSAword_dists.find(call);
+      if ( it != LSAword_dists.end() ){
+	result = it->second;
+	if ( j == i+1 ){
+	  lsa_suc[i] = result;
 	}
-	//	LOG << "received data [" << s << "]" << endl;
-	double result;
-	if ( !stringTo( s , result ) ){
-	  LOG << "LSA result conversion failed: " << s << endl;
-	  result = 0;
-	}
-	//	LOG << "LSA result: " << result << endl;
-	LOG << "LSA: '" << call << "' ==> " << result << endl;
-	lsa_suc[i] = result;
 	lsa_net += result;
       }
-      else {
-	string call = word1 + "\t" + word2;
-	//	LOG << "calling LSA: '" << call << "'" << endl;
-	client.write( call + "\r\n" );
-	string s;
-	if ( !client.read(s) ){
-	  LOG << "LSA connection failed " << endl;
-	  exit( EXIT_FAILURE );
-	}
-	//	LOG << "received data [" << s << "]" << endl;
-	double result;
-	if ( !stringTo( s , result ) ){
-	  LOG << "LSA result conversion failed: " << s << endl;
-	  result = 0;
-	}
-	//	LOG << "LSA result: " << result << endl;
-	LOG << "LSA: '" << call << "' ==> " << result << endl;
-	lsa_net += result;
-      }
+#ifdef DEBUG_LSA
+      LOG << "LSA: lookup '" << call << "' ==> " << result << endl;
+#endif
     }
   }
-  LOG << "LSA-NET count = " << count << endl;
-  lsa_net = lsa_net/count;
+#ifdef DEBUG_LSA
+  LOG << "LSA-NET sum = " << lsa_net << ", node count = " << node_count << endl;
+#endif
+  lsa_net = lsa_net/node_count;
+#ifdef DEBUG_LSA
   LOG << "LSA-NET result = " << lsa_net << endl;
   LOG << "LETS = " << lets << endl;
+#endif
   return true;
 }
 
-void sentStats::resolveLSAwords(){
+//#define DEBUG_LSA
+bool getLSAstructs( const map<string,double>& LSA_dists,
+		    const vector<basicStats*>& sents,
+		    vector<double>& lsa_suc,
+		    double& lsa_net ){
+  lsa_net = 0;
+  lsa_suc.clear();
+  lsa_suc.resize(sents.size());
+  size_t node_count = 0;
+  for ( size_t i=0; i < sents.size()-1; ++i ){
+    for ( size_t j=i+1; j < sents.size(); ++j ){
+      ++node_count;
+      string word1 = sents[i]->id;
+      string word2 = sents[j]->id;
+      string call = word1 + "<==>" + word2;
+      double result = 0;
+      map<string,double>::const_iterator it = LSA_dists.find(call);
+      if ( it != LSA_dists.end() ){
+	result = it->second;
+	if ( j == i+1 ){
+	  lsa_suc[i] = result;
+	}
+	lsa_net += result;
+      }
+#ifdef DEBUG_LSA
+      LOG << "LSA: doc lookup '" << call << "' ==> " << result << endl;
+#endif
+    }
+  }
+#ifdef DEBUG_LSA
+  LOG << "LSA-doc-NET sum = " << lsa_net << ", node count = " << node_count << endl;
+#endif
+  lsa_net = lsa_net/node_count;
+#ifdef DEBUG_LSA
+  LOG << "LSA-doc-NET result = " << lsa_net << endl;
+#endif
+  return true;
+}
+
+void sentStats::resolveLSAwords( const map<string,double>& LSAword_dists ){
   if ( sv.size() > 1 ){
     vector<double> res;
     double net;
     int lets;
-    if ( getLSAwords( sv, res, net, lets ) ){
+    if ( getLSAwords( LSAword_dists, sv, res, net, lets ) ){
       double suc = 0;
       for ( size_t i=0; i < sv.size(); ++i ){
 	sv[i]->setLSAsuc(res[i]);
 	suc += res[i];
       }
-      lsa_word_suc = suc/(sv.size()-lets);
-      lsa_word_net = net;
+      if ( suc > 0 )
+	lsa_word_suc = suc/(sv.size()-lets);
+      if ( net > 0 )
+	lsa_word_net = net;
     }
   }
 }
@@ -3515,9 +3541,9 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 
 xmlDoc *AlpinoServerParse( Sentence *);
 
-sentStats::sentStats( Sentence *s, const sentStats* pred ):
-  structStats( s, "ZIN" ){
-  id = s->id();
+sentStats::sentStats( Sentence *s, const sentStats* pred,
+		      const map<string,double>& LSAword_dists ):
+  structStats( s, "sent" ){
   text = UnicodeToUTF8( s->toktext() );
   LOG << "analyse tokenized sentence=" << text << endl;
   vector<Word*> w = s->words();
@@ -3844,7 +3870,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred ):
     xmlFreeDoc( alpDoc );
   }
   resolveConnectives();
-  resolveLSAwords();
+  resolveLSAwords( LSAword_dists );
   resolveMultiWordAfks();
   resolvePrepExpr();
   if ( question )
@@ -3883,32 +3909,46 @@ void sentStats::addMetrics( ) const {
 }
 
 struct parStats: public structStats {
-  parStats( Paragraph * );
+  parStats( Paragraph *, const map<string,double>&,
+	    const map<string,double>& );
   void addMetrics( ) const;
+  void resolveLSAsentences( const map<string,double>& );
 };
 
-parStats::parStats( Paragraph *p ):
-  structStats( p, "PARAGRAAF" )
+parStats::parStats( Paragraph *p,
+		    const map<string,double>& LSA_word_dists,
+		    const map<string,double>& LSA_sent_dists ):
+  structStats( p, "par" )
 {
   sentCnt = 0;
-  id = p->id();
   vector<Sentence*> sents = p->sentences();
   sentStats *prev = 0;
-  double suc=0;
-  double net=0;
+  double word_suc=0;
+  double word_net=0;
+  double sent_suc=0;
+  double sent_net=0;
   for ( size_t i=0; i < sents.size(); ++i ){
-    sentStats *ss = new sentStats( sents[i], prev );
+    sentStats *ss = new sentStats( sents[i], prev, LSA_word_dists );
     prev = ss;
     merge( ss );
     if ( ss->lsa_word_suc != NA ){
-      suc += ss->lsa_word_suc;
+      word_suc += ss->lsa_word_suc;
     }
     if ( ss->lsa_word_net != NA ){
-      net += ss->lsa_word_net;
+      word_net += ss->lsa_word_net;
+    }
+    if ( ss->lsa_sent_suc != NA ){
+      sent_suc += ss->lsa_sent_suc;
+    }
+    if ( ss->lsa_sent_net != NA ){
+      sent_net += ss->lsa_sent_net;
     }
   }
-  lsa_word_suc = suc/sents.size();
-  lsa_word_net = net/sents.size();
+  lsa_word_suc = word_suc/sents.size();
+  lsa_word_net = word_net/sents.size();
+  lsa_sent_suc = sent_suc/sents.size();
+  lsa_sent_net = sent_net/sents.size();
+  resolveLSAsentences( LSA_sent_dists );
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
   else
@@ -3927,6 +3967,22 @@ parStats::parStats( Paragraph *p ):
     lemma_freq_log_n = log10( lemma_freq_n / (contentCnt-nameCnt) );
 }
 
+void parStats::resolveLSAsentences( const map<string,double>& LSA_dists ){
+  if ( sv.size() > 1 ){
+    vector<double> res;
+    double net;
+    if ( getLSAstructs( LSA_dists, sv, res, net ) ){
+      double suc = 0;
+      for ( size_t i=0; i < sv.size(); ++i ){
+	sv[i]->setLSAsuc(res[i]);
+	suc += res[i];
+      }
+      lsa_sent_suc = suc/sv.size();
+      lsa_sent_net = net;
+    }
+  }
+}
+
 void parStats::addMetrics( ) const {
   FoliaElement *el = folia_node;
   structStats::addMetrics( );
@@ -3943,11 +3999,16 @@ struct docStats : public structStats {
   int word_overlapCnt() const { return doc_word_overlapCnt; };
   int lemma_overlapCnt() const { return doc_lemma_overlapCnt; };
   void calculate_doc_overlap();
-  void gatherLSAinfo( Document * );
+  void gather_LSA_word_info( Document * );
+  void gather_LSA_doc_info( Document * );
+  void resolveLSAparagraphs();
   int doc_word_argCnt;
   int doc_word_overlapCnt;
   int doc_lemma_argCnt;
   int doc_lemma_overlapCnt;
+  map<string,double> LSA_word_dists;
+  map<string,double> LSA_sentence_dists;
+  map<string,double> LSA_paragraph_dists;
 };
 
 //#define DEBUG_DOL
@@ -4007,15 +4068,229 @@ void docStats::calculate_doc_overlap( ){
   }
 }
 
-void docStats::gatherLSAinfo( Document *doc ){
+void docStats::resolveLSAparagraphs(){
+  if ( sv.size() > 1 ){
+    vector<double> res;
+    double net;
+    if ( getLSAstructs( LSA_paragraph_dists, sv, res, net ) ){
+      double suc = 0;
+      for ( size_t i=0; i < sv.size(); ++i ){
+	sv[i]->setLSAsuc(res[i]);
+	suc += res[i];
+      }
+      if ( suc > 0 )
+	lsa_par_suc = suc/sv.size();
+      if ( net > 0 )
+	lsa_par_net = net;
+    }
+  }
+}
+
+
+//#define DEBUG_LSA_SERVER
+
+void docStats::gather_LSA_word_info( Document *doc ){
+  string host = config.lookUp( "host", "lsa_words" );
+  string port = config.lookUp( "port", "lsa_words" );
+  Sockets::ClientSocket client;
+  if ( !client.connect( host, port ) ){
+    LOG << "failed to open LSA connection: "<< host << ":" << port << endl;
+    LOG << "Reason: " << client.getMessage() << endl;
+    exit( EXIT_FAILURE );
+  }
   vector<Word*> wv = doc->words();
   set<string> bow;
   for ( size_t i=0; i < wv.size(); ++i ){
+    UnicodeString us = wv[i]->text();
+    us.toLower();
+    string s = UnicodeToUTF8( us );
+    bow.insert(s);
+  }
+  while ( !bow.empty() ){
+    set<string>::iterator it = bow.begin();
+    string word = *it;
+    bow.erase( it );
+    it = bow.begin();
+    while ( it != bow.end() ) {
+      string call = word + "\t" + *it;
+      string rcall = *it + "\t" + word;
+      if ( LSA_word_dists.find( call ) == LSA_word_dists.end() ){
+#ifdef DEBUG_LSA_SERVER
+	LOG << "calling LSA: '" << call << "'" << endl;
+#endif
+	client.write( call + "\r\n" );
+	string s;
+	if ( !client.read(s) ){
+	  LOG << "LSA connection failed " << endl;
+	  exit( EXIT_FAILURE );
+	}
+#ifdef DEBUG_LSA_SERVER
+	LOG << "received data [" << s << "]" << endl;
+#endif
+	double result = 0;
+	if ( !stringTo( s , result ) ){
+	  LOG << "LSA result conversion failed: " << s << endl;
+	  result = 0;
+	}
+#ifdef DEBUG_LSA_SERVER
+	LOG << "LSA result: " << result << endl;
+#endif
+#ifdef DEBUG_LSA
+	LOG << "LSA: '" << call << "' ==> " << result << endl;
+#endif
+	if ( result != 0 ){
+	  LSA_word_dists[call] = result;
+	  LSA_word_dists[rcall] = result;
+	}
+      }
+      ++it;
+    }
+  }
+}
+
+#define DEBUG_LSA_SERVER
+
+void docStats::gather_LSA_doc_info( Document *doc ){
+  string host = config.lookUp( "host", "lsa_docs" );
+  string port = config.lookUp( "port", "lsa_docs" );
+  Sockets::ClientSocket client;
+  if ( !client.connect( host, port ) ){
+    LOG << "failed to open LSA connection: "<< host << ":" << port << endl;
+    LOG << "Reason: " << client.getMessage() << endl;
+    exit( EXIT_FAILURE );
+  }
+  vector<Paragraph*> pv = doc->paragraphs();
+  map<string,string> norm_pv;
+  map<string,string> norm_sv;
+  for ( size_t p=0; p < pv.size(); ++p ){
+    vector<Sentence*> sv = pv[p]->sentences();
+    string norm_p;
+    for ( size_t s=0; s < sv.size(); ++s ){
+      vector<Word*> wv = sv[s]->words();
+      set<string> bow;
+      for ( size_t i=0; i < wv.size(); ++i ){
+	UnicodeString us = wv[i]->text();
+	us.toLower();
+	string s = UnicodeToUTF8( us );
+	bow.insert(s);
+      }
+      string norm_s;
+      set<string>::iterator it = bow.begin();
+      while ( it != bow.end() ) {
+	norm_s += *it++ + " ";
+      }
+      norm_sv[sv[s]->id()] = norm_s;
+      norm_p += norm_s;
+    }
+    norm_pv[pv[p]->id()] = norm_p;
+  }
+#ifdef DEBUG_LSA_SERVER
+  LOG << "LSA doc Paragraaf results" << endl;
+  for ( map<string,string>::const_iterator it = norm_pv.begin();
+	it != norm_pv.end();
+	++it ){
+    LOG << "paragraaf " << it->first << endl;
+    LOG << it->second << endl;
+  }
+  LOG << "en de Zinnen" << endl;
+  for ( map<string,string>::const_iterator it = norm_sv.begin();
+	it != norm_sv.end();
+	++it ){
+    LOG << "zin " <<  it->first << endl;
+    LOG << it->second << endl;
+  }
+#endif
+
+  for ( map<string,string>::const_iterator it1 = norm_pv.begin();
+	it1 != norm_pv.end();
+	++it1 ){
+    for ( map<string,string>::const_iterator it2 = it1;
+	  it2 != norm_pv.end();
+	  ++it2 ){
+      if ( it2 == it1 )
+	continue;
+      string index = it1->first + "<==>" + it2->first;
+      string rindex = it2->first + "<==>" + it1->first;
+      LOG << "LSA combine paragraaf " << index << endl;
+      string call = it1->second + "\t" + it2->second;
+      if ( LSA_paragraph_dists.find( index ) == LSA_paragraph_dists.end() ){
+#ifdef DEBUG_LSA_SERVER
+	LOG << "calling LSA docs: '" << call << "'" << endl;
+#endif
+	client.write( call + "\r\n" );
+	string s;
+	if ( !client.read(s) ){
+	  LOG << "LSA connection failed " << endl;
+	  exit( EXIT_FAILURE );
+	}
+#ifdef DEBUG_LSA_SERVER
+	LOG << "received data [" << s << "]" << endl;
+#endif
+	double result = 0;
+	if ( !stringTo( s , result ) ){
+	  LOG << "LSA result conversion failed: " << s << endl;
+	  result = 0;
+	}
+#ifdef DEBUG_LSA_SERVER
+	LOG << "LSA result: " << result << endl;
+#endif
+#ifdef DEBUG_LSA
+	LOG << "LSA: '" << index << "' ==> " << result << endl;
+#endif
+	if ( result != 0 ){
+	  LSA_paragraph_dists[index] = result;
+	  LSA_paragraph_dists[rindex] = result;
+	}
+      }
+    }
+  }
+  for ( map<string,string>::const_iterator it1 = norm_sv.begin();
+	it1 != norm_sv.end();
+	++it1 ){
+    for ( map<string,string>::const_iterator it2 = it1;
+	  it2 != norm_sv.end();
+	  ++it2 ){
+      if ( it2 == it1 )
+	continue;
+      string index = it1->first + "<==>" + it2->first;
+      string rindex = it2->first + "<==>" + it1->first;
+      LOG << "LSA combine sentence " << index << endl;
+      string call = it1->second + "\t" + it2->second;
+      if ( LSA_sentence_dists.find( index ) == LSA_sentence_dists.end() ){
+#ifdef DEBUG_LSA_SERVER
+	LOG << "calling LSA docs: '" << call << "'" << endl;
+#endif
+	client.write( call + "\r\n" );
+	string s;
+	if ( !client.read(s) ){
+	  LOG << "LSA connection failed " << endl;
+	  exit( EXIT_FAILURE );
+	}
+#ifdef DEBUG_LSA_SERVER
+	LOG << "received data [" << s << "]" << endl;
+#endif
+	double result = 0;
+	if ( !stringTo( s , result ) ){
+	  LOG << "LSA result conversion failed: " << s << endl;
+	  result = 0;
+	}
+#ifdef DEBUG_LSA_SERVER
+	LOG << "LSA result: " << result << endl;
+#endif
+#ifdef DEBUG_LSA
+	LOG << "LSA: '" << index << "' ==> " << result << endl;
+#endif
+	if ( result != 0 ){
+	  LSA_sentence_dists[index] = result;
+	  LSA_sentence_dists[rindex] = result;
+	}
+      }
+    }
   }
 }
 
 docStats::docStats( Document *doc ):
-  structStats( 0, "DOCUMENT" ),
+  structStats( 0, "document" ),
   doc_word_argCnt(0), doc_word_overlapCnt(0),
   doc_lemma_argCnt(0), doc_lemma_overlapCnt(0)
 {
@@ -4029,24 +4304,50 @@ docStats::docStats( Document *doc ):
   if ( !settings.style.empty() ){
     doc->replaceStyle( "text/xsl", settings.style );
   }
-  gatherLSAinfo( doc );
+  gather_LSA_word_info( doc );
+  gather_LSA_doc_info( doc );
   vector<Paragraph*> pars = doc->paragraphs();
   if ( pars.size() > 0 )
     folia_node = pars[0]->parent();
-  double suc=0;
-  double net=0;
+  double word_suc=0;
+  double word_net=0;
+  double sent_suc=0;
+  double sent_net=0;
+  double par_suc=0;
+  double par_net=0;
   for ( size_t i=0; i != pars.size(); ++i ){
-    parStats *ps = new parStats( pars[i] );
+    parStats *ps = new parStats( pars[i], LSA_word_dists, LSA_sentence_dists );
     merge( ps );
     if ( ps->lsa_word_suc != NA ){
-      suc += ps->lsa_word_suc;
+      word_suc += ps->lsa_word_suc;
     }
     if ( ps->lsa_word_net != NA ){
-      net += ps->lsa_word_net;
+      word_net += ps->lsa_word_net;
+    }
+    if ( ps->lsa_sent_suc != NA ){
+      sent_suc += ps->lsa_sent_suc;
+    }
+    if ( ps->lsa_sent_net != NA ){
+      sent_net += ps->lsa_sent_net;
+    }
+    if ( ps->lsa_par_suc != NA ){
+      par_suc += ps->lsa_par_suc;
+    }
+    if ( ps->lsa_par_net != NA ){
+      par_net += ps->lsa_par_net;
     }
   }
-  lsa_word_suc = suc/pars.size();
-  lsa_word_net = net/pars.size();
+  lsa_word_suc = word_suc/pars.size();
+  lsa_word_net = word_net/pars.size();
+  lsa_sent_suc = sent_suc/pars.size();
+  lsa_sent_net = sent_net/pars.size();
+  if ( par_suc > 0 ){
+    lsa_par_suc = par_suc/pars.size();
+  }
+  if ( par_net > 0 ){
+    lsa_par_net = par_net/pars.size();
+  }
+  resolveLSAparagraphs( );
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
   else
@@ -4063,7 +4364,6 @@ docStats::docStats( Document *doc ):
     lemma_freq_log_n = NA;
   else
     lemma_freq_log_n = log10( lemma_freq_n / (contentCnt-nameCnt) );
-
   calculate_doc_overlap( );
 
 }
@@ -4133,7 +4433,7 @@ void docStats::toCSV( const string& name,
       for ( size_t par=0; par < sv.size(); ++par ){
 	if ( par == 0 )
 	  sv[0]->CSVheader( out, "File,FoLiA-ID" );
-	out << name << "," << sv[par]->folia_node->id() << ",";
+	out << name << "," << sv[par]->id << ",";
 	sv[par]->toCSV( out );
       }
       cout << "stored paragraph statistics in " << fname << endl;
@@ -4150,7 +4450,7 @@ void docStats::toCSV( const string& name,
 	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
 	  if ( par == 0 && sent == 0 )
 	    sv[0]->sv[0]->CSVheader( out, "File,FoLiA-ID" );
-	  out << name << "," << sv[par]->sv[sent]->folia_node->id() << ",";
+	  out << name << "," << sv[par]->sv[sent]->id << ",";
 	  sv[par]->sv[sent]->toCSV( out );
 	}
       }
@@ -4169,7 +4469,7 @@ void docStats::toCSV( const string& name,
 	  for ( size_t word=0; word < sv[par]->sv[sent]->sv.size(); ++word ){
 	    if ( par == 0 && sent == 0 && word == 0 )
 	      sv[0]->sv[0]->sv[0]->CSVheader( out, "File,FoLiA-ID,word" );
-	    out << name << "," << sv[par]->sv[sent]->sv[word]->folia_node->id() << ",";
+	    out << name << "," << sv[par]->sv[sent]->sv[word]->id << ",";
 	    sv[par]->sv[sent]->sv[word]->toCSV( out );
 	  }
 	}
