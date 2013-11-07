@@ -3026,6 +3026,7 @@ void structStats::resolveLSA( const map<string,double>& LSA_dists ){
   if ( sv.size() < 1 )
     return;
 
+  calculate_LSA_summary();
   double suc = 0;
   double net = 0;
   size_t node_count = 0;
@@ -3975,7 +3976,6 @@ parStats::parStats( Paragraph *p,
     prev = ss;
     merge( ss );
   }
-  calculate_LSA_summary();
   resolveLSA( LSA_sent_dists );
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
@@ -4322,7 +4322,6 @@ docStats::docStats( Document *doc ):
     parStats *ps = new parStats( pars[i], LSA_word_dists, LSA_sentence_dists );
     merge( ps );
   }
-  calculate_LSA_summary();
   resolveLSA( LSA_paragraph_dists );
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
