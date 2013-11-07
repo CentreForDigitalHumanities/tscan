@@ -2189,9 +2189,6 @@ struct structStats: public basicStats {
   vector<const wordStats*> collectWords() const;
   virtual void setLSAvalues( double, double ) = 0;
   virtual void resolveLSA( const map<string,double>& );
-  bool getLSA( const map<string,double>& LSA_dists,
-	       double&,
-	       double& );
   void calculate_LSA_summary();
   string text;
   int wordCnt;
@@ -3024,11 +3021,13 @@ vector<const wordStats*> structStats::collectWords() const {
 }
 
 //#define DEBUG_LSA
-bool structStats::getLSA( const map<string,double>& LSA_dists,
-			  double& suc,
-			  double& net ){
-  suc = 0;
-  net = 0;
+
+void structStats::resolveLSA( const map<string,double>& LSA_dists ){
+  if ( sv.size() < 1 )
+    return;
+
+  double suc = 0;
+  double net = 0;
   size_t node_count = 0;
   for ( size_t i=0; i < sv.size()-1; ++i ){
     for ( size_t j=i+1; j < sv.size(); ++j ){
@@ -3060,17 +3059,7 @@ bool structStats::getLSA( const map<string,double>& LSA_dists,
   LOG << "LSA-suc result = " << suc << endl;
   LOG << "LSA-NET result = " << net << endl;
 #endif
-  return true;
-}
-
-void structStats::resolveLSA( const map<string,double>& LSA_dists ){
-  if ( sv.size() > 1 ){
-    double net = 0;
-    double suc = 0;
-    if ( getLSA( LSA_dists, suc, net ) ){
-      setLSAvalues( suc, net );
-    }
-  }
+  setLSAvalues( suc, net );
 }
 
 void structStats::calculate_LSA_summary(){
