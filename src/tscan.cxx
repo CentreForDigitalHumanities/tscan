@@ -583,7 +583,7 @@ bool fill_connectors( map<CGN::Type,set<string> >& c1,
     // OR an entry of 1, 2 or 3 words seperated by a single space
     // like: 'dus' OR 'de facto'
     // OR the same followed by a TAB ('\t') and a CGN tag
-    // like: 'maar   BW'
+    // like: 'maar   VG'
     line = TiCC::trim( line );
     if ( line.empty() || line[0] == '#' )
       continue;
@@ -2187,8 +2187,8 @@ struct structStats: public basicStats {
   virtual int word_overlapCnt() const { return -1; };
   virtual int lemma_overlapCnt() const { return-1; };
   vector<const wordStats*> collectWords() const;
-  virtual void setLSAvalues( double, double ) = 0;
-  void resolveLSA( const map<string,double>& );
+  virtual void setLSAvalues( double, double, int=0 ) = 0;
+  virtual void resolveLSA( const map<string,double>& );
   void calculate_LSA_summary();
   string text;
   int wordCnt;
@@ -3127,8 +3127,8 @@ struct sentStats : public structStats {
   sentStats( Sentence *, const sentStats*, const map<string,double>& );
   bool isSentence() const { return true; };
   void resolveConnectives();
-  void setLSAvalues( double, double ){ abort(); };
-  void resolveLSAwords( const map<string,double>& );
+  void setLSAvalues( double, double, int=0 );
+  void resolveLSA( const map<string,double>& );
   void resolveMultiWordAfks();
   void incrementConnCnt( ConnType );
   void addMetrics( ) const;
@@ -3136,6 +3136,13 @@ struct sentStats : public structStats {
   ConnType checkMultiConnectives( const string& );
   void resolvePrepExpr();
 };
+
+void sentStats::setLSAvalues( double suc, double net, int skips ){
+  if ( suc > 0 )
+    lsa_word_suc = suc/(sv.size()-skips);
+  if ( net > 0 )
+    lsa_word_net = net;
+}
 
 void fill_word_lemma_buffers( const sentStats* ss,
 			      vector<string>& wv,
@@ -3446,7 +3453,7 @@ bool getLSAwords( const map<string,double>& LSAword_dists,
   return true;
 }
 
-void sentStats::resolveLSAwords( const map<string,double>& LSAword_dists ){
+void sentStats::resolveLSA( const map<string,double>& LSAword_dists ){
   if ( sv.size() > 1 ){
     vector<double> res;
     double net;
@@ -3457,10 +3464,7 @@ void sentStats::resolveLSAwords( const map<string,double>& LSAword_dists ){
 	sv[i]->setLSAsuc(res[i]);
 	suc += res[i];
       }
-      if ( suc > 0 )
-	lsa_word_suc = suc/(sv.size()-lets);
-      if ( net > 0 )
-	lsa_word_net = net;
+      setLSAvalues( suc, net, lets );
     }
   }
 }
@@ -3940,7 +3944,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
     xmlFreeDoc( alpDoc );
   }
   resolveConnectives();
-  resolveLSAwords( LSAword_dists );
+  resolveLSA( LSAword_dists );
   resolveMultiWordAfks();
   resolvePrepExpr();
   if ( question )
@@ -3982,7 +3986,7 @@ struct parStats: public structStats {
   parStats( Paragraph *, const map<string,double>&,
 	    const map<string,double>& );
   void addMetrics( ) const;
-  void setLSAvalues( double, double );
+  void setLSAvalues( double, double, int=0 );
 };
 
 parStats::parStats( Paragraph *p,
@@ -4026,7 +4030,7 @@ void parStats::addMetrics( ) const {
 		"sentence_count", toString(sentCnt) );
 }
 
-void parStats::setLSAvalues( double suc, double net ){
+void parStats::setLSAvalues( double suc, double net, int ){
   if ( suc > 0 )
     lsa_sent_suc = suc/sv.size();
   if ( net > 0 )
@@ -4042,7 +4046,7 @@ struct docStats : public structStats {
   int word_overlapCnt() const { return doc_word_overlapCnt; };
   int lemma_overlapCnt() const { return doc_lemma_overlapCnt; };
   void calculate_doc_overlap();
-  void setLSAvalues( double, double );
+  void setLSAvalues( double, double, int=0 );
   void gather_LSA_word_info( Document * );
   void gather_LSA_doc_info( Document * );
   int doc_word_argCnt;
@@ -4054,7 +4058,7 @@ struct docStats : public structStats {
   map<string,double> LSA_paragraph_dists;
 };
 
-void docStats::setLSAvalues( double suc, double net ){
+void docStats::setLSAvalues( double suc, double net, int ){
   if ( suc > 0 )
     lsa_par_suc = suc/sv.size();
   if ( net > 0 )
