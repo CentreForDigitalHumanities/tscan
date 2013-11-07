@@ -2187,8 +2187,11 @@ struct structStats: public basicStats {
   virtual int word_overlapCnt() const { return -1; };
   virtual int lemma_overlapCnt() const { return-1; };
   vector<const wordStats*> collectWords() const;
-  virtual void setLSAvalues( double, double, int=0 ) = 0;
+  virtual void setLSAvalues( double, double ) = 0;
   virtual void resolveLSA( const map<string,double>& );
+  bool getLSA( const map<string,double>& LSA_dists,
+	       double&,
+	       double& );
   void calculate_LSA_summary();
   string text;
   int wordCnt;
@@ -3021,28 +3024,27 @@ vector<const wordStats*> structStats::collectWords() const {
 }
 
 //#define DEBUG_LSA
-bool getLSAstructs( const map<string,double>& LSA_dists,
-		    const vector<basicStats*>& sents,
-		    vector<double>& lsa_suc,
-		    double& lsa_net ){
-  lsa_net = 0;
-  lsa_suc.clear();
-  lsa_suc.resize(sents.size());
+bool structStats::getLSA( const map<string,double>& LSA_dists,
+			  double& suc,
+			  double& net ){
+  suc = 0;
+  net = 0;
   size_t node_count = 0;
-  for ( size_t i=0; i < sents.size()-1; ++i ){
-    for ( size_t j=i+1; j < sents.size(); ++j ){
+  for ( size_t i=0; i < sv.size()-1; ++i ){
+    for ( size_t j=i+1; j < sv.size(); ++j ){
       ++node_count;
-      string word1 = sents[i]->id;
-      string word2 = sents[j]->id;
+      string word1 = sv[i]->id;
+      string word2 = sv[j]->id;
       string call = word1 + "<==>" + word2;
       double result = 0;
       map<string,double>::const_iterator it = LSA_dists.find(call);
       if ( it != LSA_dists.end() ){
 	result = it->second;
 	if ( j == i+1 ){
-	  lsa_suc[i] = result;
+	  sv[i]->setLSAsuc(result);
+	  suc += result;
 	}
-	lsa_net += result;
+	net += result;
       }
 #ifdef DEBUG_LSA
       LOG << "LSA: doc lookup '" << call << "' ==> " << result << endl;
@@ -3050,25 +3052,22 @@ bool getLSAstructs( const map<string,double>& LSA_dists,
     }
   }
 #ifdef DEBUG_LSA
-  LOG << "LSA-doc-NET sum = " << lsa_net << ", node count = " << node_count << endl;
+  LOG << "LSA-doc-NET sum = " << net << ", node count = " << node_count << endl;
 #endif
-  lsa_net = lsa_net/node_count;
+  suc = suc/sv.size();
+  net = net/node_count;
 #ifdef DEBUG_LSA
-  LOG << "LSA-doc-NET result = " << lsa_net << endl;
+  LOG << "LSA-suc result = " << suc << endl;
+  LOG << "LSA-NET result = " << net << endl;
 #endif
   return true;
 }
 
 void structStats::resolveLSA( const map<string,double>& LSA_dists ){
   if ( sv.size() > 1 ){
-    vector<double> res;
-    double net;
-    if ( getLSAstructs( LSA_dists, sv, res, net ) ){
-      double suc = 0;
-      for ( size_t i=0; i < sv.size(); ++i ){
-	sv[i]->setLSAsuc(res[i]);
-	suc += res[i];
-      }
+    double net = 0;
+    double suc = 0;
+    if ( getLSA( LSA_dists, suc, net ) ){
       setLSAvalues( suc, net );
     }
   }
@@ -3127,7 +3126,7 @@ struct sentStats : public structStats {
   sentStats( Sentence *, const sentStats*, const map<string,double>& );
   bool isSentence() const { return true; };
   void resolveConnectives();
-  void setLSAvalues( double, double, int=0 );
+  void setLSAvalues( double, double );
   void resolveLSA( const map<string,double>& );
   void resolveMultiWordAfks();
   void incrementConnCnt( ConnType );
@@ -3137,9 +3136,9 @@ struct sentStats : public structStats {
   void resolvePrepExpr();
 };
 
-void sentStats::setLSAvalues( double suc, double net, int skips ){
+void sentStats::setLSAvalues( double suc, double net ){
   if ( suc > 0 )
-    lsa_word_suc = suc/(sv.size()-skips);
+    lsa_word_suc = suc;
   if ( net > 0 )
     lsa_word_net = net;
 }
@@ -3404,38 +3403,37 @@ void sentStats::resolveConnectives(){
 
 //#define DEBUG_LSA
 
-bool getLSAwords( const map<string,double>& LSAword_dists,
-		  const vector<basicStats*>& words,
-		  vector<double>& lsa_suc,
-		  double& lsa_net,
-		  int& lets ){
-  lets = 0;
-  lsa_net = 0;
-  lsa_suc.clear();
-  lsa_suc.resize(words.size());
+void sentStats::resolveLSA( const map<string,double>& LSAword_dists ){
+  if ( sv.size() < 1 )
+    return;
+
+  int lets = 0;
+  double suc = 0;
+  double net = 0;
   size_t node_count = 0;
-  for ( size_t i=0; i < words.size()-1; ++i ){
-    for ( size_t j=i+1; j < words.size(); ++j ){
-      if ( words[i]->wordProperty() == ISLET ){
+  for ( size_t i=0; i < sv.size()-1; ++i ){
+    for ( size_t j=i+1; j < sv.size(); ++j ){
+      if ( sv[i]->wordProperty() == ISLET ){
 	continue;
       }
-      if ( words[j]->wordProperty() == ISLET ){
+      if ( sv[j]->wordProperty() == ISLET ){
 	if ( i == 0 )
 	  ++lets;
 	continue;
       }
       ++node_count;
-      string word1 = words[i]->ltext();
-      string word2 = words[j]->ltext();
+      string word1 = sv[i]->ltext();
+      string word2 = sv[j]->ltext();
       string call = word1 + "\t" + word2;
       double result = 0;
       map<string,double>::const_iterator it = LSAword_dists.find(call);
       if ( it != LSAword_dists.end() ){
 	result = it->second;
 	if ( j == i+1 ){
-	  lsa_suc[i] = result;
+	  sv[i]->setLSAsuc(result);
+	  suc += result;
 	}
-	lsa_net += result;
+	net += result;
       }
 #ifdef DEBUG_LSA
       LOG << "LSA: lookup '" << call << "' ==> " << result << endl;
@@ -3445,28 +3443,14 @@ bool getLSAwords( const map<string,double>& LSAword_dists,
 #ifdef DEBUG_LSA
   LOG << "LSA-NET sum = " << lsa_net << ", node count = " << node_count << endl;
 #endif
-  lsa_net = lsa_net/node_count;
+  suc = suc/(sv.size()-lets);
+  net = net/node_count;
 #ifdef DEBUG_LSA
-  LOG << "LSA-NET result = " << lsa_net << endl;
+  LOG << "LSA-SUC result = " << suc << endl;
+  LOG << "LSA-NET result = " << net << endl;
   LOG << "LETS = " << lets << endl;
 #endif
-  return true;
-}
-
-void sentStats::resolveLSA( const map<string,double>& LSAword_dists ){
-  if ( sv.size() > 1 ){
-    vector<double> res;
-    double net;
-    int lets;
-    if ( getLSAwords( LSAword_dists, sv, res, net, lets ) ){
-      double suc = 0;
-      for ( size_t i=0; i < sv.size(); ++i ){
-	sv[i]->setLSAsuc(res[i]);
-	suc += res[i];
-      }
-      setLSAvalues( suc, net, lets );
-    }
-  }
+  setLSAvalues( suc, net );
 }
 
 void sentStats::resolveMultiWordAfks(){
@@ -3986,7 +3970,7 @@ struct parStats: public structStats {
   parStats( Paragraph *, const map<string,double>&,
 	    const map<string,double>& );
   void addMetrics( ) const;
-  void setLSAvalues( double, double, int=0 );
+  void setLSAvalues( double, double );
 };
 
 parStats::parStats( Paragraph *p,
@@ -4030,9 +4014,9 @@ void parStats::addMetrics( ) const {
 		"sentence_count", toString(sentCnt) );
 }
 
-void parStats::setLSAvalues( double suc, double net, int ){
+void parStats::setLSAvalues( double suc, double net ){
   if ( suc > 0 )
-    lsa_sent_suc = suc/sv.size();
+    lsa_sent_suc = suc;
   if ( net > 0 )
     lsa_sent_net = net;
 }
@@ -4046,7 +4030,7 @@ struct docStats : public structStats {
   int word_overlapCnt() const { return doc_word_overlapCnt; };
   int lemma_overlapCnt() const { return doc_lemma_overlapCnt; };
   void calculate_doc_overlap();
-  void setLSAvalues( double, double, int=0 );
+  void setLSAvalues( double, double );
   void gather_LSA_word_info( Document * );
   void gather_LSA_doc_info( Document * );
   int doc_word_argCnt;
@@ -4058,9 +4042,9 @@ struct docStats : public structStats {
   map<string,double> LSA_paragraph_dists;
 };
 
-void docStats::setLSAvalues( double suc, double net, int ){
+void docStats::setLSAvalues( double suc, double net ){
   if ( suc > 0 )
-    lsa_par_suc = suc/sv.size();
+    lsa_par_suc = suc;
   if ( net > 0 )
     lsa_par_net = net;
 }
