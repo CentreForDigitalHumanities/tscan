@@ -226,34 +226,28 @@ ostream& operator<<( ostream& os, const NerProp& n ){
   return os;
 }
 
-enum AfkType { NO_A, AANDOENING_A, POLITIEK_A, ZORG_A, ONDERWIJS_A,
-	       JURIDISCH_A, OVERIGE_INSTANTIES_A, WETTEN_A, CHEMIE_A,
-	       OMROEPEN_A, POLITIE_ZIEKENHUIS_A, GENERIEK_A };
+enum AfkType { NO_A, OVERHEID_A, ZORG_A, ONDERWIJS_A,
+	       JURIDISCH_A, OVERIGE_A,
+	       INTERNATIONAAL_A, MEDIA_A, GENERIEK_A };
 
 AfkType stringTo( const string& s ){
   if ( s == "none" )
     return NO_A;
-  if ( s == "aandoening" )
-    return AANDOENING_A;
-  if ( s == "politiek" )
-    return POLITIEK_A;
-  if ( s == "zorg" )
+  if ( s == "Overheid_Politiek" )
+    return OVERHEID_A;
+  if ( s == "Zorg" )
     return ZORG_A;
-  if ( s == "onderwijs" )
+  if ( s == "Onderwijs" )
     return ONDERWIJS_A;
-  if ( s == "juridisch" )
+  if ( s == "Juridisch" )
     return JURIDISCH_A;
-  if ( s == "overige_instanties" )
-    return OVERIGE_INSTANTIES_A;
-  if ( s == "wetten" )
-    return WETTEN_A;
-  if ( s == "chemie" )
-    return CHEMIE_A;
-  if ( s == "omroepen" )
-    return OMROEPEN_A;
-  if ( s == "politie_ziekenhuis" )
-    return POLITIE_ZIEKENHUIS_A;
-  if ( s == "generiek" )
+  if ( s == "Overig" )
+    return OVERIGE_A;
+  if ( s == "Internationaal" )
+    return INTERNATIONAAL_A;
+  if ( s == "Media" )
+    return MEDIA_A;
+  if (s == "Generiek" )
     return GENERIEK_A;
   return NO_A;
 }
@@ -262,28 +256,22 @@ string toString( const AfkType& afk ){
   switch ( afk ){
   case NO_A:
     return "none";
-  case AANDOENING_A:
-    return "aandoening";
-  case POLITIEK_A:
-    return "politiek";
+  case OVERHEID_A:
+    return "Overheid_Politiek";
   case ZORG_A:
-    return "zorg";
+    return "Zorg";
+  case INTERNATIONAAL_A:
+    return "Internationaal";
+  case MEDIA_A:
+    return "Media";
   case ONDERWIJS_A:
-    return "onderwijs";
+    return "Onderwijs";
   case JURIDISCH_A:
-    return "juridisch";
-  case OVERIGE_INSTANTIES_A:
-    return "overige_instanties";
-  case WETTEN_A:
-    return "wetten";
-  case CHEMIE_A:
-    return "chemie";
-  case OMROEPEN_A:
-    return "omroepen";
-  case POLITIE_ZIEKENHUIS_A:
-    return "politie_ziekenhuis";
+    return "Juridisch";
+  case OVERIGE_A:
+    return "Overig";
   case GENERIEK_A:
-    return "generiek";
+    return "Generiek";
   default:
     return "PANIEK";
   };
@@ -1009,7 +997,8 @@ struct basicStats {
     category( cat ),
     charCnt(0),charCntExNames(0),
     morphCnt(0), morphCntExNames(0),
-    lsa_opv(0)
+    lsa_opv(0),
+    lsa_ctx(0)
   { if ( el ){
       id = el->id();
     }
@@ -1052,6 +1041,7 @@ struct basicStats {
   virtual vector<const wordStats*> collectWords() const = 0;
 
   void setLSAsuc( double d ){ lsa_opv = d; };
+  void setLSAcontext( double d ){ lsa_ctx = d; };
   FoliaElement *folia_node;
   string category;
   string id;
@@ -1060,6 +1050,7 @@ struct basicStats {
   int morphCnt;
   int morphCntExNames;
   double lsa_opv;
+  double lsa_ctx;
   vector<basicStats *> sv;
 };
 
@@ -1812,6 +1803,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "multi_connective", "true" );
   if ( lsa_opv )
     addOneMetric( doc, el, "lsa_word_suc", toString(lsa_opv) );
+  if ( lsa_ctx )
+    addOneMetric( doc, el, "lsa_word_ctx", toString(lsa_ctx) );
   if ( f50 )
     addOneMetric( doc, el, "f50", "true" );
   if ( f65 )
@@ -1874,7 +1867,7 @@ void wordStats::wordDifficultiesHeader( ostream& os ) const {
      << "sdpw,sdens,freq50,freq65,freq77,freq80,"
      << "word_freq_log,word_freq_log_zn,"
      << "lemfreq_log,lemfreq_log_zn,"
-     << "freq1000,freq2000,freq3000,freq5000,freq10000,freq20000,so_suc,";
+     << "freq1000,freq2000,freq3000,freq5000,freq10000,freq20000,so_suc,so_ctx,";
 }
 
 void wordStats::wordDifficultiesToCSV( ostream& os ) const {
@@ -1936,6 +1929,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
   os << (top_freq<=top10000?1:0) << ",";
   os << (top_freq<=top20000?1:0) << ",";
   os << lsa_opv << ",";
+  os << lsa_ctx << ",";
 }
 
 void wordStats::coherenceHeader( ostream& os ) const {
@@ -2009,7 +2003,8 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
 }
 
 void wordStats::wordSortHeader( ostream& os ) const {
-  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let,afk_type,";
+  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let,"
+     << "afko,afk_gen,afk_int,afk_jur,afk_med,afk_ond,afk_pol,afk_ov,afk_zorg,";
 }
 
 void wordStats::wordSortToCSV( ostream& os ) const {
@@ -2025,7 +2020,39 @@ void wordStats::wordSortToCSV( ostream& os ) const {
      << (tag == CGN::TSW ) << ","
      << (tag == CGN::SPEC ) << ","
      << (tag == CGN::LET ) << ","
-     << toString(afkType) << ",";
+     << toString( afkType != NO_A ) << ",";
+  if ( afkType == GENERIEK_A )
+    os << "1,";
+  else
+    os << "0,";
+  if ( afkType == INTERNATIONAAL_A )
+    os << "1,";
+  else
+    os << "0,";
+  if ( afkType == JURIDISCH_A )
+    os << "1,";
+  else
+    os << "0,";
+  if ( afkType == MEDIA_A )
+    os << "1,";
+  else
+    os << "0,";
+  if ( afkType == ONDERWIJS_A )
+    os << "1,";
+  else
+    os << "0,";
+  if ( afkType == OVERHEID_A )
+    os << "1,";
+  else
+    os << "0,";
+  if ( afkType == OVERIGE_A )
+    os << "1,";
+  else
+    os << "0,";
+  if ( afkType == ZORG_A )
+    os << "1,";
+  else
+    os << "0,";
 }
 
 void wordStats::miscHeader( ostream& os ) const {
@@ -2130,11 +2157,11 @@ struct structStats: public basicStats {
     lsa_word_net(NA),
     lsa_sent_suc(NA),
     lsa_sent_net(NA),
+    lsa_sent_ctx(NA),
     lsa_par_suc(NA),
     lsa_par_net(NA),
-    lsa_sent_context(NA),
-    lsa_par_context(NA),
-    lsa_doc_context(NA),
+    lsa_par_ctx(NA),
+    lsa_doc_ctx(NA),
     broadConcreteNounCnt(0),
     strictConcreteNounCnt(0),
     broadAbstractNounCnt(0),
@@ -2187,7 +2214,7 @@ struct structStats: public basicStats {
   virtual int word_overlapCnt() const { return -1; };
   virtual int lemma_overlapCnt() const { return-1; };
   vector<const wordStats*> collectWords() const;
-  virtual void setLSAvalues( double, double ) = 0;
+  virtual void setLSAvalues( double, double, double = 0 ) = 0;
   virtual void resolveLSA( const map<string,double>& );
   void calculate_LSA_summary();
   string text;
@@ -2268,11 +2295,11 @@ struct structStats: public basicStats {
   double lsa_word_net;
   double lsa_sent_suc;
   double lsa_sent_net;
+  double lsa_sent_ctx;
   double lsa_par_suc;
   double lsa_par_net;
-  double lsa_sent_context;
-  double lsa_par_context;
-  double lsa_doc_context;
+  double lsa_par_ctx;
+  double lsa_doc_ctx;
   int broadConcreteNounCnt;
   int strictConcreteNounCnt;
   int broadAbstractNounCnt;
@@ -2528,9 +2555,9 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "product_name_count", toString(val) );
   val = at( ners, EVE_B );
   addOneMetric( doc, el, "event_name_count", toString(val) );
-  val = at( afks, POLITIEK_A );
+  val = at( afks, OVERHEID_A );
   if ( val > 0 ){
-    addOneMetric( doc, el, "aandoening_afk_count", toString(val) );
+    addOneMetric( doc, el, "overheid_afk_count", toString(val) );
   }
   val = at( afks, JURIDISCH_A );
   if ( val > 0 ){
@@ -2540,22 +2567,25 @@ void structStats::addMetrics( ) const {
   if ( val > 0 ){
     addOneMetric( doc, el, "onderwijs_afk_count", toString(val) );
   }
-  val = at( afks, OMROEPEN_A );
+  val = at( afks, MEDIA_A );
   if ( val > 0 ){
-    addOneMetric( doc, el, "omroepen_afk_count", toString(val) );
+    addOneMetric( doc, el, "media_afk_count", toString(val) );
   }
   val = at( afks, GENERIEK_A );
   if ( val > 0 ){
     addOneMetric( doc, el, "generiek_afk_count", toString(val) );
   }
-  val = at( afks, OVERIGE_INSTANTIES_A );
-  if ( val > 0 ){
-    addOneMetric( doc, el, "instanties_afk_count", toString(val) );
-  }
-  val = at( afks, ZORG_A ) + at( afks, AANDOENING_A ) + at( afks, CHEMIE_A )
-    + at( afks, WETTEN_A ) + at( afks, POLITIE_ZIEKENHUIS_A );
+  val = at( afks, OVERIGE_A );
   if ( val > 0 ){
     addOneMetric( doc, el, "overige_afk_count", toString(val) );
+  }
+  val = at( afks, INTERNATIONAAL_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "internationaal_afk_count", toString(val) );
+  }
+  val = at( afks, ZORG_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "zorg_afk_count", toString(val) );
   }
 
   addOneMetric( doc, el, "pers_pron_1_count", toString(pron1Cnt) );
@@ -2605,6 +2635,8 @@ void structStats::addMetrics( ) const {
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
   if ( lsa_opv )
     addOneMetric( doc, el, "lsa_" + category + "_suc", toString(lsa_opv) );
+  if ( lsa_ctx )
+    addOneMetric( doc, el, "lsa_" + category + "_ctx", toString(lsa_ctx) );
   if ( lsa_word_suc != NA )
     addOneMetric( doc, el, "lsa_word_suc_avg", toString(lsa_word_suc) );
   if ( lsa_word_net != NA )
@@ -2613,10 +2645,14 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "lsa_sent_suc_avg", toString(lsa_sent_suc) );
   if ( lsa_sent_net != NA )
     addOneMetric( doc, el, "lsa_sent_net_avg", toString(lsa_sent_net) );
+  if ( lsa_sent_ctx != NA )
+    addOneMetric( doc, el, "lsa_sent_ctx_avg", toString(lsa_sent_ctx) );
   if ( lsa_par_suc != NA )
     addOneMetric( doc, el, "lsa_par_suc_avg", toString(lsa_par_suc) );
   if ( lsa_par_net != NA )
     addOneMetric( doc, el, "lsa_par_net_avg", toString(lsa_par_net) );
+  if ( lsa_par_ctx != NA )
+    addOneMetric( doc, el, "lsa_par_ctx_avg", toString(lsa_par_ctx) );
   addOneMetric( doc, el, "freq50", toString(f50Cnt) );
   addOneMetric( doc, el, "freq65", toString(f65Cnt) );
   addOneMetric( doc, el, "freq77", toString(f77Cnt) );
@@ -2950,7 +2986,7 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
 
 void structStats::wordSortHeader( ostream& os ) const {
   os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let,"
-     << "afk_pol, afk_jur, afk_ond, afk_omr, afk_gen, afk_inst, afk_overig,";
+     << "afko,afk_gen,afk_int,afk_jur,afk_med,afk_ond,afk_pol,afk_ov,afk_zorg,";
 }
 
 void structStats::wordSortToCSV( ostream& os ) const {
@@ -2966,16 +3002,23 @@ void structStats::wordSortToCSV( ostream& os ) const {
      << density(tswCnt, wordCnt ) << ","
      << density(specCnt, wordCnt ) << ","
      << density(letCnt, wordCnt ) << ",";
-  int rest_val = at( afks, ZORG_A ) + at( afks, AANDOENING_A ) +
-    at( afks, CHEMIE_A ) + at( afks, WETTEN_A ) +
-    at( afks, POLITIE_ZIEKENHUIS_A );
-  os << at( afks, POLITIEK_A ) << ","
-     << at( afks, JURIDISCH_A ) << ","
-     << at( afks, ONDERWIJS_A ) << ","
-     << at( afks, OMROEPEN_A ) << ","
-     << at( afks, GENERIEK_A ) << ","
-     << at( afks, OVERIGE_INSTANTIES_A ) << ","
-     << rest_val << ",";
+  int pola = at( afks, OVERHEID_A );
+  int jura = at( afks, JURIDISCH_A );
+  int onda = at( afks, ONDERWIJS_A );
+  int meda = at( afks, MEDIA_A );
+  int gena = at( afks, GENERIEK_A );
+  int ova = at( afks, OVERIGE_A );
+  int zorga = at( afks, ZORG_A );
+  int inta = at( afks, INTERNATIONAAL_A );
+  os << gena+inta+jura+meda+onda+pola+ova+zorga << ","
+     << gena << ","
+     << inta << ","
+     << jura << ","
+     << meda << ","
+     << onda << ","
+     << pola << ","
+     << ova << ","
+     << zorga << ",";
 }
 
 void structStats::miscHeader( ostream& os ) const {
@@ -3029,8 +3072,23 @@ void structStats::resolveLSA( const map<string,double>& LSA_dists ){
   calculate_LSA_summary();
   double suc = 0;
   double net = 0;
+  double ctx = 0;
   size_t node_count = 0;
   for ( size_t i=0; i < sv.size()-1; ++i ){
+    double context = 0.0;
+    for ( size_t j=0; j < sv.size(); ++j ){
+      if ( j == i )
+	continue;
+      string word1 = sv[i]->id;
+      string word2 = sv[j]->id;
+      string call = word1 + "<==>" + word2;
+      map<string,double>::const_iterator it = LSA_dists.find(call);
+      if ( it != LSA_dists.end() ){
+	context += it->second;
+      }
+    }
+    sv[i]->setLSAcontext(context/(sv.size()-1));
+    ctx += context;
     for ( size_t j=i+1; j < sv.size(); ++j ){
       ++node_count;
       string word1 = sv[i]->id;
@@ -3056,11 +3114,13 @@ void structStats::resolveLSA( const map<string,double>& LSA_dists ){
 #endif
   suc = suc/sv.size();
   net = net/node_count;
+  ctx = ctx/sv.size();
 #ifdef DEBUG_LSA
   LOG << "LSA-suc result = " << suc << endl;
   LOG << "LSA-NET result = " << net << endl;
+  LOG << "LSA-ctx result = " << ctx << endl;
 #endif
-  setLSAvalues( suc, net );
+  setLSAvalues( suc, net, ctx );
 }
 
 void structStats::calculate_LSA_summary(){
@@ -3068,8 +3128,10 @@ void structStats::calculate_LSA_summary(){
   double word_net=0;
   double sent_suc=0;
   double sent_net=0;
+  double sent_ctx=0;
   double par_suc=0;
   double par_net=0;
+  double par_ctx=0;
   size_t size = sv.size();
   for ( size_t i=0; i != size; ++i ){
     structStats *ps = dynamic_cast<structStats*>(sv[i]);
@@ -3085,11 +3147,17 @@ void structStats::calculate_LSA_summary(){
     if ( ps->lsa_sent_net != NA ){
       sent_net += ps->lsa_sent_net;
     }
+    if ( ps->lsa_sent_ctx != NA ){
+      sent_ctx += ps->lsa_sent_ctx;
+    }
     if ( ps->lsa_par_suc != NA ){
       par_suc += ps->lsa_par_suc;
     }
     if ( ps->lsa_par_net != NA ){
       par_net += ps->lsa_par_net;
+    }
+    if ( ps->lsa_par_ctx != NA ){
+      par_ctx += ps->lsa_par_ctx;
     }
   }
   if ( word_suc > 0 ){
@@ -3104,11 +3172,17 @@ void structStats::calculate_LSA_summary(){
   if ( sent_net > 0 ){
     lsa_sent_net = sent_net/size;
   }
+  if ( sent_ctx > 0 ){
+    lsa_sent_ctx = sent_ctx/size;
+  }
   if ( par_suc > 0 ){
     lsa_par_suc = par_suc/size;
   }
   if ( par_net > 0 ){
     lsa_par_net = par_net/size;
+  }
+  if ( par_ctx > 0 ){
+    lsa_par_ctx = par_ctx/size;
   }
 }
 
@@ -3116,7 +3190,7 @@ struct sentStats : public structStats {
   sentStats( Sentence *, const sentStats*, const map<string,double>& );
   bool isSentence() const { return true; };
   void resolveConnectives();
-  void setLSAvalues( double, double );
+  void setLSAvalues( double, double, double = 0 );
   void resolveLSA( const map<string,double>& );
   void resolveMultiWordAfks();
   void incrementConnCnt( ConnType );
@@ -3126,11 +3200,13 @@ struct sentStats : public structStats {
   void resolvePrepExpr();
 };
 
-void sentStats::setLSAvalues( double suc, double net ){
+void sentStats::setLSAvalues( double suc, double net, double ctx ){
   if ( suc > 0 )
     lsa_word_suc = suc;
   if ( net > 0 )
     lsa_word_net = net;
+  if ( ctx > 0 )
+    throw logic_error("context cannot be !=0 for sentstats");
 }
 
 void fill_word_lemma_buffers( const sentStats* ss,
@@ -3401,7 +3477,20 @@ void sentStats::resolveLSA( const map<string,double>& LSAword_dists ){
   double suc = 0;
   double net = 0;
   size_t node_count = 0;
-  for ( size_t i=0; i < sv.size()-1; ++i ){
+  for ( size_t i=0; i < sv.size(); ++i ){
+    double context = 0.0;
+    for ( size_t j=0; j < sv.size(); ++j ){
+      if ( j == i )
+	continue;
+      string word1 = sv[i]->ltext();
+      string word2 = sv[j]->ltext();
+      string call = word1 + "\t" + word2;
+      map<string,double>::const_iterator it = LSAword_dists.find(call);
+      if ( it != LSAword_dists.end() ){
+	context += it->second;
+      }
+    }
+    sv[i]->setLSAcontext(context/(sv.size()-1));
     for ( size_t j=i+1; j < sv.size(); ++j ){
       if ( sv[i]->wordProperty() == ISLET ){
 	continue;
@@ -3440,7 +3529,7 @@ void sentStats::resolveLSA( const map<string,double>& LSAword_dists ){
   LOG << "LSA-NET result = " << net << endl;
   LOG << "LETS = " << lets << endl;
 #endif
-  setLSAvalues( suc, net );
+  setLSAvalues( suc, net, 0 );
 }
 
 void sentStats::resolveMultiWordAfks(){
@@ -3960,7 +4049,7 @@ struct parStats: public structStats {
   parStats( Paragraph *, const map<string,double>&,
 	    const map<string,double>& );
   void addMetrics( ) const;
-  void setLSAvalues( double, double );
+  void setLSAvalues( double, double, double );
 };
 
 parStats::parStats( Paragraph *p,
@@ -4003,11 +4092,13 @@ void parStats::addMetrics( ) const {
 		"sentence_count", toString(sentCnt) );
 }
 
-void parStats::setLSAvalues( double suc, double net ){
+void parStats::setLSAvalues( double suc, double net, double ctx ){
   if ( suc > 0 )
     lsa_sent_suc = suc;
   if ( net > 0 )
     lsa_sent_net = net;
+  if ( ctx > 0 )
+    lsa_sent_ctx = ctx;
 }
 
 struct docStats : public structStats {
@@ -4019,7 +4110,7 @@ struct docStats : public structStats {
   int word_overlapCnt() const { return doc_word_overlapCnt; };
   int lemma_overlapCnt() const { return doc_lemma_overlapCnt; };
   void calculate_doc_overlap();
-  void setLSAvalues( double, double );
+  void setLSAvalues( double, double, double );
   void gather_LSA_word_info( Document * );
   void gather_LSA_doc_info( Document * );
   int doc_word_argCnt;
@@ -4031,11 +4122,13 @@ struct docStats : public structStats {
   map<string,double> LSA_paragraph_dists;
 };
 
-void docStats::setLSAvalues( double suc, double net ){
+void docStats::setLSAvalues( double suc, double net, double ctx ){
   if ( suc > 0 )
     lsa_par_suc = suc;
   if ( net > 0 )
     lsa_par_net = net;
+  if ( ctx > 0 )
+    lsa_par_ctx = ctx;
 }
 
 //#define DEBUG_DOL
