@@ -2013,7 +2013,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
 
 void wordStats::wordSortHeader( ostream& os ) const {
   os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let,"
-     << "afko,afk_gen,afk_int,afk_jur,afk_med,afk_ond,afk_pol,afk_ov,afk_zorg,";
+     << "afk_tot,afk_gen,afk_int,afk_jur,afk_med,afk_ond,afk_pol,afk_ov,afk_zorg,";
 }
 
 void wordStats::wordSortToCSV( ostream& os ) const {
@@ -2995,7 +2995,7 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
 
 void structStats::wordSortHeader( ostream& os ) const {
   os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let,"
-     << "afko,afk_gen,afk_int,afk_jur,afk_med,afk_ond,afk_pol,afk_ov,afk_zorg,";
+     << "afk_tot,afk_gen,afk_int,afk_jur,afk_med,afk_ond,afk_pol,afk_ov,afk_zorg,";
 }
 
 void structStats::wordSortToCSV( ostream& os ) const {
@@ -3019,15 +3019,15 @@ void structStats::wordSortToCSV( ostream& os ) const {
   int ova = at( afks, OVERIGE_A );
   int zorga = at( afks, ZORG_A );
   int inta = at( afks, INTERNATIONAAL_A );
-  os << gena+inta+jura+meda+onda+pola+ova+zorga << ","
-     << gena << ","
-     << inta << ","
-     << jura << ","
-     << meda << ","
-     << onda << ","
-     << pola << ","
-     << ova << ","
-     << zorga << ",";
+  os << density( gena+inta+jura+meda+onda+pola+ova+zorga, wordCnt ) << ","
+     << density( gena, wordCnt ) << ","
+     << density( inta, wordCnt ) << ","
+     << density( jura, wordCnt ) << ","
+     << density( meda, wordCnt ) << ","
+     << density( onda, wordCnt ) << ","
+     << density(  pola, wordCnt ) << ","
+     << density( ova, wordCnt ) << ","
+     << density( zorga, wordCnt ) << ",";
 }
 
 void structStats::miscHeader( ostream& os ) const {
@@ -4019,7 +4019,8 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
   if ( settings.doLsa ){
     resolveLSA( LSAword_dists );
   }
-  resolveMultiWordAfks();
+  // Disabled for now
+  //  resolveMultiWordAfks();
   resolvePrepExpr();
   if ( question )
     questCnt = 1;
