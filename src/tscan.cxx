@@ -289,6 +289,7 @@ struct settingData {
   bool doAlpinoServer;
   bool doDecompound;
   bool doWopr;
+  bool doLsa;
   bool doXfiles;
   string decompounderPath;
   string style;
@@ -734,6 +735,7 @@ bool fill( map<string,AfkType>& afks, const string& filename ){
 void settingData::init( const Configuration& cf ){
   doAlpino = false;
   doAlpinoServer = false;
+  doLsa = true;
   doXfiles = true;
   string val = cf.lookUp( "useAlpinoServer" );
   if ( !val.empty() ){
@@ -754,6 +756,14 @@ void settingData::init( const Configuration& cf ){
   if ( !val.empty() ){
     if ( !TiCC::stringTo( val, doWopr ) ){
       cerr << "invalid value for 'useWopr' in config file" << endl;
+      exit( EXIT_FAILURE );
+    }
+  }
+  val = cf.lookUp( "useLsa" );
+  doLsa = true;
+  if ( !val.empty() ){
+    if ( !TiCC::stringTo( val, doLsa ) ){
+      cerr << "invalid value for 'useLsa' in config file" << endl;
       exit( EXIT_FAILURE );
     }
   }
@@ -861,7 +871,7 @@ inline void usage(){
   cerr << "\t--config=<file> read configuration from file " << endl;
   cerr << "\t-V or --version show version " << endl;
   cerr << "\t-D <value> set debug level " << endl;
-  cerr << "\t--skip=[wadsc]    Skip Wopr (w), Alpino (a), Decompounder (d), Suprisal Parser (s), or CSV output (s) \n";
+  cerr << "\t--skip=[acdlw]    Skip Alpino (a), CSV output (c), Decompounder (d), Lsa (l) or Wopr (w).\n";
   cerr << endl;
 }
 
@@ -4007,7 +4017,9 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
     xmlFreeDoc( alpDoc );
   }
   resolveConnectives();
-  resolveLSA( LSAword_dists );
+  if ( settings.doLsa ){
+    resolveLSA( LSAword_dists );
+  }
   resolveMultiWordAfks();
   resolvePrepExpr();
   if ( question )
@@ -4065,7 +4077,9 @@ parStats::parStats( Paragraph *p,
     prev = ss;
     merge( ss );
   }
-  resolveLSA( LSA_sent_dists );
+  if ( settings.doLsa ){
+    resolveLSA( LSA_sent_dists );
+  }
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
   else
@@ -4406,16 +4420,20 @@ docStats::docStats( Document *doc ):
   if ( !settings.style.empty() ){
     doc->replaceStyle( "text/xsl", settings.style );
   }
-  gather_LSA_word_info( doc );
-  gather_LSA_doc_info( doc );
+  if ( settings.doLsa ){
+    gather_LSA_word_info( doc );
+    gather_LSA_doc_info( doc );
+  }
   vector<Paragraph*> pars = doc->paragraphs();
   if ( pars.size() > 0 )
     folia_node = pars[0]->parent();
   for ( size_t i=0; i != pars.size(); ++i ){
     parStats *ps = new parStats( pars[i], LSA_word_dists, LSA_sentence_dists );
-    merge( ps );
+      merge( ps );
   }
-  resolveLSA( LSA_paragraph_dists );
+  if ( settings.doLsa ){
+    resolveLSA( LSA_paragraph_dists );
+  }
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
   else
@@ -4687,6 +4705,9 @@ int main(int argc, char *argv[]) {
     string skip = val;
     if ( skip.find_first_of("wW") != string::npos ){
       settings.doWopr = false;
+    }
+    if ( skip.find_first_of("lL") != string::npos ){
+      settings.doLsa = false;
     }
     if ( skip.find_first_of("aA") != string::npos ){
       settings.doAlpino = false;
