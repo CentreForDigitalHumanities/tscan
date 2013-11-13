@@ -733,10 +733,9 @@ bool fill( map<string,AfkType>& afks, const string& filename ){
 }
 
 void settingData::init( const Configuration& cf ){
+  doXfiles = true;
   doAlpino = false;
   doAlpinoServer = false;
-  doLsa = true;
-  doXfiles = true;
   string val = cf.lookUp( "useAlpinoServer" );
   if ( !val.empty() ){
     if ( !TiCC::stringTo( val, doAlpinoServer ) ){
@@ -759,8 +758,8 @@ void settingData::init( const Configuration& cf ){
       exit( EXIT_FAILURE );
     }
   }
-  val = cf.lookUp( "useLsa" );
   doLsa = true;
+  val = cf.lookUp( "useLsa" );
   if ( !val.empty() ){
     if ( !TiCC::stringTo( val, doLsa ) ){
       cerr << "invalid value for 'useLsa' in config file" << endl;
@@ -4506,10 +4505,10 @@ void docStats::toCSV( const string& name,
       CSVheader( out, "File" );
       out << name << ",";
       structStats::toCSV( out );
-      cout << "stored document statistics in " << fname << endl;
+      LOG << "stored document statistics in " << fname << endl;
     }
     else {
-      cout << "storing document statistics in " << fname << " FAILED!" << endl;
+      LOG << "storing document statistics in " << fname << " FAILED!" << endl;
     }
   }
   else if ( what == PAR_CSV ){
@@ -4522,10 +4521,10 @@ void docStats::toCSV( const string& name,
 	out << name << "," << sv[par]->id << ",";
 	sv[par]->toCSV( out );
       }
-      cout << "stored paragraph statistics in " << fname << endl;
+      LOG << "stored paragraph statistics in " << fname << endl;
     }
     else {
-      cout << "storing paragraph statistics in " << fname << " FAILED!" << endl;
+      LOG << "storing paragraph statistics in " << fname << " FAILED!" << endl;
     }
   }
   else if ( what == SENT_CSV ){
@@ -4540,10 +4539,10 @@ void docStats::toCSV( const string& name,
 	  sv[par]->sv[sent]->toCSV( out );
 	}
       }
-      cout << "stored sentence statistics in " << fname << endl;
+      LOG << "stored sentence statistics in " << fname << endl;
     }
     else {
-      cout << "storing sentence statistics in " << fname << " FAILED!" << endl;
+      LOG << "storing sentence statistics in " << fname << " FAILED!" << endl;
     }
   }
   else if ( what == WORD_CSV ){
@@ -4560,10 +4559,10 @@ void docStats::toCSV( const string& name,
 	  }
 	}
       }
-      cout << "stored word statistics in " << fname << endl;
+      LOG << "stored word statistics in " << fname << endl;
     }
     else {
-      cout << "storing word statistics in " << fname << " FAILED!" << endl;
+      LOG << "storing word statistics in " << fname << " FAILED!" << endl;
     }
   }
 }
@@ -4737,8 +4736,8 @@ int main(int argc, char *argv[]) {
   else {
     outName = inName + ".tscan.xml";
   }
-  cerr << "TScan " << VERSION << endl;
-  cerr << "working dir " << workdir_name << endl;
+  LOG << "TScan " << VERSION << endl;
+  LOG << "working dir " << workdir_name << endl;
   ifstream is( inName.c_str() );
   if ( !is ){
     cerr << "failed to open file '" << inName << "'" << endl;
@@ -4763,7 +4762,6 @@ int main(int argc, char *argv[]) {
       }
       delete doc;
       LOG << "saved output in " << outName << endl;
-      // cerr << analyse << endl;
     }
   }
 
