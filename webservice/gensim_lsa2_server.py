@@ -14,15 +14,15 @@ from twisted.protocols import basic
 
 class LSAProtocol2(basic.LineReceiver):
     def lineReceived(self, line):
-        # print( "LSA received " + line );
+        #print( "LSA received " + line );
         try:
             sent1, sent2 = line.strip().split("\t")
         except:
-            self.sendLine("INPUTERROR")
+            self.sendLine("INPUTERROR: missing tab character?")
             return
 
-        print( "LSA sentence 1: " + sent1 )
-        print( "LSA sentence 2: " + sent2 )
+        #print( "LSA sentence 1: " + sent1 )
+        #print( "LSA sentence 2: " + sent2 )
         try:
             vec_bow1 = dictionary.doc2bow( sent1.lower().split())
             vec_bow2 = dictionary.doc2bow( sent2.lower().split())
@@ -31,16 +31,21 @@ class LSAProtocol2(basic.LineReceiver):
         except KeyError:
             self.sendLine(str(0))
             return
-        print "LSA vector1 :"
-        print vec_lsi1
-        print "LSA vector2 : "
-        print vec_lsi2
+        if not vec_lsi1 or not vec_lsi2:
+            self.sendLine(str(0))
+            return
+
+        #print "LSA vector1 :"
+        #print vec_lsi1
+        #print "LSA vector2 : "
+        #print vec_lsi2
         try:
             cossim = numpy.dot(matutils.unitvec(numpy.array([ x[1] for x in vec_lsi1])),
                                matutils.unitvec(numpy.array([ x[1] for x in vec_lsi2])) )
         except:
             print "dot product faalt"
             cossim = 0
+            raise
         self.sendLine(str(cossim))
 
 class LSAFactory2(protocol.ServerFactory):
