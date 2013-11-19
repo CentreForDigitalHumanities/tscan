@@ -503,6 +503,10 @@ bool fill_freqlex( map<string,cf_data>& m, istream& is ){
     }
     cf_data data;
     data.count = TiCC::stringTo<long int>( parts[1] );
+    if ( data.count == 1 ){
+      // we are done. Skip all singleton stuff
+      return true;
+    }
     data.freq = TiCC::stringTo<double>( parts[3] );
     m[parts[0]] = data;
   }
@@ -1754,9 +1758,9 @@ void wordStats::getSentenceOverlap( const vector<string>& wordbuffer,
 #endif
     argument_overlap( lword, wordbuffer, argRepeatCnt, wordOverlapCnt );
 #ifdef DEBUG_OL
-    // if ( tmp1 != argRepeatCnt ){
-    //   cerr << "argument repeated " << argRepeatCnt - tmp1 << endl;
-    // }
+    if ( tmp1 != argRepeatCnt ){
+      cerr << "argument repeated " << argRepeatCnt - tmp1 << endl;
+    }
     if ( tmp2 != wordOverlapCnt ){
       cerr << " OVERLAPPED " << endl;
     }
