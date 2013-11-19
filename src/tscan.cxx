@@ -38,6 +38,7 @@
 #include "ticcutils/StringOps.h"
 #include "ticcutils/LogStream.h"
 #include "ticcutils/Configuration.h"
+#include "ticcutils/FileUtils.h"
 #include "tscan/Alpino.h"
 #include "tscan/decomp.h"
 
@@ -871,10 +872,17 @@ inline void usage(){
   cerr << "usage:  tscan [options] -t <inputfile> " << endl;
   cerr << "options: " << endl;
   cerr << "\t-o <file> store XML in file " << endl;
-  cerr << "\t--config=<file> read configuration from file " << endl;
+  cerr << "\t--config=<file> read configuration from 'file' " << endl;
   cerr << "\t-V or --version show version " << endl;
   cerr << "\t-D <value> set debug level " << endl;
   cerr << "\t--skip=[acdlw]    Skip Alpino (a), CSV output (c), Decompounder (d), Lsa (l) or Wopr (w).\n";
+  cerr << "\t-t <file> process the 'file'." << endl;
+  cerr << "\t-e <exp> process the files using the (possibly wildcarded) expression 'exp'." << endl;
+  cerr << "\t\t Wildcards must be escaped!" << endl;
+  cerr << "\t-d <dir> use path 'dir' as a prefix for -e ." << endl;
+  cerr << "\t\t example: -e \\*.txt" << endl;
+  cerr << "\t\t          -e 'b*.txt'" << endl;
+  cerr << "\t\t          -d tests -e '*.example'" << endl;
   cerr << endl;
 }
 
@@ -1042,6 +1050,7 @@ struct basicStats {
   virtual void addMetrics( ) const = 0;
   virtual string text() const { return ""; };
   virtual string ltext() const { return ""; };
+  virtual string llemma() const { return ""; };
   virtual CGN::Type postag() const { return CGN::UNASS; };
   virtual WordProp wordProperty() const { return NOTAWORD; };
   virtual ConnType getConnType() const { return NOCONN; };
@@ -1088,7 +1097,8 @@ struct wordStats : public basicStats {
   void miscToCSV( ostream& ) const;
   void toCSV( ostream& ) const;
   string text() const { return word; };
-  string ltext() const { return lword; };
+  string ltext() const { return l_word; };
+  string llemma() const { return l_lemma; };
   CGN::Type postag() const { return tag; };
   ConnType getConnType() const { return connType; };
   void setConnType( ConnType t ){ connType = t; };
@@ -1111,10 +1121,11 @@ struct wordStats : public basicStats {
   bool isOverlapCandidate() const;
   vector<const wordStats*> collectWords() const;
   string word;
-  string lword;
+  string l_word;
   string pos;
   CGN::Type tag;
   string lemma;
+  string l_lemma;
   WWform wwform;
   bool isPersRef;
   bool isPronRef;
@@ -1172,44 +1183,44 @@ ConnType wordStats::check_small_connector( const xmlNode *alpWord ) const {
 ConnType wordStats::checkConnective( const xmlNode *alpWord ) const {
   if ( tag != CGN::VG && tag != CGN::VZ && tag != CGN::BW )
     return NOCONN;
-  if ( settings.temporals1[tag].find( lword )
+  if ( settings.temporals1[tag].find( l_word )
        != settings.temporals1[tag].end() ){
     return TEMPOREEL;
   }
-  else if ( settings.temporals1[CGN::UNASS].find( lword )
+  else if ( settings.temporals1[CGN::UNASS].find( l_word )
 	    != settings.temporals1[CGN::UNASS].end() ){
     return TEMPOREEL;
   }
-  else if ( settings.opsommers1[tag].find( lword )
+  else if ( settings.opsommers1[tag].find( l_word )
 	    != settings.opsommers1[tag].end() ){
-    if ( lword == "en" || lword == "of" ){
+    if ( l_word == "en" || l_word == "of" ){
       return check_small_connector( alpWord );
     }
     return OPSOMMEND;
   }
-  else if ( settings.opsommers1[CGN::UNASS].find( lword )
+  else if ( settings.opsommers1[CGN::UNASS].find( l_word )
 	    != settings.opsommers1[CGN::UNASS].end() ){
-    if ( lword == "en" || lword == "of" ){
+    if ( l_word == "en" || l_word == "of" ){
       return check_small_connector( alpWord );
     }
     return OPSOMMEND;
   }
-  else if ( settings.contrast1[tag].find( lword )
+  else if ( settings.contrast1[tag].find( l_word )
 	    != settings.contrast1[tag].end() )
     return CONTRASTIEF;
-  else if ( settings.contrast1[CGN::UNASS].find( lword )
+  else if ( settings.contrast1[CGN::UNASS].find( l_word )
 	    != settings.contrast1[CGN::UNASS].end() )
     return CONTRASTIEF;
-  else if ( settings.compars1[tag].find( lword )
+  else if ( settings.compars1[tag].find( l_word )
 	    != settings.compars1[tag].end() )
     return COMPARATIEF;
-  else if ( settings.compars1[CGN::UNASS].find( lword )
+  else if ( settings.compars1[CGN::UNASS].find( l_word )
 	    != settings.compars1[CGN::UNASS].end() )
     return COMPARATIEF;
-  else if ( settings.causals1[tag].find( lword )
+  else if ( settings.causals1[tag].find( l_word )
 	    != settings.causals1[tag].end() )
     return CAUSAAL;
-  else if ( settings.causals1[CGN::UNASS].find( lword )
+  else if ( settings.causals1[CGN::UNASS].find( l_word )
 	    != settings.causals1[CGN::UNASS].end() )
     return CAUSAAL;
   return NOCONN;
@@ -1363,9 +1374,9 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
   else if ( tag == CGN::VNW ){
     string vwtype = pa->feat("vwtype");
     isBetr = vwtype == "betr";
-    if ( lword != "men"
-	 && lword != "er"
-	 && lword != "het" ){
+    if ( l_word != "men"
+	 && l_word != "er"
+	 && l_word != "het" ){
       string cas = pa->feat("naamval");
       archaic = ( cas == "gen" || cas == "dat" );
       if ( vwtype == "pers" || vwtype == "refl"
@@ -1456,7 +1467,7 @@ AfkType wordStats::checkAfk() const {
 }
 
 void wordStats::topFreqLookup(){
-  map<string,top_val>::const_iterator it = settings.top_freq_lex.find( lword );
+  map<string,top_val>::const_iterator it = settings.top_freq_lex.find( l_word );
   top_freq = notFound;
   if ( it != settings.top_freq_lex.end() ){
     top_freq = it->second;
@@ -1464,7 +1475,7 @@ void wordStats::topFreqLookup(){
 }
 
 void wordStats::freqLookup(){
-  map<string,cf_data>::const_iterator it = settings.word_freq_lex.find( lword );
+  map<string,cf_data>::const_iterator it = settings.word_freq_lex.find( l_word );
   if ( it != settings.word_freq_lex.end() ){
     word_freq = it->second.count;
     word_freq_log = log10(word_freq);
@@ -1473,7 +1484,7 @@ void wordStats::freqLookup(){
     word_freq = 1;
     word_freq_log = 0;
   }
-  it = settings.lemma_freq_lex.find( lowercase(lemma) );
+  it = settings.lemma_freq_lex.find( l_lemma );
   if ( it != settings.lemma_freq_lex.end() ){
     lemma_freq = it->second.count;
     lemma_freq_log = log10(lemma_freq);
@@ -1485,7 +1496,7 @@ void wordStats::freqLookup(){
 }
 
 void wordStats::staphFreqLookup(){
-  map<string,cf_data>::const_iterator it = settings.staph_word_freq_lex.find( lword );
+  map<string,cf_data>::const_iterator it = settings.staph_word_freq_lex.find( l_word );
   if ( it != settings.staph_word_freq_lex.end() ){
     double freq = it->second.freq;
     if ( freq <= 50 )
@@ -1526,11 +1537,11 @@ static vector<string> negminus = vector<string>( negminusA,
 						 negminusA + sizeof(negminusA)/sizeof(string) );
 
 bool wordStats::checkPropNeg() const {
-  if ( negatives.find( lword ) != negatives.end() ){
+  if ( negatives.find( l_word ) != negatives.end() ){
     return true;
   }
   else if ( tag == CGN::BW &&
-	    ( lword == "moeilijk" || lword == "weg" ) ){
+	    ( l_word == "moeilijk" || l_word == "weg" ) ){
     // "moeilijk" en "weg" mochten kennelijk alleen als bijwoord worden
     // meegeteld (in het geval van weg natuurlijk duidelijk ivm "de weg")
     return true;
@@ -1648,7 +1659,7 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
   UnicodeString us = w->text();
   charCnt = us.length();
   word = UnicodeToUTF8( us );
-  lword = UnicodeToUTF8( us.toLower() );
+  l_word = UnicodeToUTF8( us.toLower() );
 
   vector<PosAnnotation*> posV = w->select<PosAnnotation>(frog_pos_set);
   if ( posV.size() != 1 )
@@ -1657,6 +1668,9 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
   pos = pa->cls();
   tag = CGN::toCGN( pa->feat("head") );
   lemma = w->lemma( frog_lemma_set );
+  us = UTF8ToUnicode( lemma );
+  l_lemma = UnicodeToUTF8( us.toLower() );
+
   prop = checkProps( pa );
   if ( alpWord ){
     distances = getDependencyDist( alpWord, puncts);
@@ -1752,11 +1766,11 @@ void wordStats::getSentenceOverlap( const vector<string>& wordbuffer,
   if ( isOverlapCandidate() ){
     // get the words and lemmas' of the previous sentence
 #ifdef DEBUG_OL
-    cerr << "call word sentenceOverlap, word = " << lword;
+    cerr << "call word sentenceOverlap, word = " << l_word;
     int tmp1 = argRepeatCnt;
     int tmp2 = wordOverlapCnt;
 #endif
-    argument_overlap( lword, wordbuffer, argRepeatCnt, wordOverlapCnt );
+    argument_overlap( l_word, wordbuffer, argRepeatCnt, wordOverlapCnt );
 #ifdef DEBUG_OL
     if ( tmp1 != argRepeatCnt ){
       cerr << "argument repeated " << argRepeatCnt - tmp1 << endl;
@@ -1766,11 +1780,11 @@ void wordStats::getSentenceOverlap( const vector<string>& wordbuffer,
     }
     else
       cerr << endl;
-    cerr << "call lemma sentenceOverlap, lemma= " << lowercase(lemma);
+    cerr << "call lemma sentenceOverlap, lemma= " << l_lemma;
     tmp1 = lemmaRepeatCnt;
     tmp2 = lemmaOverlapCnt;
 #endif
-    argument_overlap( lowercase(lemma), lemmabuffer, lemmaRepeatCnt, lemmaOverlapCnt );
+    argument_overlap( l_lemma, lemmabuffer, lemmaRepeatCnt, lemmaOverlapCnt );
 #ifdef DEBUG_OL
     if ( tmp2 != lemmaOverlapCnt ){
       cerr << " OVERLAPPED " << endl;
@@ -3229,8 +3243,8 @@ void fill_word_lemma_buffers( const sentStats* ss,
   for ( size_t i=0; i < bv.size(); ++i ){
     wordStats *w = dynamic_cast<wordStats*>(bv[i]);
     if ( w->isOverlapCandidate() ){
-      wv.push_back( w->lword );
-      lv.push_back( lowercase( w->lemma ) );
+      wv.push_back( w->l_word );
+      lv.push_back( w->l_lemma );
     }
   }
 }
@@ -3826,7 +3840,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
       charCntExNames += ws->charCntExNames;
       morphCnt += ws->morphCnt;
       morphCntExNames += ws->morphCntExNames;
-      unique_words[ws->lword] += 1;
+      unique_words[ws->l_word] += 1;
       unique_lemmas[ws->lemma] += 1;
       aggregate( distances, ws->distances );
       if ( ws->compPartCnt > 0 )
@@ -3841,7 +3855,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
       switch ( ws->prop ){
       case ISNAME:
 	nameCnt++;
-	unique_names[ws->lword] +=1;
+	unique_names[ws->l_word] +=1;
 	break;
       case ISVD:
 	vdCnt++;
@@ -3886,7 +3900,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
 	archaicsCnt++;
       if ( ws->isContent ){
 	contentCnt++;
-	unique_contents[ws->lword] +=1;
+	unique_contents[ws->l_word] +=1;
       }
       if ( ws->isNominal )
 	nominalCnt++;
@@ -4170,37 +4184,37 @@ void docStats::calculate_doc_overlap( ){
     }
 #endif
     if ( (*it)->isOverlapCandidate() ){
-      string lword =  (*it)->ltext();
-      string lemma = lowercase( (*it)->lemma );
+      string l_word =  (*it)->ltext();
+      string l_lemma = (*it)->llemma();
       if ( count < settings.overlapSize ){
-	wordbuffer.push_back( lword );
-	lemmabuffer.push_back( lemma );
+	wordbuffer.push_back( l_word );
+	lemmabuffer.push_back( l_lemma );
       }
       else {
 #ifdef DEBUG_DOL
 	int tmp = doc_word_overlapCnt;
 #endif
-	argument_overlap( lword, wordbuffer,
+	argument_overlap( l_word, wordbuffer,
 			  doc_word_argCnt, doc_word_overlapCnt );
 #ifdef DEBUG_DOL
 	if ( doc_word_overlapCnt > tmp ){
-	  cerr << "word OVERLAP " << lword << endl;
+	  cerr << "word OVERLAP " << l_word << endl;
 	}
 #endif
 	wordbuffer.erase(wordbuffer.begin());
-	wordbuffer.push_back( lword );
+	wordbuffer.push_back( l_word );
 #ifdef DEBUG_DOL
 	tmp = doc_lemma_overlapCnt;
 #endif
-	argument_overlap( lemma, lemmabuffer,
+	argument_overlap( l_lemma, lemmabuffer,
 			  doc_lemma_argCnt, doc_lemma_overlapCnt );
 #ifdef DEBUG_DOL
 	if ( doc_lemma_overlapCnt > tmp ){
-	  cerr << "lemma OVERLAP " << lemma << endl;
+	  cerr << "lemma OVERLAP " << l_lemma << endl;
 	}
 #endif
 	lemmabuffer.erase(lemmabuffer.begin());
-	lemmabuffer.push_back( lemma );
+	lemmabuffer.push_back( l_lemma );
       }
     }
   }
@@ -4650,6 +4664,8 @@ int main(int argc, char *argv[]) {
       exit( EXIT_FAILURE );
     }
   }
+  LOG << "TScan " << VERSION << endl;
+  LOG << "working dir " << workdir_name << endl;
   Timbl::TimblOpts opts( argc, argv );
   string val;
   bool mood;
@@ -4661,6 +4677,49 @@ int main(int argc, char *argv[]) {
   if ( opts.Find( "V", val, mood ) ||
        opts.Find( "version", val, mood ) ){
     exit( EXIT_SUCCESS );
+  }
+  string t_option;
+  if ( opts.Find( 't', val, mood ) ){
+    t_option = val;
+  }
+  string d_option = ".";
+  if ( opts.Find( 'd', val, mood ) ){
+    d_option = val;
+  }
+  if ( !t_option.empty() && !d_option.empty() ){
+    cerr << "-t and -d options cannot be combined" << endl;
+  }
+
+  string e_option;
+  if ( opts.Find( 'e', val, mood ) ){
+    e_option = val;
+    if ( e_option.size() > 0 && e_option[e_option.size()-1] != '$' )
+      e_option += "$";
+  }
+
+  vector<string> inputnames;
+  if ( !t_option.empty() ){
+    inputnames = searchFiles( t_option );
+  }
+  else {
+    cerr << "search files matching pattern: " << d_option << e_option << endl;
+    inputnames = searchFilesMatch( d_option, e_option, false );
+  }
+  for ( size_t i = 0; i < inputnames.size(); ++i ){
+    cerr << i << " - " << inputnames[i] << endl;
+  }
+  if ( inputnames.size() == 0 ){
+    cerr << "no input file(s) found" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  string o_option;
+  if ( opts.Find( 'o', val, mood ) ){
+    if ( inputnames.size() > 0 ){
+      cerr << "-o option not supported for multiple input files" << endl;
+      exit(EXIT_FAILURE);
+    }
+    o_option = val;
   }
 
   if ( opts.Find( "threads", val, mood ) ){
@@ -4726,50 +4785,47 @@ int main(int argc, char *argv[]) {
     opts.Delete("skip");
   };
 
-  string inName;
-  string outName;
-  if ( opts.Find( 't', val, mood ) ){
-    inName = val;
+  if ( inputnames.size() > 1 ){
+    LOG << "processing " << inputnames.size() << " files." << endl;
   }
-  else {
-    cerr << "missing input file (-t option) " << endl;
-    exit(EXIT_FAILURE);
-  }
-  if ( opts.Find( 'o', val, mood ) ){
-    outName = val;
-  }
-  else {
-    outName = inName + ".tscan.xml";
-  }
-  LOG << "TScan " << VERSION << endl;
-  LOG << "working dir " << workdir_name << endl;
-  ifstream is( inName.c_str() );
-  if ( !is ){
-    cerr << "failed to open file '" << inName << "'" << endl;
-    exit(EXIT_FAILURE);
-  }
-  else {
-    LOG << "opened file " <<  inName << endl;
-    Document *doc = getFrogResult( is );
-    if ( !doc ){
-      cerr << "big trouble: no FoLiA document created " << endl;
+  for ( size_t i = 0; i < inputnames.size(); ++i ){
+    string inName = inputnames[i];
+    LOG << "file: " << inName << endl;
+    string outName;
+    if ( !o_option.empty() ){
+      // just 1 inputfile
+      outName = o_option;
+    }
+    else {
+      outName = inName + ".tscan.xml";
+    }
+    ifstream is( inName.c_str() );
+    if ( !is ){
+      cerr << "failed to open file '" << inName << "'" << endl;
       exit(EXIT_FAILURE);
     }
     else {
-      docStats analyse( doc );
-      analyse.addMetrics(); // add metrics info to doc
-      doc->save( outName );
-      if ( settings.doXfiles ){
-	analyse.toCSV( inName, DOC_CSV );
-	analyse.toCSV( inName, PAR_CSV );
-	analyse.toCSV( inName, SENT_CSV );
-	analyse.toCSV( inName, WORD_CSV );
+      LOG << "opened file " <<  inName << endl;
+      Document *doc = getFrogResult( is );
+      if ( !doc ){
+	cerr << "big trouble: no FoLiA document created " << endl;
+	exit(EXIT_FAILURE);
       }
-      delete doc;
-      LOG << "saved output in " << outName << endl;
+      else {
+	docStats analyse( doc );
+	analyse.addMetrics(); // add metrics info to doc
+	doc->save( outName );
+	if ( settings.doXfiles ){
+	  analyse.toCSV( inName, DOC_CSV );
+	  analyse.toCSV( inName, PAR_CSV );
+	  analyse.toCSV( inName, SENT_CSV );
+	  analyse.toCSV( inName, WORD_CSV );
+	}
+	delete doc;
+	LOG << "saved output in " << outName << endl;
+      }
     }
   }
-
   exit(EXIT_SUCCESS);
 }
 
