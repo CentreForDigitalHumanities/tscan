@@ -1164,9 +1164,7 @@ struct wordStats : public basicStats {
   top_val top_freq;
   int word_freq;
   int lemma_freq;
-  int argRepeatCnt;
   int wordOverlapCnt;
-  int lemmaRepeatCnt;
   int lemmaOverlapCnt;
   double word_freq_log;
   double lemma_freq_log;
@@ -1586,7 +1584,7 @@ bool wordStats::checkMorphNeg() const {
 
 void argument_overlap( const string w_or_l,
 		       const vector<string>& buffer,
-		       int& arg_cnt, int& arg_overlap_cnt ){
+		       int& arg_overlap_cnt ){
   // calculate the overlap of the Word or Lemma with the buffer
   if ( buffer.empty() )
     return;
@@ -1614,9 +1612,6 @@ void argument_overlap( const string w_or_l,
   static set<string> vnw_3p = set<string>( vnw_3pA,
 					   vnw_3pA + sizeof(vnw_3pA)/sizeof(string) );
 
-  ++arg_cnt; // we tellen ook het totaal aantal (mogelijke) argumenten om
-  // later op te kunnen delen
-  // (aantal overlappende argumenten op totaal aantal argumenten)
   for( size_t i=0; i < buffer.size(); ++i ){
     if ( w_or_l == buffer[i] ){
       ++arg_overlap_cnt;
@@ -1668,7 +1663,7 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
   nerProp(NONER), connType(NOCONN), isMultiConn(false),
   f50(false), f65(false), f77(false), f80(false),  compPartCnt(0),
   top_freq(notFound), word_freq(0), lemma_freq(0),
-  argRepeatCnt(0), wordOverlapCnt(0), lemmaRepeatCnt(0), lemmaOverlapCnt(0),
+  wordOverlapCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NA), lemma_freq_log(NA),
   logprob10(NA), prop(JUSTAWORD), sem_type(UNFOUND),afkType(NO_A)
 {
@@ -1783,24 +1778,19 @@ void wordStats::getSentenceOverlap( const vector<string>& wordbuffer,
     // get the words and lemmas' of the previous sentence
 #ifdef DEBUG_OL
     cerr << "call word sentenceOverlap, word = " << l_word;
-    int tmp1 = argRepeatCnt;
     int tmp2 = wordOverlapCnt;
 #endif
-    argument_overlap( l_word, wordbuffer, argRepeatCnt, wordOverlapCnt );
+    argument_overlap( l_word, wordbuffer, wordOverlapCnt );
 #ifdef DEBUG_OL
-    if ( tmp1 != argRepeatCnt ){
-      cerr << "argument repeated " << argRepeatCnt - tmp1 << endl;
-    }
     if ( tmp2 != wordOverlapCnt ){
       cerr << " OVERLAPPED " << endl;
     }
     else
       cerr << endl;
     cerr << "call lemma sentenceOverlap, lemma= " << l_lemma;
-    tmp1 = lemmaRepeatCnt;
     tmp2 = lemmaOverlapCnt;
 #endif
-    argument_overlap( l_lemma, lemmabuffer, lemmaRepeatCnt, lemmaOverlapCnt );
+    argument_overlap( l_lemma, lemmabuffer, lemmaOverlapCnt );
 #ifdef DEBUG_OL
     if ( tmp2 != lemmaOverlapCnt ){
       cerr << " OVERLAPPED " << endl;
@@ -1877,11 +1867,7 @@ void wordStats::addMetrics( ) const {
   if ( lemma_freq_log != NA )
     addOneMetric( doc, el, "log_lemma_freq", toString(lemma_freq_log) );
   addOneMetric( doc, el,
-		"argument_repeat_count", toString( argRepeatCnt ) );
-  addOneMetric( doc, el,
 		"word_overlap_count", toString( wordOverlapCnt ) );
-  addOneMetric( doc, el,
-		"lemma_argument_repeat_count", toString( lemmaRepeatCnt ) );
   addOneMetric( doc, el,
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
   if ( logprob10 != NA  )
@@ -2169,9 +2155,7 @@ struct structStats: public basicStats {
     propNegCnt(0),
     morphNegCnt(0),
     multiNegCnt(0),
-    argRepeatCnt(0),
     wordOverlapCnt(0),
-    lemmaRepeatCnt(0),
     lemmaOverlapCnt(0),
     f50Cnt(0),
     f65Cnt(0),
@@ -2307,9 +2291,7 @@ struct structStats: public basicStats {
   int propNegCnt;
   int morphNegCnt;
   int multiNegCnt;
-  int argRepeatCnt;
   int wordOverlapCnt;
-  int lemmaRepeatCnt;
   int lemmaOverlapCnt;
   int f50Cnt;
   int f65Cnt;
@@ -2433,9 +2415,7 @@ void structStats::merge( structStats *ss ){
   propNegCnt += ss->propNegCnt;
   morphNegCnt += ss->morphNegCnt;
   multiNegCnt += ss->multiNegCnt;
-  argRepeatCnt += ss->argRepeatCnt;
   wordOverlapCnt += ss->wordOverlapCnt;
-  lemmaRepeatCnt += ss->lemmaRepeatCnt;
   lemmaOverlapCnt += ss->lemmaOverlapCnt;
   f50Cnt += ss->f50Cnt;
   f65Cnt += ss->f65Cnt;
@@ -2669,11 +2649,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "multiple_neg_count", toString(multiNegCnt) );
   addOneMetric( doc, el, "voorzetsel_expression_count", toString(prepExprCnt) );
   addOneMetric( doc, el,
-		"argument_repeat_count", toString( argRepeatCnt ) );
-  addOneMetric( doc, el,
 		"word_overlap_count", toString( wordOverlapCnt ) );
-  addOneMetric( doc, el,
-		"lemma_argument_repeat_count", toString( lemmaRepeatCnt ) );
   addOneMetric( doc, el,
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
   if ( lsa_opv )
@@ -3848,9 +3824,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
       if ( ws->afkType != NO_A ){
 	++afks[ws->afkType];
       }
-      argRepeatCnt += ws->argRepeatCnt;
       wordOverlapCnt += ws->wordOverlapCnt;
-      lemmaRepeatCnt += ws->lemmaRepeatCnt;
       lemmaOverlapCnt += ws->lemmaOverlapCnt;
       charCnt += ws->charCnt;
       charCntExNames += ws->charCntExNames;
@@ -4161,9 +4135,7 @@ struct docStats : public structStats {
   void setLSAvalues( double, double, double );
   void gather_LSA_word_info( Document * );
   void gather_LSA_doc_info( Document * );
-  int doc_word_argCnt;
   int doc_word_overlapCnt;
-  int doc_lemma_argCnt;
   int doc_lemma_overlapCnt;
   map<string,double> LSA_word_dists;
   map<string,double> LSA_sentence_dists;
@@ -4187,52 +4159,50 @@ void docStats::calculate_doc_overlap( ){
     return;
   vector<string> wordbuffer;
   vector<string> lemmabuffer;
-  size_t count = 0;
   for ( vector<const wordStats*>::const_iterator it = wv2.begin();
 	it != wv2.end();
 	++it ){
-    ++count;
+    if ( (*it)->wordProperty() == ISLET )
+      continue;
+    string l_word =  (*it)->ltext();
+    string l_lemma = (*it)->llemma();
+    if ( wordbuffer.size() >= settings.overlapSize ){
 #ifdef DEBUG_DOL
-    if ( count == settings.overlapSize ){
       cerr << "Document overlap" << endl;
       cerr << "wordbuffer= " << wordbuffer << endl;
       cerr << "lemmabuffer= " << lemmabuffer << endl;
-    }
+      cerr << "test overlap: << " << l_word << " " << l_lemma << endl;
 #endif
-    if ( (*it)->isOverlapCandidate() ){
-      string l_word =  (*it)->ltext();
-      string l_lemma = (*it)->llemma();
-      if ( count < settings.overlapSize ){
-	wordbuffer.push_back( l_word );
-	lemmabuffer.push_back( l_lemma );
-      }
-      else {
+      if ( (*it)->isOverlapCandidate() ){
 #ifdef DEBUG_DOL
 	int tmp = doc_word_overlapCnt;
 #endif
-	argument_overlap( l_word, wordbuffer,
-			  doc_word_argCnt, doc_word_overlapCnt );
+	argument_overlap( l_word, wordbuffer, doc_word_overlapCnt );
 #ifdef DEBUG_DOL
 	if ( doc_word_overlapCnt > tmp ){
 	  cerr << "word OVERLAP " << l_word << endl;
 	}
 #endif
-	wordbuffer.erase(wordbuffer.begin());
-	wordbuffer.push_back( l_word );
 #ifdef DEBUG_DOL
 	tmp = doc_lemma_overlapCnt;
 #endif
-	argument_overlap( l_lemma, lemmabuffer,
-			  doc_lemma_argCnt, doc_lemma_overlapCnt );
+	argument_overlap( l_lemma, lemmabuffer, doc_lemma_overlapCnt );
 #ifdef DEBUG_DOL
 	if ( doc_lemma_overlapCnt > tmp ){
 	  cerr << "lemma OVERLAP " << l_lemma << endl;
 	}
 #endif
-	lemmabuffer.erase(lemmabuffer.begin());
-	lemmabuffer.push_back( l_lemma );
       }
+#ifdef DEBUG_DOL
+      else {
+	cerr << "geen kandidaat" << endl;
+      }
+#endif
+      wordbuffer.erase(wordbuffer.begin());
+      lemmabuffer.erase(lemmabuffer.begin());
     }
+    wordbuffer.push_back( l_word );
+    lemmabuffer.push_back( l_lemma );
   }
 }
 
@@ -4441,8 +4411,7 @@ void docStats::gather_LSA_doc_info( Document *doc ){
 
 docStats::docStats( Document *doc ):
   structStats( 0, "document" ),
-  doc_word_argCnt(0), doc_word_overlapCnt(0),
-  doc_lemma_argCnt(0), doc_lemma_overlapCnt(0)
+  doc_word_overlapCnt(0), doc_lemma_overlapCnt(0)
 {
   sentCnt = 0;
   doc->declare( AnnotationType::METRIC,
@@ -4522,11 +4491,7 @@ void docStats::addMetrics( ) const {
   addOneMetric( el->doc(), el,
 		"rar_index", rarity( settings.rarityLevel ) );
   addOneMetric( el->doc(), el,
-		"document_word_argument_count", toString( doc_word_argCnt ) );
-  addOneMetric( el->doc(), el,
 		"document_word_argument_overlap_count", toString( doc_word_overlapCnt ) );
-  addOneMetric( el->doc(), el,
-		"document_lemma_argument_count", toString( doc_lemma_argCnt ) );
   addOneMetric( el->doc(), el,
 		"document_lemma_argument_overlap_count", toString( doc_lemma_overlapCnt ) );
 }
