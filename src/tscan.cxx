@@ -296,6 +296,7 @@ struct settingData {
   string style;
   int rarityLevel;
   unsigned int overlapSize;
+  double freq_clip;
   map <string, SemType> adj_sem;
   map <string, SemType> noun_sem;
   map <string, SemType> verb_sem;
@@ -509,6 +510,12 @@ bool fill_freqlex( map<string,cf_data>& m, istream& is ){
       return true;
     }
     data.freq = TiCC::stringTo<double>( parts[3] );
+    if ( settings.freq_clip > 0 ){
+      // skip low frequent word, when desired
+      if ( data.freq > settings.freq_clip ){
+	return true;
+      }
+    }
     m[parts[0]] = data;
   }
   return true;
@@ -794,6 +801,15 @@ void settingData::init( const Configuration& cf ){
   }
   else if ( !TiCC::stringTo( val, overlapSize ) ){
     cerr << "invalid value for 'overlapSize' in config file" << endl;
+    exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "frequencyClip" );
+  if ( val.empty() ){
+    freq_clip = 90;
+  }
+  else if ( !TiCC::stringTo( val, freq_clip )
+	    || (freq_clip < 0) || (freq_clip > 100) ){
+    cerr << "invalid value for 'frequencyClip' in config file" << endl;
     exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "adj_semtypes" );
@@ -4682,19 +4698,28 @@ int main(int argc, char *argv[]) {
   if ( opts.Find( 't', val, mood ) ){
     t_option = val;
   }
-  string d_option = ".";
+  string d_option;
   if ( opts.Find( 'd', val, mood ) ){
     d_option = val;
   }
-  if ( !t_option.empty() && !d_option.empty() ){
-    cerr << "-t and -d options cannot be combined" << endl;
-  }
-
   string e_option;
   if ( opts.Find( 'e', val, mood ) ){
     e_option = val;
     if ( e_option.size() > 0 && e_option[e_option.size()-1] != '$' )
       e_option += "$";
+  }
+  if ( !t_option.empty() && !d_option.empty() ){
+    cerr << "-t and -d options cannot be combined" << endl;
+    exit( EXIT_FAILURE );
+  }
+  if ( t_option.empty() && d_option.empty() ){
+    if ( e_option.empty() ){
+      cerr << "missing one of -t, -d or -e options" << endl;
+      exit( EXIT_FAILURE );
+    }
+    else {
+      d_option = ".";
+    }
   }
 
   vector<string> inputnames;
@@ -4705,9 +4730,9 @@ int main(int argc, char *argv[]) {
     cerr << "search files matching pattern: " << d_option << e_option << endl;
     inputnames = searchFilesMatch( d_option, e_option, false );
   }
-  for ( size_t i = 0; i < inputnames.size(); ++i ){
-    cerr << i << " - " << inputnames[i] << endl;
-  }
+  // for ( size_t i = 0; i < inputnames.size(); ++i ){
+  //   cerr << i << " - " << inputnames[i] << endl;
+  // }
   if ( inputnames.size() == 0 ){
     cerr << "no input file(s) found" << endl;
     exit(EXIT_FAILURE);
