@@ -1,4 +1,4 @@
-# /bin/sh
+# /bin/sh -x
 
 if [ "$tscan_bin" = "" ];
 then echo "tscan_bin not set";
@@ -13,7 +13,7 @@ export comm="$VG $tscan_bin/tscan"
 
 for file in $@
 do if test -e $file
-    then 
+    then
 	\rm -f $file.diff
 	\rm -f $file.err
 	\rm -f $file.out
@@ -23,8 +23,8 @@ do if test -e $file
 	#xmldiff /tmp/folia.2.xml $file.ok >& $file.diff
 	diff -w --ignore-matching-lines=".?*-annotation .?*" $file.tscan.xml $file.ok >& $file.diff
 	if [ $? -ne 0 ];
-	then 
-	    echo -e $FAIL;	
+	then
+	    echo -e $FAIL;
 	    echo "differences logged in $file.diff";
 	else
 	  echo -e $OK
