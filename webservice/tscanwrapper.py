@@ -57,16 +57,20 @@ if not 'top_freq_lex' in clamdata:
 #Write configuration file
 
 f = open(outputdir + '/tscan.cfg','w')
-if 'usealpino' in clamdata and clamdata['usealpino'] == 'yes':
+if 'useAlpino' in clamdata and clamdata['useAlpino'] == 'yes':
     f.write("useAlpinoServer=1\n")
     f.write("useAlpino=1\n")
 else:
     f.write("useAlpinoServer=0\n")
     f.write("useAlpino=0\n")
-if 'usewopr' in clamdata and clamdata['usewopr'] == 'yes':
+if 'useWopr' in clamdata and clamdata['useWopr'] == 'yes':
     f.write("useWopr=1\n")
 else:
     f.write("useWopr=0\n")
+if 'useLsa' in clamdata and clamdata['useLsa'] == 'yes':
+    f.write("useLsa=1\n")
+else:
+    f.write("useLsa=0\n")
 f.write("decompounderPath=\"" + TSCANDIR + "\"\n")
 f.write("surprisalPath=\"" + TSCANDIR + "\"\n")
 f.write("styleSheet=\"tscanview.xsl\"\n")
@@ -79,13 +83,8 @@ if 'overlapSize' in clamdata:
 	overlapsize = clamdata['overlapSize']
 else:
 	overlapsize = 50
-if 'polarity_threshold' in clamdata:
-	polarity = clamdata['polarity_threshold']
-else:
-	polarity = 0.01
 f.write("rarityLevel="  + str(raritylevel) + "\n")
 f.write("overlapSize="  + str(overlapsize) + "\n")
-f.write("polarity_threshold="  + str(polarity) + "\n")
 
 f.write("configDir="+ TSCANDIR + "/data\n")
 f.write("adj_semtypes=\"adjs_semtype.data\"\n")
@@ -119,6 +118,14 @@ f.write("host=localhost\n\n")
 
 f.write("[[alpino]]\n")
 f.write("port=6666\n")
+f.write("host=localhost\n")
+
+f.write("[[lsa_words]]\n")
+f.write("port=12345\n")
+f.write("host=localhost\n")
+
+f.write("[[lsa_docs]]\n")
+f.write("port=12346\n")
 f.write("host=localhost\n")
 
 
