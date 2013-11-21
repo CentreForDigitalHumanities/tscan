@@ -4705,7 +4705,7 @@ int main(int argc, char *argv[]) {
 
   string o_option;
   if ( opts.Find( 'o', val, mood ) ){
-    if ( inputnames.size() > 0 ){
+    if ( inputnames.size() > 1 ){
       cerr << "-o option not supported for multiple input files" << endl;
       exit(EXIT_FAILURE);
     }
