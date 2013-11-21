@@ -4268,7 +4268,7 @@ void docStats::gather_LSA_word_info( Document *doc ){
   }
 }
 
-#define DEBUG_LSA_SERVER
+//#define DEBUG_LSA_SERVER
 
 void docStats::gather_LSA_doc_info( Document *doc ){
   string host = config.lookUp( "host", "lsa_docs" );
