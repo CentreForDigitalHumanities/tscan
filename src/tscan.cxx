@@ -1093,7 +1093,7 @@ struct basicStats {
 };
 
 struct wordStats : public basicStats {
-  wordStats( Word *, const xmlNode *, const set<size_t>& );
+  wordStats( Word *, const xmlNode *, const set<size_t>&, bool );
   void CSVheader( ostream&, const string& ) const;
   void wordDifficultiesHeader( ostream& ) const;
   void wordDifficultiesToCSV( ostream& ) const;
@@ -1136,6 +1136,7 @@ struct wordStats : public basicStats {
   void getSentenceOverlap( const vector<string>&, const vector<string>& );
   bool isOverlapCandidate() const;
   vector<const wordStats*> collectWords() const;
+  bool parseFail;
   string word;
   string l_word;
   string pos;
@@ -1655,8 +1656,11 @@ void argument_overlap( const string w_or_l,
   }
 }
 
-wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts ):
-  basicStats( w, "word" ), wwform(::NO_VERB),
+wordStats::wordStats( Word *w,
+		      const xmlNode *alpWord,
+		      const set<size_t>& puncts,
+		      bool fail ):
+  basicStats( w, "word" ), parseFail(fail), wwform(::NO_VERB),
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false),
@@ -1671,7 +1675,8 @@ wordStats::wordStats( Word *w, const xmlNode *alpWord, const set<size_t>& puncts
   charCnt = us.length();
   word = UnicodeToUTF8( us );
   l_word = UnicodeToUTF8( us.toLower() );
-
+  if ( fail )
+    return;
   vector<PosAnnotation*> posV = w->select<PosAnnotation>(frog_pos_set);
   if ( posV.size() != 1 )
     throw ValueError( "word doesn't have Frog POS tag info" );
@@ -2104,9 +2109,20 @@ void wordStats::miscToCSV( ostream& os ) const {
     os << logprob10 << ",";
 }
 
+void na( ostream& os, int cnt ){
+  for ( int i=0; i < cnt; ++i ){
+    os << "NA,";
+  }
+  os << endl;
+}
+
 void wordStats::toCSV( ostream& os ) const {
   os << '"' << word << '"';
   os << ",";
+  if ( parseFail ){
+    na( os, 86 );
+    return;
+  }
   wordDifficultiesToCSV( os );
   coherenceToCSV( os );
   concreetToCSV( os );
@@ -2821,9 +2837,14 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
 }
 
 void structStats::sentDifficultiesHeader( ostream& os ) const {
-  os << "wpz,pzw,wnp,subord_clause,rel_clause,clauses_d,clauses_g,"
-     << "dlevel,dlevel_gt4_prop,dlevel_gt4_r,"
-     << "nom,lv_d,lv_g,prop_negs,morph_negs,total_negs,multiple_negs,"
+  os << "wpz,pzw,wnp,subord_clause,rel_clause,clauses_d,clauses_g,";
+  if ( isSentence() ){
+    os << "dlevel,";
+  }
+  else {
+    os  << "dlevel,dlevel_gt4_prop,dlevel_gt4_r,";
+  }
+  os << "nom,lv_d,lv_g,prop_negs,morph_negs,total_negs,multiple_negs,"
      << "deplen_subverb,deplen_dirobverb,deplen_indirobverb,deplen_verbpp,"
      << "deplen_noundet,deplen_prepobj,deplen_verbvc,"
      << "deplen_compbody,deplen_crdcnj,deplen_verbcp,deplen_noun_vc,"
@@ -2838,9 +2859,11 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
      << density( betrCnt, wordCnt ) << ","
      << density( pastCnt + presentCnt, wordCnt ) << ","
      << ratio( pastCnt + presentCnt, sentCnt ) << ","
-     << ratio( dLevel, sentCnt ) << ","
-     << ratio( dLevel_gt4, sentCnt ) << ",";
-  os << ratio( dLevel_gt4, sentCnt - dLevel_gt4 ) << ",";
+     << ratio( dLevel, sentCnt ) << ",";
+  if ( !isSentence() ){
+    os << ratio( dLevel_gt4, sentCnt ) << ",";
+    os << ratio( dLevel_gt4, sentCnt - dLevel_gt4 ) << ",";
+  }
   os << density( nominalCnt, wordCnt ) << ","
      << density( passiveCnt, wordCnt ) << ",";
   os << ratio( passiveCnt, pastCnt + presentCnt ) << ",";
@@ -2997,7 +3020,7 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << density( humanCnt, wordCnt ) << ",";
   os << ratio( emoCnt, adjCnt ) << ",";
   os << density( emoCnt, wordCnt ) << ",";
-  os << ratio( impCnt, sentCnt ) << ",";
+  os << ratio( impCnt, (presentCnt+pastCnt) ) << ",";
   os << density( impCnt, wordCnt ) << ",";
   os << ratio( questCnt, sentCnt ) << ",";
   os << density( questCnt, wordCnt ) << ",";
@@ -3763,10 +3786,10 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
     } // omp section
   } // omp sections
 
-  if ( parseFailCnt == 1 ){
-    // glorious fail
-    return;
-  }
+  // if ( parseFailCnt == 1 ){
+  //   // glorious fail
+  //   return;
+  // }
   sentCnt = 1; // so only count the sentence when not failed
   if ( sentProb != -99 ){
     avg_prob10 = sentProb;
@@ -3789,7 +3812,11 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
     if ( alpDoc ){
       alpWord = getAlpWordNode( alpDoc, w[i] );
     }
-    wordStats *ws = new wordStats( w[i], alpWord, puncts );
+    wordStats *ws = new wordStats( w[i], alpWord, puncts, parseFailCnt == 1 );
+    if ( parseFailCnt ){
+      sv.push_back( ws );
+      continue;
+    }
     if ( woprProbsV[i] != -99 )
       ws->logprob10 = woprProbsV[i];
     if ( pred ){
