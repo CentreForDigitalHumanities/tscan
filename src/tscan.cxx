@@ -1969,7 +1969,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
 }
 
 void wordStats::coherenceHeader( ostream& os ) const {
-  os << "temporeel,reeks,contrastief,comparatief,causaal,multiword,referential_pron,";
+  os << "temporeel,reeks,contrastief,comparatief,causaal,multiword,Vnw_ref,";
 }
 
 void wordStats::coherenceToCSV( ostream& os ) const {
