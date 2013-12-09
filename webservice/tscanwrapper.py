@@ -108,24 +108,23 @@ f.write("causals=\"causal_connectors.lst\"\n")
 
 
 f.write("[[frog]]\n") #Frog server should already be runnning, start manually
-f.write("port=7345\n")
+f.write("port=7001\n")
 f.write("host=localhost\n\n")
 
-
 f.write("[[wopr]]\n")
-f.write("port=6345\n")
+f.write("port=7002\n")
 f.write("host=localhost\n\n")
 
 f.write("[[alpino]]\n")
-f.write("port=6666\n")
+f.write("port=7003\n")
 f.write("host=localhost\n")
 
 f.write("[[lsa_words]]\n")
-f.write("port=12345\n")
+f.write("port=7004\n")
 f.write("host=localhost\n")
 
 f.write("[[lsa_docs]]\n")
-f.write("port=12346\n")
+f.write("port=7005\n")
 f.write("host=localhost\n")
 
 
