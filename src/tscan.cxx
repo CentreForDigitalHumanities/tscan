@@ -1897,11 +1897,13 @@ void wordStats::CSVheader( ostream& os, const string& intro ) const {
 }
 
 void wordStats::wordDifficultiesHeader( ostream& os ) const {
-  os << "lpw,wpl,lpwzn,wplzn,mpw,wpm,mpwzn,wpmzn,"
-     << "sdpw,sdens,freq50,freq65,freq77,freq80,"
-     << "word_freq_log,word_freq_log_zn,"
-     << "lemfreq_log,lemfreq_log_zn,"
-     << "freq1000,freq2000,freq3000,freq5000,freq10000,freq20000,so_suc,so_ctx,";
+  os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
+     << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
+     << "Sam_delen_per_wrd,Sam_d,"
+     << "Freq50_staph,Freq65_Staph,Freq77_Staph,Feq80_Staph,"
+     << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
+     << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,"
+     <<" so_suc,so_ctx,";
 }
 
 void wordStats::wordDifficultiesToCSV( ostream& os ) const {
@@ -1981,10 +1983,10 @@ void wordStats::coherenceToCSV( ostream& os ) const {
 }
 
 void wordStats::concreetHeader( ostream& os ) const {
-  os << "noun_conc_strict,";
-  os << "noun_conc_broad,";
-  os << "adj_conc_strict,";
-  os << "adj_conc_broad,";
+  os << "Conc_nw_strikt,";
+  os << "Conc_nw_ruim,";
+  os << "Conc_bvnw_strikt,";
+  os << "Conc_bvnw_ruim,";
 }
 
 void wordStats::concreetToCSV( ostream& os ) const {
@@ -2006,12 +2008,12 @@ void wordStats::concreetToCSV( ostream& os ) const {
 }
 
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
-  os << "pers_ref,pers_pron_1,pers_pron_2,pers_pron_3,pers_pron,"
-     << "name, NerPers, NerLoc, NerOrg, NerProd, NerEvent, NerMisc,"
-     << "action_verb,state_verb,"
-     << "process_verb,human_noun,"
-     << "emo_adj,imperative,"
-     << "question,";
+  os << "Pers_ref,Pers_vnw1,Pers_vnw2,Pers_vnw3,Pers_vnw,"
+     << "Namen, Pers_naam, Geo_naam, Org_naam, Prod_naam, Event_naam, Ov_naam,"
+     << "Actieww,Toestww,"
+     << "Procesww,Pers_nw,"
+     << "Emo_bvn,Imp,"
+     << "Vragen,";
 }
 
 void wordStats::persoonlijkheidToCSV( ostream& os ) const {
@@ -2037,8 +2039,8 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
 }
 
 void wordStats::wordSortHeader( ostream& os ) const {
-  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let,"
-     << "afk_tot,afk_gen,afk_int,afk_jur,afk_med,afk_ond,afk_pol,afk_ov,afk_zorg,";
+  os << "Bvn,Vg,Vnw,Lid,Vz,Bijw,Tw,Nw,Ww,Tuss,Spec,Aanh,"
+     << "Afk,Afk_gen,Afk_int,Afk_jur,Afk_med,Afk_ond,Afk_pol,Afk_ov,Afk_zorg,";
 }
 
 void wordStats::wordSortToCSV( ostream& os ) const {
@@ -2090,8 +2092,8 @@ void wordStats::wordSortToCSV( ostream& os ) const {
 }
 
 void wordStats::miscHeader( ostream& os ) const {
-  os << "present_verb,modal,time_verb,copula,archaic,"
-     << "vol_deelw,onvol_deelw,infin,wopr_logprob";
+  os << "present_verb,modal,time_verb,Koppelww,Arch,"
+     << "Vol_dw,Onvol_dw,Infin,Log_prob";
 }
 
 void wordStats::miscToCSV( ostream& os ) const {
@@ -2772,7 +2774,7 @@ void structStats::addMetrics( ) const {
 }
 
 void structStats::CSVheader( ostream& os, const string& intro ) const {
-  os << intro << ",parse_failure,";
+  os << intro << ",Alpino_status,";
   wordDifficultiesHeader( os );
   sentDifficultiesHeader( os );
   infoHeader( os );
@@ -2798,11 +2800,12 @@ void structStats::toCSV( ostream& os ) const {
 }
 
 void structStats::wordDifficultiesHeader( ostream& os ) const {
-  os << "lpw,wpl,lpwzn,wplzn,mpw,wpm,mpwzn,wpmzn,"
-     << "sdpw,sdens,freq50,freq65,freq77,freq80,"
-     << "word_freq_log,word_freq_log_zn,"
-     << "lemma_freq_log,lemma_freq_log_zn,"
-     << "freq1000,freq2000,freq3000,freq5000,freq10000,freq20000,"
+  os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
+     << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
+     << "Sam_delen_per_wrd,Sam_d,"
+     << "Freq50_staph,Freq65_Staph,Freq77_Staph,Feq80_Staph,"
+     << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
+     << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,"
      << "so_word_suc,so_word_net,";
 }
 
@@ -2837,18 +2840,19 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
 }
 
 void structStats::sentDifficultiesHeader( ostream& os ) const {
-  os << "wpz,pzw,wnp,subord_clause,rel_clause,clauses_d,clauses_g,";
+  os << "Wrd_per_zin,Zin_per_wrd,Wrd_per_nwg,Bijw_bijzin_d,Betr_bijzin_d,"
+     << "Pv_d,Pv_per_zin,";
   if ( isSentence() ){
-    os << "dlevel,";
+    os << "D_level,";
   }
   else {
-    os  << "dlevel,dlevel_gt4_prop,dlevel_gt4_r,";
+    os  << "D_level,D_level_gt4_p,D_level_gt4_r,";
   }
-  os << "nom,lv_d,lv_g,prop_negs,morph_negs,total_negs,multiple_negs,"
-     << "deplen_subverb,deplen_dirobverb,deplen_indirobverb,deplen_verbpp,"
-     << "deplen_noundet,deplen_prepobj,deplen_verbvc,"
-     << "deplen_compbody,deplen_crdcnj,deplen_verbcp,deplen_noun_vc,"
-     << "deplen,deplen_max,";
+  os << "Nom_d,Lijdv_d,Lijdv_dx,Ontk_zin_d,Ontk_morf_d,Ontk_tot_d,Meerv_ont_d,"
+     << "AL_sub_ww,AL_ob_ww,AL_indirob_ww,AL_ww_vzg,"
+     << "AL_lidw_znw,AL_vz_znw,AL_pv_hww,"
+     << "AL_vg_pvbijzin,AL_vg_conj,AL_vg_pvhoofdzin,AL_znw_bijzin,"
+     << "AL_gem,AL_max,";
 }
 
 void structStats::sentDifficultiesToCSV( ostream& os ) const {
@@ -2887,11 +2891,11 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 }
 
 void structStats::infoHeader( ostream& os ) const {
-  os << "word_ttr,lemma_ttr,ttr_namen, ttr_inhoudswoorden,"
-     << "content_words_r,content_words_d,content_words_g,"
-     << "rar_index,vc_mods_d,vc_mods_g,"
-     << "adj_np_mods_d,adj_np_mods_g, np_mods_d,np_mods_g,"
-     << "ov_np_mods_d,ov_np_mods_g,np_dens,";
+  os << "TTR_wrd,TTR_lem,TTR_namen, TTR_inhwrd,"
+     << "Inhwrd_r,Inhwrd_d,Inhwrd_dz,"
+     << "Zeldz_index,Bijw_bep_d,Bijw_bep_dz,"
+     << "Attr_bijv_nw_d,Attr_bijv_nw_dz,Bijv_bep_d,Bijv_bep_dz,"
+     << "Ov_bijv_bep_d,Ov_bijv_bep_dz,Nwg_d,";
 }
 
 void structStats::informationDensityToCSV( ostream& os ) const {
@@ -2916,11 +2920,11 @@ void structStats::informationDensityToCSV( ostream& os ) const {
 
 
 void structStats::coherenceHeader( ostream& os ) const {
-  os << "temporals,reeks,contrast,comparatief,causal,referential_prons,"
-     << "argument_overlap_d,argument_overlap_g,lem_argument_overlap_d,"
-     << "lem_argument_overlap_g,wordbuffer_argument_overlap_d,"
-     << "wordbuffer_argument_overlap_g,lemmabuffer_argument_overlap_d,"
-     << "lemmabuffer_argument_overlap_g,indef_nps_p,indef_nps_r,indef_nps_g,";
+  os << "Conn_temp_d,Conn_reeks_d,Conn_contr_d,Conn_comp_d,Conn_caus_d,"
+     << "Vnw_ref,"
+     << "Arg_over_vzin_d,Arg_over_vzin_dz,Lem_over_vzin_d,Lem_over_vzin_dz,"
+     << "Arg_over_buf_d,Arg_over_buf_dz,Lem_over_buf_d,Lem_over_buf_dz,"
+     << "Onbep_nwg_p,Onbep_nwg_r,Onbep_nwg_dz,";
 }
 
 void structStats::coherenceToCSV( ostream& os ) const {
@@ -2955,10 +2959,10 @@ void structStats::coherenceToCSV( ostream& os ) const {
 }
 
 void structStats::concreetHeader( ostream& os ) const {
-  os << "noun_conc_strict_p,noun_conc_strict_r,noun_conc_strict_d,";
-  os << "noun_conc_broad_p,noun_conc_broad_r,noun_conc_broad_d,";
-  os << "adj_conc_strict_p,adj_conc_strict_r,adj_conc_strict_d,";
-  os << "adj_conc_broad_p,adj_conc_broad_r,adj_conc_broad_d,";
+  os << "Conc_nw_strikt_p,Conc_nw_strikt_r,Conc_nw_strikt_d,";
+  os << "Conc_nw_ruim_p,Conc_nw_ruim_r,Conc_nw_ruim_d,";
+  os << "Conc_bvnw_strikt_p,Conc_bvnw_strikt_r,Conc_bvnw_strikt_d,";
+  os << "Conc_bvnw_ruim_p,Conc_bvnw_ruim_r,Conc_bvnw_ruim_d,";
 }
 
 void structStats::concreetToCSV( ostream& os ) const {
@@ -2978,13 +2982,13 @@ void structStats::concreetToCSV( ostream& os ) const {
 
 
 void structStats::persoonlijkheidHeader( ostream& os ) const {
-  os << "pers_ref_d,pers_pron_1,pers_pron_2,pers_pron3,pers_pron,"
-     << "names_p,names_r,names_d,"
-     << "pers_names_p, pers_names_d, loc_names_d, org_names_d, prod_names_d, event_names_d,"
-     << "action_verbs_p,action_verbs_d,state_verbs_p,state_verbs_d,"
-     << "process_verbs_p,process_verbs_d,human_nouns_p,human_nouns_d,"
-     << "emo_adjs_p,emo_adjs_d,imperatives_p,imperatives_d,"
-     << "questions_p,questions_d,";
+  os << "Pers_ref_d,Pers_vnw1_d,Pers_vnw2_d,Pers_vnw3_d,Pers_vnw_d,"
+     << "Namen_p,Names_r,Names_d,"
+     << "Pers_namen_p, Pers_namen_d, Plaatsnamen_d, Org_namen_d, Prod_namen_d, Event_namen_d,"
+     << "Actieww_p,Actieww_d,Toestww_p,Toestww_d,"
+     << "Processww_p,Processww_d,Pers_nw_p,Pers_nw_d,"
+     << "Emo_bvnw_p,Emo_bvnw_d,Imp_p,Imp_d,"
+     << "Vragen_p,Vragen_d,";
 }
 
 void structStats::persoonlijkheidToCSV( ostream& os ) const {
@@ -3027,8 +3031,8 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
 }
 
 void structStats::wordSortHeader( ostream& os ) const {
-  os << "adj,vg,vnw,lid,vz,bijw,tw,noun,verb,interjections,spec,let,"
-     << "afk_tot,afk_gen,afk_int,afk_jur,afk_med,afk_ond,afk_pol,afk_ov,afk_zorg,";
+  os << "Bvnw_d,Vg_d,Vnw_d,Lidw_d,Vz_d,Bijw_d,Tw_d,Nw_d,Ww_d,Tuss_d,Spec_d,Aanh_d,"
+     << "Afk,Afk_gen,Afk_int,Afk_jur,Afk_med,Afk_ond,Afk_pol,Afk_ov,Afk_zorg,";
 }
 
 void structStats::wordSortToCSV( ostream& os ) const {
@@ -3064,11 +3068,11 @@ void structStats::wordSortToCSV( ostream& os ) const {
 }
 
 void structStats::miscHeader( ostream& os ) const {
-  os << "VZ_d, VZ_g, present_verbs_r,present_verbs_d,modals_d_,modals_g,"
-     << "time_verbs_d,time_verbs_g,copula_d,copula_g,"
-     << "archaics,vol_deelw_d,vol_deelw_g,"
-     << "onvol_deelw_d,onvol_deelw_g,infin_d,infin_g,"
-     << "wopr_logprob,wopr_entropy,wopr_perplexity,";
+  os << "Vzu_d, Vzu_dz, present_verbs_r,present_verbs_d,modals_d_,modals_g,"
+     << "time_verbs_d,time_verbs_g,Koppelww_d,Koppelww_dz,"
+     << "Arch_d,Vol_dw_d,Vol_dw_dz,"
+     << "Onvol_dw_d,Onvol_dw_dz,Infin_d,Infin_g,"
+     << "Log_prob,Entropy,Perplexiteit,";
 }
 
 void structStats::miscToCSV( ostream& os ) const {
@@ -4529,7 +4533,7 @@ void docStats::toCSV( const string& name,
     string fname = name + ".document.csv";
     ofstream out( fname.c_str() );
     if ( out ){
-      CSVheader( out, "File" );
+      CSVheader( out, "Inputfile" );
       out << name << ",";
       structStats::toCSV( out );
       LOG << "stored document statistics in " << fname << endl;
@@ -4544,7 +4548,7 @@ void docStats::toCSV( const string& name,
     if ( out ){
       for ( size_t par=0; par < sv.size(); ++par ){
 	if ( par == 0 )
-	  sv[0]->CSVheader( out, "File,FoLiA-ID" );
+	  sv[0]->CSVheader( out, "Inputfile,Segment" );
 	out << name << "," << sv[par]->id << ",";
 	sv[par]->toCSV( out );
       }
@@ -4561,7 +4565,7 @@ void docStats::toCSV( const string& name,
       for ( size_t par=0; par < sv.size(); ++par ){
 	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
 	  if ( par == 0 && sent == 0 )
-	    sv[0]->sv[0]->CSVheader( out, "File,FoLiA-ID" );
+	    sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment" );
 	  out << name << "," << sv[par]->sv[sent]->id << ",";
 	  sv[par]->sv[sent]->toCSV( out );
 	}
@@ -4580,7 +4584,7 @@ void docStats::toCSV( const string& name,
 	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
 	  for ( size_t word=0; word < sv[par]->sv[sent]->sv.size(); ++word ){
 	    if ( par == 0 && sent == 0 && word == 0 )
-	      sv[0]->sv[0]->sv[0]->CSVheader( out, "File,FoLiA-ID,word" );
+	      sv[0]->sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment,word" );
 	    out << name << "," << sv[par]->sv[sent]->sv[word]->id << ",";
 	    sv[par]->sv[sent]->sv[word]->toCSV( out );
 	  }
