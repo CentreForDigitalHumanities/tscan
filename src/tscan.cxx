@@ -2206,7 +2206,6 @@ struct structStats: public basicStats {
     lsa_par_suc(NA),
     lsa_par_net(NA),
     lsa_par_ctx(NA),
-    lsa_doc_ctx(NA),
     broadConcreteNounCnt(0),
     strictConcreteNounCnt(0),
     broadAbstractNounCnt(0),
@@ -2342,7 +2341,6 @@ struct structStats: public basicStats {
   double lsa_par_suc;
   double lsa_par_net;
   double lsa_par_ctx;
-  double lsa_doc_ctx;
   int broadConcreteNounCnt;
   int strictConcreteNounCnt;
   int broadAbstractNounCnt;
@@ -2806,7 +2804,9 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
      << "Freq50_staph,Freq65_Staph,Freq77_Staph,Feq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,"
-     << "so_word_suc,so_word_net,";
+     << "so_word_suc,so_word_net,"
+     << "so_sent_suc,so_sent_net,so_sent_ctx,"
+     << "so_par_suc,so_par_net,so_par_ctx,";
 }
 
 void structStats::wordDifficultiesToCSV( ostream& os ) const {
@@ -2836,7 +2836,11 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
   os << ratio( top5000Cnt, wordCnt ) << ",";
   os << ratio( top10000Cnt, wordCnt ) << ",";
   os << ratio( top20000Cnt, wordCnt ) << ",";
-  os << lsa_word_suc << "," << lsa_word_net << ",";
+  os << toMString(lsa_word_suc) << "," << toMString(lsa_word_net) << ",";
+  os << toMString(lsa_sent_suc) << "," << toMString(lsa_sent_net) << ","
+     << toMString(lsa_sent_ctx) << ",";
+  os << toMString(lsa_par_suc) << "," << toMString(lsa_par_net) << ","
+     << toMString(lsa_par_ctx) << ",";
 }
 
 void structStats::sentDifficultiesHeader( ostream& os ) const {
@@ -3109,7 +3113,7 @@ vector<const wordStats*> structStats::collectWords() const {
   return result;
 }
 
-//#define DEBUG_LSA
+// #define DEBUG_LSA
 
 void structStats::resolveLSA( const map<string,double>& LSA_dists ){
   if ( sv.size() < 1 )
@@ -3151,20 +3155,22 @@ void structStats::resolveLSA( const map<string,double>& LSA_dists ){
 	net += result;
       }
 #ifdef DEBUG_LSA
-      LOG << "LSA: doc lookup '" << call << "' ==> " << result << endl;
+      LOG << "LSA: " << category << " lookup '" << call << "' ==> " << result << endl;
 #endif
     }
   }
 #ifdef DEBUG_LSA
-  LOG << "LSA-doc-NET sum = " << net << ", node count = " << node_count << endl;
+  LOG << "LSA-" << category << "-SUC sum = " << suc << ", size = " << sv.size() << endl;
+  LOG << "LSA-" << category << "-NET sum = " << net << ", node count = " << node_count << endl;
+  LOG << "LSA-" << category << "-CTX sum = " << ctx << ", size = " << sv.size() << endl;
 #endif
   suc = suc/sv.size();
   net = net/node_count;
   ctx = ctx/sv.size();
 #ifdef DEBUG_LSA
-  LOG << "LSA-suc result = " << suc << endl;
-  LOG << "LSA-NET result = " << net << endl;
-  LOG << "LSA-ctx result = " << ctx << endl;
+  LOG << "LSA-" << category << "-SUC result = " << suc << endl;
+  LOG << "LSA-" << category << "-NET result = " << net << endl;
+  LOG << "LSA-" << category << "-CTX result = " << ctx << endl;
 #endif
   setLSAvalues( suc, net, ctx );
 }
@@ -3206,6 +3212,17 @@ void structStats::calculate_LSA_summary(){
       par_ctx += ps->lsa_par_ctx;
     }
   }
+#ifdef DEBUG_LSA
+  LOG << category << " calculate summary, for " << size << " items" << endl;
+  LOG << "word_suc = " << word_suc << endl;
+  LOG << "word_net = " << word_net << endl;
+  LOG << "sent_suc = " << sent_suc << endl;
+  LOG << "sent_net = " << sent_net << endl;
+  LOG << "sent_ctx = " << sent_ctx << endl;
+  LOG << "par_suc = " << par_suc << endl;
+  LOG << "par_net = " << par_net << endl;
+  LOG << "par_ctx = " << par_ctx << endl;
+#endif
   if ( word_suc > 0 ){
     lsa_word_suc = word_suc/size;
   }
@@ -3513,8 +3530,6 @@ void sentStats::resolveConnectives(){
   }
 }
 
-//#define DEBUG_LSA
-
 void sentStats::resolveLSA( const map<string,double>& LSAword_dists ){
   if ( sv.size() < 1 )
     return;
@@ -3561,19 +3576,20 @@ void sentStats::resolveLSA( const map<string,double>& LSAword_dists ){
 	net += result;
       }
 #ifdef DEBUG_LSA
-      LOG << "LSA: lookup '" << call << "' ==> " << result << endl;
+      LOG << "LSA-sent lookup '" << call << "' ==> " << result << endl;
 #endif
     }
   }
 #ifdef DEBUG_LSA
-  LOG << "LSA-NET sum = " << lsa_net << ", node count = " << node_count << endl;
+  LOG << "size = " << sv.size() << ", LETS = " << lets << endl;
+  LOG << "LSA-sent-SUC sum = " << suc << endl;
+  LOG << "LSA-sent=NET sum = " << net << ", node count = " << node_count << endl;
 #endif
   suc = suc/(sv.size()-lets);
   net = net/node_count;
 #ifdef DEBUG_LSA
-  LOG << "LSA-SUC result = " << suc << endl;
-  LOG << "LSA-NET result = " << net << endl;
-  LOG << "LETS = " << lets << endl;
+  LOG << "LSA-sent-SUC result = " << suc << endl;
+  LOG << "LSA-sent-NET result = " << net << endl;
 #endif
   setLSAvalues( suc, net, 0 );
 }
@@ -4299,8 +4315,6 @@ void docStats::gather_LSA_word_info( Document *doc ){
   }
 }
 
-//#define DEBUG_LSA_SERVER
-
 void docStats::gather_LSA_doc_info( Document *doc ){
   string host = config.lookUp( "host", "lsa_docs" );
   string port = config.lookUp( "port", "lsa_docs" );
@@ -4362,7 +4376,9 @@ void docStats::gather_LSA_doc_info( Document *doc ){
 	continue;
       string index = it1->first + "<==>" + it2->first;
       string rindex = it2->first + "<==>" + it1->first;
+#ifdef DEBUG_LSA
       LOG << "LSA combine paragraaf " << index << endl;
+#endif
       string call = it1->second + "\t" + it2->second;
       if ( LSA_paragraph_dists.find( index ) == LSA_paragraph_dists.end() ){
 #ifdef DEBUG_LSA_SERVER
@@ -4405,7 +4421,9 @@ void docStats::gather_LSA_doc_info( Document *doc ){
 	continue;
       string index = it1->first + "<==>" + it2->first;
       string rindex = it2->first + "<==>" + it1->first;
+#ifdef DEBUG_LSA
       LOG << "LSA combine sentence " << index << endl;
+#endif
       string call = it1->second + "\t" + it2->second;
       if ( LSA_sentence_dists.find( index ) == LSA_sentence_dists.end() ){
 #ifdef DEBUG_LSA_SERVER
