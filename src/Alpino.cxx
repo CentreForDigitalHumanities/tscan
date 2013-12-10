@@ -917,8 +917,8 @@ void mod_stats( xmlDoc *doc, int& vcMod,
       getNodesValue( nodes[i]->children, nnodes, "rel", "vc" );
     }
   }
-  cerr << "found: " << nnodes.size() << " MOD nodes, of which "
-       << anodes.size() << " are ADJ nodes" << endl;
+  // cerr << "found: " << nnodes.size() << " MOD nodes, of which "
+  //      << anodes.size() << " are ADJ nodes" << endl;
   adjNpMod += anodes.size();
   npMod += nnodes.size();
 }
