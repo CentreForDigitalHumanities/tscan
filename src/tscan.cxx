@@ -2092,7 +2092,7 @@ void wordStats::wordSortToCSV( ostream& os ) const {
 }
 
 void wordStats::miscHeader( ostream& os ) const {
-  os << "present_verb,modal,time_verb,Koppelww,Arch,"
+  os << "Ww_tt,Ww_mod,Huww_tijd,Koppelww,Arch,"
      << "Vol_dw,Onvol_dw,Infin,Log_prob";
 }
 
@@ -2844,7 +2844,7 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
 }
 
 void structStats::sentDifficultiesHeader( ostream& os ) const {
-  os << "Wrd_per_zin,Zin_per_wrd,Wrd_per_nwg,Bijw_bijzin_d,Betr_bijzin_d,"
+  os << "Wrd_per_zin,Zin_per_wrd,Wrd_per_nwg,Ov_bijzin_d,Betr_bijzin_d,"
      << "Pv_d,Pv_per_zin,";
   if ( isSentence() ){
     os << "D_level,";
@@ -2852,7 +2852,7 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
   else {
     os  << "D_level,D_level_gt4_p,D_level_gt4_r,";
   }
-  os << "Nom_d,Lijdv_d,Lijdv_dx,Ontk_zin_d,Ontk_morf_d,Ontk_tot_d,Meerv_ont_d,"
+  os << "Nom_d,Lijdv_d,Lijdv_dz,Ontk_zin_d,Ontk_morf_d,Ontk_tot_d,Meerv_ont_d,"
      << "AL_sub_ww,AL_ob_ww,AL_indirob_ww,AL_ww_vzg,"
      << "AL_lidw_znw,AL_vz_znw,AL_pv_hww,"
      << "AL_vg_pvbijzin,AL_vg_conj,AL_vg_pvhoofdzin,AL_znw_bijzin,"
@@ -3036,7 +3036,7 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
 
 void structStats::wordSortHeader( ostream& os ) const {
   os << "Bvnw_d,Vg_d,Vnw_d,Lidw_d,Vz_d,Bijw_d,Tw_d,Nw_d,Ww_d,Tuss_d,Spec_d,Aanh_d,"
-     << "Afk,Afk_gen,Afk_int,Afk_jur,Afk_med,Afk_ond,Afk_pol,Afk_ov,Afk_zorg,";
+     << "Afk_d,Afk_gen_d,Afk_int_d,Afk_jur_d,Afk_med_d,Afk_ond_d,Afk_pol_d,Afk_ov_d,Afk_zorg_d,";
 }
 
 void structStats::wordSortToCSV( ostream& os ) const {
@@ -3072,8 +3072,8 @@ void structStats::wordSortToCSV( ostream& os ) const {
 }
 
 void structStats::miscHeader( ostream& os ) const {
-  os << "Vzu_d, Vzu_dz, present_verbs_r,present_verbs_d,modals_d_,modals_g,"
-     << "time_verbs_d,time_verbs_g,Koppelww_d,Koppelww_dz,"
+  os << "Vzu_d, Vzu_dz, Ww_tt_r,Ww_tt_dz,Ww_mod_d_,Ww_mod_dz,"
+     << "Huww_tijd_d,Huww_tijd_dz,Koppelww_d,Koppelww_dz,"
      << "Arch_d,Vol_dw_d,Vol_dw_dz,"
      << "Onvol_dw_d,Onvol_dw_dz,Infin_d,Infin_g,"
      << "Log_prob,Entropy,Perplexiteit,";
