@@ -27,6 +27,7 @@
 
 #include <cstdio> // for remove()
 #include <cstring> // for strerror()
+#include <cassert> // for assert()
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
@@ -39,38 +40,8 @@ using namespace std;
 using namespace folia;
 using namespace TiCC;
 
-xmlNode *getAlpWordPos( xmlNode *node, const string& pos ){
-  xmlNode *result = 0;
-  xmlNode *pnt = node->children;
-  while ( pnt ){
-    if ( pnt->type == XML_ELEMENT_NODE
-	 && Name( pnt ) == "node" ){
-      KWargs atts = getAttributes( pnt );
-      string epos = atts["end"];
-      if ( epos == pos ){
-	string bpos = atts["begin"];
-	int start = TiCC::stringTo<int>( bpos );
-	int finish = TiCC::stringTo<int>( epos );
-	//	cerr << "begin = " << start << ", end=" << finish << endl;
-	if ( start + 1 == finish ){
-	  result = pnt;
-	}
-	else {
-	  result = getAlpWordPos( pnt, pos );
-	}
-      }
-      else {
-	result = getAlpWordPos( pnt, pos );
-      }
-    }
-    if ( result )
-      return result;
-    pnt = pnt->next;
-  }
-  return result;
-}
 
-xmlNode *getAlpWordNode( xmlDoc *doc, const Word *w ){
+xmlNode *getAlpNodeWord( xmlDoc *doc, const Word *w ){
   string id = w->id();
   string::size_type ppos = id.find_last_of( '.' );
   string posS = id.substr( ppos + 1 );
@@ -79,8 +50,24 @@ xmlNode *getAlpWordNode( xmlDoc *doc, const Word *w ){
     return 0;
   }
   else {
-    xmlNode *root = xmlDocGetRootElement( doc );
-    return getAlpWordPos( root, posS );
+    list<xmlNode*> nodelist = TiCC::FindNodes( doc, "//node" );
+    list<xmlNode*>::const_iterator it = nodelist.begin();
+    while ( it != nodelist.end() ) {
+      xmlNode *pnt = *it;
+      KWargs atts = getAttributes( pnt );
+      string epos = atts["end"];
+      if ( epos == posS ){
+	string bpos = atts["begin"];
+	int start = TiCC::stringTo<int>( bpos );
+	int finish = TiCC::stringTo<int>( epos );
+	//	cerr << "begin = " << start << ", end=" << finish << endl;
+	if ( start + 1 == finish ){
+	  return pnt;
+	}
+      }
+      ++it;
+    }
+    return 0;
   }
 }
 
@@ -700,14 +687,15 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
   }
 
   // < 7
-  vector<xmlNode *> nodelist = getNodes( alp );
-  for ( size_t i=0; i < nodelist.size(); ++i ){
+  list<xmlNode *> nodelist = TiCC::FindNodes( alp, "//node" );
+  list<xmlNode *>::const_iterator nit = nodelist.begin();
+  while ( nit != nodelist.end() ){
     // we kijken of het om een level 6 zin gaat:
     // Zinnen met een betrekkelijke bijzin die het subject modificeert
     //    ("De man, die erg op Pietje leek, zette het op een lopen.")
     // Het onderwerp van de zin is genominaliseerd
     //    ("Het weigeren van Pietje was voor Jantje reden om ermee te stoppen.")
-    xmlNode *node = nodelist[i];
+    xmlNode *node = *nit;
     KWargs atts = getAttributes( node );
     if ( atts["rel"] == "mod" && atts["cat"] == "rel" ){
       //      cerr << "HIT MOD node " << atts << endl;
@@ -731,6 +719,7 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
       if ( attsp["rel"] == "su" && attsp["cat"] == "np" )
 	return 6;
     }
+    ++nit;
   }
 
   // < 6
@@ -749,20 +738,24 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
   }
 
   // < 5
-  for ( size_t i=0; i < nodelist.size(); ++i ){
+  nit = nodelist.begin();
+  while ( nit != nodelist.end() ){
     // we kijken of het om een level 4 zin gaat
     //  "Non-finite complement with its own understood subject". Kan ik even geen voorbeeld van bedenken :p
     // comparatieven met een object van vergelijking
     //    ("Pietje is groter dan Jantje.")
-    KWargs atts = getAttributes( nodelist[i] );
+    KWargs atts = getAttributes( *nit );
     if ( atts["rel"] == "obcomp" )
       return 4;
+    ++nit;
   }
   vector<xmlNode*> vcnodes;
-  for ( size_t i=0; i < nodelist.size(); ++i ){
-    KWargs atts = getAttributes( nodelist[i] );
+  nit = nodelist.begin();
+  while ( nit != nodelist.end() ){
+    KWargs atts = getAttributes( *nit );
     if ( atts["rel"] == "vc" )
-      vcnodes.push_back( nodelist[i] );
+      vcnodes.push_back( *nit );
+    ++nit;
   }
   bool found4 = false;
   for ( size_t i=0; i < vcnodes.size(); ++i ){
@@ -792,7 +785,8 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
 
   // < 4
   //  cerr << "DLEVEL < 4 " << endl;
-  for ( size_t i=0; i < nodelist.size(); ++i ){
+  nit = nodelist.begin();
+  while ( nit != nodelist.end() ){
     // we kijken of het om een level 3 zin gaat
     // Zinnen met een objectsmodificerende betrekkelijke bijzin:
     //    "Ik keek naar de man die de straat overstak."
@@ -802,18 +796,18 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
     //     "Het verbaast me dat je dat weet."
     //   Kun je in Alpino detecteren met aan het 'sup' label voor een
     //   voorlopig onderwerp
-    KWargs atts = getAttributes( nodelist[i] );
+    KWargs atts = getAttributes( *nit );
     //    cerr << "bekijk " << atts << endl;
     if ( atts["rel"] == "mod" && atts["cat"] == "rel" ){
       //      cerr << "case mod/rel " << endl;
-      KWargs attsp = getAttributes( nodelist[i]->parent );
+      KWargs attsp = getAttributes( (*nit)->parent );
       //      cerr << "bekijk " << attsp << endl;
       if ( attsp["rel"] == "obj1" )
 	return 3;
     }
     else if ( atts["pos"] == "verb" ){
       //      cerr << "case VERB " << endl;
-      KWargs attsp = getAttributes( nodelist[i]->parent );
+      KWargs attsp = getAttributes( (*nit)->parent );
       //      cerr << "bekijk " << attsp << endl;
       if ( attsp["rel"] == "obj1" && attsp["cat"] == "np" )
 	return 3;
@@ -828,6 +822,7 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
       //      cerr << "case sup" << endl;
       return 3;
     }
+    ++nit;
   }
 
   // < 3
@@ -846,24 +841,25 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
   }
 
   // < 2
-  for ( size_t i=0; i < nodelist.size(); ++i ){
+  nit = nodelist.begin();
+  while ( nit != nodelist.end() ){
     // we kijken of het om een level 1 zin gaat
     // Zinnen met een infinitief waarbij infinitief en persoonsvorm hetzelfde
     // onderwerp hebben
     //     ("Pietje vergat zijn haar te kammen.")
-    KWargs atts = getAttributes( nodelist[i] );
+    KWargs atts = getAttributes( *nit );
     if ( atts["rel"] == "vc" ){
       //      cerr << "VC node " << atts << endl;
       if ( atts["cat"] == "ti"
 	   || atts["cat"] == "oti"
 	   || atts["cat"] == "inf" ){
-	xmlNode *su_node = node_search( nodelist[i], "rel", "su" );
+	xmlNode *su_node = node_search( *nit, "rel", "su" );
 	if ( su_node ){
 	  KWargs atts1 = getAttributes( su_node );
 	  //	  cerr << "su node 1 " << atts1 << endl;
 	  string node_index = atts1["index"];
 	  if ( !node_index.empty() ){
-	    vector< xmlNode *> siblinglist = getSibblings( nodelist[i] );
+	    vector< xmlNode *> siblinglist = getSibblings( *nit );
 	    for ( size_t i=0; i < siblinglist.size(); ++i ){
 	      KWargs atts2 = getAttributes( siblinglist[i] );
 	      if ( atts2["rel"] == "su" ){
@@ -876,6 +872,7 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
 	}
       }
     }
+    ++nit;
   }
 
   // < 1
@@ -921,21 +918,6 @@ void mod_stats( xmlDoc *doc, int& vcMod,
   //      << anodes.size() << " are ADJ nodes" << endl;
   adjNpMod += anodes.size();
   npMod += nnodes.size();
-}
-
-void countCrdCnj( xmlDoc *doc, int& crdCnt, int& cnjCnt ){
-  vector<xmlNode*> nodes = getNodes( doc );
-  for ( size_t i=0; i < nodes.size(); ++i ){
-    string rel = getAttribute( nodes[i], "rel" );
-    if ( rel == "cnj" ){
-      //      cerr << "found CNJ " << getAttributes( nodes[i] ) << endl;
-      ++cnjCnt;
-    }
-    else if ( rel == "crd" ){
-      //      cerr << "found CRD " << getAttributes( nodes[i] ) << endl;
-      ++crdCnt;
-    }
-  }
 }
 
 bool isSmallCnj( const xmlNode *eNode ){

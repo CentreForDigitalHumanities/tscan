@@ -3830,7 +3830,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
   for ( size_t i=0; i < w.size(); ++i ){
     xmlNode *alpWord = 0;
     if ( alpDoc ){
-      alpWord = getAlpWordNode( alpDoc, w[i] );
+      alpWord = getAlpNodeWord( alpDoc, w[i] );
     }
     wordStats *ws = new wordStats( w[i], alpWord, puncts, parseFailCnt == 1 );
     if ( parseFailCnt ){
