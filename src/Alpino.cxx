@@ -614,42 +614,25 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma ){
 }
 
 
-void getNodes( xmlNode *pnt, vector<xmlNode*>& result ){
+void getRelNodesValue( xmlNode *pnt, set<xmlNode*>& result,
+		       const string& val ){
   while ( pnt ){
     if ( pnt->type == XML_ELEMENT_NODE && Name(pnt) == "node" ){
-      result.push_back( pnt );
-      getNodes( pnt->children, result );
-    }
-    pnt = pnt->next;
-  }
-}
-
-vector<xmlNode *> getNodes( xmlDoc *doc ){
-  xmlNode *pnt = xmlDocGetRootElement( doc );
-  vector<xmlNode*> result;
-  getNodes( pnt->children, result );
-  return result;
-}
-
-void getNodesValue( xmlNode *pnt, set<xmlNode*>& result,
-		    const string& att, const string& val ){
-  while ( pnt ){
-    if ( pnt->type == XML_ELEMENT_NODE && Name(pnt) == "node" ){
-      if ( getAttribute( pnt, att ) == val )
+      if ( getAttribute( pnt, "rel" ) == val )
 	result.insert( pnt );
       if ( getAttribute( pnt->children, "root" ) == "" )
-	getNodesValue( pnt->children, result, att, val );
+	getRelNodesValue( pnt->children, result, val );
     }
     pnt = pnt->next;
   }
 }
 
-set<xmlNode *> getNodesValue( xmlDoc *doc, const string& att,
- 			      const string& val ){
-  xmlNode *pnt = xmlDocGetRootElement( doc );
+int cntRelNodesValue( xmlNode *pnt ){
   set<xmlNode*> result;
-  getNodesValue( pnt->children, result, att, val );
-  return result;
+  getRelNodesValue( pnt, result, "mod" );
+  getRelNodesValue( pnt, result, "app" );
+  getRelNodesValue( pnt, result, "vc" );
+  return result.size();
 }
 
 int get_d_level( const Sentence *s, xmlDoc *alp ){
@@ -894,46 +877,47 @@ void mod_stats( xmlDoc *doc, int& vcMod,
 		int& adjNpMod, int& npMod ){
   vcMod = 0;
   adjNpMod = 0;
-  vector<xmlNode*> nodes = getNodes( doc );
-  set< xmlNode* > anodes;
-  set< xmlNode* > nnodes;
-  for ( size_t i=0; i < nodes.size(); ++i ){
-    KWargs atts = getAttributes( nodes[i] );
-    if ( atts["rel"] == "hd" && atts["pos"] == "verb" ){
-      vector< xmlNode *> siblings = getSibblings( nodes[i] );
-      for ( size_t j=0; j < siblings.size(); ++j ){
-	if ( getAttribute( siblings[j], "rel" ) == "mod" )
-	  ++vcMod;
-      }
+  npMod = 0;
+  list<xmlNode*> hdnodes = TiCC::FindNodes( doc, "//node[@rel='hd' and @pos='verb']" );
+  list<xmlNode*>::const_iterator it = hdnodes.begin();
+  while ( it != hdnodes.end() ){
+    vector< xmlNode *> siblings = getSibblings( *it );
+    for ( size_t j=0; j < siblings.size(); ++j ){
+      if ( getAttribute( siblings[j], "rel" ) == "mod" )
+	++vcMod;
     }
-    if ( atts["cat"] == "np" ) {
-      getNodesValue( nodes[i]->children, anodes, "pos", "adv" );
-      getNodesValue( nodes[i]->children, anodes, "pos", "adj" );
-      getNodesValue( nodes[i]->children, nnodes, "rel", "mod" );
-      getNodesValue( nodes[i]->children, nnodes, "rel", "app" );
-      getNodesValue( nodes[i]->children, nnodes, "rel", "vc" );
-    }
+    ++it;
   }
-  // cerr << "found: " << nnodes.size() << " MOD nodes, of which "
-  //      << anodes.size() << " are ADJ nodes" << endl;
-  adjNpMod += anodes.size();
-  npMod += nnodes.size();
+  list<xmlNode*> npnodes = TiCC::FindNodes( doc, "//node[@cat='np']" );
+  it = npnodes.begin();
+  set< xmlNode* > nnodes;
+  while ( it != npnodes.end() ){
+    list<xmlNode*> adnodes = TiCC::FindNodes( *it, "./node[@pos='adv' or @pos='adj']" );
+    adjNpMod += adnodes.size();
+    // I would like an xPath. But there isn't a way to say:
+    //  recursively search all node with these properties but don't recurse
+    //  deeper when you are at a 'root' node
+    //
+    int cnt = cntRelNodesValue( (*it)->children );
+    npMod += cnt;
+    ++it;
+  }
 }
 
 bool isSmallCnj( const xmlNode *eNode ){
-  cerr << "test EN/OF conjunction " << getAttributes( eNode ) << endl;
+  //  cerr << "test EN/OF conjunction " << getAttributes( eNode ) << endl;
   vector< xmlNode *> sl = getSibblings( eNode );
   string pos;
   for ( size_t i=0; i < sl.size(); ++i ){
-    cerr << "sibbling: " << getAttributes( sl[i] ) << endl;
+    //    cerr << "sibbling: " << getAttributes( sl[i] ) << endl;
     if ( sl[i] == eNode )
       continue;
     string the_pos = getAttribute( sl[i], "pos" );
     if ( the_pos.empty() )
       continue;
     if ( the_pos == pos ){
-      cerr << "POS = " << the_pos
-	   << " equals previous ==> Small conjunct detected" << endl;
+      // cerr << "POS = " << the_pos
+      // 	   << " equals previous ==> Small conjunct detected" << endl;
       return true;
     }
     else {
@@ -942,7 +926,7 @@ bool isSmallCnj( const xmlNode *eNode ){
       pos = the_pos;
     }
   }
-  cerr << "No small conjunct detected" << endl;
+  //  cerr << "No small conjunct detected" << endl;
   return false;
 }
 
