@@ -46,7 +46,7 @@ inline std::ostream& operator<< (std::ostream&os, const WWform& wf ){
 }
 
 xmlDoc *AlpinoParse( const folia::Sentence *, const std::string& );
-xmlNode *getAlpWordNode( xmlDoc *, const folia::Word * );
+xmlNode *getAlpNodeWord( xmlDoc *, const folia::Word * );
 bool checkImp( const xmlNode * );
 void countCrdCnj( xmlDoc *, int&, int& );
 void mod_stats( xmlDoc *, int&, int&, int& );
