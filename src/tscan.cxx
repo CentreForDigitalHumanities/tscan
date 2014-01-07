@@ -315,6 +315,12 @@ struct settingData {
   set<string> multi_contrast;
   map<CGN::Type, set<string> > compars1;
   set<string> multi_compars;
+  map<CGN::Type, set<string> > causal_sits;
+  set<string> multi_causal_sits;
+  map<CGN::Type, set<string> > space_sits;
+  set<string> multi_space_sits;
+  map<CGN::Type, set<string> > time_sits;
+  set<string> multi_time_sits;
   set<string> vzexpr2;
   set<string> vzexpr3;
   set<string> vzexpr4;
@@ -601,9 +607,9 @@ bool fill_connectors( map<CGN::Type,set<string> >& c1,
     }
     vector<string> dum;
     n = split_at( vec[0], dum, " " );
-    if ( n < 1 || n > 3 ){
+    if ( n < 1 || n > 4 ){
       cerr << "skip line: " << line
-	   << " (expected 1, 2 or 3 values in the first part: " << vec[0]
+	   << " (expected 1, to 4 values in the first part: " << vec[0]
 	   << ", got " << n << ")" << endl;
       continue;
     }
@@ -872,6 +878,22 @@ void settingData::init( const Configuration& cf ){
     if ( !fill_connectors( causals1, multi_causals, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
+  val = cf.lookUp( "causal_situation" );
+  if ( !val.empty() ){
+    if ( !fill_connectors( causal_sits, multi_causal_sits, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "space_situation" );
+  if ( !val.empty() ){
+    if ( !fill_connectors( space_sits, multi_space_sits, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "time_situation" );
+  if ( !val.empty() ){
+    if ( !fill_connectors( time_sits, multi_time_sits, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+
   val = cf.lookUp( "voorzetselexpr" );
   if ( !val.empty() ){
     if ( !fill_vzexpr( vzexpr2, vzexpr3, vzexpr4, cf.configDir() + "/" + val ) )
@@ -1025,6 +1047,37 @@ string toString( const ConnType& c ){
     throw "no translation for ConnType";
 }
 
+ostream& operator<<( ostream& os, const ConnType& s ){
+  os << toString(s);
+  return os;
+}
+
+enum SituationType { NO_SIT, TIME_SIT, CAUSAL_SIT, SPACE_SIT };
+
+string toString( const SituationType& c ){
+  switch ( c ){
+  case NO_SIT:
+    return "Geen_situatie";
+    break;
+  case TIME_SIT:
+    return "tijd";
+    break;
+  case SPACE_SIT:
+    return "ruimte";
+    break;
+  case CAUSAL_SIT:
+    return "causaliteit";
+    break;
+  default:
+    throw "no translation for SituationType";
+  }
+}
+
+ostream& operator<<( ostream& os, const SituationType& s ){
+  os << toString(s);
+  return os;
+}
+
 struct sentStats;
 struct wordStats;
 
@@ -1066,16 +1119,21 @@ struct basicStats {
   virtual void addMetrics( ) const = 0;
   virtual string text() const { return ""; };
   virtual string ltext() const { return ""; };
+  virtual string Lemma() const { return ""; };
   virtual string llemma() const { return ""; };
   virtual CGN::Type postag() const { return CGN::UNASS; };
   virtual WordProp wordProperty() const { return NOTAWORD; };
   virtual ConnType getConnType() const { return NOCONN; };
   virtual void setConnType( ConnType ){
-    throw logic_error("settConnType() only valid for words" );
+    throw logic_error("setConnType() only valid for words" );
   };
   virtual void setMultiConn(){
-    throw logic_error("settMultiConn() only valid for words" );
+    throw logic_error("setMultiConn() only valid for words" );
   };
+  virtual void setSitType( SituationType ){
+    throw logic_error("setSitType() only valid for words" );
+  };
+  virtual SituationType getSitType() const { return NO_SIT; };
   virtual vector<const wordStats*> collectWords() const = 0;
 
   void setLSAsuc( double d ){ lsa_opv = d; };
@@ -1114,15 +1172,19 @@ struct wordStats : public basicStats {
   void toCSV( ostream& ) const;
   string text() const { return word; };
   string ltext() const { return l_word; };
+  string Lemma() const { return lemma; };
   string llemma() const { return l_lemma; };
   CGN::Type postag() const { return tag; };
   ConnType getConnType() const { return connType; };
   void setConnType( ConnType t ){ connType = t; };
   void setMultiConn(){ isMultiConn = true; };
+  void setSitType( SituationType t ){ sitType = t; };
+  SituationType getSitType() const { return sitType; };
   void addMetrics( ) const;
   bool checkContent() const;
   ConnType checkConnective( const xmlNode * ) const;
   ConnType check_small_connector( const xmlNode * ) const;
+  SituationType checkSituation() const;
   bool checkNominal( const xmlNode * ) const;
   WordProp checkProps( const PosAnnotation* );
   WordProp wordProperty() const { return prop; };
@@ -1157,6 +1219,7 @@ struct wordStats : public basicStats {
   NerProp nerProp;
   ConnType connType;
   bool isMultiConn;
+  SituationType sitType;
   bool f50;
   bool f65;
   bool f77;
@@ -1239,6 +1302,34 @@ ConnType wordStats::checkConnective( const xmlNode *alpWord ) const {
 	    != settings.causals1[CGN::UNASS].end() )
     return CAUSAAL;
   return NOCONN;
+}
+
+SituationType wordStats::checkSituation() const {
+  if ( settings.time_sits[tag].find( lemma )
+       != settings.time_sits[tag].end() ){
+    return TIME_SIT;
+  }
+  else if ( settings.time_sits[CGN::UNASS].find( lemma )
+	    != settings.time_sits[CGN::UNASS].end() ){
+    return TIME_SIT;
+  }
+  else if ( settings.causal_sits[tag].find( lemma )
+	    != settings.causal_sits[tag].end() ){
+    return CAUSAL_SIT;
+  }
+  else if ( settings.causal_sits[CGN::UNASS].find( lemma )
+	    != settings.causal_sits[CGN::UNASS].end() ){
+    return CAUSAL_SIT;
+  }
+  else if ( settings.space_sits[tag].find( lemma )
+	    != settings.space_sits[tag].end() ){
+    return SPACE_SIT;
+  }
+  else if ( settings.space_sits[CGN::UNASS].find( lemma )
+	    != settings.space_sits[CGN::UNASS].end() ){
+    return SPACE_SIT;
+  }
+  return NO_SIT;
 }
 
 bool wordStats::checkContent() const {
@@ -1664,7 +1755,7 @@ wordStats::wordStats( Word *w,
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false),
-  nerProp(NONER), connType(NOCONN), isMultiConn(false),
+  nerProp(NONER), connType(NOCONN), isMultiConn(false), sitType(NO_SIT),
   f50(false), f65(false), f77(false), f80(false),  compPartCnt(0),
   top_freq(notFound), word_freq(0), lemma_freq(0),
   wordOverlapCnt(0), lemmaOverlapCnt(0),
@@ -1719,6 +1810,8 @@ wordStats::wordStats( Word *w,
     isMorphNeg = checkMorphNeg();
     connType = checkConnective( alpWord );
     //    cerr << "checkConn " << word << " = " << connType << endl;
+    sitType = checkSituation();
+    //    cerr << "checkSit " << word << " = " << sitType << endl;
     morphCnt = max;
     if ( prop != ISNAME ){
       charCntExNames = charCnt;
@@ -1837,6 +1930,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "morph_negative", "true" );
   if ( connType != NOCONN )
     addOneMetric( doc, el, "connective", toString(connType) );
+  if ( sitType != NO_SIT )
+    addOneMetric( doc, el, "situation", toString(sitType) );
   if ( isMultiConn )
     addOneMetric( doc, el, "multi_connective", "true" );
   if ( lsa_opv )
@@ -2170,6 +2265,9 @@ struct structStats: public basicStats {
     contConnCnt(0),
     compConnCnt(0),
     causeConnCnt(0),
+    timeSitCnt(0),
+    spaceSitCnt(0),
+    causeSitCnt(0),
     propNegCnt(0),
     morphNegCnt(0),
     multiNegCnt(0),
@@ -2305,6 +2403,9 @@ struct structStats: public basicStats {
   int contConnCnt;
   int compConnCnt;
   int causeConnCnt;
+  int timeSitCnt;
+  int spaceSitCnt;
+  int causeSitCnt;
   int propNegCnt;
   int morphNegCnt;
   int multiNegCnt;
@@ -2371,6 +2472,9 @@ struct structStats: public basicStats {
   map<string,int> unique_contents;
   map<string,int> unique_words;
   map<string,int> unique_lemmas;
+  map<string,int> unique_tijd_sits;
+  map<string,int> unique_ruimte_sits;
+  map<string,int> unique_cause_sits;
   map<NerProp, int> ners;
   map<AfkType, int> afks;
   multimap<DD_type,int> distances;
@@ -2427,6 +2531,9 @@ void structStats::merge( structStats *ss ){
   contConnCnt += ss->contConnCnt;
   compConnCnt += ss->compConnCnt;
   causeConnCnt += ss->causeConnCnt;
+  timeSitCnt += ss->timeSitCnt;
+  spaceSitCnt += ss->spaceSitCnt;
+  causeSitCnt += ss->causeSitCnt;
   prepExprCnt += ss->prepExprCnt;
   propNegCnt += ss->propNegCnt;
   morphNegCnt += ss->morphNegCnt;
@@ -2511,6 +2618,9 @@ void structStats::merge( structStats *ss ){
   aggregate( unique_contents, ss->unique_contents );
   aggregate( unique_words, ss->unique_words );
   aggregate( unique_lemmas, ss->unique_lemmas );
+  aggregate( unique_tijd_sits, ss->unique_tijd_sits );
+  aggregate( unique_ruimte_sits, ss->unique_ruimte_sits );
+  aggregate( unique_cause_sits, ss->unique_cause_sits );
   aggregate( ners, ss->ners );
   aggregate( afks, ss->afks );
   aggregate( distances, ss->distances );
@@ -2660,6 +2770,9 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "contrast_connector_count", toString(contConnCnt) );
   addOneMetric( doc, el, "comparatief_connector_count", toString(compConnCnt) );
   addOneMetric( doc, el, "causaal_connector_count", toString(causeConnCnt) );
+  addOneMetric( doc, el, "time_situation_count", toString(timeSitCnt) );
+  addOneMetric( doc, el, "space_situation_count", toString(spaceSitCnt) );
+  addOneMetric( doc, el, "cause_situation_count", toString(causeSitCnt) );
   addOneMetric( doc, el, "prop_neg_count", toString(propNegCnt) );
   addOneMetric( doc, el, "morph_neg_count", toString(morphNegCnt) );
   addOneMetric( doc, el, "multiple_neg_count", toString(multiNegCnt) );
@@ -3279,6 +3392,7 @@ struct sentStats : public structStats {
   sentStats( Sentence *, const sentStats*, const map<string,double>& );
   bool isSentence() const { return true; };
   void resolveConnectives();
+  void resolveSituations();
   void setLSAvalues( double, double, double = 0 );
   void resolveLSA( const map<string,double>& );
   void resolveMultiWordAfks();
@@ -3286,6 +3400,7 @@ struct sentStats : public structStats {
   void addMetrics( ) const;
   bool checkAls( size_t );
   ConnType checkMultiConnectives( const string& );
+  SituationType checkMultiSituations( const string& );
   void resolvePrepExpr();
 };
 
@@ -3462,6 +3577,21 @@ ConnType sentStats::checkMultiConnectives( const string& mword ){
   return conn;
 }
 
+SituationType sentStats::checkMultiSituations( const string& mword ){
+  SituationType sit = NO_SIT;
+  if ( settings.multi_time_sits.find( mword ) != settings.multi_time_sits.end() ){
+    sit = TIME_SIT;
+  }
+  else if ( settings.multi_space_sits.find( mword ) != settings.multi_space_sits.end() ){
+    sit = SPACE_SIT;
+  }
+  else if ( settings.multi_causal_sits.find( mword ) != settings.multi_causal_sits.end() ){
+    sit = CAUSAL_SIT;
+  }
+  //  cerr << "multi-sit " << mword << " = " << sit << endl;
+  return sit;
+}
+
 void sentStats::incrementConnCnt( ConnType t ){
   switch ( t ){
   case TEMPOREEL:
@@ -3549,6 +3679,106 @@ void sentStats::resolveConnectives(){
       break;
     case CAUSAAL:
       causeConnCnt++;
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+void sentStats::resolveSituations(){
+  if ( sv.size() > 1 ){
+    for ( size_t i=0; (i+3) < sv.size(); ++i ){
+      string word = sv[i]->Lemma();
+      string multiword2 = word + " " + sv[i+1]->Lemma();
+      string multiword3 = multiword2 + " " + sv[i+2]->Lemma();
+      string multiword4 = multiword3 + " " + sv[i+3]->Lemma();
+      //      cerr << "zoek 4 op '" << multiword4 << "'" << endl;
+      SituationType sit = checkMultiSituations( multiword4 );
+      if ( sit != NO_SIT ){
+	sv[i]->setSitType( NO_SIT );
+	sv[i+1]->setSitType( NO_SIT );
+	sv[i+2]->setSitType( NO_SIT );
+	sv[i+3]->setSitType( sit );
+	i += 3;
+      }
+      else {
+	//cerr << "zoek 3 op '" << multiword3 << "'" << endl;
+	sit = checkMultiSituations( multiword3 );
+	if ( sit != NO_SIT ){
+	  sv[i]->setSitType( NO_SIT );
+	  sv[i+1]->setSitType( NO_SIT );
+	  sv[i+2]->setSitType( sit );
+	  i += 2;
+	}
+	else {
+	  //cerr << "zoek 2 op '" << multiword2 << "'" << endl;
+	  sit = checkMultiSituations( multiword2 );
+	  if ( sit != NO_SIT ){
+	    sv[i]->setSitType( NO_SIT);
+	    sv[i+1]->setSitType( sit );
+	    i += 1;
+	  }
+	}
+      }
+    }
+    // don't forget the last 2 and 3 words
+    SituationType sit = NO_SIT;
+    if ( sv.size() > 2 ){
+      string multiword3 = sv[sv.size()-3]->Lemma() + " "
+	+ sv[sv.size()-2]->Lemma() + " " + sv[sv.size()-1]->Lemma();
+      //cerr << "zoek final 3 op '" << multiword3 << "'" << endl;
+      sit = checkMultiSituations( multiword3 );
+      if ( sit != NO_SIT ){
+	sv[sv.size()-3]->setSitType( NO_SIT );
+	sv[sv.size()-2]->setSitType( NO_SIT );
+	sv[sv.size()-1]->setSitType( sit );
+      }
+      else {
+	string multiword2 = sv[sv.size()-3]->Lemma() + " "
+	  + sv[sv.size()-2]->Lemma();
+	//cerr << "zoek first final 2 op '" << multiword2 << "'" << endl;
+	sit = checkMultiSituations( multiword2 );
+	if ( sit != NO_SIT ){
+	  sv[sv.size()-3]->setSitType( NO_SIT);
+	  sv[sv.size()-2]->setSitType( sit );
+	}
+	else {
+	  string multiword2 = sv[sv.size()-2]->Lemma() + " "
+	    + sv[sv.size()-1]->Lemma();
+	  //cerr << "zoek second final 2 op '" << multiword2 << "'" << endl;
+	  sit = checkMultiSituations( multiword2 );
+	  if ( sit != NO_SIT ){
+	    sv[sv.size()-2]->setSitType( NO_SIT);
+	    sv[sv.size()-1]->setSitType( sit );
+	  }
+	}
+      }
+    }
+    else {
+      string multiword2 = sv[sv.size()-2]->Lemma() + " "
+	+ sv[sv.size()-1]->Lemma();
+      // cerr << "zoek second final 2 op '" << multiword2 << "'" << endl;
+      sit = checkMultiSituations( multiword2 );
+      if ( sit != NO_SIT ){
+	sv[sv.size()-2]->setSitType( NO_SIT);
+	sv[sv.size()-1]->setSitType( sit );
+      }
+    }
+  }
+  for ( size_t i=0; i < sv.size(); ++i ){
+    switch( sv[i]->getSitType() ){
+    case TIME_SIT:
+      unique_tijd_sits[sv[i]->Lemma()]++;
+      timeSitCnt++;
+      break;
+    case CAUSAL_SIT:
+      unique_cause_sits[sv[i]->Lemma()]++;
+      causeSitCnt++;
+      break;
+    case SPACE_SIT:
+      unique_ruimte_sits[sv[i]->Lemma()]++;
+      spaceSitCnt++;
       break;
     default:
       break;
@@ -4097,6 +4327,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
     xmlFreeDoc( alpDoc );
   }
   resolveConnectives();
+  resolveSituations();
   if ( settings.doLsa ){
     resolveLSA( LSAword_dists );
   }
