@@ -2749,7 +2749,7 @@ void structStats::addMetrics( ) const {
 
   addOneMetric( doc, el, "pers_pron_1_count", toString(pron1Cnt) );
   addOneMetric( doc, el, "pers_pron_2_count", toString(pron2Cnt) );
-  addOneMetric( doc, el, "pres_pron_3_count", toString(pron3Cnt) );
+  addOneMetric( doc, el, "pers_pron_3_count", toString(pron3Cnt) );
   addOneMetric( doc, el, "passive_count", toString(passiveCnt) );
   addOneMetric( doc, el, "modal_count", toString(modalCnt) );
   addOneMetric( doc, el, "time_count", toString(timeCnt) );
