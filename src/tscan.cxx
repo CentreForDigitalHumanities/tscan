@@ -1809,9 +1809,9 @@ wordStats::wordStats( Word *w,
     isPropNeg = checkPropNeg();
     isMorphNeg = checkMorphNeg();
     connType = checkConnective( alpWord );
-    //    cerr << "checkConn " << word << " = " << connType << endl;
     sitType = checkSituation();
-    //    cerr << "checkSit " << word << " = " << sitType << endl;
+    // if ( sitType != NO_SIT )
+    //   cerr << "checkSit " << word << " = " << sitType << endl;
     morphCnt = max;
     if ( prop != ISNAME ){
       charCntExNames = charCnt;
@@ -2262,7 +2262,7 @@ struct structStats: public basicStats {
     crdCnt(0),
     tempConnCnt(0),
     opsomConnCnt(0),
-    contConnCnt(0),
+    contrastConnCnt(0),
     compConnCnt(0),
     causeConnCnt(0),
     timeSitCnt(0),
@@ -2400,7 +2400,7 @@ struct structStats: public basicStats {
   int crdCnt;
   int tempConnCnt;
   int opsomConnCnt;
-  int contConnCnt;
+  int contrastConnCnt;
   int compConnCnt;
   int causeConnCnt;
   int timeSitCnt;
@@ -2475,6 +2475,11 @@ struct structStats: public basicStats {
   map<string,int> unique_tijd_sits;
   map<string,int> unique_ruimte_sits;
   map<string,int> unique_cause_sits;
+  map<string,int> unique_temp_conn;
+  map<string,int> unique_reeks_conn;
+  map<string,int> unique_contr_conn;
+  map<string,int> unique_comp_conn;
+  map<string,int> unique_cause_conn;
   map<NerProp, int> ners;
   map<AfkType, int> afks;
   multimap<DD_type,int> distances;
@@ -2528,7 +2533,7 @@ void structStats::merge( structStats *ss ){
   crdCnt += ss->crdCnt;
   tempConnCnt += ss->tempConnCnt;
   opsomConnCnt += ss->opsomConnCnt;
-  contConnCnt += ss->contConnCnt;
+  contrastConnCnt += ss->contrastConnCnt;
   compConnCnt += ss->compConnCnt;
   causeConnCnt += ss->causeConnCnt;
   timeSitCnt += ss->timeSitCnt;
@@ -2621,6 +2626,11 @@ void structStats::merge( structStats *ss ){
   aggregate( unique_tijd_sits, ss->unique_tijd_sits );
   aggregate( unique_ruimte_sits, ss->unique_ruimte_sits );
   aggregate( unique_cause_sits, ss->unique_cause_sits );
+  aggregate( unique_temp_conn, ss->unique_temp_conn );
+  aggregate( unique_reeks_conn, ss->unique_reeks_conn );
+  aggregate( unique_contr_conn, ss->unique_contr_conn );
+  aggregate( unique_comp_conn, ss->unique_comp_conn );
+  aggregate( unique_cause_conn, ss->unique_cause_conn );
   aggregate( ners, ss->ners );
   aggregate( afks, ss->afks );
   aggregate( distances, ss->distances );
@@ -2767,7 +2777,7 @@ void structStats::addMetrics( ) const {
   // addOneMetric( doc, el, "crd_count", toString(crdCnt) );
   addOneMetric( doc, el, "temporal_connector_count", toString(tempConnCnt) );
   addOneMetric( doc, el, "reeks_connector_count", toString(opsomConnCnt) );
-  addOneMetric( doc, el, "contrast_connector_count", toString(contConnCnt) );
+  addOneMetric( doc, el, "contrast_connector_count", toString(contrastConnCnt) );
   addOneMetric( doc, el, "comparatief_connector_count", toString(compConnCnt) );
   addOneMetric( doc, el, "causaal_connector_count", toString(causeConnCnt) );
   addOneMetric( doc, el, "time_situation_count", toString(timeSitCnt) );
@@ -2968,7 +2978,7 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
     os  << "D_level,D_level_gt4_p,D_level_gt4_r,";
   }
   os << "Nom_d,Lijdv_d,Lijdv_dz,Ontk_zin_d,Ontk_zin_dz,"
-     << "Ontk_morf_d,Ont_morf_dz,Ontk_tot_d,Ontk_tot,dz,"
+     << "Ontk_morf_d,Ont_morf_dz,Ontk_tot_d,Ontk_tot_dz,"
      << "Meerv_ont_d,Meerv_ont_dz,"
      << "AL_sub_ww,AL_ob_ww,AL_indirob_ww,AL_ww_vzg,"
      << "AL_lidw_znw,AL_vz_znw,AL_pv_hww,"
@@ -2980,8 +2990,8 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   double clauseCnt = pastCnt + presentCnt;
   os << ratio( wordCnt, sentCnt ) << ","
      << ratio( wordCnt, clauseCnt ) << ","
-     << ratio( sentCnt * 100, wordCnt )  << ","
-     << ratio( clauseCnt * 100, wordCnt )  << ",";
+     << ratio( sentCnt, wordCnt )  << ","
+     << ratio( clauseCnt, wordCnt )  << ",";
   os << ratio( wordCnt, npCnt ) << ",";
   os << density( onderCnt, wordCnt ) << ","
      << density( onderCnt, sentCnt ) << ","
@@ -3021,7 +3031,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 }
 
 void structStats::infoHeader( ostream& os ) const {
-  os << "TTR_wrd,TTR_lem,TTR_namen, TTR_inhwrd,"
+  os << "TTR_wrd,TTR_lem,TTR_namen,TTR_inhwrd,"
      << "Inhwrd_r,Inhwrd_d,Inhwrd_dz,"
      << "Zeldz_index,Bijw_bep_d,Bijw_bep_dz,"
      << "Attr_bijv_nw_d,Attr_bijv_nw_dz,Bijv_bep_d,Bijv_bep_dz,"
@@ -3052,10 +3062,14 @@ void structStats::informationDensityToCSV( ostream& os ) const {
 
 
 void structStats::coherenceHeader( ostream& os ) const {
-  os << "Conn_temp_d,Conn_temp_dz,Conn_reeks_d,Conn_reeks_dz,"
-     << "Conn_contr_d,Conn_contr_dz,Conn_comp_d,Conn_comp_dz,"
-     << "Conn_caus_d,Conn_caus_dz,"
-     << "Vnw_ref_d,Vnw_ref_dz"
+  os << "Conn_temp_d,Conn_temp_dz,Conn_temp_TTR,"
+     << "Conn_reeks_d,Conn_reeks_dz,Conn_reeks_TTR,"
+     << "Conn_contr_d,Conn_contr_dz,Conn_contr_TTR,"
+     << "Conn_comp_d,Conn_comp_dz,Conn_comp_TTR,"
+     << "Conn_caus_d,Conn_caus_dz,Conn_caus_TTR,"
+     << "Causaal_d,Ruimte_d,Tijd_d,"
+     << "Causaal_TTR,Ruimte_TTR,Tijd_TTR,"
+     << "Vnw_ref_d,Vnw_ref_dz,"
      << "Arg_over_vzin_d,Arg_over_vzin_dz,Lem_over_vzin_d,Lem_over_vzin_dz,"
      << "Arg_over_buf_d,Arg_over_buf_dz,Lem_over_buf_d,Lem_over_buf_dz,"
      << "Onbep_nwg_p,Onbep_nwg_r,Onbep_nwg_dz,";
@@ -3065,14 +3079,25 @@ void structStats::coherenceToCSV( ostream& os ) const {
   double clauseCnt = pastCnt + presentCnt;
   os << density( tempConnCnt, wordCnt ) << ","
      << density( tempConnCnt, clauseCnt ) << ","
+     << ratio( unique_temp_conn.size(), tempConnCnt ) << ","
      << density( opsomConnCnt, wordCnt ) << ","
      << density( opsomConnCnt, clauseCnt ) << ","
-     << density( contConnCnt, wordCnt ) << ","
-     << density( contConnCnt, clauseCnt ) << ","
+     << ratio( unique_reeks_conn.size(), opsomConnCnt ) << ","
+     << density( contrastConnCnt, wordCnt ) << ","
+     << density( contrastConnCnt, clauseCnt ) << ","
+     << ratio( unique_contr_conn.size(), contrastConnCnt ) << ","
      << density( compConnCnt, wordCnt ) << ","
      << density( compConnCnt, clauseCnt ) << ","
+     << ratio( unique_comp_conn.size(), compConnCnt ) << ","
      << density( causeConnCnt, wordCnt ) << ","
      << density( causeConnCnt, clauseCnt ) << ","
+     << ratio( unique_cause_conn.size(), causeConnCnt ) << ","
+     << density( causeSitCnt, wordCnt ) << ","
+     << ratio( unique_cause_sits.size(), causeSitCnt ) << ","
+     << density( spaceSitCnt, wordCnt ) << ","
+     << ratio( unique_ruimte_sits.size(), spaceSitCnt ) << ","
+     << density( timeSitCnt, wordCnt ) << ","
+     << ratio( unique_tijd_sits.size(), timeSitCnt ) << ","
      << density( pronRefCnt, wordCnt ) << ","
      << density( pronRefCnt, clauseCnt ) << ",";
   if ( isSentence() ){
@@ -3601,7 +3626,7 @@ void sentStats::incrementConnCnt( ConnType t ){
     opsomConnCnt++;
     break;
   case CONTRASTIEF:
-    contConnCnt++;
+    contrastConnCnt++;
     break;
   case COMPARATIEF:
     compConnCnt++;
@@ -3666,18 +3691,23 @@ void sentStats::resolveConnectives(){
   for ( size_t i=0; i < sv.size(); ++i ){
     switch( sv[i]->getConnType() ){
     case TEMPOREEL:
+      unique_temp_conn[sv[i]->ltext()]++;
       tempConnCnt++;
       break;
     case OPSOMMEND:
+      unique_reeks_conn[sv[i]->ltext()]++;
       opsomConnCnt++;
       break;
     case CONTRASTIEF:
-      contConnCnt++;
+      unique_contr_conn[sv[i]->ltext()]++;
+      contrastConnCnt++;
       break;
     case COMPARATIEF:
+      unique_comp_conn[sv[i]->ltext()]++;
       compConnCnt++;
       break;
     case CAUSAAL:
+      unique_cause_conn[sv[i]->ltext()]++;
       causeConnCnt++;
       break;
     default:
@@ -3696,6 +3726,7 @@ void sentStats::resolveSituations(){
       //      cerr << "zoek 4 op '" << multiword4 << "'" << endl;
       SituationType sit = checkMultiSituations( multiword4 );
       if ( sit != NO_SIT ){
+	//	cerr << "found " << sit << "-situation: " << multiword4 << endl;
 	sv[i]->setSitType( NO_SIT );
 	sv[i+1]->setSitType( NO_SIT );
 	sv[i+2]->setSitType( NO_SIT );
@@ -3706,6 +3737,7 @@ void sentStats::resolveSituations(){
 	//cerr << "zoek 3 op '" << multiword3 << "'" << endl;
 	sit = checkMultiSituations( multiword3 );
 	if ( sit != NO_SIT ){
+	  // cerr << "found " << sit << "-situation: " << multiword3 << endl;
 	  sv[i]->setSitType( NO_SIT );
 	  sv[i+1]->setSitType( NO_SIT );
 	  sv[i+2]->setSitType( sit );
@@ -3715,6 +3747,7 @@ void sentStats::resolveSituations(){
 	  //cerr << "zoek 2 op '" << multiword2 << "'" << endl;
 	  sit = checkMultiSituations( multiword2 );
 	  if ( sit != NO_SIT ){
+	    //	    cerr << "found " << sit << "-situation: " << multiword2 << endl;
 	    sv[i]->setSitType( NO_SIT);
 	    sv[i+1]->setSitType( sit );
 	    i += 1;
@@ -3730,6 +3763,7 @@ void sentStats::resolveSituations(){
       //cerr << "zoek final 3 op '" << multiword3 << "'" << endl;
       sit = checkMultiSituations( multiword3 );
       if ( sit != NO_SIT ){
+	//	cerr << "found " << sit << "-situation: " << multiword3 << endl;
 	sv[sv.size()-3]->setSitType( NO_SIT );
 	sv[sv.size()-2]->setSitType( NO_SIT );
 	sv[sv.size()-1]->setSitType( sit );
@@ -3740,6 +3774,7 @@ void sentStats::resolveSituations(){
 	//cerr << "zoek first final 2 op '" << multiword2 << "'" << endl;
 	sit = checkMultiSituations( multiword2 );
 	if ( sit != NO_SIT ){
+	  //	  cerr << "found " << sit << "-situation: " << multiword2 << endl;
 	  sv[sv.size()-3]->setSitType( NO_SIT);
 	  sv[sv.size()-2]->setSitType( sit );
 	}
@@ -3749,6 +3784,7 @@ void sentStats::resolveSituations(){
 	  //cerr << "zoek second final 2 op '" << multiword2 << "'" << endl;
 	  sit = checkMultiSituations( multiword2 );
 	  if ( sit != NO_SIT ){
+	    //	    cerr << "found " << sit << "-situation: " << multiword2 << endl;
 	    sv[sv.size()-2]->setSitType( NO_SIT);
 	    sv[sv.size()-1]->setSitType( sit );
 	  }
@@ -3761,6 +3797,7 @@ void sentStats::resolveSituations(){
       // cerr << "zoek second final 2 op '" << multiword2 << "'" << endl;
       sit = checkMultiSituations( multiword2 );
       if ( sit != NO_SIT ){
+	//	cerr << "found " << sit << "-situation: " << multiword2 << endl;
 	sv[sv.size()-2]->setSitType( NO_SIT);
 	sv[sv.size()-1]->setSitType( sit );
       }
@@ -4794,6 +4831,39 @@ void docStats::addMetrics( ) const {
     addOneMetric( el->doc(), el,
 		  "content_word_ttr", toString( unique_contents.size()/double(contentCnt) ) );
   }
+  if ( timeSitCnt != 0 ){
+    addOneMetric( el->doc(), el,
+		  "time_sit_ttr", toString( unique_tijd_sits.size()/double(timeSitCnt) ) );
+  }
+  if ( spaceSitCnt != 0 ){
+    addOneMetric( el->doc(), el,
+		  "space_sit_ttr", toString( unique_ruimte_sits.size()/double(spaceSitCnt) ) );
+  }
+  if ( causeSitCnt != 0 ){
+    addOneMetric( el->doc(), el,
+		  "cause_sit_ttr", toString( unique_cause_sits.size()/double(causeSitCnt) ) );
+  }
+  if ( tempConnCnt != 0 ){
+    addOneMetric( el->doc(), el,
+		  "temp_conn_ttr", toString( unique_temp_conn.size()/double(tempConnCnt) ) );
+  }
+  if ( opsomConnCnt != 0 ){
+    addOneMetric( el->doc(), el,
+		  "opsom_conn_ttr", toString( unique_reeks_conn.size()/double(opsomConnCnt) ) );
+  }
+  if ( contrastConnCnt != 0 ){
+    addOneMetric( el->doc(), el,
+		  "contrast_conn_ttr", toString( unique_contr_conn.size()/double(contrastConnCnt) ) );
+  }
+  if ( compConnCnt != 0 ){
+    addOneMetric( el->doc(), el,
+		  "comp_conn_ttr", toString( unique_comp_conn.size()/double(compConnCnt) ) );
+  }
+  if ( causeConnCnt != 0 ){
+    addOneMetric( el->doc(), el,
+		  "cause_conn_ttr", toString( unique_cause_conn.size()/double(causeConnCnt) ) );
+  }
+
   addOneMetric( el->doc(), el,
 		"rar_index", rarity( settings.rarityLevel ) );
   addOneMetric( el->doc(), el,
