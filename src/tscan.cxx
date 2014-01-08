@@ -4207,10 +4207,13 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
 	break;
       case ISPPRON1:
 	pron1Cnt++;
+	break;
       case ISPPRON2:
 	pron2Cnt++;
+	break;
       case ISPPRON3:
 	pron3Cnt++;
+	break;
       default:
 	;// ignore JUSTAWORD and ISAANW
       }
