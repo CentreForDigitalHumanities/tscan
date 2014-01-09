@@ -1178,6 +1178,7 @@ struct wordStats : public basicStats {
   ConnType getConnType() const { return connType; };
   void setConnType( ConnType t ){ connType = t; };
   void setMultiConn(){ isMultiConn = true; };
+  void setPersRef();
   void setSitType( SituationType t ){ sitType = t; };
   SituationType getSitType() const { return sitType; };
   void addMetrics( ) const;
@@ -1818,11 +1819,6 @@ wordStats::wordStats( Word *w,
       morphCntExNames = max;
     }
     sem_type = checkSemProps();
-    if ( sem_type == CONCRETE_HUMAN_NOUN ||
-	 prop == ISNAME ||
-	 prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3 ){
-      isPersRef = true;
-    }
     afkType = checkAfk();
     if ( alpWord )
       isNominal = checkNominal( alpWord );
@@ -1848,6 +1844,17 @@ void addOneMetric( Document *doc, FoliaElement *parent,
 void fill_word_lemma_buffers( const sentStats*,
 			      vector<string>&, vector<string>& );
 
+
+void wordStats::setPersRef() {
+  if ( sem_type == CONCRETE_HUMAN_NOUN ||
+       nerProp == PER_B ||
+       prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3 ){
+    isPersRef = true;
+  }
+  else {
+    isPersRef = false;
+  }
+}
 //#define DEBUG_OL
 
 bool wordStats::isOverlapCandidate() const {
@@ -2328,7 +2335,8 @@ struct structStats: public basicStats {
     dLevel_gt4(0),
     impCnt(0),
     questCnt(0),
-    prepExprCnt(0)
+    prepExprCnt(0),
+    nerCnt(0)
  {};
   ~structStats();
   void addMetrics( ) const;
@@ -2481,6 +2489,7 @@ struct structStats: public basicStats {
   map<string,int> unique_comp_conn;
   map<string,int> unique_cause_conn;
   map<NerProp, int> ners;
+  int nerCnt;
   map<AfkType, int> afks;
   multimap<DD_type,int> distances;
 };
@@ -2617,6 +2626,7 @@ void structStats::merge( structStats *ss ){
   dLevel_gt4 += ss->dLevel_gt4;
   impCnt += ss->impCnt;
   questCnt += ss->questCnt;
+  nerCnt += ss->nerCnt;
   sv.push_back( ss );
   aggregate( heads, ss->heads );
   aggregate( unique_names, ss->unique_names );
@@ -3170,7 +3180,7 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << density( nameCnt, wordCnt ) << ",";
 
   int val = at( ners, PER_B );
-  os << ratio( val, nameCnt ) << ",";
+  os << ratio( val, nerCnt ) << ",";
   os << density( val, wordCnt ) << ",";
   val = at( ners, LOC_B );
   os << density( val, wordCnt ) << ",";
@@ -4155,10 +4165,12 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
       case PER_B:
       case PRO_B:
 	ners[ner]++;
+	nerCnt++;
 	break;
       default:
 	;
       }
+      ws->setPersRef(); // need NER Info for this
       wordCnt++;
       heads[ws->tag]++;
       if ( ws->afkType != NO_A ){
