@@ -3036,7 +3036,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   os << density( onderCnt, wordCnt ) << ","
      << density( onderCnt, sentCnt ) << ","
      << density( betrCnt, wordCnt ) << ","
-     << density( betrCnt, clauseCnt ) << ","
+     << ratio( betrCnt, clauseCnt ) << ","
      << density( clauseCnt, wordCnt ) << ","
      << ratio( clauseCnt, sentCnt ) << ","
      << ratio( dLevel, sentCnt ) << ",";
@@ -3048,13 +3048,13 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
      << density( passiveCnt, wordCnt ) << ",";
   os << ratio( passiveCnt, clauseCnt ) << ",";
   os << density( propNegCnt, wordCnt ) << ","
-     << density( propNegCnt, clauseCnt ) << ","
+     << ratio( propNegCnt, clauseCnt ) << ","
      << density( morphNegCnt, wordCnt ) << ","
-     << density( morphNegCnt, clauseCnt ) << ","
+     << ratio( morphNegCnt, clauseCnt ) << ","
      << density( propNegCnt+morphNegCnt, wordCnt ) << ","
-     << density( propNegCnt+morphNegCnt, clauseCnt ) << ","
+     << ratio( propNegCnt+morphNegCnt, clauseCnt ) << ","
      << density( multiNegCnt, wordCnt ) << ","
-     << density( multiNegCnt, clauseCnt ) << ",";
+     << ratio( multiNegCnt, clauseCnt ) << ",";
   os << MMtoString( distances, SUB_VERB ) << ",";
   os << MMtoString( distances, OBJ1_VERB ) << ",";
   os << MMtoString( distances, OBJ2_VERB ) << ",";
@@ -3118,19 +3118,19 @@ void structStats::coherenceHeader( ostream& os ) const {
 void structStats::coherenceToCSV( ostream& os ) const {
   double clauseCnt = pastCnt + presentCnt;
   os << density( tempConnCnt, wordCnt ) << ","
-     << density( tempConnCnt, clauseCnt ) << ","
+     << ratio( tempConnCnt, clauseCnt ) << ","
      << ratio( unique_temp_conn.size(), tempConnCnt ) << ","
      << density( opsomConnCnt, wordCnt ) << ","
-     << density( opsomConnCnt, clauseCnt ) << ","
+     << ratio( opsomConnCnt, clauseCnt ) << ","
      << ratio( unique_reeks_conn.size(), opsomConnCnt ) << ","
      << density( contrastConnCnt, wordCnt ) << ","
-     << density( contrastConnCnt, clauseCnt ) << ","
+     << ratio( contrastConnCnt, clauseCnt ) << ","
      << ratio( unique_contr_conn.size(), contrastConnCnt ) << ","
      << density( compConnCnt, wordCnt ) << ","
-     << density( compConnCnt, clauseCnt ) << ","
+     << ratio( compConnCnt, clauseCnt ) << ","
      << ratio( unique_comp_conn.size(), compConnCnt ) << ","
      << density( causeConnCnt, wordCnt ) << ","
-     << density( causeConnCnt, clauseCnt ) << ","
+     << ratio( causeConnCnt, clauseCnt ) << ","
      << ratio( unique_cause_conn.size(), causeConnCnt ) << ","
      << density( causeSitCnt, wordCnt ) << ","
      << ratio( unique_cause_sits.size(), causeSitCnt ) << ","
@@ -3139,7 +3139,7 @@ void structStats::coherenceToCSV( ostream& os ) const {
      << density( timeSitCnt, wordCnt ) << ","
      << ratio( unique_tijd_sits.size(), timeSitCnt ) << ","
      << density( pronRefCnt, wordCnt ) << ","
-     << density( pronRefCnt, clauseCnt ) << ",";
+     << ratio( pronRefCnt, clauseCnt ) << ",";
   if ( isSentence() ){
     os << double(wordOverlapCnt) << ",NA,"
        << double(lemmaOverlapCnt) << ",NA,";
