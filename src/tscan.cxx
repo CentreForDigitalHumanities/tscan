@@ -2514,17 +2514,29 @@ structStats::~structStats(){
 double structStats::getMeanAL() const {
   double sum = 0;
   for ( size_t i=0; i < sv.size(); ++i ){
-    sum += sv[i]->get_al_gem();
+    double val = sv[i]->get_al_gem();
+    if ( val != NA ){
+      sum += val;
+    }
   }
-  return sum/sv.size();
+  if ( sum == 0 )
+    return NA;
+  else
+    return sum/sv.size();
 }
 
 double structStats::getHighestAL() const {
   double sum = 0;
   for ( size_t i=0; i < sv.size(); ++i ){
-    sum += sv[i]->get_al_max();
+    double val = sv[i]->get_al_max();
+    if ( val != NA ){
+      sum += val;
+    }
   }
-  return sum/sv.size();
+  if ( sum == 0 )
+    return NA;
+  else
+    return sum/sv.size();
 }
 
 void structStats::merge( structStats *ss ){
