@@ -1135,7 +1135,8 @@ struct basicStats {
   };
   virtual SituationType getSitType() const { return NO_SIT; };
   virtual vector<const wordStats*> collectWords() const = 0;
-
+  virtual double get_al_gem() const { return NA; };
+  virtual double get_al_max() const { return NA; };
   void setLSAsuc( double d ){ lsa_opv = d; };
   void setLSAcontext( double d ){ lsa_ctx = d; };
   FoliaElement *folia_node;
@@ -2311,6 +2312,8 @@ struct structStats: public basicStats {
     lsa_par_suc(NA),
     lsa_par_net(NA),
     lsa_par_ctx(NA),
+    al_gem(NA),
+    al_max(NA),
     broadConcreteNounCnt(0),
     strictConcreteNounCnt(0),
     broadAbstractNounCnt(0),
@@ -2367,6 +2370,10 @@ struct structStats: public basicStats {
   virtual void setLSAvalues( double, double, double = 0 ) = 0;
   virtual void resolveLSA( const map<string,double>& );
   void calculate_LSA_summary();
+  double get_al_gem() const { return al_gem; };
+  double get_al_max() const { return al_max; };
+  virtual double getMeanAL() const;
+  virtual double getHighestAL() const;
   string text;
   int wordCnt;
   int sentCnt;
@@ -2450,6 +2457,8 @@ struct structStats: public basicStats {
   double lsa_par_suc;
   double lsa_par_net;
   double lsa_par_ctx;
+  double al_gem;
+  double al_max;
   int broadConcreteNounCnt;
   int strictConcreteNounCnt;
   int broadAbstractNounCnt;
@@ -2500,6 +2509,22 @@ structStats::~structStats(){
     delete( *it );
     ++it;
   }
+}
+
+double structStats::getMeanAL() const {
+  double sum = 0;
+  for ( size_t i=0; i < sv.size(); ++i ){
+    sum += sv[i]->get_al_gem();
+  }
+  return sum/sv.size();
+}
+
+double structStats::getHighestAL() const {
+  double sum = 0;
+  for ( size_t i=0; i < sv.size(); ++i ){
+    sum += sv[i]->get_al_max();
+  }
+  return sum/sv.size();
 }
 
 void structStats::merge( structStats *ss ){
@@ -2644,6 +2669,8 @@ void structStats::merge( structStats *ss ){
   aggregate( ners, ss->ners );
   aggregate( afks, ss->afks );
   aggregate( distances, ss->distances );
+  al_gem = getMeanAL();
+  al_max = getHighestAL();
 }
 
 string MMtoString( const multimap<DD_type, int>& mm, DD_type t ){
@@ -2668,23 +2695,14 @@ string MMtoString( const multimap<DD_type, int>& mm ){
     for( multimap<DD_type, int>::const_iterator pos = mm.begin();
 	 pos != mm.end();
 	 ++pos ){
-      result += pos->second;
+      if ( pos->second != NA )
+	result += pos->second;
     }
+    cerr << "MM to string " << result << "/" << len << endl;
     return toString( result/double(len) );
   }
   else
     return "NA";
-}
-
-double getHighest( const multimap<DD_type, int>&mm ){
-  double result = NA;
-  for( multimap<DD_type, int>::const_iterator pos = mm.begin();
-       pos != mm.end();
-       ++pos ){
-    if ( pos->second > result )
-      result = pos->second;
-  }
-  return result;
 }
 
 template <class T>
@@ -2897,8 +2915,8 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "crd_cnj_dist", MMtoString( distances, CRD_CNJ ) );
   addOneMetric( doc, el, "verb_comp_dist", MMtoString( distances, VERB_COMP ) );
   addOneMetric( doc, el, "noun_vc_dist", MMtoString( distances, NOUN_VC ) );
-  addOneMetric( doc, el, "deplen", MMtoString( distances ) );
-  addOneMetric( doc, el, "max_deplen", toMString( getHighest( distances )/sentCnt ) );
+  addOneMetric( doc, el, "deplen", toMString( al_gem ) );
+  addOneMetric( doc, el, "max_deplen", toMString( al_max ) );
   for ( size_t i=0; i < sv.size(); ++i ){
     sv[i]->addMetrics();
   }
@@ -3036,8 +3054,8 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   os << MMtoString( distances, CRD_CNJ ) << ",";
   os << MMtoString( distances, VERB_COMP ) << ",";
   os << MMtoString( distances, NOUN_VC ) << ",";
-  os << MMtoString( distances ) << ",";
-  os << ratio( getHighest( distances ), sentCnt ) << ",";
+  os << toMString( al_gem ) << ",";
+  os << toMString( al_max ) << ",";
 }
 
 void structStats::infoHeader( ostream& os ) const {
@@ -3434,6 +3452,8 @@ struct sentStats : public structStats {
   void incrementConnCnt( ConnType );
   void addMetrics( ) const;
   bool checkAls( size_t );
+  double getMeanAL() const;
+  double getHighestAL() const;
   ConnType checkMultiConnectives( const string& );
   SituationType checkMultiSituations( const string& );
   void resolvePrepExpr();
@@ -3446,6 +3466,32 @@ void sentStats::setLSAvalues( double suc, double net, double ctx ){
     lsa_word_net = net;
   if ( ctx > 0 )
     throw logic_error("context cannot be !=0 for sentstats");
+}
+
+double sentStats::getMeanAL() const {
+  double result = NA;
+  size_t len = distances.size();
+  if ( len > 0 ){
+    result = 0;
+    for( multimap<DD_type, int>::const_iterator pos = distances.begin();
+	 pos != distances.end();
+	 ++pos ){
+      result += pos->second;
+    }
+    result = result/len;
+  }
+  return result;
+}
+
+double sentStats::getHighestAL() const {
+  double result = NA;
+  for( multimap<DD_type, int>::const_iterator pos = distances.begin();
+       pos != distances.end();
+       ++pos ){
+    if ( pos->second > result )
+      result = pos->second;
+  }
+  return result;
 }
 
 void fill_word_lemma_buffers( const sentStats* ss,
@@ -4378,6 +4424,8 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
   if ( alpDoc ){
     xmlFreeDoc( alpDoc );
   }
+  al_gem = getMeanAL();
+  al_max = getHighestAL();
   resolveConnectives();
   resolveSituations();
   if ( settings.doLsa ){
