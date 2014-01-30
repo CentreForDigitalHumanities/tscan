@@ -26,6 +26,8 @@
 */
 
 #include <string>
+#include <fstream>
+#include <cmath>
 #include <algorithm>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -33,7 +35,10 @@
 #ifdef HAVE_OPENMP
 #include "omp.h"
 #endif
-#include "timblserver/TimblServerAPI.h"
+
+#include "timbl/TimblAPI.h"
+#include "timblserver/FdStream.h"
+#include "timblserver/ServerBase.h"
 #include "libfolia/document.h"
 #include "ticcutils/StringOps.h"
 #include "ticcutils/LogStream.h"
@@ -582,14 +587,15 @@ bool fill_topvals( map<string,top_val>& m, const string& filename ){
 bool fill_connectors( map<CGN::Type,set<string> >& c1,
 		      set<string>& cM,
 		      istream& is ){
+  cM.clear();
   string line;
   while( getline( is, line ) ){
     // a line is supposed to be :
     // a comment, starting with '#'
     // like: '# comment'
-    // OR an entry of 1, 2 or 3 words seperated by a single space
+    // OR an entry of 1 to 4 words seperated by a single space
     // like: 'dus' OR 'de facto'
-    // OR the same followed by a TAB ('\t') and a CGN tag
+    // OR the 1 word followed by a TAB ('\t') and a CGN tag
     // like: 'maar   VG'
     line = TiCC::trim( line );
     if ( line.empty() || line[0] == '#' )
@@ -3022,7 +3028,7 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
      << "Meerv_ont_d,Meerv_ont_dz,"
      << "AL_sub_ww,AL_ob_ww,AL_indirob_ww,AL_ww_vzg,"
      << "AL_lidw_znw,AL_vz_znw,AL_pv_hww,"
-     << "AL_vg_pvbijzin,AL_vg_conj,AL_vg_pvhoofdzin,AL_znw_bijzin,"
+     << "AL_vg_wwbijzin,AL_vg_conj,AL_vg_wwhoofdzin,AL_znw_bijzin,"
      << "AL_gem,AL_max,";
 }
 
@@ -3238,8 +3244,10 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
 }
 
 void structStats::wordSortHeader( ostream& os ) const {
-  os << "Bvnw_d,Vg_d,Vnw_d,Lidw_d,Vz_d,Bijw_d,Tw_d,Nw_d,Ww_d,Tuss_d,Spec_d,Aanh_d,"
-     << "Afk_d,Afk_gen_d,Afk_int_d,Afk_jur_d,Afk_med_d,Afk_ond_d,Afk_pol_d,Afk_ov_d,Afk_zorg_d,";
+  os << "Bvnw_d,Vg_d,Vnw_d,Lidw_d,Vz_d,Bijw_d,Tw_d,Nw_d,Ww_d,Tuss_d,Spec_d,"
+     << "Interp_d,"
+     << "Afk_d,Afk_gen_d,Afk_int_d,Afk_jur_d,Afk_med_d,"
+     << "Afk_ond_d,Afk_pol_d,Afk_ov_d,Afk_zorg_d,";
 }
 
 void structStats::wordSortToCSV( ostream& os ) const {
@@ -3279,7 +3287,7 @@ void structStats::miscHeader( ostream& os ) const {
      << "Huww_tijd_d,Huww_tijd_dz,Koppelww_d,Koppelww_dz,"
      << "Arch_d,Vol_dw_d,Vol_dw_dz,"
      << "Onvol_dw_d,Onvol_dw_dz,Infin_d,Infin_g,"
-     << "Log_prob,Entropy,Perplexiteit,";
+     << "Log_prob,Entropie,Perplexiteit,";
 }
 
 void structStats::miscToCSV( ostream& os ) const {
@@ -3671,6 +3679,7 @@ ConnType sentStats::checkMultiConnectives( const string& mword ){
 }
 
 SituationType sentStats::checkMultiSituations( const string& mword ){
+  //  cerr << "check multi-sit '" << mword << "'" << endl;
   SituationType sit = NO_SIT;
   if ( settings.multi_time_sits.find( mword ) != settings.multi_time_sits.end() ){
     sit = TIME_SIT;
