@@ -98,7 +98,7 @@ else:
 f.write("rarityLevel="  + str(raritylevel) + "\n")
 f.write("overlapSize="  + str(overlapsize) + "\n")
 f.write("frequencyClip="  + str(freqclip) + "\n")
-f.write("mtldThreshold="  + str(mtldtreshold) + "\n")
+f.write("mtldThreshold="  + str(mtldthreshold) + "\n")
 
 f.write("configDir="+ TSCANDIR + "/data\n")
 f.write("adj_semtypes=\"adjs_semtype.data\"\n")
