@@ -79,19 +79,31 @@ if 'rarityLevel' in clamdata:
 	raritylevel = clamdata['rarityLevel']
 else:
 	raritylevel = 4
+
 if 'overlapSize' in clamdata:
 	overlapsize = clamdata['overlapSize']
 else:
 	overlapsize = 50
+
+if 'frequencyClip' in clamdata:
+        freqclip = clamdata['frequencyClip']
+else:
+	freqclip = 99
+
+if 'mtldTreshold' in clamdata:
+        mtldtreshold = clamdata['mtldTreshold']
+else:
+	mtldtreshold = 0.720
+
 f.write("rarityLevel="  + str(raritylevel) + "\n")
 f.write("overlapSize="  + str(overlapsize) + "\n")
+f.write("frequencyClip="  + str(freqclip) + "\n")
+f.write("mtldThreshold="  + str(mtldtreshold) + "\n")
 
 f.write("configDir="+ TSCANDIR + "/data\n")
 f.write("adj_semtypes=\"adjs_semtype.data\"\n")
 f.write("verb_semtypes=\"verbs_semtype.data\"\n")
 f.write("noun_semtypes=\"nouns_semtype.data\"\n")
-f.write("polarity_lex=\"polarity_lexicon.data\"\n")
-#f.write("freq_lex=\"dcoi_staphformat.freq\"\n")
 
 f.write("word_freq_lex=\"" + clamdata['word_freq_lex'] + "\"\n")  #freqlist_staphorsius_CLIB_words.freq
 f.write("lemma_freq_lex=\"" + clamdata['lemma_freq_lex'] + "\"\n") #freqlist_staphorsius_CLIB_lemma.freq
