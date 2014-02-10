@@ -90,10 +90,10 @@ if 'frequencyClip' in clamdata:
 else:
 	freqclip = 99
 
-if 'mtldTreshold' in clamdata:
-        mtldtreshold = clamdata['mtldTreshold']
+if 'mtldThreshold' in clamdata:
+        mtldthreshold = clamdata['mtldThreshold']
 else:
-	mtldtreshold = 0.720
+	mtldthreshold = 0.720
 
 f.write("rarityLevel="  + str(raritylevel) + "\n")
 f.write("overlapSize="  + str(overlapsize) + "\n")

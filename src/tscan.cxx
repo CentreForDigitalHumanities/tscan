@@ -302,7 +302,7 @@ struct settingData {
   int rarityLevel;
   unsigned int overlapSize;
   double freq_clip;
-  double ttr_treshold;
+  double mtld_threshold;
   map <string, SemType> adj_sem;
   map <string, SemType> noun_sem;
   map <string, SemType> verb_sem;
@@ -825,12 +825,12 @@ void settingData::init( const Configuration& cf ){
     cerr << "invalid value for 'frequencyClip' in config file" << endl;
     exit( EXIT_FAILURE );
   }
-  val = cf.lookUp( "mtldTreshold" );
+  val = cf.lookUp( "mtldThreshold" );
   if ( val.empty() ){
-    ttr_treshold = 0.720;
+    mtld_threshold = 0.720;
   }
-  else if ( !TiCC::stringTo( val, ttr_treshold )
-	    || (ttr_treshold < 0) || (ttr_treshold > 1.0) ){
+  else if ( !TiCC::stringTo( val, mtld_threshold )
+	    || (mtld_threshold < 0) || (mtld_threshold > 1.0) ){
     cerr << "invalid value for 'frequencyClip' in config file" << endl;
     exit( EXIT_FAILURE );
   }
@@ -3540,7 +3540,7 @@ double calculate_mtld( const vector<string>& v ){
     ++token_count;
     unique_tokens.insert(v[i]);
     token_ttr = unique_tokens.size() / double(token_count);
-    if ( token_ttr <= settings.ttr_treshold ){
+    if ( token_ttr <= settings.mtld_threshold ){
       ++token_factor;
       token_count = 0;
       token_ttr = 1.0;
@@ -3553,7 +3553,7 @@ double calculate_mtld( const vector<string>& v ){
       ++token_factor;
     }
     else {
-      double threshold = ( 1 - token_ttr ) / (1 - settings.ttr_treshold);
+      double threshold = ( 1 - token_ttr ) / (1 - settings.mtld_threshold);
       token_factor += threshold;
     }
   }

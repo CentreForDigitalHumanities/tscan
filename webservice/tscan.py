@@ -248,7 +248,7 @@ PARAMETERS =  [
         IntegerParameter(id='rarityLevel',name='Rarity Level',description='Rarity level',default=4),
         IntegerParameter(id='overlapSize',name='Overlap Size',description='Overlap Size',default=50),
         FloatParameter(id='frequencyClip',name='Frequency Clipping',description='Frequency Clipping',default=99),
-        FloatParameter(id='mtldTreshold',name='MTLD factor size',description='MTLD factor size',default=0.720),
+        FloatParameter(id='mtldThreshold',name='MTLD factor size',description='MTLD factor size',default=0.720),
         ChoiceParameter(id='useAlpino',name='Use Alpino parser',description='Use Alpino parser?', choices=['yes','no'],default='yes'),
         ChoiceParameter(id='useWopr',name='Use Wopr',description='Use Wopr?', choices=['yes','no'],default='yes'),
         ChoiceParameter(id='useLsa',name='Use LSA analyzer',description='Use LSA?', choices=['yes','no'],default='no'),
