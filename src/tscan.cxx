@@ -2345,6 +2345,18 @@ struct structStats: public basicStats {
     impCnt(0),
     questCnt(0),
     prepExprCnt(0),
+    word_mtld(0),
+    lemma_mtld(0),
+    content_mtld(0),
+    name_mtld(0),
+    temp_conn_mtld(0),
+    reeks_conn_mtld(0),
+    contr_conn_mtld(0),
+    comp_conn_mtld(0),
+    cause_conn_mtld(0),
+    tijd_sit_mtld(0),
+    ruimte_sit_mtld(0),
+    cause_sit_mtld(0),
     nerCnt(0)
  {};
   ~structStats();
@@ -2380,6 +2392,7 @@ struct structStats: public basicStats {
   double get_al_max() const { return al_max; };
   virtual double getMeanAL() const;
   virtual double getHighestAL() const;
+  void calculate_MTLDs();
   string text;
   int wordCnt;
   int sentCnt;
@@ -2493,8 +2506,6 @@ struct structStats: public basicStats {
   map<CGN::Type,int> heads;
   map<string,int> unique_names;
   map<string,int> unique_contents;
-  map<string,int> unique_words;
-  map<string,int> unique_lemmas;
   map<string,int> unique_tijd_sits;
   map<string,int> unique_ruimte_sits;
   map<string,int> unique_cause_sits;
@@ -2503,6 +2514,20 @@ struct structStats: public basicStats {
   map<string,int> unique_contr_conn;
   map<string,int> unique_comp_conn;
   map<string,int> unique_cause_conn;
+  map<string,int> unique_words;
+  map<string,int> unique_lemmas;
+  double word_mtld;
+  double lemma_mtld;
+  double content_mtld;
+  double name_mtld;
+  double temp_conn_mtld;
+  double reeks_conn_mtld;
+  double contr_conn_mtld;
+  double comp_conn_mtld;
+  double cause_conn_mtld;
+  double tijd_sit_mtld;
+  double ruimte_sit_mtld;
+  double cause_sit_mtld;
   map<NerProp, int> ners;
   int nerCnt;
   map<AfkType, int> afks;
@@ -3077,7 +3102,8 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 }
 
 void structStats::infoHeader( ostream& os ) const {
-  os << "TTR_wrd,TTR_lem,TTR_namen,TTR_inhwrd,"
+  os << "TTR_wrd,MTLD_word,TTR_lem,MTLD_lem,"
+     << "TTR_namen,MTLD_namen,TTR_inhwrd,MTLD_inhwrd,"
      << "Inhwrd_r,Inhwrd_d,Inhwrd_dz,"
      << "Zeldz_index,Bijw_bep_d,Bijw_bep_dz,"
      << "Attr_bijv_nw_d,Attr_bijv_nw_dz,Bijv_bep_d,Bijv_bep_dz,"
@@ -3087,9 +3113,13 @@ void structStats::infoHeader( ostream& os ) const {
 void structStats::informationDensityToCSV( ostream& os ) const {
   double clauseCnt = pastCnt + presentCnt;
   os << ratio( unique_words.size(), wordCnt ) << ",";
+  os << word_mtld << ",";
   os << ratio( unique_lemmas.size(), wordCnt ) << ",";
+  os << lemma_mtld << ",";
   os << ratio( unique_names.size(), nameCnt ) << ",";
+  os << name_mtld << ",";
   os << ratio( unique_contents.size(), contentCnt ) << ",";
+  os << content_mtld << ",";
   os << ratio( contentCnt, wordCnt - contentCnt ) << ",";
   os << density( contentCnt, wordCnt ) << ",";
   os << ratio( contentCnt, clauseCnt ) << ",";
@@ -3108,13 +3138,13 @@ void structStats::informationDensityToCSV( ostream& os ) const {
 
 
 void structStats::coherenceHeader( ostream& os ) const {
-  os << "Conn_temp_d,Conn_temp_dz,Conn_temp_TTR,"
-     << "Conn_reeks_d,Conn_reeks_dz,Conn_reeks_TTR,"
-     << "Conn_contr_d,Conn_contr_dz,Conn_contr_TTR,"
-     << "Conn_comp_d,Conn_comp_dz,Conn_comp_TTR,"
-     << "Conn_caus_d,Conn_caus_dz,Conn_caus_TTR,"
+  os << "Conn_temp_d,Conn_temp_dz,Conn_temp_TTR,Conn_temp_MTLD,"
+     << "Conn_reeks_d,Conn_reeks_dz,Conn_reeks_TTR,Conn_reeks_MTLD,"
+     << "Conn_contr_d,Conn_contr_dz,Conn_contr_TTR,Conn_contr_MTLD,"
+     << "Conn_comp_d,Conn_comp_dz,Conn_comp_TTR,Conn_comp_MTLD,"
+     << "Conn_caus_d,Conn_caus_dz,Conn_caus_TTR,Conn_caus_MTLD,"
      << "Causaal_d,Ruimte_d,Tijd_d,"
-     << "Causaal_TTR,Ruimte_TTR,Tijd_TTR,"
+     << "Causaal_TTR,Causaal_MTLD,Ruimte_TTR,Ruimte_MTLD,Tijd_TTR,Tijd_MTLD,"
      << "Vnw_ref_d,Vnw_ref_dz,"
      << "Arg_over_vzin_d,Arg_over_vzin_dz,Lem_over_vzin_d,Lem_over_vzin_dz,"
      << "Arg_over_buf_d,Arg_over_buf_dz,Lem_over_buf_d,Lem_over_buf_dz,"
@@ -3126,24 +3156,32 @@ void structStats::coherenceToCSV( ostream& os ) const {
   os << density( tempConnCnt, wordCnt ) << ","
      << ratio( tempConnCnt, clauseCnt ) << ","
      << ratio( unique_temp_conn.size(), tempConnCnt ) << ","
+     << temp_conn_mtld << ","
      << density( opsomConnCnt, wordCnt ) << ","
      << ratio( opsomConnCnt, clauseCnt ) << ","
      << ratio( unique_reeks_conn.size(), opsomConnCnt ) << ","
+     << reeks_conn_mtld << ","
      << density( contrastConnCnt, wordCnt ) << ","
      << ratio( contrastConnCnt, clauseCnt ) << ","
      << ratio( unique_contr_conn.size(), contrastConnCnt ) << ","
+     << contr_conn_mtld << ","
      << density( compConnCnt, wordCnt ) << ","
      << ratio( compConnCnt, clauseCnt ) << ","
      << ratio( unique_comp_conn.size(), compConnCnt ) << ","
+     << comp_conn_mtld << ","
      << density( causeConnCnt, wordCnt ) << ","
      << ratio( causeConnCnt, clauseCnt ) << ","
      << ratio( unique_cause_conn.size(), causeConnCnt ) << ","
+     << cause_conn_mtld << ","
      << density( causeSitCnt, wordCnt ) << ","
-     << ratio( unique_cause_sits.size(), causeSitCnt ) << ","
      << density( spaceSitCnt, wordCnt ) << ","
-     << ratio( unique_ruimte_sits.size(), spaceSitCnt ) << ","
      << density( timeSitCnt, wordCnt ) << ","
+     << ratio( unique_cause_sits.size(), causeSitCnt ) << ","
+     << cause_sit_mtld << ","
+     << ratio( unique_ruimte_sits.size(), spaceSitCnt ) << ","
+     << ruimte_sit_mtld << ","
      << ratio( unique_tijd_sits.size(), timeSitCnt ) << ","
+     << tijd_sit_mtld << ","
      << density( pronRefCnt, wordCnt ) << ","
      << ratio( pronRefCnt, clauseCnt ) << ",";
   if ( isSentence() ){
@@ -3478,6 +3516,130 @@ struct sentStats : public structStats {
   SituationType checkMultiSituations( const string& );
   void resolvePrepExpr();
 };
+
+const double TTR_TRESHOLD = 0.720;
+
+double calculate_mtld( const vector<string>& v ){
+  if ( v.size() == 0 ){
+    return 0.0;
+  }
+  int token_count = 0;
+  set<string> unique_tokens;
+  double token_factor = 0.0;
+  double token_ttr = 1.0;
+  for ( size_t i=0; i < v.size(); ++i ){
+    ++token_count;
+    unique_tokens.insert(v[i]);
+    token_ttr = unique_tokens.size() / double(token_count);
+    if ( token_ttr <= TTR_TRESHOLD ){
+      ++token_factor;
+      token_count = 0;
+      token_ttr = 1.0;
+      unique_tokens.clear();
+    }
+  }
+  if ( token_count > 0 ){
+    // partial result
+    if ( token_ttr == 1.0 ){
+      ++token_factor;
+    }
+    else {
+      double threshold = ( 1 - token_ttr ) / (1 - TTR_TRESHOLD);
+      token_factor += threshold;
+    }
+  }
+  return v.size() / token_factor;
+}
+
+double average_mtld( vector<string>& tokens ){
+  double mtld1 = calculate_mtld( tokens );
+  cerr << "forward = " << mtld1 << endl;
+  reverse( tokens.begin(), tokens.end() );
+  double mtld2 = calculate_mtld( tokens );
+  cerr << "backward = " << mtld1 << endl;
+  double result = (mtld1 + mtld2)/2.0;
+  cerr << "average mtld = " << result << endl;
+  return result;
+}
+
+void structStats::calculate_MTLDs() {
+  const vector<const wordStats*> wordNodes = collectWords();
+  vector<string> words;
+  vector<string> lemmas;
+  vector<string> conts;
+  vector<string> names;
+  vector<string> temp_conn;
+  vector<string> reeks_conn;
+  vector<string> contr_conn;
+  vector<string> comp_conn;
+  vector<string> cause_conn;
+  vector<string> tijd_sits;
+  vector<string> ruimte_sits;
+  vector<string> cause_sits;
+  for ( size_t i=0; i < wordNodes.size(); ++i ){
+    if ( wordNodes[i]->wordProperty() == ISLET ){
+      continue;
+    }
+    string word = wordNodes[i]->ltext();
+    words.push_back( word );
+    string lemma = wordNodes[i]->llemma();
+    lemmas.push_back( lemma );
+    if ( wordNodes[i]->isContent ){
+      conts.push_back( wordNodes[i]->ltext() );
+    }
+    if ( wordNodes[i]->prop == ISNAME ){
+      names.push_back( wordNodes[i]->ltext() );
+    }
+    switch( wordNodes[i]->getConnType() ){
+    case TEMPOREEL:
+      temp_conn.push_back( wordNodes[i]->ltext() );
+      break;
+    case OPSOMMEND:
+      reeks_conn.push_back( wordNodes[i]->ltext() );
+      break;
+    case CONTRASTIEF:
+      contr_conn.push_back( wordNodes[i]->ltext() );
+      break;
+    case COMPARATIEF:
+      comp_conn.push_back( wordNodes[i]->ltext() );
+      break;
+    case CAUSAAL:
+      cause_conn.push_back( wordNodes[i]->ltext() );
+      break;
+    default:
+      break;
+    }
+    switch( wordNodes[i]->getSitType() ){
+    case TIME_SIT:
+      tijd_sits.push_back(wordNodes[i]->Lemma());
+      break;
+    case CAUSAL_SIT:
+      cause_sits.push_back(wordNodes[i]->Lemma());
+      break;
+    case SPACE_SIT:
+      ruimte_sits.push_back(wordNodes[i]->Lemma());
+      break;
+    default:
+      break;
+    }
+  }
+
+  word_mtld = average_mtld( words );
+  lemma_mtld = average_mtld( lemmas );
+  content_mtld = average_mtld( conts );
+  name_mtld = average_mtld( names );
+  temp_conn_mtld = average_mtld( temp_conn );
+  reeks_conn_mtld = average_mtld( reeks_conn );
+  contr_conn_mtld = average_mtld( contr_conn );
+  comp_conn_mtld = average_mtld( comp_conn );
+  cause_conn_mtld = average_mtld( cause_conn );
+  cerr << "Tijd situaties" << tijd_sits << endl;
+  tijd_sit_mtld = average_mtld( tijd_sits );
+  cerr << "ruimte situaties" << ruimte_sits << endl;
+  ruimte_sit_mtld = average_mtld( ruimte_sits );
+  cerr << "cause situaties" << cause_sits << endl;
+  cause_sit_mtld = average_mtld( cause_sits );
+}
 
 void sentStats::setLSAvalues( double suc, double net, double ctx ){
   if ( suc > 0 )
@@ -4449,6 +4611,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
   al_max = getHighestAL();
   resolveConnectives();
   resolveSituations();
+  calculate_MTLDs();
   if ( settings.doLsa ){
     resolveLSA( LSAword_dists );
   }
@@ -4513,6 +4676,7 @@ parStats::parStats( Paragraph *p,
   if ( settings.doLsa ){
     resolveLSA( LSA_sent_dists );
   }
+  calculate_MTLDs();
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
   else
@@ -4864,6 +5028,7 @@ docStats::docStats( Document *doc ):
   if ( settings.doLsa ){
     resolveLSA( LSA_paragraph_dists );
   }
+  calculate_MTLDs();
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
   else
@@ -4906,47 +5071,82 @@ void docStats::addMetrics( ) const {
   addOneMetric( el->doc(), el,
 		"word_ttr", toString( unique_words.size()/double(wordCnt) ) );
   addOneMetric( el->doc(), el,
+		"word_mtld", toString( word_mtld ) );
+  addOneMetric( el->doc(), el,
 		"lemma_ttr", toString( unique_lemmas.size()/double(wordCnt) ) );
+  addOneMetric( el->doc(), el,
+		"lemma_mtld", toString( lemma_mtld ) );
   if ( nameCnt != 0 ){
     addOneMetric( el->doc(), el,
 		  "names_ttr", toString( unique_names.size()/double(nameCnt) ) );
   }
+  addOneMetric( el->doc(), el,
+		"name_mtld", toString( name_mtld ) );
+
   if ( contentCnt != 0 ){
     addOneMetric( el->doc(), el,
 		  "content_word_ttr", toString( unique_contents.size()/double(contentCnt) ) );
   }
+  addOneMetric( el->doc(), el,
+		"content_mtld", toString( content_mtld ) );
+
   if ( timeSitCnt != 0 ){
     addOneMetric( el->doc(), el,
 		  "time_sit_ttr", toString( unique_tijd_sits.size()/double(timeSitCnt) ) );
   }
+  addOneMetric( el->doc(), el,
+		"tijd_sit_mtld", toString( tijd_sit_mtld ) );
+
   if ( spaceSitCnt != 0 ){
     addOneMetric( el->doc(), el,
 		  "space_sit_ttr", toString( unique_ruimte_sits.size()/double(spaceSitCnt) ) );
   }
+  addOneMetric( el->doc(), el,
+		"ruimte_sit_mtld", toString( ruimte_sit_mtld ) );
+
   if ( causeSitCnt != 0 ){
     addOneMetric( el->doc(), el,
 		  "cause_sit_ttr", toString( unique_cause_sits.size()/double(causeSitCnt) ) );
   }
+  addOneMetric( el->doc(), el,
+		"cause_sit_mtld", toString( cause_sit_mtld ) );
+
   if ( tempConnCnt != 0 ){
     addOneMetric( el->doc(), el,
 		  "temp_conn_ttr", toString( unique_temp_conn.size()/double(tempConnCnt) ) );
   }
+  addOneMetric( el->doc(), el,
+		"temp_conn_mtld", toString(temp_conn_mtld) );
+
   if ( opsomConnCnt != 0 ){
     addOneMetric( el->doc(), el,
 		  "opsom_conn_ttr", toString( unique_reeks_conn.size()/double(opsomConnCnt) ) );
   }
+  addOneMetric( el->doc(), el,
+		"opsom_conn_mtld", toString(reeks_conn_mtld) );
+
   if ( contrastConnCnt != 0 ){
     addOneMetric( el->doc(), el,
 		  "contrast_conn_ttr", toString( unique_contr_conn.size()/double(contrastConnCnt) ) );
   }
+  addOneMetric( el->doc(), el,
+		"contrast_conn_mtld", toString(contr_conn_mtld) );
+
   if ( compConnCnt != 0 ){
     addOneMetric( el->doc(), el,
 		  "comp_conn_ttr", toString( unique_comp_conn.size()/double(compConnCnt) ) );
   }
+  addOneMetric( el->doc(), el,
+		"comp_conn_mtld", toString(comp_conn_mtld) );
+
+
   if ( causeConnCnt != 0 ){
     addOneMetric( el->doc(), el,
 		  "cause_conn_ttr", toString( unique_cause_conn.size()/double(causeConnCnt) ) );
   }
+  addOneMetric( el->doc(), el,
+		"cause_conn_mtld", toString(cause_conn_mtld) );
+
 
   addOneMetric( el->doc(), el,
 		"rar_index", rarity( settings.rarityLevel ) );
