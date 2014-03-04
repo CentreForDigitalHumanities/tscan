@@ -2969,6 +2969,13 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "crd_cnj_dist", MMtoString( distances, CRD_CNJ ) );
   addOneMetric( doc, el, "verb_comp_dist", MMtoString( distances, VERB_COMP ) );
   addOneMetric( doc, el, "noun_vc_dist", MMtoString( distances, NOUN_VC ) );
+  addOneMetric( doc, el, "verb_svp_dist", MMtoString( distances, VERB_SVP ) );
+  addOneMetric( doc, el, "verb_cop_dist", MMtoString( distances, VERB_PREDC_N ) );
+  addOneMetric( doc, el, "verb_adj_dist", MMtoString( distances, VERB_PREDC_A ) );
+  addOneMetric( doc, el, "verb_bw_mod_dist", MMtoString( distances, VERB_MOD_BW ) );
+  addOneMetric( doc, el, "verb_adv_mod_dist", MMtoString( distances, VERB_MOD_A ) );
+  addOneMetric( doc, el, "verb_noun_dist", MMtoString( distances, VERB_NOUN ) );
+
   addOneMetric( doc, el, "deplen", toMString( al_gem ) );
   addOneMetric( doc, el, "max_deplen", toMString( al_max ) );
   for ( size_t i=0; i < sv.size(); ++i ){
@@ -3528,6 +3535,8 @@ struct sentStats : public structStats {
   void resolvePrepExpr();
 };
 
+//#define DEBUG_MTLD
+
 double calculate_mtld( const vector<string>& v ){
   if ( v.size() == 0 ){
     return 0.0;
@@ -3540,8 +3549,18 @@ double calculate_mtld( const vector<string>& v ){
     ++token_count;
     unique_tokens.insert(v[i]);
     token_ttr = unique_tokens.size() / double(token_count);
+#ifdef DEBUG_MTLD
+    cerr << v[i] << " types " << unique_tokens.size() << " token "
+	 << token_count << " ttr " << token_ttr << endl;
+#endif
     if ( token_ttr <= settings.mtld_threshold ){
+#ifdef KOIZUMI
+      if ( token_count >=10 ){
+	++token_factor;
+      }
+#else
       ++token_factor;
+#endif
       token_count = 0;
       token_ttr = 1.0;
       unique_tokens.clear();
@@ -3557,17 +3576,26 @@ double calculate_mtld( const vector<string>& v ){
       token_factor += threshold;
     }
   }
+#ifdef DEBUG_MTLD
+  cerr << "Factor = " << token_factor << " #words = " << v.size() << endl;
+#endif
   return v.size() / token_factor;
 }
 
 double average_mtld( vector<string>& tokens ){
   double mtld1 = calculate_mtld( tokens );
+#ifdef DEBUG_MTLD
   cerr << "forward = " << mtld1 << endl;
+#endif
   reverse( tokens.begin(), tokens.end() );
   double mtld2 = calculate_mtld( tokens );
+#ifdef DEBUG_MTLD
   cerr << "backward = " << mtld1 << endl;
+#endif
   double result = (mtld1 + mtld2)/2.0;
+#ifdef DEBUG_MTLD
   cerr << "average mtld = " << result << endl;
+#endif
   return result;
 }
 
@@ -3642,11 +3670,8 @@ void structStats::calculate_MTLDs() {
   contr_conn_mtld = average_mtld( contr_conn );
   comp_conn_mtld = average_mtld( comp_conn );
   cause_conn_mtld = average_mtld( cause_conn );
-  cerr << "Tijd situaties" << tijd_sits << endl;
   tijd_sit_mtld = average_mtld( tijd_sits );
-  cerr << "ruimte situaties" << ruimte_sits << endl;
   ruimte_sit_mtld = average_mtld( ruimte_sits );
-  cerr << "cause situaties" << cause_sits << endl;
   cause_sit_mtld = average_mtld( cause_sits );
 }
 

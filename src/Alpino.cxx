@@ -209,6 +209,24 @@ string toString( const DD_type& t ){
   case NOUN_VC:
     result = "noun-vc";
     break;
+  case VERB_SVP:
+    result = "verb-svp";
+    break;
+  case VERB_PREDC_N:
+    result = "verb-pred-n";
+    break;
+  case VERB_PREDC_A:
+    result = "verb-pred-adj";
+    break;
+  case VERB_MOD_BW:
+    result = "verb-mod-bw";
+    break;
+  case VERB_MOD_A:
+    result = "verb-mod-adv";
+    break;
+  case  VERB_NOUN:
+    result = "verb-nounc";
+    break;
   default:
     result = "ERROR unknown translation for DD_type(" + toString(t ) + ")";
   }
@@ -391,6 +409,52 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
 	  xmlNode *res = node_search( *it, "rel", "hd" );
 	  if ( res ){
 	    store_result( result, VERB_VC, head_node, res, puncts );
+	  }
+	}
+	else if ( args["rel"] == "svp" ){
+	  if ( args["lcat"] == "part" )
+	    store_result( result, VERB_SVP, head_node, *it, puncts );
+	}
+	else if ( args["rel"] == "predc" ){
+	  if ( args["lcat"] == "np" ){
+	    store_result( result, VERB_PREDC_N, head_node, *it, puncts );
+	  }
+	  else if ( args["lcat"] == "ap" ){
+	    store_result( result, VERB_PREDC_A, head_node, *it, puncts );
+	  }
+	  xmlNode *res = node_search( *it, "rel", "hd" );
+	  if ( res ){
+	    string lcat = getAttribute( res, "lcat" );
+	    if ( lcat == "np" ){
+	      store_result( result, VERB_PREDC_N, head_node, res, puncts );
+	    }
+	    else if ( lcat == "ap" ){
+	      store_result( result, VERB_PREDC_A, head_node, res, puncts );
+	    }
+	  }
+	}
+	else if ( args["rel"] == "mod" ){
+	  if ( args["lcat"] == "advp" ){
+	    store_result( result, VERB_MOD_BW, head_node, *it, puncts );
+	  }
+	  else if ( args["lcat"] == "ap" ){
+	    store_result( result, VERB_MOD_A, head_node, *it, puncts );
+	  }
+	  else if ( args["lcat"] == "np" ){
+	    store_result( result, VERB_NOUN, head_node, *it, puncts );
+	  }
+	  xmlNode *res = node_search( *it, "rel", "hd" );
+	  if ( res ){
+	    string lcat = getAttribute( res, "lcat" );
+	    if ( lcat == "advp" ){
+	      store_result( result, VERB_MOD_BW, head_node, res, puncts );
+	    }
+	    else if ( lcat == "ap" ){
+	      store_result( result, VERB_MOD_A, head_node, res, puncts );
+	    }
+	    else if ( lcat == "np" ){
+	      store_result( result, VERB_NOUN, head_node, res, puncts );
+	    }
 	  }
 	}
 	if ( args["cat"] == "cp" ){
