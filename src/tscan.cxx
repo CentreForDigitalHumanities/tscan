@@ -3127,7 +3127,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 }
 
 void structStats::infoHeader( ostream& os ) const {
-  os << "TTR_wrd,MTLD_word,TTR_lem,MTLD_lem,"
+  os << "TTR_wrd,MTLD_wrd,TTR_lem,MTLD_lem,"
      << "TTR_namen,MTLD_namen,TTR_inhwrd,MTLD_inhwrd,"
      << "Inhwrd_r,Inhwrd_d,Inhwrd_dz,"
      << "Zeldz_index,Bijw_bep_d,Bijw_bep_dz,"
