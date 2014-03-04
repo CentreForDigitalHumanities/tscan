@@ -29,7 +29,9 @@
 #define ALPINO_H
 
 enum DD_type { SUB_VERB, OBJ1_VERB, OBJ2_VERB, VERB_PP, VERB_VC,
-	       VERB_COMP, NOUN_DET, PREP_OBJ1, CRD_CNJ, COMP_BODY, NOUN_VC };
+	       VERB_COMP, NOUN_DET, PREP_OBJ1, CRD_CNJ, COMP_BODY, NOUN_VC,
+	       VERB_SVP, VERB_PREDC_N, VERB_PREDC_A, VERB_MOD_BW,
+	       VERB_MOD_A, VERB_NOUN };
 
 std::string toString( const DD_type& );
 inline std::ostream& operator<< (std::ostream&os, const DD_type& t ){
