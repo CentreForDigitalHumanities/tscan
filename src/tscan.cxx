@@ -85,9 +85,15 @@ enum SemType { NO_SEMTYPE,
 	       CONCRETE_OTHER_NOUN, INSTITUT_NOUN,
 	       CONCRETE_SUBSTANCE_NOUN, CONCRETE_ARTEFACT_NOUN,
 	       CONCRETE_HUMAN_NOUN, CONCRETE_NONHUMAN_NOUN,
+	       HUMAN_ADJ, EMO_ADJ,
+	       NONHUMAN_SHAPE_ADJ, NONHUMAN_COLOR_ADJ, NONHUMAN_MATTER_ADJ,
+	       NONHUMAN_SOUND_ADJ, NONHUMAN_OTHER_ADJ,
+	       TECH_ADJ, TIME_ADJ, PLACE_ADJ,
+	       SPEC_POS_ADJ, SPEC_NEG_ADJ,
+	       POS_ADJ, NEG_ADJ,
+	       EPI_POS_ADJ, EPI_NEG_ADJ,
+	       MORE_ADJ, LESS_ADJ,
 	       ABSTRACT_ADJ,
-	       BROAD_ADJ, EMO_ADJ,
-	       CONCRETE_ADJ,
 	       STATE, ACTION, PROCESS, WEIRD };
 
 string toString( const SemType st ){
@@ -150,14 +156,59 @@ string toString( const SemType st ){
   case ABSTRACT_ADJ:
     return "abstract-adj";
     break;
-  case BROAD_ADJ:
-    return "broad-adj";
+  case HUMAN_ADJ:
+    return "human-adj";
     break;
   case EMO_ADJ:
     return "emo-adj";
     break;
-  case CONCRETE_ADJ:
-    return "concrete-adj";
+  case NONHUMAN_SHAPE_ADJ:
+    return "shape-adj";
+    break;
+  case NONHUMAN_COLOR_ADJ:
+    return "color-adj";
+    break;
+  case NONHUMAN_MATTER_ADJ:
+    return "matter-adj";
+    break;
+  case NONHUMAN_SOUND_ADJ:
+    return "sound-adj";
+    break;
+  case NONHUMAN_OTHER_ADJ:
+    return "nonhuman-other-adj";
+    break;
+  case TECH_ADJ:
+    return "tech-adj";
+    break;
+  case TIME_ADJ:
+    return "time-adj";
+    break;
+  case PLACE_ADJ:
+    return "place-adj";
+    break;
+  case SPEC_POS_ADJ:
+    return "spec-pos-adj";
+    break;
+  case SPEC_NEG_ADJ:
+    return "spec-neg-adj";
+    break;
+  case POS_ADJ:
+    return "pos-adj";
+    break;
+  case NEG_ADJ:
+    return "neg-adj";
+    break;
+  case EPI_POS_ADJ:
+    return "epi-pos-adj";
+    break;
+  case EPI_NEG_ADJ:
+    return "epi-neg-adj";
+    break;
+  case MORE_ADJ:
+    return "stronger-adj";
+    break;
+  case LESS_ADJ:
+    return "weaker-adj";
     break;
   case STATE:
     return "state";
@@ -413,20 +464,6 @@ SemType classifySem( CGN::Type tag, const string& s ){
     else
       return UNFOUND_NOUN;
   }
-  else if ( tag == CGN::ADJ ){
-    if ( s == "undefined" )
-      return UNDEFINED_ADJ;
-    else if ( s == "phyper" ||
-	      s == "stuff" ||
-	      s == "colour" )
-      return CONCRETE_ADJ;
-    else if ( s == "abstract" )
-      return ABSTRACT_ADJ;
-    else if ( s == "emomen" )
-      return EMO_ADJ;
-    else // "place" and "temp"
-      return BROAD_ADJ;
-  }
   else if ( tag == CGN::WW ){
     if ( s == "undefined" ){
       return UNDEFINED_VERB;
@@ -443,7 +480,78 @@ SemType classifySem( CGN::Type tag, const string& s ){
   return NO_SEMTYPE;
 }
 
-bool fill( CGN::Type tag, map<string,SemType>& m, istream& is ){
+SemType classifyADJ( const string& s, const string& sub = "" ){
+  SemType result = UNFOUND_ADJ;
+  if ( s == "undefined" ){
+    result = UNDEFINED_ADJ;
+  }
+  else if ( s == "waarn_mens" ){
+    result = HUMAN_ADJ;
+  }
+  else if ( s == "emosoc" ){
+    result = EMO_ADJ;
+  }
+  else if ( s == "waarn_niet_mens" ){
+    if ( sub == "vorm_omvang" ){
+      result = NONHUMAN_SHAPE_ADJ;
+    }
+    else if ( sub == "kleur" ){
+      result = NONHUMAN_COLOR_ADJ;
+    }
+    else if ( sub == "stof" ){
+      result = NONHUMAN_MATTER_ADJ;
+    }
+    else if ( sub == "geluid" ){
+      result = NONHUMAN_SOUND_ADJ;
+    }
+    else if ( sub == "waarn_niet_mens_ov" ){
+      result = NONHUMAN_OTHER_ADJ;
+    }
+  }
+  else if ( s == "technisch" ){
+    result = TECH_ADJ;
+  }
+  else if ( s == "time" ){
+    result = TIME_ADJ;
+  }
+  else if ( s == "place" ){
+    result = PLACE_ADJ;
+  }
+  else if ( s == "spec_positief" ){
+    result = SPEC_POS_ADJ;
+  }
+  else if ( s == "spec_negatief" ){
+    result = SPEC_NEG_ADJ;
+  }
+  else if ( s == "alg_positief" ){
+    result = POS_ADJ;
+  }
+  else if ( s == "alg_negatief" ){
+    result = NEG_ADJ;
+  }
+  else if ( s == "ep_positief" ){
+    result = EPI_POS_ADJ;
+  }
+  else if ( s == "ep_negatief" ){
+    result = EPI_NEG_ADJ;
+  }
+  else if ( s == "versterker" ){
+    result = MORE_ADJ;
+  }
+  else if ( s == "verzwakker" ){
+    result = LESS_ADJ;
+  }
+  else if ( s == "abstract_ov" ){
+    result = ABSTRACT_ADJ;
+  }
+  if ( result == UNFOUND_ADJ ){
+    cerr << "classify ADJ " << s << "," << sub << endl;
+  }
+  return result;
+}
+
+
+bool fillN( map<string,SemType>& m, istream& is ){
   string line;
   while( getline( is, line ) ){
     vector<string> parts;
@@ -456,7 +564,7 @@ bool fill( CGN::Type tag, map<string,SemType>& m, istream& is ){
     vector<string> vals;
     n = split_at( parts[1], vals, "," ); // split at ,
     if ( n == 1 ){
-      m[parts[0]] = classifySem( tag, vals[0] );
+      m[parts[0]] = classifySem( CGN::N, vals[0] );
     }
     else if ( n == 0 ){
       cerr << "skip line: " << line << " (expected some values, got none."
@@ -465,116 +573,114 @@ bool fill( CGN::Type tag, map<string,SemType>& m, istream& is ){
     }
     else {
       SemType topval = NO_SEMTYPE;
-      if ( tag == CGN::WW ){
-	SemType res = UNFOUND_VERB;
-	map<SemType,int> stats;
-	int max = 0;
-	for ( size_t i=0; i< vals.size(); ++i ){
-	  SemType val = classifySem( tag, vals[i] );
-	  if ( ++stats[val] > max ){
-	    max = stats[val];
-	    res = val;
-	  }
-	}
-	topval = res;
+      map<SemType,int> stats;
+      set<SemType> values;
+      for ( size_t i=0; i< vals.size(); ++i ){
+	SemType val = classifySem( CGN::N, vals[i] );
+	stats[val]++;
+	values.insert(val);
       }
-      else { // N or ADJ
-	map<SemType,int> stats;
-	set<SemType> values;
-	for ( size_t i=0; i< vals.size(); ++i ){
-	  SemType val = classifySem( tag, vals[i] );
-	  stats[val]++;
-	  values.insert(val);
-	}
-	if ( tag == CGN::N ){
-	  SemType res = UNFOUND_NOUN;
-	  if ( values.size() == 1 ){
-	    // just 1 semtype
-	    res = *values.begin();
+      SemType res = UNFOUND_NOUN;
+      if ( values.size() == 1 ){
+	// just 1 semtype
+	res = *values.begin();
+      }
+      else {
+	// possible values are (from high to low)
+	// CONCRETE_SUBSTANCE_NOUN
+	// CONCRETE_ARTEFACT_NOUN
+	// CONCRETE_NONHUMAN_NOUN
+	// ABSTRACT_DYNAMIC_NOUN
+	// ABSTRACT_NONDYNAMIC_NOUN
+	// CONCRETE_HUMAN_NOUN
+	// INSTITUT_NOUN
+	// CONCRETE_OTHER_NOUN
+	// UNFOUND
+	if ( values.find(CONCRETE_ARTEFACT_NOUN) != values.end() ) {
+	  if ( values.find(CONCRETE_SUBSTANCE_NOUN) != values.end() ){
+	    res = CONCRETE_SUBSTANCE_NOUN;
 	  }
 	  else {
-	    // possible values are (from high to low)
-	    // CONCRETE_SUBSTANCE_NOUN
-	    // CONCRETE_ARTEFACT_NOUN
-	    // CONCRETE_NONHUMAN_NOUN
-	    // ABSTRACT_DYNAMIC_NOUN
-	    // ABSTRACT_NONDYNAMIC_NOUN
-	    // CONCRETE_HUMAN_NOUN
-	    // INSTITUT_NOUN
-	    // CONCRETE_OTHER_NOUN
-	    // UNFOUND
-	    if ( values.find(CONCRETE_ARTEFACT_NOUN) != values.end() ) {
-	      if ( values.find(CONCRETE_SUBSTANCE_NOUN) != values.end() ){
-		res = CONCRETE_SUBSTANCE_NOUN;
-	      }
-	      else {
-		res = CONCRETE_ARTEFACT_NOUN;
-	      }
-	    }
-	    else if ( values.find(CONCRETE_NONHUMAN_NOUN) != values.end() ){
-	      res = CONCRETE_NONHUMAN_NOUN;
-	    }
-	    else if ( values.find(INSTITUT_NOUN) != values.end() ){
-	      res = INSTITUT_NOUN;
-	    }
-	    else if ( values.find(CONCRETE_OTHER_NOUN) != values.end() ){
-	      if ( values.find(ABSTRACT_DYNAMIC_NOUN) != values.end() ){
-		res = CONCRETE_OTHER_NOUN;
-	      }
-	      else if ( values.find(ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
-		res = CONCRETE_OTHER_NOUN;
-	      }
-	      else if ( values.find(CONCRETE_SUBSTANCE_NOUN) != values.end() ){
-		res = CONCRETE_SUBSTANCE_NOUN;
-	      }
-	      else if ( values.find(CONCRETE_HUMAN_NOUN) != values.end() ){
-		res = CONCRETE_HUMAN_NOUN;
-	      }
-	    }
-	    else if ( values.find(ABSTRACT_DYNAMIC_NOUN) != values.end() ){
-	      if ( values.find(ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
-		res = ABSTRACT_DYNAMIC_NOUN;
-	      }
-	    }
-	    if ( res == UNFOUND_NOUN ){
-	      cerr << "unable to determine semtype from: " << values << endl;
-	    }
+	    res = CONCRETE_ARTEFACT_NOUN;
 	  }
-	  topval = res;
 	}
-	else {
-	  SemType res = UNFOUND_ADJ;
-	  // CGN::ADJ
-	  // possible values are (from high to low)
-	  // CONCRETE_ADJ (strict)
-	  // BROAD_ADJ EMO_ADJ (broad)
-	  // ABSTRACT_ADJ (none)
-	  // UNFOUND
-	  if ( stats[CONCRETE_ADJ] > 0 ){
-	    res = CONCRETE_ADJ;
+	else if ( values.find(CONCRETE_NONHUMAN_NOUN) != values.end() ){
+	  res = CONCRETE_NONHUMAN_NOUN;
+	}
+	else if ( values.find(INSTITUT_NOUN) != values.end() ){
+	  res = INSTITUT_NOUN;
+	}
+	else if ( values.find(CONCRETE_OTHER_NOUN) != values.end() ){
+	  if ( values.find(ABSTRACT_DYNAMIC_NOUN) != values.end() ){
+	    res = CONCRETE_OTHER_NOUN;
 	  }
-	  else {
-	    int broad_cnt = stats[BROAD_ADJ];
-	    int emo_cnt = stats[EMO_ADJ];
-	    if ( broad_cnt == emo_cnt ){
-	      if ( emo_cnt != 0 )
-		res = EMO_ADJ;
-	    }
-	    else if ( broad_cnt > emo_cnt )
-	      res = BROAD_ADJ;
-	    else
-	      res = EMO_ADJ;
-	    if ( res == UNFOUND_ADJ ){
-	      if ( stats[ABSTRACT_ADJ] > 0 ){
-		res = ABSTRACT_ADJ;
-	      }
-	    }
+	  else if ( values.find(ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
+	    res = CONCRETE_OTHER_NOUN;
 	  }
-	  topval = res;
+	  else if ( values.find(CONCRETE_SUBSTANCE_NOUN) != values.end() ){
+	    res = CONCRETE_SUBSTANCE_NOUN;
+	  }
+	  else if ( values.find(CONCRETE_HUMAN_NOUN) != values.end() ){
+	    res = CONCRETE_HUMAN_NOUN;
+	  }
+	}
+	else if ( values.find(ABSTRACT_DYNAMIC_NOUN) != values.end() ){
+	  if ( values.find(ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
+	    res = ABSTRACT_DYNAMIC_NOUN;
+	  }
+	}
+	if ( res == UNFOUND_NOUN ){
+	  cerr << "unable to determine semtype from: " << values << endl;
 	}
       }
+      topval = res;
       if ( m.find(parts[0]) != m.end() ){
-	cerr << "multiple entry '" << parts[0] << "' in " << tag << " lex" << endl;
+	cerr << "multiple entry '" << parts[0] << "' in N lex" << endl;
+      }
+      if ( topval != UNFOUND_NOUN ){
+	// no use to store undefined values
+	m[parts[0]] = topval;
+      }
+    }
+  }
+  return true;
+}
+
+bool fillWW( map<string,SemType>& m, istream& is ){
+  string line;
+  while( getline( is, line ) ){
+    vector<string> parts;
+    int n = split_at( line, parts, "\t" ); // split at tab
+    if ( n != 2 ){
+      cerr << "skip line: " << line << " (expected 2 values, got "
+	   << n << ")" << endl;
+      continue;
+    }
+    vector<string> vals;
+    n = split_at( parts[1], vals, "," ); // split at ,
+    if ( n == 1 ){
+      m[parts[0]] = classifySem( CGN::WW, vals[0] );
+    }
+    else if ( n == 0 ){
+      cerr << "skip line: " << line << " (expected some values, got none."
+	   << endl;
+      continue;
+    }
+    else {
+      SemType topval = NO_SEMTYPE;
+      SemType res = UNFOUND_VERB;
+      map<SemType,int> stats;
+      int max = 0;
+      for ( size_t i=0; i< vals.size(); ++i ){
+	SemType val = classifySem( CGN::WW, vals[i] );
+	if ( ++stats[val] > max ){
+	  max = stats[val];
+	  res = val;
+	}
+      }
+      topval = res;
+      if ( m.find(parts[0]) != m.end() ){
+	cerr << "multiple entry '" << parts[0] << "' in WW lex" << endl;
       }
       if ( topval != UNFOUND_NOUN
 	   && topval != UNFOUND_ADJ
@@ -587,10 +693,43 @@ bool fill( CGN::Type tag, map<string,SemType>& m, istream& is ){
   return true;
 }
 
+bool fillADJ( map<string,SemType>& m, istream& is ){
+  string line;
+  while( getline( is, line ) ){
+    vector<string> parts;
+    int n = split_at( line, parts, "\t" ); // split at tab
+    if ( n <2 || n > 3 ){
+      cerr << "skip line: " << line << " (expected 2 or 3 values, got "
+	   << n << ")" << endl;
+      continue;
+    }
+    SemType res = UNFOUND_ADJ;
+    if ( n == 2 ){
+      res = classifyADJ( parts[1] );
+    }
+    else {
+      res = classifyADJ( parts[1], parts[2] );
+    }
+    if ( m.find(parts[0]) != m.end() ){
+      cerr << "multiple entry '" << parts[0] << "' in ADJ lex" << endl;
+    }
+    if ( res != UNFOUND_ADJ ){
+      // no use to store undefined values
+      m[parts[0]] = res;
+    }
+  }
+  return true;
+}
+
 bool fill( CGN::Type tag, map<string,SemType>& m, const string& filename ){
   ifstream is( filename.c_str() );
   if ( is ){
-    return fill( tag, m, is );
+    if ( tag == CGN::N )
+      return fillN( m, is );
+    else if ( tag == CGN::WW )
+      return fillWW( m, is );
+    if ( tag == CGN::ADJ )
+      return fillADJ( m, is );
   }
   else {
     cerr << "couldn't open file: " << filename << endl;
@@ -2196,10 +2335,28 @@ void wordStats::coherenceToCSV( ostream& os ) const {
 }
 
 void wordStats::concreetHeader( ostream& os ) const {
+  os << "Waarn_mens_bvnw,";
+  os << "Emosoc_bvnw,";
+  os << "Vorm_omvang_bvnw,";
+  os << "Kleur_bvnw,";
+  os << "Stof_bvnw,";
+  os << "Geluid_bvnw,";
+  os << "Waarn_nmens_ov_bvnw,";
+  os << "Technisch_bvnw,";
+  os << "Time_bvnw,";
+  os << "Place_bvnw,";
+  os << "Spec_positief_bvnw,";
+  os << "Spec_negatief_bvnw,";
+  os << "Alg_positief_bvnw,";
+  os << "Alg_negatief_bvnw,";
+  os << "Ep_positief_bvnw,";
+  os << "Ep_negatief_bvnw,";
+  os << "Versterker_bvnw,";
+  os << "Verzwakker_bvnw,";
+  os << "Abstract_ov_bvnw,";
+  os << "Undefined_bvnw,";
   os << "Conc_nw_strikt,";
   os << "Conc_nw_ruim,";
-  os << "Conc_bvnw_strikt,";
-  os << "Conc_bvnw_ruim,";
   os << "PlantDier_nw,";
   os << "Gebr_nw,";
   os << "Subst_nw,";
@@ -2212,22 +2369,36 @@ void wordStats::concreetHeader( ostream& os ) const {
 }
 
 void wordStats::concreetToCSV( ostream& os ) const {
+  os << (sem_type==HUMAN_ADJ?1:0) << ",";
+  os << (sem_type==EMO_ADJ?1:0) << ",";
+  os << (sem_type==NONHUMAN_SHAPE_ADJ?1:0) << ",";
+  os << (sem_type==NONHUMAN_COLOR_ADJ?1:0) << ",";
+  os << (sem_type==NONHUMAN_MATTER_ADJ?1:0) << ",";
+  os << (sem_type==NONHUMAN_SOUND_ADJ?1:0) << ",";
+  os << (sem_type==NONHUMAN_OTHER_ADJ?1:0) << ",";
+  os << (sem_type==TECH_ADJ?1:0) << ",";
+  os << (sem_type==TIME_ADJ?1:0) << ",";
+  os << (sem_type==PLACE_ADJ?1:0) << ",";
+  os << (sem_type==SPEC_POS_ADJ?1:0) << ",";
+  os << (sem_type==SPEC_NEG_ADJ?1:0) << ",";
+  os << (sem_type==POS_ADJ?1:0) << ",";
+  os << (sem_type==NEG_ADJ?1:0) << ",";
+  os << (sem_type==EPI_POS_ADJ?1:0) << ",";
+  os << (sem_type==EPI_NEG_ADJ?1:0) << ",";
+  os << (sem_type==MORE_ADJ?1:0) << ",";
+  os << (sem_type==LESS_ADJ?1:0) << ",";
+  os << (sem_type==ABSTRACT_ADJ?1:0) << ",";
+  os << (sem_type==UNDEFINED_ADJ?1:0) << ",";
   if ( sem_type == CONCRETE_HUMAN_NOUN || sem_type == CONCRETE_OTHER_NOUN ){
-    os << "1,1,0,0,";
+    os << "1,1,";
   }
   else if ( sem_type == BROAD_CONCRETE_TIME_NOUN
 	    || sem_type == BROAD_CONCRETE_PLACE_NOUN
 	    || sem_type == BROAD_CONCRETE_MEASURE_NOUN ){
-    os << "0,1,0,0,";
-  }
-  else if ( sem_type  == CONCRETE_ADJ ){
-    os << "0,0,1,1,";
-  }
-  else if ( sem_type == BROAD_ADJ || sem_type == EMO_ADJ ){
-    os << "0,0,0,1,";
+    os << "0,1,";
   }
   else {
-    os << "0,0,0,0,";
+    os << "0,0,";
   }
   os << (sem_type==CONCRETE_NONHUMAN_NOUN?1:0) << ",";
   os << (sem_type==CONCRETE_ARTEFACT_NOUN?1:0) << ",";
@@ -2448,13 +2619,31 @@ struct structStats: public basicStats {
     strictAbstractNounCnt(0),
     broadConcreteAdjCnt(0),
     strictConcreteAdjCnt(0),
-    broadAbstractAdjCnt(0),
-    strictAbstractAdjCnt(0),
+    subjectiveAdjCnt(0),
     stateCnt(0),
     actionCnt(0),
     processCnt(0),
     weirdCnt(0),
-    emoCnt(0),
+    humanAdjCnt(0),
+    emoAdjCnt(0),
+    nonhumanAdjCnt(0),
+    shapeAdjCnt(0),
+    colorAdjCnt(0),
+    matterAdjCnt(0),
+    soundAdjCnt(0),
+    nonhumanOtherAdjCnt(0),
+    techAdjCnt(0),
+    timeAdjCnt(0),
+    placeAdjCnt(0),
+    specPosAdjCnt(0),
+    specNegAdjCnt(0),
+    posAdjCnt(0),
+    negAdjCnt(0),
+    epiPosAdjCnt(0),
+    epiNegAdjCnt(0),
+    moreAdjCnt(0),
+    lessAdjCnt(0),
+    abstractAdjCnt(0),
     undefinedNounCnt(0),
     uncoveredNounCnt(0),
     undefinedAdjCnt(0),
@@ -2619,13 +2808,31 @@ struct structStats: public basicStats {
   int strictAbstractNounCnt;
   int broadConcreteAdjCnt;
   int strictConcreteAdjCnt;
-  int broadAbstractAdjCnt;
-  int strictAbstractAdjCnt;
+  int subjectiveAdjCnt;
   int stateCnt;
   int actionCnt;
   int processCnt;
   int weirdCnt;
-  int emoCnt;
+  int humanAdjCnt;
+  int emoAdjCnt;
+  int nonhumanAdjCnt;
+  int shapeAdjCnt;
+  int colorAdjCnt;
+  int matterAdjCnt;
+  int soundAdjCnt;
+  int nonhumanOtherAdjCnt;
+  int techAdjCnt;
+  int timeAdjCnt;
+  int placeAdjCnt;
+  int specPosAdjCnt;
+  int specNegAdjCnt;
+  int posAdjCnt;
+  int negAdjCnt;
+  int epiPosAdjCnt;
+  int epiNegAdjCnt;
+  int moreAdjCnt;
+  int lessAdjCnt;
+  int abstractAdjCnt;
   int undefinedNounCnt;
   int uncoveredNounCnt;
   int undefinedAdjCnt;
@@ -2817,15 +3024,33 @@ void structStats::merge( structStats *ss ){
   broadAbstractNounCnt += ss->broadAbstractNounCnt;
   strictConcreteNounCnt += ss->strictConcreteNounCnt;
   broadConcreteNounCnt += ss->broadConcreteNounCnt;
-  strictAbstractAdjCnt += ss->strictAbstractAdjCnt;
-  broadAbstractAdjCnt += ss->broadAbstractAdjCnt;
   strictConcreteAdjCnt += ss->strictConcreteAdjCnt;
   broadConcreteAdjCnt += ss->broadConcreteAdjCnt;
+  subjectiveAdjCnt += ss->subjectiveAdjCnt;
   stateCnt += ss->stateCnt;
   actionCnt += ss->actionCnt;
   processCnt += ss->processCnt;
   weirdCnt += ss->weirdCnt;
-  emoCnt += ss->emoCnt;
+  humanAdjCnt += ss->humanAdjCnt;
+  emoAdjCnt += ss->emoAdjCnt;
+  nonhumanAdjCnt += ss->nonhumanAdjCnt;
+  shapeAdjCnt += ss->shapeAdjCnt;
+  colorAdjCnt += ss->colorAdjCnt;
+  matterAdjCnt += ss->matterAdjCnt;
+  soundAdjCnt += ss->soundAdjCnt;
+  nonhumanOtherAdjCnt += ss->nonhumanOtherAdjCnt;
+  techAdjCnt += ss->techAdjCnt;
+  timeAdjCnt += ss->timeAdjCnt;
+  placeAdjCnt += ss->placeAdjCnt;
+  specPosAdjCnt += ss->specPosAdjCnt;
+  specNegAdjCnt += ss->specNegAdjCnt;
+  posAdjCnt += ss->posAdjCnt;
+  negAdjCnt += ss->negAdjCnt;
+  epiPosAdjCnt += ss->epiPosAdjCnt;
+  epiNegAdjCnt += ss->epiNegAdjCnt;
+  moreAdjCnt += ss->moreAdjCnt;
+  lessAdjCnt += ss->lessAdjCnt;
+  abstractAdjCnt += ss->abstractAdjCnt;
   undefinedNounCnt += ss->undefinedNounCnt;
   uncoveredNounCnt += ss->uncoveredNounCnt;
   undefinedAdjCnt += ss->undefinedAdjCnt;
@@ -3073,25 +3298,37 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "wopr_entropy", toString(entropy) );
   if ( perplexity != NA )
     addOneMetric( doc, el, "wopr_perplexity", toString(perplexity) );
+
+  addOneMetric( doc, el, "concrete_broad_adj", toString(broadConcreteAdjCnt) );
+  addOneMetric( doc, el, "concrete_strict_adj", toString(strictConcreteAdjCnt) );
+  addOneMetric( doc, el, "human_adj_count", toString(humanAdjCnt) );
+  addOneMetric( doc, el, "emo_adj_count", toString(emoAdjCnt) );
+  addOneMetric( doc, el, "nonhuman_adj_count", toString(nonhumanAdjCnt) );
+  addOneMetric( doc, el, "shape_adj_count", toString(shapeAdjCnt) );
+  addOneMetric( doc, el, "color_adj_count", toString(colorAdjCnt) );
+  addOneMetric( doc, el, "matter_adj_count", toString(matterAdjCnt) );
+  addOneMetric( doc, el, "sound_adj_count", toString(soundAdjCnt) );
+  addOneMetric( doc, el, "other_nonhuman_adj_count", toString(nonhumanOtherAdjCnt) );
+  addOneMetric( doc, el, "techn_adj_count", toString(techAdjCnt) );
+  addOneMetric( doc, el, "time_adj_count", toString(timeAdjCnt) );
+  addOneMetric( doc, el, "place_adj_count", toString(placeAdjCnt) );
+  addOneMetric( doc, el, "pos_spec_adj_count", toString(specPosAdjCnt) );
+  addOneMetric( doc, el, "neg_spec_adj_count", toString(specNegAdjCnt) );
+  addOneMetric( doc, el, "pos_adj_count", toString(posAdjCnt) );
+  addOneMetric( doc, el, "neg_adj_count", toString(negAdjCnt) );
+  addOneMetric( doc, el, "pos_epi_adj_count", toString(epiPosAdjCnt) );
+  addOneMetric( doc, el, "neg_epi_adj_count", toString(epiNegAdjCnt) );
+  addOneMetric( doc, el, "versterker_adj_count", toString(moreAdjCnt) );
+  addOneMetric( doc, el, "verzwakker_adj_count", toString(lessAdjCnt) );
+  addOneMetric( doc, el, "abstract_adj", toString(abstractAdjCnt) );
+  addOneMetric( doc, el, "undefined_adj_count", toString(undefinedAdjCnt) );
+  addOneMetric( doc, el, "covered_adj_count", toString(adjCnt-uncoveredAdjCnt) );
+  addOneMetric( doc, el, "uncovered_adj_count", toString(uncoveredAdjCnt) );
+
   addOneMetric( doc, el, "concrete_broad_noun", toString(broadConcreteNounCnt) );
   addOneMetric( doc, el, "concrete_strict_noun", toString(strictConcreteNounCnt) );
   addOneMetric( doc, el, "abstract_broad_noun", toString(broadAbstractNounCnt) );
   addOneMetric( doc, el, "abstract_strict_noun", toString(strictAbstractNounCnt) );
-  addOneMetric( doc, el, "concrete_broad_adj", toString(broadConcreteAdjCnt) );
-  addOneMetric( doc, el, "concrete_strict_adj", toString(strictConcreteAdjCnt) );
-  addOneMetric( doc, el, "abstract_broad_adj", toString(broadAbstractAdjCnt) );
-  addOneMetric( doc, el, "abstract_strict_adj", toString(strictAbstractAdjCnt) );
-  addOneMetric( doc, el, "state_count", toString(stateCnt) );
-  addOneMetric( doc, el, "action_count", toString(actionCnt) );
-  addOneMetric( doc, el, "process_count", toString(processCnt) );
-  addOneMetric( doc, el, "weird_count", toString(weirdCnt) );
-  addOneMetric( doc, el, "emo_count", toString(emoCnt) );
-  addOneMetric( doc, el, "covered_nouns_count", toString(nounCnt+nameCnt-uncoveredNounCnt) );
-  addOneMetric( doc, el, "uncovered_nouns_count", toString(uncoveredNounCnt) );
-  addOneMetric( doc, el, "covered_adj_count", toString(adjCnt-uncoveredAdjCnt) );
-  addOneMetric( doc, el, "uncovered_adj_count", toString(uncoveredAdjCnt) );
-  addOneMetric( doc, el, "covered_verb_count", toString(verbCnt-uncoveredVerbCnt) );
-  addOneMetric( doc, el, "uncovered_verb_count", toString(uncoveredVerbCnt) );
   addOneMetric( doc, el, "human_nouns_count", toString(humanCnt) );
   addOneMetric( doc, el, "nonhuman_nouns_count", toString(nonHumanCnt) );
   addOneMetric( doc, el, "artefact_nouns_count", toString(artefactCnt) );
@@ -3103,8 +3340,16 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "nondynamic_nouns_count", toString(nonDynamicCnt) );
   addOneMetric( doc, el, "institut_nouns_count", toString(institutCnt) );
   addOneMetric( doc, el, "undefined_nouns_count", toString(undefinedNounCnt) );
-  addOneMetric( doc, el, "undefined_adj_count", toString(undefinedAdjCnt) );
+  addOneMetric( doc, el, "covered_nouns_count", toString(nounCnt+nameCnt-uncoveredNounCnt) );
+  addOneMetric( doc, el, "uncovered_nouns_count", toString(uncoveredNounCnt) );
+
+  addOneMetric( doc, el, "state_count", toString(stateCnt) );
+  addOneMetric( doc, el, "action_count", toString(actionCnt) );
+  addOneMetric( doc, el, "process_count", toString(processCnt) );
+  addOneMetric( doc, el, "weird_count", toString(weirdCnt) );
   addOneMetric( doc, el, "undefined_verb_count", toString(undefinedVerbCnt) );
+  addOneMetric( doc, el, "covered_verb_count", toString(verbCnt-uncoveredVerbCnt) );
+  addOneMetric( doc, el, "uncovered_verb_count", toString(uncoveredVerbCnt) );
   addOneMetric( doc, el, "indef_np_count", toString(indefNpCnt) );
   addOneMetric( doc, el, "np_count", toString(npCnt) );
   addOneMetric( doc, el, "np_size", toString(npSize) );
@@ -3444,10 +3689,10 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << ratio( (nounCnt+nameCnt-uncoveredNounCnt), nounCnt + nameCnt ) << ",";
   os << density( (nounCnt+nameCnt-uncoveredNounCnt), wordCnt ) << ",";
   os << ratio( strictConcreteAdjCnt, adjCnt ) << ",";
-  os << ratio( strictConcreteAdjCnt, broadAbstractAdjCnt ) << ",";
+  os << ratio( strictConcreteAdjCnt, abstractAdjCnt ) << ",";
   os << density( strictConcreteAdjCnt, wordCnt ) << ",";
   os << ratio( broadConcreteAdjCnt, adjCnt ) << ",";
-  os << ratio( broadConcreteAdjCnt, strictAbstractAdjCnt ) << ",";
+  os << ratio( broadConcreteAdjCnt, abstractAdjCnt ) << ",";
   os << density( broadConcreteAdjCnt, wordCnt ) << ",";
 }
 
@@ -3494,8 +3739,8 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << density( processCnt, wordCnt ) << ",";
   os << ratio( humanCnt, nounCnt ) << ",";
   os << density( humanCnt, wordCnt ) << ",";
-  os << ratio( emoCnt, adjCnt ) << ",";
-  os << density( emoCnt, wordCnt ) << ",";
+  os << ratio( emoAdjCnt, adjCnt ) << ",";
+  os << density( emoAdjCnt, wordCnt ) << ",";
   os << ratio( impCnt, clauseCnt ) << ",";
   os << density( impCnt, wordCnt ) << ",";
   os << ratio( questCnt, sentCnt ) << ",";
@@ -4861,17 +5106,91 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
       case INSTITUT_NOUN:
 	institutCnt++;
 	break;
-      case CONCRETE_ADJ:
-	strictConcreteAdjCnt++;
+      case HUMAN_ADJ:
+	humanAdjCnt++;
 	broadConcreteAdjCnt++;
+	strictConcreteAdjCnt++;
+	break;
+      case EMO_ADJ:
+	emoAdjCnt++;
+	broadConcreteAdjCnt++;
+	strictConcreteAdjCnt++;
+	break;
+      case NONHUMAN_SHAPE_ADJ:
+	nonhumanAdjCnt++;
+	shapeAdjCnt++;
+	broadConcreteAdjCnt++;
+	strictConcreteAdjCnt++;
+	break;
+      case NONHUMAN_COLOR_ADJ:
+	nonhumanAdjCnt++;
+	colorAdjCnt++;
+	broadConcreteAdjCnt++;
+	strictConcreteAdjCnt++;
+	break;
+      case NONHUMAN_MATTER_ADJ:
+	nonhumanAdjCnt++;
+	matterAdjCnt++;
+	broadConcreteAdjCnt++;
+	strictConcreteAdjCnt++;
+	break;
+      case NONHUMAN_SOUND_ADJ:
+	nonhumanAdjCnt++;
+	soundAdjCnt++;
+	broadConcreteAdjCnt++;
+	strictConcreteAdjCnt++;
+	break;
+      case NONHUMAN_OTHER_ADJ:
+	nonhumanAdjCnt++;
+	nonhumanOtherAdjCnt++;
+	broadConcreteAdjCnt++;
+	strictConcreteAdjCnt++;
+	break;
+      case TECH_ADJ:
+	techAdjCnt++;
+	break;
+      case TIME_ADJ:
+	timeAdjCnt++;
+	broadConcreteAdjCnt++;
+	break;
+      case PLACE_ADJ:
+	placeAdjCnt++;
+	broadConcreteAdjCnt++;
+	break;
+      case SPEC_POS_ADJ:
+	specPosAdjCnt++;
+	subjectiveAdjCnt++;
+	break;
+      case SPEC_NEG_ADJ:
+	specNegAdjCnt++;
+	subjectiveAdjCnt++;
+	break;
+      case POS_ADJ:
+	posAdjCnt++;
+	subjectiveAdjCnt++;
+	break;
+      case NEG_ADJ:
+	negAdjCnt++;
+	subjectiveAdjCnt++;
+	break;
+      case EPI_POS_ADJ:
+	epiPosAdjCnt++;
+	subjectiveAdjCnt++;
+	break;
+      case EPI_NEG_ADJ:
+	epiNegAdjCnt++;
+	subjectiveAdjCnt++;
+	break;
+      case MORE_ADJ:
+	moreAdjCnt++;
+	subjectiveAdjCnt++;
+	break;
+      case LESS_ADJ:
+	lessAdjCnt++;
+	subjectiveAdjCnt++;
 	break;
       case ABSTRACT_ADJ:
-	strictAbstractAdjCnt++;
-	broadAbstractAdjCnt++;
-	break;
-      case BROAD_ADJ:
-	broadConcreteAdjCnt++;
-	broadAbstractAdjCnt++;
+	abstractAdjCnt++;
 	break;
       case STATE:
 	stateCnt++;
@@ -4884,11 +5203,6 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
 	break;
       case WEIRD:
 	weirdCnt++;
-	break;
-      case EMO_ADJ:
-	emoCnt++;
-	broadConcreteAdjCnt++;
-	broadAbstractAdjCnt++;
 	break;
       default:
 	;
