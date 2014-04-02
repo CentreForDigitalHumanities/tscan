@@ -3,13 +3,13 @@
 <FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v0.11">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2014-03-04T15:57:01" set="tscan-tokconfig-nl"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2014-03-04T15:57:01" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2014-04-02T15:29:16" set="tscan-tokconfig-nl"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2014-04-02T15:29:16" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
       <pos-annotation annotator="tscan" set="tscan-set"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2014-03-04T15:57:01" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2014-03-04T15:57:01" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2014-03-04T15:57:01" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2014-03-04T15:57:01" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2014-04-02T15:29:16" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2014-04-02T15:29:16" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2014-04-02T15:29:16" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2014-04-02T15:29:16" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
     </annotations>
   </metadata>
@@ -133,7 +133,7 @@
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-2.41945"/>
-          <metric class="semtype" value="concrete_human"/>
+          <metric class="semtype" value="concrete-human-noun"/>
         </w>
         <w xml:id="tscan.p.1.s.1.w.5" class="WORD">
           <t>met</t>
@@ -207,7 +207,7 @@
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.08106"/>
-          <metric class="semtype" value="concrete-noun"/>
+          <metric class="semtype" value="concrete-artefact-noun"/>
         </w>
         <w xml:id="tscan.p.1.s.1.w.8" class="WORD" space="no">
           <t>gezien</t>
@@ -242,6 +242,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.74568"/>
           <metric class="property" value="voltooid_deelw"/>
+          <metric class="semtype" value="verb_not_found"/>
         </w>
         <w xml:id="tscan.p.1.s.1.w.9" class="PUNCTUATION">
           <t>.</t>
@@ -360,20 +361,55 @@
         <metric class="wopr_logprob" value="0.0149492"/>
         <metric class="wopr_entropy" value="1.66429"/>
         <metric class="wopr_perplexity" value="3.16958"/>
+        <metric class="concrete_broad_adj" value="0"/>
+        <metric class="concrete_strict_adj" value="0"/>
+        <metric class="human_adj_count" value="0"/>
+        <metric class="emo_adj_count" value="0"/>
+        <metric class="nonhuman_adj_count" value="0"/>
+        <metric class="shape_adj_count" value="0"/>
+        <metric class="color_adj_count" value="0"/>
+        <metric class="matter_adj_count" value="0"/>
+        <metric class="sound_adj_count" value="0"/>
+        <metric class="other_nonhuman_adj_count" value="0"/>
+        <metric class="techn_adj_count" value="0"/>
+        <metric class="time_adj_count" value="0"/>
+        <metric class="place_adj_count" value="0"/>
+        <metric class="pos_spec_adj_count" value="0"/>
+        <metric class="neg_spec_adj_count" value="0"/>
+        <metric class="pos_adj_count" value="0"/>
+        <metric class="neg_adj_count" value="0"/>
+        <metric class="pos_epi_adj_count" value="0"/>
+        <metric class="neg_epi_adj_count" value="0"/>
+        <metric class="versterker_adj_count" value="0"/>
+        <metric class="verzwakker_adj_count" value="0"/>
+        <metric class="abstract_adj" value="0"/>
+        <metric class="undefined_adj_count" value="0"/>
+        <metric class="covered_adj_count" value="0"/>
+        <metric class="uncovered_adj_count" value="0"/>
         <metric class="concrete_broad_noun" value="2"/>
         <metric class="concrete_strict_noun" value="2"/>
         <metric class="abstract_broad_noun" value="0"/>
         <metric class="abstract_strict_noun" value="0"/>
-        <metric class="concrete_broad_adj" value="0"/>
-        <metric class="concrete_strict_adj" value="0"/>
-        <metric class="abstract_broad_adj" value="0"/>
-        <metric class="abstract_strict_adj" value="0"/>
+        <metric class="human_nouns_count" value="1"/>
+        <metric class="nonhuman_nouns_count" value="0"/>
+        <metric class="artefact_nouns_count" value="1"/>
+        <metric class="substance_nouns_count" value="0"/>
+        <metric class="time_nouns_count" value="0"/>
+        <metric class="place_nouns_count" value="0"/>
+        <metric class="measure_nouns_count" value="0"/>
+        <metric class="dynamic_nouns_count" value="0"/>
+        <metric class="nondynamic_nouns_count" value="0"/>
+        <metric class="institut_nouns_count" value="0"/>
+        <metric class="undefined_nouns_count" value="0"/>
+        <metric class="covered_nouns_count" value="2"/>
+        <metric class="uncovered_nouns_count" value="0"/>
         <metric class="state_count" value="1"/>
         <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
         <metric class="weird_count" value="0"/>
-        <metric class="emo_count" value="0"/>
-        <metric class="human_nouns_count" value="1"/>
+        <metric class="undefined_verb_count" value="0"/>
+        <metric class="covered_verb_count" value="1"/>
+        <metric class="uncovered_verb_count" value="1"/>
         <metric class="indef_np_count" value="0"/>
         <metric class="np_count" value="3"/>
         <metric class="np_size" value="5"/>
@@ -483,20 +519,55 @@
       <metric class="wopr_logprob" value="0.0149492"/>
       <metric class="wopr_entropy" value="1.66429"/>
       <metric class="wopr_perplexity" value="3.16958"/>
+      <metric class="concrete_broad_adj" value="0"/>
+      <metric class="concrete_strict_adj" value="0"/>
+      <metric class="human_adj_count" value="0"/>
+      <metric class="emo_adj_count" value="0"/>
+      <metric class="nonhuman_adj_count" value="0"/>
+      <metric class="shape_adj_count" value="0"/>
+      <metric class="color_adj_count" value="0"/>
+      <metric class="matter_adj_count" value="0"/>
+      <metric class="sound_adj_count" value="0"/>
+      <metric class="other_nonhuman_adj_count" value="0"/>
+      <metric class="techn_adj_count" value="0"/>
+      <metric class="time_adj_count" value="0"/>
+      <metric class="place_adj_count" value="0"/>
+      <metric class="pos_spec_adj_count" value="0"/>
+      <metric class="neg_spec_adj_count" value="0"/>
+      <metric class="pos_adj_count" value="0"/>
+      <metric class="neg_adj_count" value="0"/>
+      <metric class="pos_epi_adj_count" value="0"/>
+      <metric class="neg_epi_adj_count" value="0"/>
+      <metric class="versterker_adj_count" value="0"/>
+      <metric class="verzwakker_adj_count" value="0"/>
+      <metric class="abstract_adj" value="0"/>
+      <metric class="undefined_adj_count" value="0"/>
+      <metric class="covered_adj_count" value="0"/>
+      <metric class="uncovered_adj_count" value="0"/>
       <metric class="concrete_broad_noun" value="2"/>
       <metric class="concrete_strict_noun" value="2"/>
       <metric class="abstract_broad_noun" value="0"/>
       <metric class="abstract_strict_noun" value="0"/>
-      <metric class="concrete_broad_adj" value="0"/>
-      <metric class="concrete_strict_adj" value="0"/>
-      <metric class="abstract_broad_adj" value="0"/>
-      <metric class="abstract_strict_adj" value="0"/>
+      <metric class="human_nouns_count" value="1"/>
+      <metric class="nonhuman_nouns_count" value="0"/>
+      <metric class="artefact_nouns_count" value="1"/>
+      <metric class="substance_nouns_count" value="0"/>
+      <metric class="time_nouns_count" value="0"/>
+      <metric class="place_nouns_count" value="0"/>
+      <metric class="measure_nouns_count" value="0"/>
+      <metric class="dynamic_nouns_count" value="0"/>
+      <metric class="nondynamic_nouns_count" value="0"/>
+      <metric class="institut_nouns_count" value="0"/>
+      <metric class="undefined_nouns_count" value="0"/>
+      <metric class="covered_nouns_count" value="2"/>
+      <metric class="uncovered_nouns_count" value="0"/>
       <metric class="state_count" value="1"/>
       <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
       <metric class="weird_count" value="0"/>
-      <metric class="emo_count" value="0"/>
-      <metric class="human_nouns_count" value="1"/>
+      <metric class="undefined_verb_count" value="0"/>
+      <metric class="covered_verb_count" value="1"/>
+      <metric class="uncovered_verb_count" value="1"/>
       <metric class="indef_np_count" value="0"/>
       <metric class="np_count" value="3"/>
       <metric class="np_size" value="5"/>
@@ -607,20 +678,55 @@
     <metric class="wopr_logprob" value="0.0149492"/>
     <metric class="wopr_entropy" value="1.66429"/>
     <metric class="wopr_perplexity" value="3.16958"/>
+    <metric class="concrete_broad_adj" value="0"/>
+    <metric class="concrete_strict_adj" value="0"/>
+    <metric class="human_adj_count" value="0"/>
+    <metric class="emo_adj_count" value="0"/>
+    <metric class="nonhuman_adj_count" value="0"/>
+    <metric class="shape_adj_count" value="0"/>
+    <metric class="color_adj_count" value="0"/>
+    <metric class="matter_adj_count" value="0"/>
+    <metric class="sound_adj_count" value="0"/>
+    <metric class="other_nonhuman_adj_count" value="0"/>
+    <metric class="techn_adj_count" value="0"/>
+    <metric class="time_adj_count" value="0"/>
+    <metric class="place_adj_count" value="0"/>
+    <metric class="pos_spec_adj_count" value="0"/>
+    <metric class="neg_spec_adj_count" value="0"/>
+    <metric class="pos_adj_count" value="0"/>
+    <metric class="neg_adj_count" value="0"/>
+    <metric class="pos_epi_adj_count" value="0"/>
+    <metric class="neg_epi_adj_count" value="0"/>
+    <metric class="versterker_adj_count" value="0"/>
+    <metric class="verzwakker_adj_count" value="0"/>
+    <metric class="abstract_adj" value="0"/>
+    <metric class="undefined_adj_count" value="0"/>
+    <metric class="covered_adj_count" value="0"/>
+    <metric class="uncovered_adj_count" value="0"/>
     <metric class="concrete_broad_noun" value="2"/>
     <metric class="concrete_strict_noun" value="2"/>
     <metric class="abstract_broad_noun" value="0"/>
     <metric class="abstract_strict_noun" value="0"/>
-    <metric class="concrete_broad_adj" value="0"/>
-    <metric class="concrete_strict_adj" value="0"/>
-    <metric class="abstract_broad_adj" value="0"/>
-    <metric class="abstract_strict_adj" value="0"/>
+    <metric class="human_nouns_count" value="1"/>
+    <metric class="nonhuman_nouns_count" value="0"/>
+    <metric class="artefact_nouns_count" value="1"/>
+    <metric class="substance_nouns_count" value="0"/>
+    <metric class="time_nouns_count" value="0"/>
+    <metric class="place_nouns_count" value="0"/>
+    <metric class="measure_nouns_count" value="0"/>
+    <metric class="dynamic_nouns_count" value="0"/>
+    <metric class="nondynamic_nouns_count" value="0"/>
+    <metric class="institut_nouns_count" value="0"/>
+    <metric class="undefined_nouns_count" value="0"/>
+    <metric class="covered_nouns_count" value="2"/>
+    <metric class="uncovered_nouns_count" value="0"/>
     <metric class="state_count" value="1"/>
     <metric class="action_count" value="0"/>
     <metric class="process_count" value="0"/>
     <metric class="weird_count" value="0"/>
-    <metric class="emo_count" value="0"/>
-    <metric class="human_nouns_count" value="1"/>
+    <metric class="undefined_verb_count" value="0"/>
+    <metric class="covered_verb_count" value="1"/>
+    <metric class="uncovered_verb_count" value="1"/>
     <metric class="indef_np_count" value="0"/>
     <metric class="np_count" value="3"/>
     <metric class="np_size" value="5"/>
