@@ -2355,6 +2355,17 @@ void wordStats::coherenceToCSV( ostream& os ) const {
 }
 
 void wordStats::concreetHeader( ostream& os ) const {
+  os << "Conc_nw_strikt,";
+  os << "Conc_nw_ruim,";
+  os << "PlantDier_nw,";
+  os << "Gebr_nw,";
+  os << "Subst_nw,";
+  os << "Plaats_nw,";
+  os << "Tijd_nw,";
+  os << "Maat_nw,";
+  os << "Gebeuren_nw,";
+  os << "Abstract_nw,";
+  os << "Organisatie_nw,";
   os << "Waarn_mens_bvnw,";
   os << "Emosoc_bvnw,";
   os << "Vorm_omvang_bvnw,";
@@ -2375,40 +2386,9 @@ void wordStats::concreetHeader( ostream& os ) const {
   os << "Verzwakker_bvnw,";
   os << "Abstract_ov_bvnw,";
   os << "Undefined_bvnw,";
-  os << "Conc_nw_strikt,";
-  os << "Conc_nw_ruim,";
-  os << "PlantDier_nw,";
-  os << "Gebr_nw,";
-  os << "Subst_nw,";
-  os << "Plaats_nw,";
-  os << "Tijd_nw,";
-  os << "Maat_nw,";
-  os << "Gebeuren_nw,";
-  os << "Abstract_nw,";
-  os << "Organisatie_nw,";
 }
 
 void wordStats::concreetToCSV( ostream& os ) const {
-  os << (sem_type==HUMAN_ADJ?1:0) << ",";
-  os << (sem_type==EMO_ADJ?1:0) << ",";
-  os << (sem_type==NONHUMAN_SHAPE_ADJ?1:0) << ",";
-  os << (sem_type==NONHUMAN_COLOR_ADJ?1:0) << ",";
-  os << (sem_type==NONHUMAN_MATTER_ADJ?1:0) << ",";
-  os << (sem_type==NONHUMAN_SOUND_ADJ?1:0) << ",";
-  os << (sem_type==NONHUMAN_OTHER_ADJ?1:0) << ",";
-  os << (sem_type==TECH_ADJ?1:0) << ",";
-  os << (sem_type==TIME_ADJ?1:0) << ",";
-  os << (sem_type==PLACE_ADJ?1:0) << ",";
-  os << (sem_type==SPEC_POS_ADJ?1:0) << ",";
-  os << (sem_type==SPEC_NEG_ADJ?1:0) << ",";
-  os << (sem_type==POS_ADJ?1:0) << ",";
-  os << (sem_type==NEG_ADJ?1:0) << ",";
-  os << (sem_type==EPI_POS_ADJ?1:0) << ",";
-  os << (sem_type==EPI_NEG_ADJ?1:0) << ",";
-  os << (sem_type==MORE_ADJ?1:0) << ",";
-  os << (sem_type==LESS_ADJ?1:0) << ",";
-  os << (sem_type==ABSTRACT_ADJ?1:0) << ",";
-  os << (sem_type==UNDEFINED_ADJ?1:0) << ",";
   if ( sem_type == CONCRETE_HUMAN_NOUN || sem_type == CONCRETE_OTHER_NOUN ){
     os << "1,1,";
   }
@@ -2429,6 +2409,27 @@ void wordStats::concreetToCSV( ostream& os ) const {
   os << (sem_type==ABSTRACT_DYNAMIC_NOUN?1:0) << ",";
   os << (sem_type==ABSTRACT_NONDYNAMIC_NOUN?1:0) << ",";
   os << (sem_type==INSTITUT_NOUN?1:0) << ",";
+
+  os << (sem_type==HUMAN_ADJ?1:0) << ",";
+  os << (sem_type==EMO_ADJ?1:0) << ",";
+  os << (sem_type==NONHUMAN_SHAPE_ADJ?1:0) << ",";
+  os << (sem_type==NONHUMAN_COLOR_ADJ?1:0) << ",";
+  os << (sem_type==NONHUMAN_MATTER_ADJ?1:0) << ",";
+  os << (sem_type==NONHUMAN_SOUND_ADJ?1:0) << ",";
+  os << (sem_type==NONHUMAN_OTHER_ADJ?1:0) << ",";
+  os << (sem_type==TECH_ADJ?1:0) << ",";
+  os << (sem_type==TIME_ADJ?1:0) << ",";
+  os << (sem_type==PLACE_ADJ?1:0) << ",";
+  os << (sem_type==SPEC_POS_ADJ?1:0) << ",";
+  os << (sem_type==SPEC_NEG_ADJ?1:0) << ",";
+  os << (sem_type==POS_ADJ?1:0) << ",";
+  os << (sem_type==NEG_ADJ?1:0) << ",";
+  os << (sem_type==EPI_POS_ADJ?1:0) << ",";
+  os << (sem_type==EPI_NEG_ADJ?1:0) << ",";
+  os << (sem_type==MORE_ADJ?1:0) << ",";
+  os << (sem_type==LESS_ADJ?1:0) << ",";
+  os << (sem_type==ABSTRACT_ADJ?1:0) << ",";
+  os << (sem_type==UNDEFINED_ADJ?1:0) << ",";
 }
 
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
