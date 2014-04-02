@@ -3834,7 +3834,7 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << density( stateCnt, wordCnt ) << ",";
   os << proportion( processCnt, verbCnt ) << ",";
   os << density( processCnt, wordCnt ) << ",";
-  os << proportion( humanCnt, nounCnt ) << ",";
+  os << proportion( humanCnt, nounCnt+nameCnt ) << ",";
   os << density( humanCnt, wordCnt ) << ",";
   os << proportion( emoAdjCnt, adjCnt ) << ",";
   os << density( emoAdjCnt, wordCnt ) << ",";
