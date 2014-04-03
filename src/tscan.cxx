@@ -397,6 +397,7 @@ struct settingData {
   bool doWopr;
   bool doLsa;
   bool doXfiles;
+  bool doNestedMorph;
   string decompounderPath;
   string style;
   int rarityLevel;
@@ -427,6 +428,8 @@ struct settingData {
   set<string> multi_space_sits;
   map<CGN::Type, set<string> > time_sits;
   set<string> multi_time_sits;
+  map<CGN::Type, set<string> > emotion_sits;
+  set<string> multi_emotion_sits;
   set<string> vzexpr2;
   set<string> vzexpr3;
   set<string> vzexpr4;
@@ -1007,11 +1010,19 @@ void settingData::init( const Configuration& cf ){
       exit( EXIT_FAILURE );
     }
   }
-  val = cf.lookUp( "useWopr" );
   doWopr = false;
+  val = cf.lookUp( "useWopr" );
   if ( !val.empty() ){
     if ( !TiCC::stringTo( val, doWopr ) ){
       cerr << "invalid value for 'useWopr' in config file" << endl;
+      exit( EXIT_FAILURE );
+    }
+  }
+  doNestedMorph = false;
+  val = cf.lookUp( "nestedMorph" );
+  if ( !val.empty() ){
+    if ( !TiCC::stringTo( val, doNestedMorph ) ){
+      cerr << "invalid value for 'nestedMorph' in config file" << endl;
       exit( EXIT_FAILURE );
     }
   }
@@ -1140,6 +1151,12 @@ void settingData::init( const Configuration& cf ){
   val = cf.lookUp( "time_situation" );
   if ( !val.empty() ){
     if ( !fill_connectors( time_sits, multi_time_sits, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+
+  val = cf.lookUp( "emotion_situation" );
+  if ( !val.empty() ){
+    if ( !fill_connectors( emotion_sits, multi_emotion_sits, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
 
@@ -1321,7 +1338,7 @@ ostream& operator<<( ostream& os, const ConnType& s ){
   return os;
 }
 
-enum SituationType { NO_SIT, TIME_SIT, CAUSAL_SIT, SPACE_SIT };
+enum SituationType { NO_SIT, TIME_SIT, CAUSAL_SIT, SPACE_SIT, EMO_SIT };
 
 string toString( const SituationType& c ){
   switch ( c ){
@@ -1336,6 +1353,9 @@ string toString( const SituationType& c ){
     break;
   case CAUSAL_SIT:
     return "causaliteit";
+    break;
+  case EMO_SIT:
+    return "emotie";
     break;
   default:
     throw "no translation for SituationType";
@@ -1599,6 +1619,14 @@ SituationType wordStats::checkSituation() const {
   else if ( settings.space_sits[CGN::UNASS].find( lemma )
 	    != settings.space_sits[CGN::UNASS].end() ){
     return SPACE_SIT;
+  }
+  else if ( settings.emotion_sits[tag].find( lemma )
+	    != settings.emotion_sits[tag].end() ){
+    return EMO_SIT;
+  }
+  else if ( settings.emotion_sits[CGN::UNASS].find( lemma )
+	    != settings.emotion_sits[CGN::UNASS].end() ){
+    return EMO_SIT;
   }
   return NO_SIT;
 }
@@ -2063,19 +2091,37 @@ wordStats::wordStats( Word *w,
   isContent = checkContent();
   if ( prop != ISLET ){
     size_t max = 0;
-    vector<Morpheme*> morphemeV;
-    vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
-    for ( size_t q=0; q < ml.size(); ++q ){
-      vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set );
-      if ( m.size() > max ){
-	// a hack: we assume the longest morpheme list to
-	// be the best choice.
-	morphemeV = m;
-	max = m.size();
+    if ( settings.doNestedMorph ){
+      vector<Morpheme*> morphemeV;
+      vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
+      for ( size_t q=0; q < ml.size(); ++q ){
+	vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set, false );
+	if ( m.size() > max ){
+	  // a hack: we assume the longest morpheme list to
+	  // be the best choice.
+	  morphemeV = m;
+	  max = m.size();
+	}
+      }
+      for ( size_t q=0; q < morphemeV.size(); ++q ){
+	morphemes.push_back( morphemeV[q]->description() );
       }
     }
-    for ( size_t q=0; q < morphemeV.size(); ++q ){
-      morphemes.push_back( morphemeV[q]->str() );
+    else {
+      vector<Morpheme*> morphemeV;
+      vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
+      for ( size_t q=0; q < ml.size(); ++q ){
+	vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set );
+	if ( m.size() > max ){
+	  // a hack: we assume the longest morpheme list to
+	  // be the best choice.
+	  morphemeV = m;
+	  max = m.size();
+	}
+      }
+      for ( size_t q=0; q < morphemeV.size(); ++q ){
+	morphemes.push_back( morphemeV[q]->str() );
+      }
     }
     isPropNeg = checkPropNeg();
     isMorphNeg = checkMorphNeg();
@@ -2596,6 +2642,7 @@ struct structStats: public basicStats {
     timeSitCnt(0),
     spaceSitCnt(0),
     causeSitCnt(0),
+    emoSitCnt(0),
     propNegCnt(0),
     morphNegCnt(0),
     multiNegCnt(0),
@@ -2704,6 +2751,7 @@ struct structStats: public basicStats {
     tijd_sit_mtld(0),
     ruimte_sit_mtld(0),
     cause_sit_mtld(0),
+    emotion_sit_mtld(0),
     nerCnt(0)
  {};
   ~structStats();
@@ -2785,6 +2833,7 @@ struct structStats: public basicStats {
   int timeSitCnt;
   int spaceSitCnt;
   int causeSitCnt;
+  int emoSitCnt;
   int propNegCnt;
   int morphNegCnt;
   int multiNegCnt;
@@ -2887,6 +2936,7 @@ struct structStats: public basicStats {
   map<string,int> unique_tijd_sits;
   map<string,int> unique_ruimte_sits;
   map<string,int> unique_cause_sits;
+  map<string,int> unique_emotion_sits;
   map<string,int> unique_temp_conn;
   map<string,int> unique_reeks_conn;
   map<string,int> unique_contr_conn;
@@ -2906,6 +2956,7 @@ struct structStats: public basicStats {
   double tijd_sit_mtld;
   double ruimte_sit_mtld;
   double cause_sit_mtld;
+  double emotion_sit_mtld;
   map<NerProp, int> ners;
   int nerCnt;
   map<AfkType, int> afks;
@@ -2992,6 +3043,7 @@ void structStats::merge( structStats *ss ){
   timeSitCnt += ss->timeSitCnt;
   spaceSitCnt += ss->spaceSitCnt;
   causeSitCnt += ss->causeSitCnt;
+  emoSitCnt += ss->emoSitCnt;
   prepExprCnt += ss->prepExprCnt;
   propNegCnt += ss->propNegCnt;
   morphNegCnt += ss->morphNegCnt;
@@ -3113,6 +3165,7 @@ void structStats::merge( structStats *ss ){
   aggregate( unique_tijd_sits, ss->unique_tijd_sits );
   aggregate( unique_ruimte_sits, ss->unique_ruimte_sits );
   aggregate( unique_cause_sits, ss->unique_cause_sits );
+  aggregate( unique_emotion_sits, ss->unique_emotion_sits );
   aggregate( unique_temp_conn, ss->unique_temp_conn );
   aggregate( unique_reeks_conn, ss->unique_reeks_conn );
   aggregate( unique_contr_conn, ss->unique_contr_conn );
@@ -3261,6 +3314,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "time_situation_count", toString(timeSitCnt) );
   addOneMetric( doc, el, "space_situation_count", toString(spaceSitCnt) );
   addOneMetric( doc, el, "cause_situation_count", toString(causeSitCnt) );
+  addOneMetric( doc, el, "emotion_situation_count", toString(emoSitCnt) );
   addOneMetric( doc, el, "prop_neg_count", toString(propNegCnt) );
   addOneMetric( doc, el, "morph_neg_count", toString(morphNegCnt) );
   addOneMetric( doc, el, "multiple_neg_count", toString(multiNegCnt) );
@@ -3602,8 +3656,11 @@ void structStats::coherenceHeader( ostream& os ) const {
      << "Conn_contr_d,Conn_contr_dz,Conn_contr_TTR,Conn_contr_MTLD,"
      << "Conn_comp_d,Conn_comp_dz,Conn_comp_TTR,Conn_comp_MTLD,"
      << "Conn_caus_d,Conn_caus_dz,Conn_caus_TTR,Conn_caus_MTLD,"
-     << "Causaal_d,Ruimte_d,Tijd_d,"
-     << "Causaal_TTR,Causaal_MTLD,Ruimte_TTR,Ruimte_MTLD,Tijd_TTR,Tijd_MTLD,"
+     << "Causaal_d,Ruimte_d,Tijd_d,Emotie_d,"
+     << "Causaal_TTR,Causaal_MTLD,"
+     << "Ruimte_TTR,Ruimte_MTLD,"
+     << "Tijd_TTR,Tijd_MTLD,"
+     << "Emotie_TTR,Emotie_MTLD,"
      << "Vnw_ref_d,Vnw_ref_dz,"
      << "Arg_over_vzin_d,Arg_over_vzin_dz,Lem_over_vzin_d,Lem_over_vzin_dz,"
      << "Arg_over_buf_d,Arg_over_buf_dz,Lem_over_buf_d,Lem_over_buf_dz,"
@@ -3635,12 +3692,15 @@ void structStats::coherenceToCSV( ostream& os ) const {
      << density( causeSitCnt, wordCnt ) << ","
      << density( spaceSitCnt, wordCnt ) << ","
      << density( timeSitCnt, wordCnt ) << ","
+     << density( emoSitCnt, wordCnt ) << ","
      << proportion( unique_cause_sits.size(), causeSitCnt ) << ","
      << cause_sit_mtld << ","
      << proportion( unique_ruimte_sits.size(), spaceSitCnt ) << ","
      << ruimte_sit_mtld << ","
      << proportion( unique_tijd_sits.size(), timeSitCnt ) << ","
      << tijd_sit_mtld << ","
+     << proportion( unique_emotion_sits.size(), emoSitCnt ) << ","
+     << emotion_sit_mtld << ","
      << density( pronRefCnt, wordCnt ) << ","
      << proportion( pronRefCnt, clauseCnt ) << ",";
   if ( isSentence() ){
@@ -4158,6 +4218,7 @@ void structStats::calculate_MTLDs() {
   vector<string> tijd_sits;
   vector<string> ruimte_sits;
   vector<string> cause_sits;
+  vector<string> emotion_sits;
   for ( size_t i=0; i < wordNodes.size(); ++i ){
     if ( wordNodes[i]->wordProperty() == ISLET ){
       continue;
@@ -4201,6 +4262,9 @@ void structStats::calculate_MTLDs() {
     case SPACE_SIT:
       ruimte_sits.push_back(wordNodes[i]->Lemma());
       break;
+    case EMO_SIT:
+      emotion_sits.push_back(wordNodes[i]->Lemma());
+      break;
     default:
       break;
     }
@@ -4218,6 +4282,7 @@ void structStats::calculate_MTLDs() {
   tijd_sit_mtld = average_mtld( tijd_sits );
   ruimte_sit_mtld = average_mtld( ruimte_sits );
   cause_sit_mtld = average_mtld( cause_sits );
+  emotion_sit_mtld = average_mtld( emotion_sits );
 }
 
 void sentStats::setLSAvalues( double suc, double net, double ctx ){
@@ -4431,6 +4496,9 @@ SituationType sentStats::checkMultiSituations( const string& mword ){
   else if ( settings.multi_causal_sits.find( mword ) != settings.multi_causal_sits.end() ){
     sit = CAUSAL_SIT;
   }
+  else if ( settings.multi_emotion_sits.find( mword ) != settings.multi_emotion_sits.end() ){
+    sit = EMO_SIT;
+  }
   //  cerr << "multi-sit " << mword << " = " << sit << endl;
   return sit;
 }
@@ -4634,6 +4702,10 @@ void sentStats::resolveSituations(){
     case SPACE_SIT:
       unique_ruimte_sits[sv[i]->Lemma()]++;
       spaceSitCnt++;
+      break;
+    case EMO_SIT:
+      unique_emotion_sits[sv[i]->Lemma()]++;
+      emoSitCnt++;
       break;
     default:
       break;
@@ -5813,6 +5885,13 @@ void docStats::addMetrics( ) const {
   }
   addOneMetric( el->doc(), el,
 		"cause_sit_mtld", toString( cause_sit_mtld ) );
+
+  if ( emoSitCnt != 0 ){
+    addOneMetric( el->doc(), el,
+		  "emotion_sit_ttr", toString( unique_emotion_sits.size()/double(emoSitCnt) ) );
+  }
+  addOneMetric( el->doc(), el,
+		"emotion_sit_mtld", toString( emotion_sit_mtld ) );
 
   if ( tempConnCnt != 0 ){
     addOneMetric( el->doc(), el,
