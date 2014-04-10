@@ -603,7 +603,9 @@ string toString( const WWform& wf ){
 
 //#define WW_DEBUG
 
-WWform classifyVerb( const xmlNode *wnode, const string& lemma ){
+WWform classifyVerb( const xmlNode *wnode, const string& lemma,
+		     string& full_lemma ){
+  full_lemma.clear();
   if ( wnode ){
     vector< xmlNode *> siblinglist = getSibblings( wnode );
 #ifdef WW_DEBUG
@@ -668,7 +670,17 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma ){
       //      cerr << "resultaat = tijdww" << endl;
       return TIME_VERB;
     }
-    //    cerr << "resultaat 3 = hoofdww" << endl;
+    cerr << "resultaat 3 = hoofdww" << endl;
+    for ( vector< xmlNode *>::const_iterator it=siblinglist.begin();
+	  it != siblinglist.end();
+	  ++it ){
+      KWargs args = getAttributes( *it );
+      if ( args["rel"] == "svp" ){
+	if ( args["lcat"] == "part" ){
+	  full_lemma = args["word"] + lemma;
+	}
+      }
+    }
     return HEAD_VERB;
   }
   else {

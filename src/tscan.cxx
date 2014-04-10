@@ -77,7 +77,7 @@ enum top_val { top1000, top2000, top3000, top5000, top10000, top20000, notFound 
 
 enum SemType { NO_SEMTYPE,
 	       UNFOUND_NOUN, UNFOUND_ADJ, UNFOUND_VERB,
-	       UNDEFINED_NOUN, UNDEFINED_ADJ, UNDEFINED_VERB,
+	       UNDEFINED_NOUN, UNDEFINED_ADJ,
 	       ABSTRACT_DYNAMIC_NOUN, ABSTRACT_NONDYNAMIC_NOUN,
 	       BROAD_CONCRETE_PLACE_NOUN,
 	       BROAD_CONCRETE_TIME_NOUN,
@@ -94,7 +94,10 @@ enum SemType { NO_SEMTYPE,
 	       EPI_POS_ADJ, EPI_NEG_ADJ,
 	       MORE_ADJ, LESS_ADJ,
 	       ABSTRACT_ADJ,
-	       STATE, ACTION, PROCESS, WEIRD };
+	       ABSTRACT_VERB, CONCRETE_VERB, UNDEFINED_VERB,
+	       ABSTRACT_STATE, CONCRETE_STATE, UNDEFINED_STATE,
+	       ABSTRACT_ACTION, CONCRETE_ACTION, UNDEFINED_ACTION,
+	       ABSTRACT_PROCESS, CONCRETE_PROCESS, UNDEFINED_PROCESS };
 
 string toString( const SemType st ){
   switch ( st ){
@@ -115,9 +118,6 @@ string toString( const SemType st ){
     break;
   case UNDEFINED_ADJ:
     return "undefined-adj";
-    break;
-  case UNDEFINED_VERB:
-    return "undefined-verb";
     break;
   case ABSTRACT_DYNAMIC_NOUN:
     return "abstract-dynamic_noun";
@@ -210,17 +210,42 @@ string toString( const SemType st ){
   case LESS_ADJ:
     return "weaker-adj";
     break;
-  case STATE:
-    return "state";
+
+  case ABSTRACT_VERB:
+    return "abstract-verb";
     break;
-  case ACTION:
-    return "action";
+  case CONCRETE_VERB:
+    return "concrete-verb";
     break;
-  case PROCESS:
-    return "process";
+  case UNDEFINED_VERB:
+    return "undefined-verb";
     break;
-  case WEIRD:
-    return "weird";
+  case ABSTRACT_STATE:
+    return "abstract-state";
+    break;
+  case CONCRETE_STATE:
+    return "concrete-state";
+    break;
+  case UNDEFINED_STATE:
+    return "undefined-state";
+    break;
+  case ABSTRACT_ACTION:
+    return "abstract-action";
+    break;
+  case CONCRETE_ACTION:
+    return "concrete-action";
+    break;
+  case UNDEFINED_ACTION:
+    return "undefined-action";
+    break;
+  case ABSTRACT_PROCESS:
+    return "abstract-process";
+    break;
+  case CONCRETE_PROCESS:
+    return "concrete-process";
+    break;
+  case UNDEFINED_PROCESS:
+    return "undefined-process";
     break;
   default:
     return "invalid semtype value";
@@ -438,49 +463,77 @@ struct settingData {
 
 settingData settings;
 
-SemType classifySem( CGN::Type tag, const string& s ){
-  if ( tag == CGN::N ){
-    if ( s == "undefined" )
-      return UNDEFINED_NOUN;
-    else if ( s == "concrother" )
-      return CONCRETE_OTHER_NOUN;
-    else if ( s == "institut" )
-      return INSTITUT_NOUN;
-    else if ( s == "substance" )
-      return CONCRETE_SUBSTANCE_NOUN;
-    else if ( s == "artefact" )
-      return CONCRETE_ARTEFACT_NOUN;
-    else if ( s == "nonhuman" )
-      return CONCRETE_NONHUMAN_NOUN;
-    else if ( s == "human" )
-      return CONCRETE_HUMAN_NOUN;
-    else if ( s == "dynamic" )
-      return ABSTRACT_DYNAMIC_NOUN;
-    else if ( s == "nondynamic" )
-      return ABSTRACT_NONDYNAMIC_NOUN;
-    else if ( s == "place" )
-      return BROAD_CONCRETE_PLACE_NOUN;
-    else if ( s == "time" )
-      return BROAD_CONCRETE_TIME_NOUN;
-    else if ( s == "measure" )
-      return BROAD_CONCRETE_MEASURE_NOUN;
-    else
-      return UNFOUND_NOUN;
-  }
-  else if ( tag == CGN::WW ){
-    if ( s == "undefined" ){
+SemType classifyNoun( const string& s ){
+  if ( s == "undefined" )
+    return UNDEFINED_NOUN;
+  else if ( s == "concrother" )
+    return CONCRETE_OTHER_NOUN;
+  else if ( s == "institut" )
+    return INSTITUT_NOUN;
+  else if ( s == "substance" )
+    return CONCRETE_SUBSTANCE_NOUN;
+  else if ( s == "artefact" )
+    return CONCRETE_ARTEFACT_NOUN;
+  else if ( s == "nonhuman" )
+    return CONCRETE_NONHUMAN_NOUN;
+  else if ( s == "human" )
+    return CONCRETE_HUMAN_NOUN;
+  else if ( s == "dynamic" )
+    return ABSTRACT_DYNAMIC_NOUN;
+  else if ( s == "nondynamic" )
+    return ABSTRACT_NONDYNAMIC_NOUN;
+  else if ( s == "place" )
+    return BROAD_CONCRETE_PLACE_NOUN;
+  else if ( s == "time" )
+    return BROAD_CONCRETE_TIME_NOUN;
+  else if ( s == "measure" )
+    return BROAD_CONCRETE_MEASURE_NOUN;
+  else
+    return UNFOUND_NOUN;
+}
+
+SemType classifyWW( const string& s, const string& c = "" ){
+  if ( s == "undefined" ){
+    if ( c == "abstract" )
+      return ABSTRACT_VERB;
+    else if ( c == "concreet" )
+      return CONCRETE_VERB;
+    else if ( c == "undefined" )
       return UNDEFINED_VERB;
-    }
-    else if ( s == "state" )
-      return STATE;
-    else if ( s == "action" )
-      return ACTION;
-    else if (s == "process" )
-      return PROCESS;
-    else
-      return WEIRD;
   }
-  return NO_SEMTYPE;
+  else if ( s == "state" ){
+    if ( c == "abstract" )
+      return ABSTRACT_STATE;
+    else if ( c == "concreet" )
+      return CONCRETE_STATE;
+    else if ( c == "undefined" )
+      return UNDEFINED_STATE;
+  }
+  else if ( s == "action" ){
+    if ( c == "abstract" )
+      return ABSTRACT_ACTION;
+    else if ( c == "concreet" )
+      return CONCRETE_ACTION;
+    else if ( c == "undefined" )
+      return UNDEFINED_ACTION;
+  }
+  else if (s == "process" ){
+    if ( c == "abstract" )
+      return ABSTRACT_PROCESS;
+    else if ( c == "concreet" )
+      return CONCRETE_PROCESS;
+    else if ( c == "undefined" )
+      return UNDEFINED_PROCESS;
+  }
+  else if (s == "undefined" ){
+    if ( c == "abstract" )
+      return ABSTRACT_VERB;
+    else if ( c == "concreet" )
+      return CONCRETE_VERB;
+    else if ( c == "undefined" )
+      return UNDEFINED_VERB;
+  }
+  return UNFOUND_VERB;
 }
 
 SemType classifyADJ( const string& s, const string& sub = "" ){
@@ -567,7 +620,7 @@ bool fillN( map<string,SemType>& m, istream& is ){
     vector<string> vals;
     n = split_at( parts[1], vals, "," ); // split at ,
     if ( n == 1 ){
-      m[parts[0]] = classifySem( CGN::N, vals[0] );
+      m[parts[0]] = classifyNoun( vals[0] );
     }
     else if ( n == 0 ){
       cerr << "skip line: " << line << " (expected some values, got none."
@@ -579,7 +632,7 @@ bool fillN( map<string,SemType>& m, istream& is ){
       map<SemType,int> stats;
       set<SemType> values;
       for ( size_t i=0; i< vals.size(); ++i ){
-	SemType val = classifySem( CGN::N, vals[i] );
+	SemType val = classifyNoun( vals[i] );
 	stats[val]++;
 	values.insert(val);
       }
@@ -654,43 +707,19 @@ bool fillWW( map<string,SemType>& m, istream& is ){
   while( getline( is, line ) ){
     vector<string> parts;
     int n = split_at( line, parts, "\t" ); // split at tab
-    if ( n != 2 ){
-      cerr << "skip line: " << line << " (expected 2 values, got "
+    if ( n != 3 ){
+      cerr << "skip line: " << line << " (expected 3 values, got "
 	   << n << ")" << endl;
       continue;
     }
-    vector<string> vals;
-    n = split_at( parts[1], vals, "," ); // split at ,
-    if ( n == 1 ){
-      m[parts[0]] = classifySem( CGN::WW, vals[0] );
+    SemType res = classifyWW( parts[1], parts[2] );
+    if ( parts[0][0] == 't' ){
+      cerr << parts[0] << " " << parts[1] << "\t" << parts[2] << endl;
+      cerr << res << endl;
     }
-    else if ( n == 0 ){
-      cerr << "skip line: " << line << " (expected some values, got none."
-	   << endl;
-      continue;
-    }
-    else {
-      SemType topval = NO_SEMTYPE;
-      SemType res = UNFOUND_VERB;
-      map<SemType,int> stats;
-      int max = 0;
-      for ( size_t i=0; i< vals.size(); ++i ){
-	SemType val = classifySem( CGN::WW, vals[i] );
-	if ( ++stats[val] > max ){
-	  max = stats[val];
-	  res = val;
-	}
-      }
-      topval = res;
-      if ( m.find(parts[0]) != m.end() ){
-	cerr << "multiple entry '" << parts[0] << "' in WW lex" << endl;
-      }
-      if ( topval != UNFOUND_NOUN
-	   && topval != UNFOUND_ADJ
-	   && topval != UNFOUND_VERB ){
-	// no use to store undefined values
-	m[parts[0]] = topval;
-      }
+    if ( res != UNFOUND_VERB ){
+      // no use to store undefined values
+      m[parts[0]] = res;
     }
   }
   return true;
@@ -1495,6 +1524,7 @@ struct wordStats : public basicStats {
   string pos;
   CGN::Type tag;
   string lemma;
+  string full_lemma; // scheidbare ww hebben dit
   string l_lemma;
   WWform wwform;
   bool isPersRef;
@@ -1852,7 +1882,13 @@ SemType wordStats::checkSemProps( ) const {
   }
   else if ( tag == CGN::WW ) {
     SemType sem2 = UNFOUND_VERB;
-    map<string,SemType>::const_iterator sit = settings.verb_sem.find( lemma );
+    map<string,SemType>::const_iterator sit = settings.verb_sem.end();
+    if ( !full_lemma.empty() ) {
+      sit = settings.verb_sem.find( full_lemma );
+    }
+    if ( sit == settings.verb_sem.end() ){
+      sit = settings.verb_sem.find( lemma );
+    }
     if ( sit != settings.verb_sem.end() ){
       sem2 = sit->second;
     }
@@ -1889,7 +1925,14 @@ void wordStats::freqLookup(){
     word_freq = 1;
     word_freq_log = 0;
   }
-  it = settings.lemma_freq_lex.find( l_lemma );
+  it = settings.lemma_freq_lex.end();
+  if ( !full_lemma.empty() ){
+    // scheidbaar ww
+    it = settings.lemma_freq_lex.find( full_lemma );
+  }
+  if ( it == settings.lemma_freq_lex.end() ){
+    it = settings.lemma_freq_lex.find( l_lemma );
+  }
   if ( it != settings.lemma_freq_lex.end() ){
     lemma_freq = it->second.count;
     lemma_freq_log = log10(lemma_freq);
@@ -2081,7 +2124,13 @@ wordStats::wordStats( Word *w,
   if ( alpWord ){
     distances = getDependencyDist( alpWord, puncts);
     if ( tag == CGN::WW ){
-      wwform = classifyVerb( alpWord, lemma );
+      string full;
+      wwform = classifyVerb( alpWord, lemma, full );
+      if ( !full.empty() ){
+	to_lower( full );
+	//	cerr << "scheidbaar WW: " << full << endl;
+	full_lemma = full;
+      }
       if ( (prop == ISPVTGW || prop == ISPVVERL) &&
 	   wwform != PASSIVE_VERB ){
 	isImperative = checkImp( alpWord );
@@ -2171,7 +2220,8 @@ void wordStats::setPersRef() {
     isPersRef = false;
   }
 }
-//#define DEBUG_OL
+
+#define DEBUG_OL
 
 bool wordStats::isOverlapCandidate() const {
   if ( ( tag == CGN::VNW && prop != ISAANW ) ||
@@ -2192,6 +2242,7 @@ bool wordStats::isOverlapCandidate() const {
     return false;
   }
 }
+#undef DEBUG_OL
 
 void wordStats::getSentenceOverlap( const vector<string>& wordbuffer,
 				    const vector<string>& lemmabuffer ){
@@ -2230,6 +2281,9 @@ void wordStats::addMetrics( ) const {
     args["set"] = "tscan-set";
     args["class"] = "wwform(" + toString(wwform) + ")";
     el->addPosAnnotation( args );
+  }
+  if ( !full_lemma.empty() ){
+    addOneMetric( doc, el, "full-lemma", full_lemma );
   }
   if ( isPersRef )
     addOneMetric( doc, el, "pers_ref", "true" );
@@ -2500,9 +2554,9 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << (nerProp == PRO_B || nerProp == PRO_I ) << ","
      << (nerProp == EVE_B || nerProp == EVE_I ) << ","
      << (nerProp == MISC_B || nerProp == MISC_I ) << ","
-     << (sem_type == ACTION ) << ","
-     << (sem_type == STATE ) << ","
-     << (sem_type == PROCESS ) << ","
+     << (sem_type == ABSTRACT_ACTION || sem_type == CONCRETE_ACTION || sem_type == UNDEFINED_ACTION ) << ","
+     << (sem_type == ABSTRACT_STATE || sem_type == CONCRETE_STATE || sem_type == UNDEFINED_STATE ) << ","
+     << (sem_type == ABSTRACT_PROCESS || sem_type == CONCRETE_PROCESS || sem_type == UNDEFINED_PROCESS ) << ","
      << (sem_type == CONCRETE_HUMAN_NOUN ) << ","
      << (sem_type == EMO_ADJ ) << ","
      << isImperative << ","
@@ -2688,10 +2742,12 @@ struct structStats: public basicStats {
     broadConcreteAdjCnt(0),
     strictConcreteAdjCnt(0),
     subjectiveAdjCnt(0),
+    abstractWwCnt(0),
+    concreteWwCnt(0),
+    undefinedWwCnt(0),
     stateCnt(0),
     actionCnt(0),
     processCnt(0),
-    weirdCnt(0),
     humanAdjCnt(0),
     emoAdjCnt(0),
     nonhumanAdjCnt(0),
@@ -2716,7 +2772,6 @@ struct structStats: public basicStats {
     uncoveredNounCnt(0),
     undefinedAdjCnt(0),
     uncoveredAdjCnt(0),
-    undefinedVerbCnt(0),
     uncoveredVerbCnt(0),
     humanCnt(0),
     nonHumanCnt(0),
@@ -2879,10 +2934,12 @@ struct structStats: public basicStats {
   int broadConcreteAdjCnt;
   int strictConcreteAdjCnt;
   int subjectiveAdjCnt;
+  int abstractWwCnt;
+  int concreteWwCnt;
+  int undefinedWwCnt;
   int stateCnt;
   int actionCnt;
   int processCnt;
-  int weirdCnt;
   int humanAdjCnt;
   int emoAdjCnt;
   int nonhumanAdjCnt;
@@ -2907,7 +2964,6 @@ struct structStats: public basicStats {
   int uncoveredNounCnt;
   int undefinedAdjCnt;
   int uncoveredAdjCnt;
-  int undefinedVerbCnt;
   int uncoveredVerbCnt;
   int humanCnt;
   int nonHumanCnt;
@@ -3100,10 +3156,12 @@ void structStats::merge( structStats *ss ){
   strictConcreteAdjCnt += ss->strictConcreteAdjCnt;
   broadConcreteAdjCnt += ss->broadConcreteAdjCnt;
   subjectiveAdjCnt += ss->subjectiveAdjCnt;
+  abstractWwCnt += ss->abstractWwCnt;
+  concreteWwCnt += ss->concreteWwCnt;
+  undefinedWwCnt += ss->undefinedWwCnt;
   stateCnt += ss->stateCnt;
   actionCnt += ss->actionCnt;
   processCnt += ss->processCnt;
-  weirdCnt += ss->weirdCnt;
   humanAdjCnt += ss->humanAdjCnt;
   emoAdjCnt += ss->emoAdjCnt;
   nonhumanAdjCnt += ss->nonhumanAdjCnt;
@@ -3128,7 +3186,6 @@ void structStats::merge( structStats *ss ){
   uncoveredNounCnt += ss->uncoveredNounCnt;
   undefinedAdjCnt += ss->undefinedAdjCnt;
   uncoveredAdjCnt += ss->uncoveredAdjCnt;
-  undefinedVerbCnt += ss->undefinedVerbCnt;
   uncoveredVerbCnt += ss->uncoveredVerbCnt;
   humanCnt += ss->humanCnt;
   nonHumanCnt += ss->nonHumanCnt;
@@ -3418,11 +3475,12 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "covered_nouns_count", toString(nounCnt+nameCnt-uncoveredNounCnt) );
   addOneMetric( doc, el, "uncovered_nouns_count", toString(uncoveredNounCnt) );
 
+  addOneMetric( doc, el, "abstract_ww", toString(abstractWwCnt) );
+  addOneMetric( doc, el, "concrete_ww", toString(concreteWwCnt) );
+  addOneMetric( doc, el, "undefined_ww", toString(undefinedWwCnt) );
   addOneMetric( doc, el, "state_count", toString(stateCnt) );
   addOneMetric( doc, el, "action_count", toString(actionCnt) );
   addOneMetric( doc, el, "process_count", toString(processCnt) );
-  addOneMetric( doc, el, "weird_count", toString(weirdCnt) );
-  addOneMetric( doc, el, "undefined_verb_count", toString(undefinedVerbCnt) );
   addOneMetric( doc, el, "covered_verb_count", toString(verbCnt-uncoveredVerbCnt) );
   addOneMetric( doc, el, "uncovered_verb_count", toString(uncoveredVerbCnt) );
   addOneMetric( doc, el, "indef_np_count", toString(indefNpCnt) );
@@ -3737,9 +3795,10 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Tijd_nw_p,Tijd_nw_d,";
   os << "Maat_nw_p,Maat_nw_d,";
   os << "Gebeuren_nw_p,Gebeuren_nw_d,";
-  os << "Abstract_nw_p,Abstract_nw_d,";
   os << "Organisatie_nw_p,Organisatie_nw_d,";
-  os << "Gedekte_nw_p,Gedekte_nw_d,";
+  os << "Abstract_nw_p,Abstract_nw_d,";
+  os << "Undefined_nw_p,";
+  os << "Gedekte_nw_p,";
   os << "Waarn_mens_bvnw_p,Waarn_mens_bvnw_d,";
   os << "Emosoc_bvnw_p,Emosoc_bvnw_d,";
   os << "Waarn_nmens_bvnw_p,Waarn_nmens_bvnw_d,";
@@ -3760,15 +3819,18 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Versterker_bvnw_p,Versterker_bvnw_d,";
   os << "Verzwakker_bvnw_p,Verzwakker_bvnw_d,";
   os << "Abstract_bvnw_p,Abstract_bvnw_d,";
-  os << "Spec_oordeel_bvnw_p,Spec_oordeel_bvnw_d,";
-  os << "Alg_bvnw_p,Alg_bvnw_d,";
-  os << "Ep_bvnw_p,Ep_bvnw_d,";
+  os << "Spec_ev_bvnw_p,Spec_ev_bvnw_d,";
+  os << "Alg_ev_bvnw_p,Alg_ev_bvnw_d,";
+  os << "Ep_ev_bvnw_p,Ep_ev_bvnw_d,";
   os << "Conc_bvnw_strikt_p,Conc_bvnw_strikt_d,";
   os << "Conc_bvnw_ruim_p,Conc_bvnw_ruim_d,";
   os << "Subj_bvnw_p,Subj_bvnw_d,";
   os << "Undefined_bvnw_p,";
   os << "Gelabeld_bvnw_p,";
   os << "Gedekt_bvnw_p,";
+  os << "Conc_ww_p,Conc_ww_d,";
+  os << "Gedekt_ww_p,";
+  os << "Conc_tot_p,Conc_tot_d,";
 }
 
 void structStats::concreetToCSV( ostream& os ) const {
@@ -3784,18 +3846,18 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << density( substanceCnt, wordCnt ) << ",";
   os << proportion( placeCnt, nounCnt+nameCnt ) << ",";
   os << density( placeCnt, wordCnt ) << ",";
-  os << proportion( measureCnt, nounCnt+nameCnt ) << ",";
-  os << density( measureCnt, wordCnt ) << ",";
   os << proportion( timeCnt, nounCnt+nameCnt ) << ",";
   os << density( timeCnt, wordCnt ) << ",";
+  os << proportion( measureCnt, nounCnt+nameCnt ) << ",";
+  os << density( measureCnt, wordCnt ) << ",";
+  os << proportion( institutCnt, nounCnt+nameCnt ) << ",";
+  os << density( institutCnt, wordCnt ) << ",";
   os << proportion( dynamicCnt, nounCnt+nameCnt ) << ",";
   os << density( dynamicCnt, wordCnt ) << ",";
   os << proportion( nonDynamicCnt, nounCnt+nameCnt ) << ",";
   os << density( nonDynamicCnt, wordCnt ) << ",";
-  os << proportion( institutCnt, nounCnt+nameCnt ) << ",";
-  os << density( institutCnt, wordCnt ) << ",";
+  os << proportion( undefinedNounCnt, nounCnt + nameCnt ) << ",";
   os << proportion( (nounCnt+nameCnt-uncoveredNounCnt), nounCnt + nameCnt ) << ",";
-  os << density( (nounCnt+nameCnt-uncoveredNounCnt), wordCnt ) << ",";
 
   os << proportion( humanAdjCnt,adjCnt ) << ",";
   os << density( humanAdjCnt,wordCnt ) << ",";
@@ -3852,6 +3914,11 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << proportion( undefinedAdjCnt, adjCnt ) << ",";
   os << proportion( adjCnt - uncoveredAdjCnt ,adjCnt ) << ",";
   os << proportion( adjCnt-uncoveredAdjCnt+undefinedAdjCnt ,adjCnt ) << ",";
+  os << proportion( concreteWwCnt,pastCnt + presentCnt ) << ",";
+  os << density( concreteWwCnt,pastCnt + presentCnt ) << ",";
+  os << proportion( pastCnt+presentCnt - uncoveredVerbCnt,pastCnt + presentCnt ) << ",";
+  os << proportion( concreteWwCnt + strictConcreteAdjCnt + strictConcreteNounCnt, wordCnt ) << ",";
+  os << density( concreteWwCnt + strictConcreteAdjCnt + strictConcreteNounCnt, wordCnt ) << ",";
 }
 
 void structStats::persoonlijkheidHeader( ostream& os ) const {
@@ -5211,9 +5278,6 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
       case UNDEFINED_ADJ:
 	++undefinedAdjCnt;
 	break;
-      case UNDEFINED_VERB:
-	++undefinedVerbCnt;
-	break;
       case UNFOUND_NOUN:
 	++uncoveredNounCnt;
 	break;
@@ -5361,17 +5425,50 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
       case ABSTRACT_ADJ:
 	abstractAdjCnt++;
 	break;
-      case STATE:
+      case ABSTRACT_STATE:
+	abstractWwCnt++;
 	stateCnt++;
 	break;
-      case ACTION:
+      case CONCRETE_STATE:
+	concreteWwCnt++;
+	stateCnt++;
+	break;
+      case UNDEFINED_STATE:
+	undefinedWwCnt++;
+	stateCnt++;
+	break;
+      case ABSTRACT_ACTION:
+	abstractWwCnt++;
 	actionCnt++;
 	break;
-      case PROCESS:
+      case CONCRETE_ACTION:
+	concreteWwCnt++;
+	actionCnt++;
+	break;
+      case UNDEFINED_ACTION:
+	undefinedWwCnt++;
+	actionCnt++;
+	break;
+      case ABSTRACT_PROCESS:
+	abstractWwCnt++;
 	processCnt++;
 	break;
-      case WEIRD:
-	weirdCnt++;
+      case CONCRETE_PROCESS:
+	concreteWwCnt++;
+	processCnt++;
+	break;
+      case UNDEFINED_PROCESS:
+	undefinedWwCnt++;
+	processCnt++;
+	break;
+      case ABSTRACT_VERB:
+	abstractWwCnt++;
+	break;
+      case CONCRETE_VERB:
+	concreteWwCnt++;
+	break;
+      case UNDEFINED_VERB:
+	undefinedWwCnt++;
 	break;
       default:
 	;
@@ -5515,7 +5612,7 @@ void docStats::setLSAvalues( double suc, double net, double ctx ){
     lsa_par_ctx = ctx;
 }
 
-//#define DEBUG_DOL
+#define DEBUG_DOL
 
 void docStats::calculate_doc_overlap( ){
   vector<const wordStats*> wv2 = collectWords();
