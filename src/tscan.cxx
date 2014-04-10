@@ -713,10 +713,6 @@ bool fillWW( map<string,SemType>& m, istream& is ){
       continue;
     }
     SemType res = classifyWW( parts[1], parts[2] );
-    if ( parts[0][0] == 't' ){
-      cerr << parts[0] << " " << parts[1] << "\t" << parts[2] << endl;
-      cerr << res << endl;
-    }
     if ( res != UNFOUND_VERB ){
       // no use to store undefined values
       m[parts[0]] = res;
@@ -2221,7 +2217,7 @@ void wordStats::setPersRef() {
   }
 }
 
-#define DEBUG_OL
+//#define DEBUG_OL
 
 bool wordStats::isOverlapCandidate() const {
   if ( ( tag == CGN::VNW && prop != ISAANW ) ||
@@ -2242,7 +2238,7 @@ bool wordStats::isOverlapCandidate() const {
     return false;
   }
 }
-#undef DEBUG_OL
+//#undef DEBUG_OL
 
 void wordStats::getSentenceOverlap( const vector<string>& wordbuffer,
 				    const vector<string>& lemmabuffer ){
@@ -5612,7 +5608,7 @@ void docStats::setLSAvalues( double suc, double net, double ctx ){
     lsa_par_ctx = ctx;
 }
 
-#define DEBUG_DOL
+//#define DEBUG_DOL
 
 void docStats::calculate_doc_overlap( ){
   vector<const wordStats*> wv2 = collectWords();
