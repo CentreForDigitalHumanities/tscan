@@ -3,13 +3,13 @@
 <FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v0.11">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2014-04-02T15:28:53" set="tscan-tokconfig-nl"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2014-04-02T15:28:53" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2014-04-10T17:33:06" set="tscan-tokconfig-nl"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2014-04-10T17:33:06" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
       <pos-annotation annotator="tscan" set="tscan-set"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2014-04-02T15:28:53" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2014-04-02T15:28:53" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2014-04-02T15:28:53" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2014-04-02T15:28:53" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2014-04-10T17:33:06" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2014-04-10T17:33:06" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2014-04-10T17:33:06" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2014-04-10T17:33:06" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
     </annotations>
   </metadata>
@@ -94,6 +94,7 @@
           </morphology>
           <lemma class="boos"/>
           <metric class="content_word" value="true"/>
+          <metric class="situation" value="emotie"/>
           <metric class="lsa_word_suc" value="0.0221005"/>
           <metric class="lsa_word_ctx" value="0.017836"/>
           <metric class="top5000" value="true"/>
@@ -148,18 +149,19 @@
           </morphology>
           <lemma class="eten"/>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
+          <metric class="full-lemma" value="opeten"/>
           <metric class="content_word" value="true"/>
           <metric class="lsa_word_ctx" value="0.0631674"/>
           <metric class="top10000" value="true"/>
           <metric class="word_freq" value="34403"/>
           <metric class="log_word_freq" value="4.5366"/>
-          <metric class="lemma_freq" value="88336"/>
-          <metric class="log_lemma_freq" value="4.94614"/>
+          <metric class="lemma_freq" value="3758"/>
+          <metric class="log_lemma_freq" value="3.57496"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-5.01616"/>
           <metric class="property" value="verleden_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="concrete-action"/>
         </w>
         <w xml:id="tscan.p.1.s.1.w.6" class="WORD">
           <t>na</t>
@@ -172,7 +174,6 @@
             </morpheme>
           </morphology>
           <lemma class="na"/>
-          <metric class="situation" value="tijd"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
@@ -409,9 +410,10 @@
         <metric class="contrast_connector_count" value="0"/>
         <metric class="comparatief_connector_count" value="0"/>
         <metric class="causaal_connector_count" value="0"/>
-        <metric class="time_situation_count" value="1"/>
+        <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="1"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -436,10 +438,10 @@
         <metric class="word_freq_no_names" value="441282"/>
         <metric class="log_word_freq" value="4.80016"/>
         <metric class="log_word_freq_no_names" value="4.86656"/>
-        <metric class="lemma_freq" value="813619"/>
-        <metric class="lemma_freq_no_names" value="813217"/>
-        <metric class="log_lemma_freq" value="5.06532"/>
-        <metric class="log_lemma_freq_no_names" value="5.13205"/>
+        <metric class="lemma_freq" value="729041"/>
+        <metric class="lemma_freq_no_names" value="728639"/>
+        <metric class="log_lemma_freq" value="5.01765"/>
+        <metric class="log_lemma_freq_no_names" value="5.08436"/>
         <metric class="wopr_logprob" value="0.000514425"/>
         <metric class="wopr_entropy" value="1.01332"/>
         <metric class="wopr_perplexity" value="2.01855"/>
@@ -485,11 +487,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="4"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="0"/>
+        <metric class="concrete_ww" value="1"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="0"/>
         <metric class="action_count" value="1"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="1"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -567,9 +570,10 @@
       <metric class="contrast_connector_count" value="0"/>
       <metric class="comparatief_connector_count" value="0"/>
       <metric class="causaal_connector_count" value="0"/>
-      <metric class="time_situation_count" value="1"/>
+      <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="1"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -594,10 +598,10 @@
       <metric class="word_freq_no_names" value="441282"/>
       <metric class="log_word_freq" value="4.80016"/>
       <metric class="log_word_freq_no_names" value="4.86656"/>
-      <metric class="lemma_freq" value="813619"/>
-      <metric class="lemma_freq_no_names" value="813217"/>
-      <metric class="log_lemma_freq" value="5.06532"/>
-      <metric class="log_lemma_freq_no_names" value="5.13205"/>
+      <metric class="lemma_freq" value="729041"/>
+      <metric class="lemma_freq_no_names" value="728639"/>
+      <metric class="log_lemma_freq" value="5.01765"/>
+      <metric class="log_lemma_freq_no_names" value="5.08436"/>
       <metric class="wopr_logprob" value="0.000514425"/>
       <metric class="wopr_entropy" value="1.01332"/>
       <metric class="wopr_perplexity" value="2.01855"/>
@@ -643,11 +647,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="4"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="0"/>
+      <metric class="concrete_ww" value="1"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="0"/>
       <metric class="action_count" value="1"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="1"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -726,9 +731,10 @@
     <metric class="contrast_connector_count" value="0"/>
     <metric class="comparatief_connector_count" value="0"/>
     <metric class="causaal_connector_count" value="0"/>
-    <metric class="time_situation_count" value="1"/>
+    <metric class="time_situation_count" value="0"/>
     <metric class="space_situation_count" value="0"/>
     <metric class="cause_situation_count" value="0"/>
+    <metric class="emotion_situation_count" value="1"/>
     <metric class="prop_neg_count" value="0"/>
     <metric class="morph_neg_count" value="0"/>
     <metric class="multiple_neg_count" value="0"/>
@@ -753,10 +759,10 @@
     <metric class="word_freq_no_names" value="441282"/>
     <metric class="log_word_freq" value="4.80016"/>
     <metric class="log_word_freq_no_names" value="4.86656"/>
-    <metric class="lemma_freq" value="813619"/>
-    <metric class="lemma_freq_no_names" value="813217"/>
-    <metric class="log_lemma_freq" value="5.06532"/>
-    <metric class="log_lemma_freq_no_names" value="5.13205"/>
+    <metric class="lemma_freq" value="729041"/>
+    <metric class="lemma_freq_no_names" value="728639"/>
+    <metric class="log_lemma_freq" value="5.01765"/>
+    <metric class="log_lemma_freq_no_names" value="5.08436"/>
     <metric class="wopr_logprob" value="0.000514425"/>
     <metric class="wopr_entropy" value="1.01332"/>
     <metric class="wopr_perplexity" value="2.01855"/>
@@ -802,11 +808,12 @@
     <metric class="undefined_nouns_count" value="0"/>
     <metric class="covered_nouns_count" value="4"/>
     <metric class="uncovered_nouns_count" value="0"/>
+    <metric class="abstract_ww" value="0"/>
+    <metric class="concrete_ww" value="1"/>
+    <metric class="undefined_ww" value="0"/>
     <metric class="state_count" value="0"/>
     <metric class="action_count" value="1"/>
     <metric class="process_count" value="0"/>
-    <metric class="weird_count" value="0"/>
-    <metric class="undefined_verb_count" value="0"/>
     <metric class="covered_verb_count" value="1"/>
     <metric class="uncovered_verb_count" value="0"/>
     <metric class="indef_np_count" value="0"/>
@@ -849,10 +856,11 @@
     <metric class="name_mtld" value="1"/>
     <metric class="content_word_ttr" value="1"/>
     <metric class="content_mtld" value="7"/>
-    <metric class="time_sit_ttr" value="1"/>
-    <metric class="tijd_sit_mtld" value="1"/>
+    <metric class="tijd_sit_mtld" value="0"/>
     <metric class="ruimte_sit_mtld" value="0"/>
     <metric class="cause_sit_mtld" value="0"/>
+    <metric class="emotion_sit_ttr" value="1"/>
+    <metric class="emotion_sit_mtld" value="1"/>
     <metric class="temp_conn_mtld" value="0"/>
     <metric class="opsom_conn_mtld" value="0"/>
     <metric class="contrast_conn_mtld" value="0"/>

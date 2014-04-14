@@ -3,13 +3,13 @@
 <FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v0.11">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2014-04-02T15:18:14" set="tscan-tokconfig-nl"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2014-04-02T15:18:14" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2014-04-10T17:22:15" set="tscan-tokconfig-nl"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2014-04-10T17:22:15" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
       <pos-annotation annotator="tscan" set="tscan-set"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2014-04-02T15:18:14" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2014-04-02T15:18:14" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2014-04-02T15:18:14" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2014-04-02T15:18:14" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2014-04-10T17:22:15" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2014-04-10T17:22:15" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2014-04-10T17:22:15" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2014-04-10T17:22:15" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
     </annotations>
   </metadata>
@@ -111,6 +111,7 @@
         <metric class="time_situation_count" value="1"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -180,11 +181,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="0"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="0"/>
         <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="0"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -265,6 +267,7 @@
       <metric class="time_situation_count" value="1"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -336,11 +339,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="0"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="0"/>
       <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="0"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -431,7 +435,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-1.9592"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.2.s.1.w.3" class="WORD">
           <t>in</t>
@@ -472,6 +476,7 @@
           </morphology>
           <lemma class="traan"/>
           <metric class="content_word" value="true"/>
+          <metric class="situation" value="emotie"/>
           <metric class="lsa_word_ctx" value="0.019528"/>
           <metric class="top5000" value="true"/>
           <metric class="word_freq" value="9792"/>
@@ -578,6 +583,7 @@
             <lemma class="kommen"/>
           </alt>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
+          <metric class="full-lemma" value="thuiskomen"/>
           <metric class="content_word" value="true"/>
           <metric class="lsa_word_ctx" value="0.00653948"/>
           <metric class="f65" value="true"/>
@@ -586,13 +592,13 @@
           <metric class="top2000" value="true"/>
           <metric class="word_freq" value="122174"/>
           <metric class="log_word_freq" value="5.08698"/>
-          <metric class="lemma_freq" value="1202068"/>
-          <metric class="log_lemma_freq" value="6.07993"/>
+          <metric class="lemma_freq" value="4445"/>
+          <metric class="log_lemma_freq" value="3.64787"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-0.989005"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="process"/>
+          <metric class="semtype" value="concrete-action"/>
         </w>
         <w xml:id="tscan.p.2.s.1.w.9" class="PUNCTUATION">
           <t>.</t>
@@ -688,6 +694,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="1"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="1"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -712,10 +719,10 @@
         <metric class="word_freq_no_names" value="247718"/>
         <metric class="log_word_freq" value="4.80201"/>
         <metric class="log_word_freq_no_names" value="4.91683"/>
-        <metric class="lemma_freq" value="1315560"/>
-        <metric class="lemma_freq_no_names" value="1310672"/>
-        <metric class="log_lemma_freq" value="5.51705"/>
-        <metric class="log_lemma_freq_no_names" value="5.64037"/>
+        <metric class="lemma_freq" value="117937"/>
+        <metric class="lemma_freq_no_names" value="113049"/>
+        <metric class="log_lemma_freq" value="4.46959"/>
+        <metric class="log_lemma_freq_no_names" value="4.57615"/>
         <metric class="wopr_logprob" value="0.00612658"/>
         <metric class="wopr_entropy" value="1.24525"/>
         <metric class="wopr_perplexity" value="2.3706"/>
@@ -761,11 +768,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="1"/>
+        <metric class="abstract_ww" value="1"/>
+        <metric class="concrete_ww" value="1"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="1"/>
-        <metric class="action_count" value="0"/>
-        <metric class="process_count" value="1"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
+        <metric class="action_count" value="1"/>
+        <metric class="process_count" value="0"/>
         <metric class="covered_verb_count" value="2"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -847,6 +855,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="1"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="1"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -873,10 +882,10 @@
       <metric class="word_freq_no_names" value="247718"/>
       <metric class="log_word_freq" value="4.80201"/>
       <metric class="log_word_freq_no_names" value="4.91683"/>
-      <metric class="lemma_freq" value="1315560"/>
-      <metric class="lemma_freq_no_names" value="1310672"/>
-      <metric class="log_lemma_freq" value="5.51705"/>
-      <metric class="log_lemma_freq_no_names" value="5.64037"/>
+      <metric class="lemma_freq" value="117937"/>
+      <metric class="lemma_freq_no_names" value="113049"/>
+      <metric class="log_lemma_freq" value="4.46959"/>
+      <metric class="log_lemma_freq_no_names" value="4.57615"/>
       <metric class="wopr_logprob" value="0.00612658"/>
       <metric class="wopr_entropy" value="1.24525"/>
       <metric class="wopr_perplexity" value="2.3706"/>
@@ -922,11 +931,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="1"/>
+      <metric class="abstract_ww" value="1"/>
+      <metric class="concrete_ww" value="1"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="1"/>
-      <metric class="action_count" value="0"/>
-      <metric class="process_count" value="1"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
+      <metric class="action_count" value="1"/>
+      <metric class="process_count" value="0"/>
       <metric class="covered_verb_count" value="2"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -1028,7 +1038,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.47705"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-verb"/>
         </w>
         <w xml:id="tscan.p.3.s.1.w.3" class="WORD">
           <t>op</t>
@@ -1331,7 +1341,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-4.11101"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="undefined-verb"/>
         </w>
         <w xml:id="tscan.p.3.s.1.w.15" class="WORD">
           <t>begint</t>
@@ -1364,7 +1374,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.83088"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-process"/>
         </w>
         <w xml:id="tscan.p.3.s.1.w.16" class="WORD">
           <t>ze</t>
@@ -1462,6 +1472,7 @@
           <lemma class="snikken"/>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
           <metric class="content_word" value="true"/>
+          <metric class="situation" value="emotie"/>
           <metric class="lsa_word_ctx" value="0.0732022"/>
           <metric class="word_freq" value="445"/>
           <metric class="log_word_freq" value="2.64836"/>
@@ -1471,7 +1482,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-4.53701"/>
           <metric class="property" value="infinitief"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="concrete-action"/>
         </w>
         <w xml:id="tscan.p.3.s.1.w.20" class="PUNCTUATION">
           <t>.</t>
@@ -1587,6 +1598,7 @@
         <metric class="time_situation_count" value="1"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="1"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -1660,11 +1672,12 @@
         <metric class="undefined_nouns_count" value="2"/>
         <metric class="covered_nouns_count" value="2"/>
         <metric class="uncovered_nouns_count" value="0"/>
-        <metric class="state_count" value="2"/>
-        <metric class="action_count" value="2"/>
-        <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
+        <metric class="abstract_ww" value="2"/>
+        <metric class="concrete_ww" value="1"/>
+        <metric class="undefined_ww" value="1"/>
+        <metric class="state_count" value="0"/>
+        <metric class="action_count" value="1"/>
+        <metric class="process_count" value="1"/>
         <metric class="covered_verb_count" value="4"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -1746,6 +1759,7 @@
       <metric class="time_situation_count" value="1"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="1"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -1821,11 +1835,12 @@
       <metric class="undefined_nouns_count" value="2"/>
       <metric class="covered_nouns_count" value="2"/>
       <metric class="uncovered_nouns_count" value="0"/>
-      <metric class="state_count" value="2"/>
-      <metric class="action_count" value="2"/>
-      <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
+      <metric class="abstract_ww" value="2"/>
+      <metric class="concrete_ww" value="1"/>
+      <metric class="undefined_ww" value="1"/>
+      <metric class="state_count" value="0"/>
+      <metric class="action_count" value="1"/>
+      <metric class="process_count" value="1"/>
       <metric class="covered_verb_count" value="4"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -1920,7 +1935,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-2.06649"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="undefined-state"/>
         </w>
         <w xml:id="tscan.p.4.s.1.w.3" class="WORD">
           <t>het</t>
@@ -2053,6 +2068,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -2125,11 +2141,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="0"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="1"/>
         <metric class="state_count" value="1"/>
         <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="1"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -2210,6 +2227,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -2284,11 +2302,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="0"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="1"/>
       <metric class="state_count" value="1"/>
       <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="1"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -2383,7 +2402,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.70706"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.5.s.1.w.3" class="WORD">
           <t>er</t>
@@ -2469,7 +2488,6 @@
             </morpheme>
           </morphology>
           <lemma class="om"/>
-          <metric class="connective" value="causaal"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -2554,7 +2572,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-4.23598"/>
           <metric class="property" value="infinitief"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-action"/>
         </w>
         <w xml:id="tscan.p.5.s.1.w.10" class="PUNCTUATION">
           <t>.</t>
@@ -2647,10 +2665,11 @@
         <metric class="reeks_connector_count" value="0"/>
         <metric class="contrast_connector_count" value="0"/>
         <metric class="comparatief_connector_count" value="0"/>
-        <metric class="causaal_connector_count" value="1"/>
+        <metric class="causaal_connector_count" value="0"/>
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="1"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -2724,11 +2743,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="1"/>
-        <metric class="state_count" value="0"/>
-        <metric class="action_count" value="2"/>
+        <metric class="abstract_ww" value="2"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
+        <metric class="state_count" value="1"/>
+        <metric class="action_count" value="1"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="2"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -2805,10 +2825,11 @@
       <metric class="reeks_connector_count" value="0"/>
       <metric class="contrast_connector_count" value="0"/>
       <metric class="comparatief_connector_count" value="0"/>
-      <metric class="causaal_connector_count" value="1"/>
+      <metric class="causaal_connector_count" value="0"/>
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="1"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -2884,11 +2905,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="1"/>
-      <metric class="state_count" value="0"/>
-      <metric class="action_count" value="2"/>
+      <metric class="abstract_ww" value="2"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
+      <metric class="state_count" value="1"/>
+      <metric class="action_count" value="1"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="2"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -2946,6 +2968,7 @@
           <lemma class="huilen"/>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
           <metric class="content_word" value="true"/>
+          <metric class="situation" value="emotie"/>
           <metric class="lsa_word_suc" value="0.298751"/>
           <metric class="lsa_word_ctx" value="0.0698574"/>
           <metric class="f80" value="true"/>
@@ -2958,7 +2981,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-5.36741"/>
           <metric class="property" value="infinitief"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="concrete-action"/>
         </w>
         <w xml:id="tscan.p.6.s.1.w.2" class="WORD">
           <t>is</t>
@@ -2987,7 +3010,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-1.9592"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.6.s.1.w.3" class="WORD" space="no">
           <t>prima</t>
@@ -3103,7 +3126,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-1.96571"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.6.s.1.w.8" class="WORD">
           <t>ze</t>
@@ -3241,7 +3264,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-2.63815"/>
           <metric class="property" value="infinitief"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.6.s.1.w.13" class="PUNCTUATION">
           <t>.</t>
@@ -3338,6 +3361,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="1"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -3411,11 +3435,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="3"/>
+        <metric class="concrete_ww" value="1"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="3"/>
         <metric class="action_count" value="1"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="4"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="1"/>
@@ -3496,6 +3521,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="1"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -3571,11 +3597,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="3"/>
+      <metric class="concrete_ww" value="1"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="3"/>
       <metric class="action_count" value="1"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="4"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="1"/>
@@ -3712,7 +3739,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.00401"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.7.s.1.w.5" class="WORD">
           <t>zeggen</t>
@@ -3747,7 +3774,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-1.02972"/>
           <metric class="property" value="infinitief"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-verb"/>
         </w>
         <w xml:id="tscan.p.7.s.1.w.6" class="WORD">
           <t>dat</t>
@@ -3823,6 +3850,7 @@
           </morphology>
           <lemma class="verdriet"/>
           <metric class="content_word" value="true"/>
+          <metric class="situation" value="emotie"/>
           <metric class="lsa_word_suc" value="0.203191"/>
           <metric class="lsa_word_ctx" value="0.188653"/>
           <metric class="top5000" value="true"/>
@@ -3907,6 +3935,7 @@
           </morphology>
           <lemma class="oprecht"/>
           <metric class="content_word" value="true"/>
+          <metric class="situation" value="emotie"/>
           <metric class="lsa_word_suc" value="0.418"/>
           <metric class="lsa_word_ctx" value="0.245897"/>
           <metric class="top20000" value="true"/>
@@ -3945,7 +3974,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-1.7104"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.7.s.1.w.13" class="PUNCTUATION">
           <t>,</t>
@@ -4017,7 +4046,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-1.99224"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.7.s.1.w.16" class="WORD">
           <t>gewoon</t>
@@ -4235,7 +4264,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-2.58546"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.7.s.1.w.24" class="WORD">
           <t>houden</t>
@@ -4268,7 +4297,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.43378"/>
           <metric class="property" value="infinitief"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.7.s.1.w.25" class="WORD">
           <t>als</t>
@@ -4386,7 +4415,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-4.37952"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.7.s.1.w.29" class="WORD" space="no">
           <t>begrijpen</t>
@@ -4418,7 +4447,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-4.34952"/>
           <metric class="property" value="infinitief"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.7.s.1.w.30" class="PUNCTUATION">
           <t>.</t>
@@ -4555,6 +4584,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="2"/>
         <metric class="prop_neg_count" value="1"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -4628,11 +4658,12 @@
         <metric class="undefined_nouns_count" value="1"/>
         <metric class="covered_nouns_count" value="2"/>
         <metric class="uncovered_nouns_count" value="0"/>
-        <metric class="state_count" value="6"/>
-        <metric class="action_count" value="2"/>
+        <metric class="abstract_ww" value="8"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
+        <metric class="state_count" value="7"/>
+        <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="8"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -4714,6 +4745,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="2"/>
       <metric class="prop_neg_count" value="1"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -4789,11 +4821,12 @@
       <metric class="undefined_nouns_count" value="1"/>
       <metric class="covered_nouns_count" value="2"/>
       <metric class="uncovered_nouns_count" value="0"/>
-      <metric class="state_count" value="6"/>
-      <metric class="action_count" value="2"/>
+      <metric class="abstract_ww" value="8"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
+      <metric class="state_count" value="7"/>
+      <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="8"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -4876,6 +4909,7 @@
           </morphology>
           <lemma class="trekken"/>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
+          <metric class="full-lemma" value="uittrekken"/>
           <metric class="content_word" value="true"/>
           <metric class="lsa_word_suc" value="0.212255"/>
           <metric class="lsa_word_ctx" value="0.0916584"/>
@@ -4883,13 +4917,13 @@
           <metric class="top5000" value="true"/>
           <metric class="word_freq" value="16629"/>
           <metric class="log_word_freq" value="4.22087"/>
-          <metric class="lemma_freq" value="166039"/>
-          <metric class="log_lemma_freq" value="5.22021"/>
+          <metric class="lemma_freq" value="5021"/>
+          <metric class="log_lemma_freq" value="3.70079"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.08609"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-action"/>
         </w>
         <w xml:id="tscan.p.8.s.1.w.3" class="WORD">
           <t>mijn</t>
@@ -5026,7 +5060,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-4.01829"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="undefined-process"/>
         </w>
         <w xml:id="tscan.p.8.s.1.w.8" class="WORD">
           <t>op</t>
@@ -5088,6 +5122,7 @@
           </morphology>
           <lemma class="vrij"/>
           <metric class="content_word" value="true"/>
+          <metric class="situation" value="emotie"/>
           <metric class="lsa_word_suc" value="0.0227752"/>
           <metric class="lsa_word_ctx" value="0.0616511"/>
           <metric class="f77" value="true"/>
@@ -5194,7 +5229,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-2.11037"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.8.s.1.w.14" class="PUNCTUATION">
           <t>.</t>
@@ -5290,6 +5325,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="1"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="1"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -5314,10 +5350,10 @@
         <metric class="word_freq_no_names" value="613085"/>
         <metric class="log_word_freq" value="4.94242"/>
         <metric class="log_word_freq_no_names" value="4.94242"/>
-        <metric class="lemma_freq" value="2328184"/>
-        <metric class="lemma_freq_no_names" value="2328184"/>
-        <metric class="log_lemma_freq" value="5.52192"/>
-        <metric class="log_lemma_freq_no_names" value="5.52192"/>
+        <metric class="lemma_freq" value="2167166"/>
+        <metric class="lemma_freq_no_names" value="2167166"/>
+        <metric class="log_lemma_freq" value="5.49079"/>
+        <metric class="log_lemma_freq_no_names" value="5.49079"/>
         <metric class="wopr_logprob" value="0.00290284"/>
         <metric class="wopr_entropy" value="1.27884"/>
         <metric class="wopr_perplexity" value="2.42644"/>
@@ -5363,11 +5399,12 @@
         <metric class="undefined_nouns_count" value="2"/>
         <metric class="covered_nouns_count" value="3"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="2"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="1"/>
         <metric class="state_count" value="1"/>
-        <metric class="action_count" value="2"/>
-        <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
+        <metric class="action_count" value="1"/>
+        <metric class="process_count" value="1"/>
         <metric class="covered_verb_count" value="3"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="1"/>
@@ -5448,6 +5485,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="1"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="1"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -5474,10 +5512,10 @@
       <metric class="word_freq_no_names" value="613085"/>
       <metric class="log_word_freq" value="4.94242"/>
       <metric class="log_word_freq_no_names" value="4.94242"/>
-      <metric class="lemma_freq" value="2328184"/>
-      <metric class="lemma_freq_no_names" value="2328184"/>
-      <metric class="log_lemma_freq" value="5.52192"/>
-      <metric class="log_lemma_freq_no_names" value="5.52192"/>
+      <metric class="lemma_freq" value="2167166"/>
+      <metric class="lemma_freq_no_names" value="2167166"/>
+      <metric class="log_lemma_freq" value="5.49079"/>
+      <metric class="log_lemma_freq_no_names" value="5.49079"/>
       <metric class="wopr_logprob" value="0.00290284"/>
       <metric class="wopr_entropy" value="1.27884"/>
       <metric class="wopr_perplexity" value="2.42644"/>
@@ -5523,11 +5561,12 @@
       <metric class="undefined_nouns_count" value="2"/>
       <metric class="covered_nouns_count" value="3"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="2"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="1"/>
       <metric class="state_count" value="1"/>
-      <metric class="action_count" value="2"/>
-      <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
+      <metric class="action_count" value="1"/>
+      <metric class="process_count" value="1"/>
       <metric class="covered_verb_count" value="3"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="1"/>
@@ -5636,7 +5675,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-1.02694"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.9.s.1.w.4" class="WORD">
           <t>er</t>
@@ -5789,6 +5828,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -5859,11 +5899,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="0"/>
         <metric class="uncovered_nouns_count" value="1"/>
+        <metric class="abstract_ww" value="1"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="1"/>
         <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="1"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -5946,6 +5987,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -6018,11 +6060,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="0"/>
       <metric class="uncovered_nouns_count" value="1"/>
+      <metric class="abstract_ww" value="1"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="1"/>
       <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="1"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -6137,7 +6180,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-2.1727"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="undefined-process"/>
         </w>
         <w xml:id="tscan.p.10.s.1.w.4" class="WORD">
           <t>op</t>
@@ -6243,6 +6286,7 @@
           <lemma class="snikken"/>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
           <metric class="content_word" value="true"/>
+          <metric class="situation" value="emotie"/>
           <metric class="word_freq" value="330"/>
           <metric class="log_word_freq" value="2.51851"/>
           <metric class="lemma_freq" value="976"/>
@@ -6251,7 +6295,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.95725"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="concrete-action"/>
         </w>
         <w xml:id="tscan.p.10.s.1.w.9" class="WORD" space="no">
           <t>ze</t>
@@ -6368,6 +6412,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="1"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -6439,11 +6484,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="0"/>
+        <metric class="concrete_ww" value="1"/>
+        <metric class="undefined_ww" value="1"/>
         <metric class="state_count" value="0"/>
-        <metric class="action_count" value="2"/>
-        <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
+        <metric class="action_count" value="1"/>
+        <metric class="process_count" value="1"/>
         <metric class="covered_verb_count" value="2"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -6524,6 +6570,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="1"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -6597,11 +6644,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="0"/>
+      <metric class="concrete_ww" value="1"/>
+      <metric class="undefined_ww" value="1"/>
       <metric class="state_count" value="0"/>
-      <metric class="action_count" value="2"/>
-      <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
+      <metric class="action_count" value="1"/>
+      <metric class="process_count" value="1"/>
       <metric class="covered_verb_count" value="2"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -6744,7 +6792,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-4.42802"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-verb"/>
         </w>
         <w xml:id="tscan.p.11.s.1.w.6" class="WORD" space="no">
           <t>ik</t>
@@ -6844,7 +6892,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-2.43616"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.11.s.1.w.10" class="WORD">
           <t>ik</t>
@@ -6962,7 +7010,6 @@
             </morpheme>
           </morphology>
           <lemma class="om"/>
-          <metric class="connective" value="causaal"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -7067,7 +7114,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-1.24304"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="undefined-process"/>
         </w>
         <w xml:id="tscan.p.11.s.1.w.18" class="PUNCTUATION">
           <t>.</t>
@@ -7168,10 +7215,11 @@
         <metric class="reeks_connector_count" value="0"/>
         <metric class="contrast_connector_count" value="0"/>
         <metric class="comparatief_connector_count" value="0"/>
-        <metric class="causaal_connector_count" value="1"/>
+        <metric class="causaal_connector_count" value="0"/>
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -7244,11 +7292,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="2"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="1"/>
         <metric class="state_count" value="1"/>
-        <metric class="action_count" value="2"/>
-        <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
+        <metric class="action_count" value="0"/>
+        <metric class="process_count" value="1"/>
         <metric class="covered_verb_count" value="3"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="1"/>
@@ -7328,10 +7377,11 @@
       <metric class="reeks_connector_count" value="0"/>
       <metric class="contrast_connector_count" value="0"/>
       <metric class="comparatief_connector_count" value="0"/>
-      <metric class="causaal_connector_count" value="1"/>
+      <metric class="causaal_connector_count" value="0"/>
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -7406,11 +7456,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="2"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="1"/>
       <metric class="state_count" value="1"/>
-      <metric class="action_count" value="2"/>
-      <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
+      <metric class="action_count" value="0"/>
+      <metric class="process_count" value="1"/>
       <metric class="covered_verb_count" value="3"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="1"/>
@@ -7722,6 +7773,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -7794,11 +7846,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="0"/>
         <metric class="uncovered_nouns_count" value="2"/>
+        <metric class="abstract_ww" value="0"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="0"/>
         <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="0"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -7879,6 +7932,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -7953,11 +8007,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="0"/>
       <metric class="uncovered_nouns_count" value="2"/>
+      <metric class="abstract_ww" value="0"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="0"/>
       <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="0"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -8103,7 +8158,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.05416"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-verb"/>
         </w>
         <w xml:id="tscan.p.13.s.1.w.6" class="WORD" space="no">
           <t>ik</t>
@@ -8395,7 +8450,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.45842"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.13.s.1.w.17" class="PUNCTUATION">
           <t>.</t>
@@ -8493,6 +8548,7 @@
         <metric class="time_situation_count" value="1"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="1"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -8566,11 +8622,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="1"/>
+        <metric class="abstract_ww" value="2"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="1"/>
-        <metric class="action_count" value="1"/>
+        <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="2"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="1"/>
@@ -8652,6 +8709,7 @@
       <metric class="time_situation_count" value="1"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="1"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -8727,11 +8785,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="1"/>
+      <metric class="abstract_ww" value="2"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="1"/>
-      <metric class="action_count" value="1"/>
+      <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="2"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="1"/>
@@ -8849,7 +8908,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-2.95085"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.14.s.1.w.4" class="WORD">
           <t>van</t>
@@ -8983,6 +9042,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -9055,11 +9115,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="0"/>
         <metric class="uncovered_nouns_count" value="0"/>
-        <metric class="state_count" value="0"/>
-        <metric class="action_count" value="1"/>
+        <metric class="abstract_ww" value="1"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
+        <metric class="state_count" value="1"/>
+        <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="1"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -9140,6 +9201,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -9214,11 +9276,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="0"/>
       <metric class="uncovered_nouns_count" value="0"/>
-      <metric class="state_count" value="0"/>
-      <metric class="action_count" value="1"/>
+      <metric class="abstract_ww" value="1"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
+      <metric class="state_count" value="1"/>
+      <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="1"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -9318,7 +9381,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-1.97615"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-verb"/>
         </w>
         <w xml:id="tscan.p.15.s.1.w.3" class="WORD">
           <t>ze</t>
@@ -9522,7 +9585,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-4.48026"/>
           <metric class="property" value="infinitief"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="undefined-action"/>
         </w>
         <w xml:id="tscan.p.15.s.1.w.10" class="PUNCTUATION">
           <t>.</t>
@@ -9615,6 +9678,7 @@
         <metric class="time_situation_count" value="1"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -9688,11 +9752,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="1"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="1"/>
         <metric class="state_count" value="0"/>
-        <metric class="action_count" value="2"/>
+        <metric class="action_count" value="1"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="2"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -9774,6 +9839,7 @@
       <metric class="time_situation_count" value="1"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -9849,11 +9915,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="1"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="1"/>
       <metric class="state_count" value="0"/>
-      <metric class="action_count" value="2"/>
+      <metric class="action_count" value="1"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="2"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -9953,7 +10020,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-2.17145"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.16.s.1.w.3" class="WORD">
           <t>in</t>
@@ -10148,6 +10215,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -10220,11 +10288,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="1"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="1"/>
         <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="1"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -10305,6 +10374,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -10379,11 +10449,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="1"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="1"/>
       <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="1"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -10455,7 +10526,6 @@
           </morphology>
           <lemma class="nu"/>
           <metric class="content_word" value="true"/>
-          <metric class="connective" value="causaal"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -10497,7 +10567,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.44649"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-verb"/>
         </w>
         <w xml:id="tscan.p.17.s.1.w.4" class="WORD">
           <t>ze</t>
@@ -10594,7 +10664,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.56816"/>
           <metric class="property" value="infinitief"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.17.s.1.w.7" class="PUNCTUATION" space="no">
           <t>.</t>
@@ -10693,10 +10763,11 @@
         <metric class="reeks_connector_count" value="1"/>
         <metric class="contrast_connector_count" value="0"/>
         <metric class="comparatief_connector_count" value="0"/>
-        <metric class="causaal_connector_count" value="1"/>
+        <metric class="causaal_connector_count" value="0"/>
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -10770,11 +10841,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="0"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="2"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="1"/>
-        <metric class="action_count" value="1"/>
+        <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="2"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -10851,10 +10923,11 @@
       <metric class="reeks_connector_count" value="1"/>
       <metric class="contrast_connector_count" value="0"/>
       <metric class="comparatief_connector_count" value="0"/>
-      <metric class="causaal_connector_count" value="1"/>
+      <metric class="causaal_connector_count" value="0"/>
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -10930,11 +11003,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="0"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="2"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="1"/>
-      <metric class="action_count" value="1"/>
+      <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="2"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -11008,6 +11082,7 @@
           </morphology>
           <lemma class="lief"/>
           <metric class="content_word" value="true"/>
+          <metric class="situation" value="emotie"/>
           <metric class="lsa_word_suc" value="0.270823"/>
           <metric class="lsa_word_ctx" value="0.067684"/>
           <metric class="f77" value="true"/>
@@ -11118,7 +11193,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-1.55709"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="process"/>
+          <metric class="semtype" value="abstract-process"/>
         </w>
         <w xml:id="tscan.p.18.s.1.w.7" class="WORD">
           <t>het</t>
@@ -11315,7 +11390,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-2.20952"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="undefined-verb"/>
         </w>
         <w xml:id="tscan.p.18.s.1.w.14" class="PUNCTUATION">
           <t>.</t>
@@ -11412,6 +11487,7 @@
         <metric class="time_situation_count" value="1"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="1"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -11485,11 +11561,12 @@
         <metric class="undefined_nouns_count" value="1"/>
         <metric class="covered_nouns_count" value="2"/>
         <metric class="uncovered_nouns_count" value="1"/>
+        <metric class="abstract_ww" value="1"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="1"/>
         <metric class="state_count" value="0"/>
-        <metric class="action_count" value="1"/>
+        <metric class="action_count" value="0"/>
         <metric class="process_count" value="1"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="2"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="1"/>
@@ -11570,6 +11647,7 @@
       <metric class="time_situation_count" value="1"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="1"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -11645,11 +11723,12 @@
       <metric class="undefined_nouns_count" value="1"/>
       <metric class="covered_nouns_count" value="2"/>
       <metric class="uncovered_nouns_count" value="1"/>
+      <metric class="abstract_ww" value="1"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="1"/>
       <metric class="state_count" value="0"/>
-      <metric class="action_count" value="1"/>
+      <metric class="action_count" value="0"/>
       <metric class="process_count" value="1"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="2"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="1"/>
@@ -11764,7 +11843,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-2.51006"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.19.s.1.w.4" class="WORD">
           <t>ze</t>
@@ -11893,7 +11972,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.48845"/>
           <metric class="property" value="voltooid_deelw"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="undefined-verb"/>
         </w>
         <w xml:id="tscan.p.19.s.1.w.8" class="WORD">
           <t>en</t>
@@ -11951,7 +12030,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.88495"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.19.s.1.w.10" class="WORD">
           <t>die</t>
@@ -12184,7 +12263,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.5119"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.19.s.1.w.18" class="PUNCTUATION">
           <t>.</t>
@@ -12301,6 +12380,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -12374,11 +12454,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="2"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="3"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="1"/>
         <metric class="state_count" value="3"/>
-        <metric class="action_count" value="1"/>
+        <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="4"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -12459,6 +12540,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -12534,11 +12616,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="2"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="3"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="1"/>
       <metric class="state_count" value="3"/>
-      <metric class="action_count" value="1"/>
+      <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="4"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -12648,7 +12731,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-0.551465"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.20.s.1.w.4" class="WORD">
           <t>niet</t>
@@ -12767,7 +12850,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.83466"/>
           <metric class="property" value="voltooid_deelw"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-action"/>
         </w>
         <w xml:id="tscan.p.20.s.1.w.8" class="WORD" space="no">
           <t>antewoord</t>
@@ -12841,7 +12924,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-4.23425"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="process"/>
+          <metric class="semtype" value="abstract-verb"/>
         </w>
         <w xml:id="tscan.p.20.s.1.w.11" class="WORD">
           <t>ik</t>
@@ -12953,7 +13036,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-4.54062"/>
           <metric class="property" value="onvoltooid_deelw"/>
-          <metric class="semtype" value="process"/>
+          <metric class="semtype" value="abstract-process"/>
         </w>
         <w xml:id="tscan.p.20.s.1.w.15" class="WORD">
           <t>volume</t>
@@ -12971,7 +13054,6 @@
           </morphology>
           <lemma class="volume"/>
           <metric class="content_word" value="true"/>
-          <metric class="situation" value="ruimte"/>
           <metric class="lsa_word_ctx" value="0.0674367"/>
           <metric class="top20000" value="true"/>
           <metric class="word_freq" value="5952"/>
@@ -13160,8 +13242,9 @@
         <metric class="comparatief_connector_count" value="0"/>
         <metric class="causaal_connector_count" value="0"/>
         <metric class="time_situation_count" value="0"/>
-        <metric class="space_situation_count" value="1"/>
+        <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="1"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -13235,11 +13318,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="3"/>
+        <metric class="abstract_ww" value="4"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="1"/>
         <metric class="action_count" value="1"/>
-        <metric class="process_count" value="2"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
+        <metric class="process_count" value="1"/>
         <metric class="covered_verb_count" value="4"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -13318,8 +13402,9 @@
       <metric class="comparatief_connector_count" value="0"/>
       <metric class="causaal_connector_count" value="0"/>
       <metric class="time_situation_count" value="0"/>
-      <metric class="space_situation_count" value="1"/>
+      <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="1"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -13395,11 +13480,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="3"/>
+      <metric class="abstract_ww" value="4"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="1"/>
       <metric class="action_count" value="1"/>
-      <metric class="process_count" value="2"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
+      <metric class="process_count" value="1"/>
       <metric class="covered_verb_count" value="4"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -13550,7 +13636,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.80183"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="undefined-action"/>
         </w>
         <w xml:id="tscan.p.21.s.1.w.6" class="WORD">
           <t>je</t>
@@ -13807,6 +13893,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -13880,11 +13967,12 @@
         <metric class="undefined_nouns_count" value="2"/>
         <metric class="covered_nouns_count" value="3"/>
         <metric class="uncovered_nouns_count" value="1"/>
+        <metric class="abstract_ww" value="0"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="1"/>
         <metric class="state_count" value="0"/>
         <metric class="action_count" value="1"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="1"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="1"/>
@@ -13965,6 +14053,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -14040,11 +14129,12 @@
       <metric class="undefined_nouns_count" value="2"/>
       <metric class="covered_nouns_count" value="3"/>
       <metric class="uncovered_nouns_count" value="1"/>
+      <metric class="abstract_ww" value="0"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="1"/>
       <metric class="state_count" value="0"/>
       <metric class="action_count" value="1"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="1"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="1"/>
@@ -14162,7 +14252,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.13412"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="undefined-state"/>
         </w>
         <w xml:id="tscan.p.22.s.1.w.4" class="WORD">
           <t>je</t>
@@ -14371,6 +14461,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -14444,11 +14535,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="0"/>
         <metric class="uncovered_nouns_count" value="1"/>
+        <metric class="abstract_ww" value="0"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="1"/>
         <metric class="state_count" value="1"/>
         <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="1"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -14529,6 +14621,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -14604,11 +14697,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="0"/>
       <metric class="uncovered_nouns_count" value="1"/>
+      <metric class="abstract_ww" value="0"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="1"/>
       <metric class="state_count" value="1"/>
       <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="1"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -15004,6 +15098,7 @@
           </morphology>
           <lemma class="nacht"/>
           <metric class="content_word" value="true"/>
+          <metric class="situation" value="tijd"/>
           <metric class="top20000" value="true"/>
           <metric class="word_freq" value="2275"/>
           <metric class="log_word_freq" value="3.35698"/>
@@ -15267,9 +15362,10 @@
         <metric class="contrast_connector_count" value="0"/>
         <metric class="comparatief_connector_count" value="0"/>
         <metric class="causaal_connector_count" value="0"/>
-        <metric class="time_situation_count" value="0"/>
+        <metric class="time_situation_count" value="1"/>
         <metric class="space_situation_count" value="1"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -15343,11 +15439,12 @@
         <metric class="undefined_nouns_count" value="3"/>
         <metric class="covered_nouns_count" value="6"/>
         <metric class="uncovered_nouns_count" value="1"/>
+        <metric class="abstract_ww" value="0"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="0"/>
         <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="0"/>
         <metric class="uncovered_verb_count" value="1"/>
         <metric class="indef_np_count" value="2"/>
@@ -15425,9 +15522,10 @@
       <metric class="contrast_connector_count" value="0"/>
       <metric class="comparatief_connector_count" value="0"/>
       <metric class="causaal_connector_count" value="0"/>
-      <metric class="time_situation_count" value="0"/>
+      <metric class="time_situation_count" value="1"/>
       <metric class="space_situation_count" value="1"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -15503,11 +15601,12 @@
       <metric class="undefined_nouns_count" value="3"/>
       <metric class="covered_nouns_count" value="6"/>
       <metric class="uncovered_nouns_count" value="1"/>
+      <metric class="abstract_ww" value="0"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="0"/>
       <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="0"/>
       <metric class="uncovered_verb_count" value="1"/>
       <metric class="indef_np_count" value="2"/>
@@ -15596,7 +15695,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-0.792123"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.24.s.1.w.3" class="WORD">
           <t>ze</t>
@@ -15771,7 +15870,6 @@
           </morphology>
           <lemma class="nu"/>
           <metric class="content_word" value="true"/>
-          <metric class="connective" value="causaal"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -15866,7 +15964,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.80749"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-process"/>
         </w>
         <w xml:id="tscan.p.24.s.1.w.13" class="PUNCTUATION">
           <t>.</t>
@@ -15966,10 +16064,11 @@
         <metric class="reeks_connector_count" value="0"/>
         <metric class="contrast_connector_count" value="0"/>
         <metric class="comparatief_connector_count" value="1"/>
-        <metric class="causaal_connector_count" value="1"/>
+        <metric class="causaal_connector_count" value="0"/>
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -16043,11 +16142,12 @@
         <metric class="undefined_nouns_count" value="1"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="2"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="1"/>
-        <metric class="action_count" value="1"/>
-        <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
+        <metric class="action_count" value="0"/>
+        <metric class="process_count" value="1"/>
         <metric class="covered_verb_count" value="2"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -16125,10 +16225,11 @@
       <metric class="reeks_connector_count" value="0"/>
       <metric class="contrast_connector_count" value="0"/>
       <metric class="comparatief_connector_count" value="1"/>
-      <metric class="causaal_connector_count" value="1"/>
+      <metric class="causaal_connector_count" value="0"/>
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -16204,11 +16305,12 @@
       <metric class="undefined_nouns_count" value="1"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="2"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="1"/>
-      <metric class="action_count" value="1"/>
-      <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
+      <metric class="action_count" value="0"/>
+      <metric class="process_count" value="1"/>
       <metric class="covered_verb_count" value="2"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -16290,6 +16392,7 @@
           <lemma class="menen"/>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
           <metric class="content_word" value="true"/>
+          <metric class="situation" value="emotie"/>
           <metric class="lsa_word_ctx" value="0.00745446"/>
           <metric class="top2000" value="true"/>
           <metric class="word_freq" value="19023"/>
@@ -16300,7 +16403,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.11227"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="process"/>
+          <metric class="semtype" value="abstract-process"/>
         </w>
         <w xml:id="tscan.p.25.s.1.w.3" class="WORD">
           <t>ze</t>
@@ -16474,7 +16577,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-2.99103"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-verb"/>
         </w>
         <w xml:id="tscan.p.25.s.1.w.9" class="WORD">
           <t>maar</t>
@@ -16516,18 +16619,19 @@
           </morphology>
           <lemma class="durven"/>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
+          <metric class="full-lemma" value="aandurven"/>
           <metric class="content_word" value="true"/>
           <metric class="lsa_word_ctx" value="0.0237586"/>
           <metric class="top5000" value="true"/>
           <metric class="word_freq" value="11519"/>
           <metric class="log_word_freq" value="4.06141"/>
-          <metric class="lemma_freq" value="42512"/>
-          <metric class="log_lemma_freq" value="4.62851"/>
+          <metric class="lemma_freq" value="1456"/>
+          <metric class="log_lemma_freq" value="3.16316"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-4.63067"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="undefined-action"/>
         </w>
         <w xml:id="tscan.p.25.s.1.w.11" class="WORD">
           <t>ze</t>
@@ -16644,7 +16748,6 @@
             </morpheme>
           </morphology>
           <lemma class="om"/>
-          <metric class="connective" value="causaal"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -16764,19 +16867,20 @@
           </morphology>
           <lemma class="stappen"/>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
+          <metric class="full-lemma" value="opstappen"/>
           <metric class="content_word" value="true"/>
           <metric class="lsa_word_ctx" value="0.051247"/>
           <metric class="f80" value="true"/>
           <metric class="top2000" value="true"/>
           <metric class="word_freq" value="32847"/>
           <metric class="log_word_freq" value="4.5165"/>
-          <metric class="lemma_freq" value="53276"/>
-          <metric class="log_lemma_freq" value="4.72653"/>
+          <metric class="lemma_freq" value="6003"/>
+          <metric class="log_lemma_freq" value="3.77837"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-1.74299"/>
           <metric class="property" value="infinitief"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="undefined-action"/>
         </w>
         <w xml:id="tscan.p.25.s.1.w.21" class="PUNCTUATION">
           <t>.</t>
@@ -16900,10 +17004,11 @@
         <metric class="reeks_connector_count" value="0"/>
         <metric class="contrast_connector_count" value="1"/>
         <metric class="comparatief_connector_count" value="0"/>
-        <metric class="causaal_connector_count" value="1"/>
+        <metric class="causaal_connector_count" value="0"/>
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="1"/>
         <metric class="prop_neg_count" value="1"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -16928,10 +17033,10 @@
         <metric class="word_freq_no_names" value="4634522"/>
         <metric class="log_word_freq" value="5.82117"/>
         <metric class="log_word_freq_no_names" value="5.88785"/>
-        <metric class="lemma_freq" value="4719358"/>
-        <metric class="lemma_freq_no_names" value="4716921"/>
-        <metric class="log_lemma_freq" value="5.82878"/>
-        <metric class="log_lemma_freq_no_names" value="5.89551"/>
+        <metric class="lemma_freq" value="4631029"/>
+        <metric class="lemma_freq_no_names" value="4628592"/>
+        <metric class="log_lemma_freq" value="5.82058"/>
+        <metric class="log_lemma_freq_no_names" value="5.8873"/>
         <metric class="wopr_logprob" value="0.00272192"/>
         <metric class="wopr_entropy" value="1.79732"/>
         <metric class="wopr_perplexity" value="3.47575"/>
@@ -16977,11 +17082,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="0"/>
         <metric class="uncovered_nouns_count" value="1"/>
-        <metric class="state_count" value="1"/>
+        <metric class="abstract_ww" value="2"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="2"/>
+        <metric class="state_count" value="0"/>
         <metric class="action_count" value="2"/>
         <metric class="process_count" value="1"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="4"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -17058,10 +17164,11 @@
       <metric class="reeks_connector_count" value="0"/>
       <metric class="contrast_connector_count" value="1"/>
       <metric class="comparatief_connector_count" value="0"/>
-      <metric class="causaal_connector_count" value="1"/>
+      <metric class="causaal_connector_count" value="0"/>
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="1"/>
       <metric class="prop_neg_count" value="1"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -17088,10 +17195,10 @@
       <metric class="word_freq_no_names" value="4634522"/>
       <metric class="log_word_freq" value="5.82117"/>
       <metric class="log_word_freq_no_names" value="5.88785"/>
-      <metric class="lemma_freq" value="4719358"/>
-      <metric class="lemma_freq_no_names" value="4716921"/>
-      <metric class="log_lemma_freq" value="5.82878"/>
-      <metric class="log_lemma_freq_no_names" value="5.89551"/>
+      <metric class="lemma_freq" value="4631029"/>
+      <metric class="lemma_freq_no_names" value="4628592"/>
+      <metric class="log_lemma_freq" value="5.82058"/>
+      <metric class="log_lemma_freq_no_names" value="5.8873"/>
       <metric class="wopr_logprob" value="0.00272192"/>
       <metric class="wopr_entropy" value="1.79732"/>
       <metric class="wopr_perplexity" value="3.47575"/>
@@ -17137,11 +17244,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="0"/>
       <metric class="uncovered_nouns_count" value="1"/>
-      <metric class="state_count" value="1"/>
+      <metric class="abstract_ww" value="2"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="2"/>
+      <metric class="state_count" value="0"/>
       <metric class="action_count" value="2"/>
       <metric class="process_count" value="1"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="4"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -17293,7 +17401,7 @@
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="process"/>
+          <metric class="semtype" value="abstract-process"/>
         </w>
         <w xml:id="tscan.p.26.s.1.w.6" class="WORD">
           <t>een</t>
@@ -17489,6 +17597,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -17561,11 +17670,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="1"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="0"/>
         <metric class="action_count" value="0"/>
         <metric class="process_count" value="1"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="1"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="1"/>
@@ -17648,6 +17758,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -17722,11 +17833,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="1"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="0"/>
       <metric class="action_count" value="0"/>
       <metric class="process_count" value="1"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="1"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="1"/>
@@ -17795,7 +17907,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-4.16875"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="undefined-action"/>
         </w>
         <w xml:id="tscan.p.27.s.1.w.2" class="WORD">
           <t>haar</t>
@@ -17981,6 +18093,7 @@
         <metric class="time_situation_count" value="0"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -18054,11 +18167,12 @@
         <metric class="undefined_nouns_count" value="1"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="0"/>
+        <metric class="abstract_ww" value="0"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="1"/>
         <metric class="state_count" value="0"/>
         <metric class="action_count" value="1"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="1"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -18141,6 +18255,7 @@
       <metric class="time_situation_count" value="0"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -18216,11 +18331,12 @@
       <metric class="undefined_nouns_count" value="1"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="0"/>
+      <metric class="abstract_ww" value="0"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="1"/>
       <metric class="state_count" value="0"/>
       <metric class="action_count" value="1"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="1"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -18315,7 +18431,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-0.822237"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.28.s.1.w.3" class="WORD">
           <t>Agnes</t>
@@ -18463,7 +18579,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-1.9592"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="state"/>
+          <metric class="semtype" value="abstract-state"/>
         </w>
         <w xml:id="tscan.p.28.s.1.w.9" class="WORD">
           <t>het</t>
@@ -18725,6 +18841,7 @@
         <metric class="time_situation_count" value="1"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -18798,11 +18915,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="2"/>
         <metric class="uncovered_nouns_count" value="2"/>
+        <metric class="abstract_ww" value="2"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="2"/>
         <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="2"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -18883,6 +19001,7 @@
       <metric class="time_situation_count" value="1"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -18958,11 +19077,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="2"/>
       <metric class="uncovered_nouns_count" value="2"/>
+      <metric class="abstract_ww" value="2"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="2"/>
       <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="2"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -19161,7 +19281,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10" value="-3.44125"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="action"/>
+          <metric class="semtype" value="abstract-verb"/>
         </w>
         <w xml:id="tscan.p.29.s.1.w.8" class="WORD" space="no">
           <t>Leen</t>
@@ -19276,6 +19396,7 @@
         <metric class="time_situation_count" value="1"/>
         <metric class="space_situation_count" value="0"/>
         <metric class="cause_situation_count" value="0"/>
+        <metric class="emotion_situation_count" value="0"/>
         <metric class="prop_neg_count" value="0"/>
         <metric class="morph_neg_count" value="0"/>
         <metric class="multiple_neg_count" value="0"/>
@@ -19348,11 +19469,12 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="1"/>
         <metric class="uncovered_nouns_count" value="2"/>
+        <metric class="abstract_ww" value="1"/>
+        <metric class="concrete_ww" value="0"/>
+        <metric class="undefined_ww" value="0"/>
         <metric class="state_count" value="0"/>
-        <metric class="action_count" value="1"/>
+        <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="weird_count" value="0"/>
-        <metric class="undefined_verb_count" value="0"/>
         <metric class="covered_verb_count" value="1"/>
         <metric class="uncovered_verb_count" value="0"/>
         <metric class="indef_np_count" value="0"/>
@@ -19435,6 +19557,7 @@
       <metric class="time_situation_count" value="1"/>
       <metric class="space_situation_count" value="0"/>
       <metric class="cause_situation_count" value="0"/>
+      <metric class="emotion_situation_count" value="0"/>
       <metric class="prop_neg_count" value="0"/>
       <metric class="morph_neg_count" value="0"/>
       <metric class="multiple_neg_count" value="0"/>
@@ -19507,11 +19630,12 @@
       <metric class="undefined_nouns_count" value="0"/>
       <metric class="covered_nouns_count" value="1"/>
       <metric class="uncovered_nouns_count" value="2"/>
+      <metric class="abstract_ww" value="1"/>
+      <metric class="concrete_ww" value="0"/>
+      <metric class="undefined_ww" value="0"/>
       <metric class="state_count" value="0"/>
-      <metric class="action_count" value="1"/>
+      <metric class="action_count" value="0"/>
       <metric class="process_count" value="0"/>
-      <metric class="weird_count" value="0"/>
-      <metric class="undefined_verb_count" value="0"/>
       <metric class="covered_verb_count" value="1"/>
       <metric class="uncovered_verb_count" value="0"/>
       <metric class="indef_np_count" value="0"/>
@@ -19590,10 +19714,11 @@
     <metric class="reeks_connector_count" value="8"/>
     <metric class="contrast_connector_count" value="2"/>
     <metric class="comparatief_connector_count" value="1"/>
-    <metric class="causaal_connector_count" value="12"/>
-    <metric class="time_situation_count" value="7"/>
-    <metric class="space_situation_count" value="4"/>
+    <metric class="causaal_connector_count" value="7"/>
+    <metric class="time_situation_count" value="8"/>
+    <metric class="space_situation_count" value="3"/>
     <metric class="cause_situation_count" value="0"/>
+    <metric class="emotion_situation_count" value="9"/>
     <metric class="prop_neg_count" value="5"/>
     <metric class="morph_neg_count" value="0"/>
     <metric class="multiple_neg_count" value="0"/>
@@ -19621,10 +19746,10 @@
     <metric class="word_freq_no_names" value="51535741"/>
     <metric class="log_word_freq" value="5.55791"/>
     <metric class="log_word_freq_no_names" value="5.59816"/>
-    <metric class="lemma_freq" value="66921686"/>
-    <metric class="lemma_freq_no_names" value="66802243"/>
-    <metric class="log_lemma_freq" value="5.67023"/>
-    <metric class="log_lemma_freq_no_names" value="5.71085"/>
+    <metric class="lemma_freq" value="65474716"/>
+    <metric class="lemma_freq_no_names" value="65355273"/>
+    <metric class="log_lemma_freq" value="5.66074"/>
+    <metric class="log_lemma_freq_no_names" value="5.70134"/>
     <metric class="wopr_logprob" value="0.132182"/>
     <metric class="wopr_entropy" value="44.0607"/>
     <metric class="wopr_perplexity" value="97.9755"/>
@@ -19670,11 +19795,12 @@
     <metric class="undefined_nouns_count" value="13"/>
     <metric class="covered_nouns_count" value="37"/>
     <metric class="uncovered_nouns_count" value="18"/>
+    <metric class="abstract_ww" value="44"/>
+    <metric class="concrete_ww" value="4"/>
+    <metric class="undefined_ww" value="13"/>
     <metric class="state_count" value="28"/>
-    <metric class="action_count" value="27"/>
-    <metric class="process_count" value="6"/>
-    <metric class="weird_count" value="0"/>
-    <metric class="undefined_verb_count" value="0"/>
+    <metric class="action_count" value="12"/>
+    <metric class="process_count" value="9"/>
     <metric class="covered_verb_count" value="61"/>
     <metric class="uncovered_verb_count" value="1"/>
     <metric class="indef_np_count" value="9"/>
@@ -19720,11 +19846,13 @@
     <metric class="name_mtld" value="3.79167"/>
     <metric class="content_word_ttr" value="0.79021"/>
     <metric class="content_mtld" value="190.857"/>
-    <metric class="time_sit_ttr" value="0.714286"/>
-    <metric class="tijd_sit_mtld" value="5.25"/>
+    <metric class="time_sit_ttr" value="0.75"/>
+    <metric class="tijd_sit_mtld" value="6.48"/>
     <metric class="space_sit_ttr" value="1"/>
-    <metric class="ruimte_sit_mtld" value="4"/>
+    <metric class="ruimte_sit_mtld" value="3"/>
     <metric class="cause_sit_mtld" value="0"/>
+    <metric class="emotion_sit_ttr" value="0.888889"/>
+    <metric class="emotion_sit_mtld" value="22.68"/>
     <metric class="temp_conn_ttr" value="1"/>
     <metric class="temp_conn_mtld" value="2"/>
     <metric class="opsom_conn_ttr" value="0.25"/>
@@ -19733,8 +19861,8 @@
     <metric class="contrast_conn_mtld" value="2"/>
     <metric class="comp_conn_ttr" value="1"/>
     <metric class="comp_conn_mtld" value="1"/>
-    <metric class="cause_conn_ttr" value="0.583333"/>
-    <metric class="cause_conn_mtld" value="6.97297"/>
+    <metric class="cause_conn_ttr" value="0.714286"/>
+    <metric class="cause_conn_mtld" value="5.25"/>
     <metric class="rar_index" value="0.92"/>
     <metric class="document_word_argument_overlap_count" value="46"/>
     <metric class="document_lemma_argument_overlap_count" value="51"/>
