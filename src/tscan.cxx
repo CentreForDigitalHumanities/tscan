@@ -4928,10 +4928,9 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
     result += s + "\n";
   }
   DBG << "received data [" << result << "]" << endl;
-  Document *doc = 0;
   if ( !result.empty() && result.size() > 10 ){
     DBG << "start FoLiA parsing" << endl;
-    doc = new Document();
+    Document *doc = new Document();
     try {
       doc->readFromString( result );
       DBG << "finished parsing" << endl;
@@ -4985,6 +4984,10 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
       LOG << "FoLiaParsing failed:" << endl
 	  << e.what() << endl;
     }
+  }
+  else {
+    LOG << "No usable FoLia date retrieved from Wopr. Got '"
+	<< result << "'" << endl;
   }
   LOG << "finished Wopr" << endl;
 }
