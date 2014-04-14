@@ -3825,7 +3825,9 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Gelabeld_bvnw_p,";
   os << "Gedekt_bvnw_p,";
   os << "Conc_ww_p,Conc_ww_d,";
-  os << "Gedekt_ww_p,";
+  os << "Abstr_ww_p,Abstr_ww_d,";
+  os << "Undefined_ww_p,";
+  os << "Gedekte_ww_p,";
   os << "Conc_tot_p,Conc_tot_d,";
 }
 
@@ -3912,6 +3914,9 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << proportion( adjCnt-uncoveredAdjCnt+undefinedAdjCnt ,adjCnt ) << ",";
   os << proportion( concreteWwCnt,pastCnt + presentCnt ) << ",";
   os << density( concreteWwCnt,pastCnt + presentCnt ) << ",";
+  os << proportion( abstractWwCnt,pastCnt + presentCnt ) << ",";
+  os << density( abstractWwCnt,pastCnt + presentCnt ) << ",";
+  os << proportion( undefinedWwCnt,pastCnt + presentCnt ) << ",";
   os << proportion( pastCnt+presentCnt - uncoveredVerbCnt,pastCnt + presentCnt ) << ",";
   os << proportion( concreteWwCnt + strictConcreteAdjCnt + strictConcreteNounCnt, wordCnt ) << ",";
   os << density( concreteWwCnt + strictConcreteAdjCnt + strictConcreteNounCnt, wordCnt ) << ",";
