@@ -670,7 +670,7 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma,
       //      cerr << "resultaat = tijdww" << endl;
       return TIME_VERB;
     }
-    cerr << "resultaat 3 = hoofdww" << endl;
+    //    cerr << "resultaat 3 = hoofdww" << endl;
     for ( vector< xmlNode *>::const_iterator it=siblinglist.begin();
 	  it != siblinglist.end();
 	  ++it ){

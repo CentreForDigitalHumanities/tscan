@@ -422,7 +422,6 @@ struct settingData {
   bool doWopr;
   bool doLsa;
   bool doXfiles;
-  bool doNestedMorph;
   string decompounderPath;
   string style;
   int rarityLevel;
@@ -1043,14 +1042,6 @@ void settingData::init( const Configuration& cf ){
       exit( EXIT_FAILURE );
     }
   }
-  doNestedMorph = false;
-  val = cf.lookUp( "nestedMorph" );
-  if ( !val.empty() ){
-    if ( !TiCC::stringTo( val, doNestedMorph ) ){
-      cerr << "invalid value for 'nestedMorph' in config file" << endl;
-      exit( EXIT_FAILURE );
-    }
-  }
   doLsa = true;
   val = cf.lookUp( "useLsa" );
   if ( !val.empty() ){
@@ -1343,7 +1334,7 @@ enum ConnType { NOCONN, TEMPOREEL, OPSOMMEND, CONTRASTIEF, COMPARATIEF, CAUSAAL 
 
 string toString( const ConnType& c ){
   if ( c == NOCONN )
-    return "Not_a_connector";
+    return "no";
   else if ( c == TEMPOREEL )
     return "temporeel";
   else if ( c == OPSOMMEND )
@@ -1396,9 +1387,10 @@ struct sentStats;
 struct wordStats;
 
 struct basicStats {
-  basicStats( FoliaElement *el, const string& cat ):
+  basicStats( int pos, FoliaElement *el, const string& cat ):
     folia_node( el ),
     category( cat ),
+    index(pos),
     charCnt(0),charCntExNames(0),
     morphCnt(0), morphCntExNames(0),
     lsa_opv(0),
@@ -1456,6 +1448,7 @@ struct basicStats {
   FoliaElement *folia_node;
   string category;
   string id;
+  int index;
   int charCnt;
   int charCntExNames;
   int morphCnt;
@@ -1466,7 +1459,7 @@ struct basicStats {
 };
 
 struct wordStats : public basicStats {
-  wordStats( Word *, const xmlNode *, const set<size_t>&, bool );
+  wordStats( int, Word *, const xmlNode *, const set<size_t>&, bool );
   void CSVheader( ostream&, const string& ) const;
   void wordDifficultiesHeader( ostream& ) const;
   void wordDifficultiesToCSV( ostream& ) const;
@@ -2085,11 +2078,12 @@ void argument_overlap( const string w_or_l,
   }
 }
 
-wordStats::wordStats( Word *w,
+wordStats::wordStats( int index,
+		      Word *w,
 		      const xmlNode *alpWord,
 		      const set<size_t>& puncts,
 		      bool fail ):
-  basicStats( w, "word" ), parseFail(fail), wwform(::NO_VERB),
+  basicStats( index, w, "word" ), parseFail(fail), wwform(::NO_VERB),
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false),
@@ -2135,49 +2129,51 @@ wordStats::wordStats( Word *w,
   }
   isContent = checkContent();
   if ( prop != ISLET ){
+    vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
     size_t max = 0;
-    if ( settings.doNestedMorph ){
-      vector<Morpheme*> morphemeV;
-      vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
-      for ( size_t q=0; q < ml.size(); ++q ){
-	vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set, false );
+    vector<Morpheme*> morphemeV;
+    for ( size_t q=0; q < ml.size(); ++q ){
+      vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set, false );
+      if ( m.size() == 1  && m[0]->cls() == "complex" ){
+	// nested morphemes
+	string desc = m[0]->description();
+	vector<string> parts;
+	TiCC::split_at_first_of( desc, parts, "[]" );
+	if ( parts.size() > max ){
+	  // a hack: we assume the longest morpheme list to
+	  // be the best choice.
+	  morphemes = parts;
+	  max = parts.size();
+	}
+      }
+      else {
+	// flat morphemes
+	m = ml[q]->select<Morpheme>( frog_morph_set );
 	if ( m.size() > max ){
 	  // a hack: we assume the longest morpheme list to
 	  // be the best choice.
-	  morphemeV = m;
+	  morphemes.clear();
+	  for ( size_t i=0; i <m.size(); ++i ){
+	    morphemes.push_back( m[i]->str() );
+	  }
 	  max = m.size();
 	}
       }
-      for ( size_t q=0; q < morphemeV.size(); ++q ){
-	morphemes.push_back( morphemeV[q]->description() );
-      }
     }
-    else {
-      vector<Morpheme*> morphemeV;
-      vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
-      for ( size_t q=0; q < ml.size(); ++q ){
-	vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set );
-	if ( m.size() > max ){
-	  // a hack: we assume the longest morpheme list to
-	  // be the best choice.
-	  morphemeV = m;
-	  max = m.size();
-	}
-      }
-      for ( size_t q=0; q < morphemeV.size(); ++q ){
-	morphemes.push_back( morphemeV[q]->str() );
-      }
+    if ( morphemes.size() == 0 ){
+      cerr << "unable to retrieve morphemes from folia." << endl;
     }
+    cerr << "Morphemes " << word << "= " << morphemes << endl;
     isPropNeg = checkPropNeg();
     isMorphNeg = checkMorphNeg();
     connType = checkConnective( alpWord );
     sitType = checkSituation();
     // if ( sitType != NO_SIT )
     //   cerr << "checkSit " << word << " = " << sitType << endl;
-    morphCnt = max;
+    morphCnt = morphemes.size();
     if ( prop != ISNAME ){
       charCntExNames = charCnt;
-      morphCntExNames = max;
+      morphCntExNames = morphCnt;
     }
     sem_type = checkSemProps();
     afkType = checkAfk();
@@ -2355,11 +2351,11 @@ void wordStats::addMetrics( ) const {
 
 void wordStats::CSVheader( ostream& os, const string& intro ) const {
   os << intro << ",";
+  wordSortHeader( os );
   wordDifficultiesHeader( os );
   coherenceHeader( os );
   concreetHeader( os );
   persoonlijkheidHeader( os );
-  wordSortHeader( os );
   miscHeader( os );
   os << endl;
 }
@@ -2437,51 +2433,24 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
 }
 
 void wordStats::coherenceHeader( ostream& os ) const {
-  os << "temporeel,reeks,contrastief,comparatief,causaal,multiword,Vnw_ref,";
+  os << "connector_type,multiword,Vnw_ref,";
 }
 
 void wordStats::coherenceToCSV( ostream& os ) const {
-  os << (connType==TEMPOREEL?1:0) << ","
-     << (connType==OPSOMMEND?1:0) << ","
-     << (connType==CONTRASTIEF) << ","
-     << (connType==COMPARATIEF) << ","
-     << (connType==CAUSAAL) << ","
-     << isMultiConn << ","
+  if ( connType == NOCONN )
+    os << "0,";
+  else
+    os << connType << ",";
+  os << isMultiConn << ","
      << isPronRef << ",";
 }
 
 void wordStats::concreetHeader( ostream& os ) const {
   os << "Conc_nw_strikt,";
   os << "Conc_nw_ruim,";
-  os << "PlantDier_nw,";
-  os << "Gebr_nw,";
-  os << "Subst_nw,";
-  os << "Plaats_nw,";
-  os << "Tijd_nw,";
-  os << "Maat_nw,";
-  os << "Gebeuren_nw,";
-  os << "Abstract_nw,";
-  os << "Organisatie_nw,";
-  os << "Waarn_mens_bvnw,";
-  os << "Emosoc_bvnw,";
-  os << "Vorm_omvang_bvnw,";
-  os << "Kleur_bvnw,";
-  os << "Stof_bvnw,";
-  os << "Geluid_bvnw,";
-  os << "Waarn_nmens_ov_bvnw,";
-  os << "Technisch_bvnw,";
-  os << "Time_bvnw,";
-  os << "Place_bvnw,";
-  os << "Spec_positief_bvnw,";
-  os << "Spec_negatief_bvnw,";
-  os << "Alg_positief_bvnw,";
-  os << "Alg_negatief_bvnw,";
-  os << "Ep_positief_bvnw,";
-  os << "Ep_negatief_bvnw,";
-  os << "Versterker_bvnw,";
-  os << "Verzwakker_bvnw,";
-  os << "Abstract_ov_bvnw,";
-  os << "Undefined_bvnw,";
+  os << "semtype_nw,";
+  os << "semtype_bvnw,";
+  os << "semtype_ww,";
 }
 
 void wordStats::concreetToCSV( ostream& os ) const {
@@ -2496,45 +2465,24 @@ void wordStats::concreetToCSV( ostream& os ) const {
   else {
     os << "0,0,";
   }
-  os << (sem_type==CONCRETE_NONHUMAN_NOUN?1:0) << ",";
-  os << (sem_type==CONCRETE_ARTEFACT_NOUN?1:0) << ",";
-  os << (sem_type==CONCRETE_SUBSTANCE_NOUN?1:0) << ",";
-  os << (sem_type==BROAD_CONCRETE_PLACE_NOUN?1:0) << ",";
-  os << (sem_type==BROAD_CONCRETE_TIME_NOUN?1:0) << ",";
-  os << (sem_type==BROAD_CONCRETE_MEASURE_NOUN?1:0) << ",";
-  os << (sem_type==ABSTRACT_DYNAMIC_NOUN?1:0) << ",";
-  os << (sem_type==ABSTRACT_NONDYNAMIC_NOUN?1:0) << ",";
-  os << (sem_type==INSTITUT_NOUN?1:0) << ",";
-
-  os << (sem_type==HUMAN_ADJ?1:0) << ",";
-  os << (sem_type==EMO_ADJ?1:0) << ",";
-  os << (sem_type==NONHUMAN_SHAPE_ADJ?1:0) << ",";
-  os << (sem_type==NONHUMAN_COLOR_ADJ?1:0) << ",";
-  os << (sem_type==NONHUMAN_MATTER_ADJ?1:0) << ",";
-  os << (sem_type==NONHUMAN_SOUND_ADJ?1:0) << ",";
-  os << (sem_type==NONHUMAN_OTHER_ADJ?1:0) << ",";
-  os << (sem_type==TECH_ADJ?1:0) << ",";
-  os << (sem_type==TIME_ADJ?1:0) << ",";
-  os << (sem_type==PLACE_ADJ?1:0) << ",";
-  os << (sem_type==SPEC_POS_ADJ?1:0) << ",";
-  os << (sem_type==SPEC_NEG_ADJ?1:0) << ",";
-  os << (sem_type==POS_ADJ?1:0) << ",";
-  os << (sem_type==NEG_ADJ?1:0) << ",";
-  os << (sem_type==EPI_POS_ADJ?1:0) << ",";
-  os << (sem_type==EPI_NEG_ADJ?1:0) << ",";
-  os << (sem_type==MORE_ADJ?1:0) << ",";
-  os << (sem_type==LESS_ADJ?1:0) << ",";
-  os << (sem_type==ABSTRACT_ADJ?1:0) << ",";
-  os << (sem_type==UNDEFINED_ADJ?1:0) << ",";
+  if ( tag == CGN::N ){
+    os << sem_type << ",0,0,";
+  }
+  else if ( tag == CGN::ADJ ){
+    os << "0," << sem_type << ",0,";
+  }
+  else if ( tag == CGN::WW ){
+    os << "0,0," << sem_type << ",";
+  }
+  else
+    os << "0,0,0,";
 }
 
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
   os << "Pers_ref,Pers_vnw1,Pers_vnw2,Pers_vnw3,Pers_vnw,"
-     << "Namen, Pers_naam, Geo_naam, Org_naam, Prod_naam, Event_naam, Ov_naam,"
-     << "Actieww,Toestww,"
-     << "Procesww,Pers_nw,"
-     << "Emo_bvn,Imp,"
-     << "Vragen,";
+     << "Namen, NER,"
+     << "Pers_nw,"
+     << "Emo_bvn,Imp,";
 }
 
 void wordStats::persoonlijkheidToCSV( ostream& os ) const {
@@ -2543,89 +2491,47 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << (prop == ISPPRON2 ) << ","
      << (prop == ISPPRON3 ) << ","
      << (prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3) << ","
-     << (prop == ISNAME) << ","
-     << (nerProp == PER_B || nerProp == PER_I ) << ","
-     << (nerProp == LOC_B || nerProp == LOC_I ) << ","
-     << (nerProp == ORG_B || nerProp == ORG_I ) << ","
-     << (nerProp == PRO_B || nerProp == PRO_I ) << ","
-     << (nerProp == EVE_B || nerProp == EVE_I ) << ","
-     << (nerProp == MISC_B || nerProp == MISC_I ) << ","
-     << (sem_type == ABSTRACT_ACTION || sem_type == CONCRETE_ACTION || sem_type == UNDEFINED_ACTION ) << ","
-     << (sem_type == ABSTRACT_STATE || sem_type == CONCRETE_STATE || sem_type == UNDEFINED_STATE ) << ","
-     << (sem_type == ABSTRACT_PROCESS || sem_type == CONCRETE_PROCESS || sem_type == UNDEFINED_PROCESS ) << ","
-     << (sem_type == CONCRETE_HUMAN_NOUN ) << ","
+     << (prop == ISNAME) << ",";
+  if ( nerProp == NONER )
+    os << "0,";
+  else
+    os << nerProp << ",";
+
+  os << (sem_type == CONCRETE_HUMAN_NOUN ) << ","
      << (sem_type == EMO_ADJ ) << ","
-     << isImperative << ","
-     << "NA,";
+     << isImperative << ",";
 }
 
 void wordStats::wordSortHeader( ostream& os ) const {
-  os << "Bvn,Vg,Vnw,Lid,Vz,Bijw,Tw,Nw,Ww,Tuss,Spec,Aanh,"
-     << "Afk,Afk_gen,Afk_int,Afk_jur,Afk_med,Afk_ond,Afk_pol,Afk_ov,Afk_zorg,";
+  os << "POS,Afk,";
 }
 
 void wordStats::wordSortToCSV( ostream& os ) const {
-  os << (tag == CGN::ADJ ) << ","
-     << (tag == CGN::VG ) << ","
-     << (tag == CGN::VNW ) << ","
-     << (tag == CGN::LID ) << ","
-     << (tag == CGN::VZ ) << ","
-     << (tag == CGN::BW ) << ","
-     << (tag == CGN::TW ) << ","
-     << (tag == CGN::N ) << ","
-     << (tag == CGN::WW ) << ","
-     << (tag == CGN::TSW ) << ","
-     << (tag == CGN::SPEC ) << ","
-     << (tag == CGN::LET ) << ","
-     << toString( afkType != NO_A ) << ",";
-  if ( afkType == GENERIEK_A )
-    os << "1,";
-  else
+  os << tag << ",";
+  if ( afkType == NO_A ) {
     os << "0,";
-  if ( afkType == INTERNATIONAAL_A )
-    os << "1,";
-  else
-    os << "0,";
-  if ( afkType == JURIDISCH_A )
-    os << "1,";
-  else
-    os << "0,";
-  if ( afkType == MEDIA_A )
-    os << "1,";
-  else
-    os << "0,";
-  if ( afkType == ONDERWIJS_A )
-    os << "1,";
-  else
-    os << "0,";
-  if ( afkType == OVERHEID_A )
-    os << "1,";
-  else
-    os << "0,";
-  if ( afkType == OVERIGE_A )
-    os << "1,";
-  else
-    os << "0,";
-  if ( afkType == ZORG_A )
-    os << "1,";
-  else
-    os << "0,";
+  }
+  else {
+    os << afkType << ",";
+  }
 }
 
 void wordStats::miscHeader( ostream& os ) const {
-  os << "Ww_tt,Ww_mod,Huww_tijd,Koppelww,Arch,"
-     << "Vol_dw,Onvol_dw,Infin,Log_prob";
+  os << "Ww_vorm,Ww_tt,Vol_dw,Onvol_dw,Infin,Archaisch,Log_prob";
 }
 
 void wordStats::miscToCSV( ostream& os ) const {
-  os << (prop == ISPVTGW) << ","
-     << (wwform == MODAL_VERB ) << ","
-     << (wwform == TIME_VERB ) << ","
-     << (wwform == COPULA ) << ","
-     << archaic << ","
-     << (prop == ISVD ) << ","
+  if ( wwform == ::NO_VERB ){
+    os << "0,";
+  }
+  else {
+    os << wwform << ",";
+  }
+  os << (prop == ISPVTGW) << ",";
+  os << (prop == ISVD ) << ","
      << (prop == ISOD) << ","
      << (prop == ISINF ) << ",";
+  os << archaic << ",";
   if ( logprob10 == NA )
     os << "NA,";
   else
@@ -2643,21 +2549,27 @@ void wordStats::toCSV( ostream& os ) const {
   os << '"' << word << '"';
   os << ",";
   if ( parseFail ){
-    na( os, 86 );
+    na( os, 59 );
     return;
   }
+  os << '"' << lemma << '"';
+  os << ",";
+  os << '"' << full_lemma << '"';
+  os << ",";
+  os << '"' << morphemes << '"';
+  os << ",";
+  wordSortToCSV( os );
   wordDifficultiesToCSV( os );
   coherenceToCSV( os );
   concreetToCSV( os );
   persoonlijkheidToCSV( os );
-  wordSortToCSV( os );
   miscToCSV( os );
   os << endl;
 }
 
 struct structStats: public basicStats {
-  structStats( FoliaElement *el, const string& cat ):
-    basicStats( el, cat ),
+  structStats( int index, FoliaElement *el, const string& cat ):
+    basicStats( index, el, cat ),
     wordCnt(0),
     sentCnt(0),
     parseFailCnt(0),
@@ -3758,8 +3670,14 @@ void structStats::coherenceToCSV( ostream& os ) const {
      << density( pronRefCnt, wordCnt ) << ","
      << proportion( pronRefCnt, clauseCnt ) << ",";
   if ( isSentence() ){
-    os << double(wordOverlapCnt) << ",NA,"
-       << double(lemmaOverlapCnt) << ",NA,";
+    if ( index == 0 ){
+      os << "NA,NA,"
+	 << "NA,NA,";
+    }
+    else {
+      os << double(wordOverlapCnt) << ",NA,"
+	 << double(lemmaOverlapCnt) << ",NA,";
+    }
   }
   else {
     os << density( wordOverlapCnt, wordCnt ) << ","
@@ -3771,9 +3689,9 @@ void structStats::coherenceToCSV( ostream& os ) const {
     os << "NA,NA,NA,NA,";
   }
   else {
-    os << density( word_overlapCnt(), wordCnt ) << ","
+    os << density( word_overlapCnt(), wordCnt - settings.overlapSize ) << ","
        << proportion( word_overlapCnt(), clauseCnt ) << ","
-       << density( lemma_overlapCnt(), wordCnt ) << ","
+       << density( lemma_overlapCnt(), wordCnt  - settings.overlapSize ) << ","
        << proportion( lemma_overlapCnt(), clauseCnt )<< ",";
   }
   os << proportion( indefNpCnt, npCnt ) << ",";
@@ -4191,7 +4109,7 @@ void structStats::calculate_LSA_summary(){
 }
 
 struct sentStats : public structStats {
-  sentStats( Sentence *, const sentStats*, const map<string,double>& );
+  sentStats( int, Sentence *, const sentStats*, const map<string,double>& );
   bool isSentence() const { return true; };
   void resolveConnectives();
   void resolveSituations();
@@ -4994,9 +4912,9 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 
 xmlDoc *AlpinoServerParse( Sentence *);
 
-sentStats::sentStats( Sentence *s, const sentStats* pred,
+sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 		      const map<string,double>& LSAword_dists ):
-  structStats( s, "sent" ){
+  structStats( index, s, "sent" ){
   text = UnicodeToUTF8( s->toktext() );
   LOG << "analyse tokenized sentence=" << text << endl;
   vector<Word*> w = s->words();
@@ -5086,7 +5004,7 @@ sentStats::sentStats( Sentence *s, const sentStats* pred,
     if ( alpDoc ){
       alpWord = getAlpNodeWord( alpDoc, w[i] );
     }
-    wordStats *ws = new wordStats( w[i], alpWord, puncts, parseFailCnt == 1 );
+    wordStats *ws = new wordStats( i, w[i], alpWord, puncts, parseFailCnt==1 );
     if ( parseFailCnt ){
       sv.push_back( ws );
       continue;
@@ -5530,22 +5448,23 @@ void sentStats::addMetrics( ) const {
 }
 
 struct parStats: public structStats {
-  parStats( Paragraph *, const map<string,double>&,
+  parStats( int, Paragraph *, const map<string,double>&,
 	    const map<string,double>& );
   void addMetrics( ) const;
   void setLSAvalues( double, double, double );
 };
 
-parStats::parStats( Paragraph *p,
+parStats::parStats( int index,
+		    Paragraph *p,
 		    const map<string,double>& LSA_word_dists,
 		    const map<string,double>& LSA_sent_dists ):
-  structStats( p, "par" )
+  structStats( index, p, "par" )
 {
   sentCnt = 0;
   vector<Sentence*> sents = p->sentences();
   sentStats *prev = 0;
   for ( size_t i=0; i < sents.size(); ++i ){
-    sentStats *ss = new sentStats( sents[i], prev, LSA_word_dists );
+    sentStats *ss = new sentStats( i, sents[i], prev, LSA_word_dists );
     prev = ss;
     merge( ss );
   }
@@ -5877,7 +5796,7 @@ void docStats::gather_LSA_doc_info( Document *doc ){
 }
 
 docStats::docStats( Document *doc ):
-  structStats( 0, "document" ),
+  structStats( 0, 0, "document" ),
   doc_word_overlapCnt(0), doc_lemma_overlapCnt(0)
 {
   sentCnt = 0;
@@ -5898,7 +5817,7 @@ docStats::docStats( Document *doc ):
   if ( pars.size() > 0 )
     folia_node = pars[0]->parent();
   for ( size_t i=0; i != pars.size(); ++i ){
-    parStats *ps = new parStats( pars[i], LSA_word_dists, LSA_sentence_dists );
+    parStats *ps = new parStats( i, pars[i], LSA_word_dists, LSA_sentence_dists );
       merge( ps );
   }
   if ( settings.doLsa ){
@@ -6096,7 +6015,7 @@ void docStats::toCSV( const string& name,
 	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
 	  for ( size_t word=0; word < sv[par]->sv[sent]->sv.size(); ++word ){
 	    if ( par == 0 && sent == 0 && word == 0 )
-	      sv[0]->sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment,word" );
+	      sv[0]->sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment,word,lemma,full_lemma,morfemen" );
 	    out << name << "," << sv[par]->sv[sent]->sv[word]->id << ",";
 	    sv[par]->sv[sent]->sv[word]->toCSV( out );
 	  }
