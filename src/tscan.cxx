@@ -1498,6 +1498,10 @@ struct wordStats : public basicStats {
   WordProp checkProps( const PosAnnotation* );
   WordProp wordProperty() const { return prop; };
   SemType checkSemProps( ) const;
+  bool isBroadAdj() const;
+  bool isStrictAdj() const;
+  bool isBroadNoun() const;
+  bool isStrictNoun() const;
   AfkType checkAfk( ) const;
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
@@ -1842,10 +1846,12 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
 SemType wordStats::checkSemProps( ) const {
   if ( tag == CGN::N ){
     SemType sem2 = UNFOUND_NOUN;
+    //    cerr << "lookup " << lemma << endl;
     map<string,SemType>::const_iterator sit = settings.noun_sem.find( lemma );
     if ( sit != settings.noun_sem.end() ){
       sem2 = sit->second;
     }
+    //    cerr << "semtype=" << sem2 << endl;
     return sem2;
   }
   else if ( prop == ISNAME ){
@@ -2078,6 +2084,151 @@ void argument_overlap( const string w_or_l,
   }
 }
 
+#define DEBUG_COMPOUNDS
+enum CompoundType { NOCOMP, NN, PN, VN, PV, BB };
+
+ostream& operator<<( ostream&os, const CompoundType& cc ){
+  switch( cc ){
+  case NN:
+    os << "NN-compound";
+    break;
+  case PN:
+    os << "PN-compound";
+    break;
+  case VN:
+    os << "VN-compound";
+    break;
+  case PV:
+    os << "PV-compound";
+    break;
+  case BB:
+    os << "BB-compound";
+    break;
+  case NOCOMP:
+    os << "no-compound";
+    break;
+  }
+  return os;
+}
+
+CompoundType detect_compound( const Morpheme *m ){
+  CompoundType result = NOCOMP;
+#ifdef DEBUG_COMPOUNDS
+  cerr << "top morph: " << m << endl;
+#endif
+  vector<PosAnnotation*> posV1 = m->select<PosAnnotation>(false);
+  if ( posV1.size() == 1 ){
+#ifdef DEBUG_COMPOUNDS
+    cerr << "pos " << posV1[0] << endl;
+#endif
+    string topPos = posV1[0]->cls();
+    map<string,int> counts;
+    if ( topPos == "N"
+	 || topPos == "B"
+	 || topPos == "V" ){
+#ifdef DEBUG_COMPOUNDS
+      cerr << "top-pos: " << topPos << endl;
+#endif
+      vector<Morpheme*> mV = m->select<Morpheme>( frog_morph_set, false );
+      for( size_t i=0; i < mV.size(); ++i ){
+	if ( mV[i]->cls() == "stem" ){
+#ifdef DEBUG_COMPOUNDS
+	  cerr << "bekijk stem kind morph: " << mV[i] << endl;
+#endif
+	  vector<PosAnnotation*> posV2 = mV[i]->select<PosAnnotation>(false);
+	  for( size_t j=0; j < posV2.size(); ++j ){
+	    string childPos = posV2[j]->cls();
+	    if ( childPos == "N"
+		 || childPos == "P"
+		 || childPos == "V"
+		 || childPos == "A"
+		 || childPos == "B" ){
+#ifdef DEBUG_COMPOUNDS
+	      cerr << "kind pos = " << childPos << endl;
+#endif
+	      ++counts[childPos];
+	    }
+	    else {
+#ifdef DEBUG_COMPOUNDS
+	      cerr << "onbekend kind pos = " << childPos << endl;
+#endif
+	      counts.clear();
+	      break;
+	    }
+	  }
+	}
+	else if ( mV[i]->cls() == "complex" ) {
+#ifdef DEBUG_COMPOUNDS
+	  cerr << "recurse: " << endl;
+#endif
+	  CompoundType cmp = detect_compound( mV[i] );
+	  if ( cmp == PN
+	       || cmp == VN
+	       || cmp == NN ){
+	    if ( counts["N"] == 0 ){
+	      counts["N"] = 2;
+	    }
+	    else {
+	      ++counts["N"];
+	    }
+	  }
+	  else if ( cmp == PV ){
+	    if ( counts["V"] == 0 ){
+	      counts["V"] = 2;
+	    }
+	    else {
+	      ++counts["V"];
+	    }
+	  }
+	  else if ( cmp == BB ){
+	    if ( counts["B"] == 0 ){
+	      counts["B"] = 2;
+	    }
+	    else {
+	      ++counts["B"];
+	    }
+	  }
+	  else {
+	    counts.clear();
+	    break;
+	  }
+	}
+	else {
+#ifdef DEBUG_COMPOUNDS
+	  cerr << "skip a " << mV[i]->cls() << " morpheme" << endl;
+#endif
+	}
+      }
+      if ( topPos == "N" ){
+	if ( counts["V"] > 0 && counts["N"] > 0 ){
+	  result = VN;
+	}
+	else if ( counts["P"] > 0 && counts["N"] > 0 ){
+	  result = PN;
+	}
+	else if ( counts["N"] > 1 ){
+	  result = NN;
+	}
+      }
+      else if ( topPos == "V" ){
+	if ( counts["P"] > 1 ){
+	  result = PV;
+	}
+      }
+      else if ( topPos == "B" ){
+	if ( counts["B"] > 1 ){
+	  result = BB;
+	}
+      }
+    }
+  }
+#ifdef DEBUG_COMPOUNDS
+  cerr << "detected " << result << endl;
+#endif
+  return result;
+}
+
+
 wordStats::wordStats( int index,
 		      Word *w,
 		      const xmlNode *alpWord,
@@ -2129,12 +2280,14 @@ wordStats::wordStats( int index,
   }
   isContent = checkContent();
   if ( prop != ISLET ){
+    CompoundType comp = NOCOMP;
     vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
     size_t max = 0;
     vector<Morpheme*> morphemeV;
     for ( size_t q=0; q < ml.size(); ++q ){
       vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set, false );
       if ( m.size() == 1  && m[0]->cls() == "complex" ){
+	comp = detect_compound( m[0] );
 	// nested morphemes
 	string desc = m[0]->description();
 	vector<string> parts;
@@ -2168,8 +2321,6 @@ wordStats::wordStats( int index,
     isMorphNeg = checkMorphNeg();
     connType = checkConnective( alpWord );
     sitType = checkSituation();
-    // if ( sitType != NO_SIT )
-    //   cerr << "checkSit " << word << " = " << sitType << endl;
     morphCnt = morphemes.size();
     if ( prop != ISNAME ){
       charCntExNames = charCnt;
@@ -2184,9 +2335,13 @@ wordStats::wordStats( int index,
     if ( isContent ){
       freqLookup();
     }
-    if ( settings.doDecompound )
+    if ( settings.doDecompound ){
       compPartCnt = runDecompoundWord( word, workdir_name,
 				       settings.decompounderPath );
+      if ( compPartCnt > 0 || comp != NOCOMP ){
+	cerr << morphemes << " is a " << comp << " - " << compPartCnt << endl;
+      }
+    }
   }
 }
 
@@ -2446,36 +2601,104 @@ void wordStats::coherenceToCSV( ostream& os ) const {
 }
 
 void wordStats::concreetHeader( ostream& os ) const {
+  os << "semtype_nw,";
   os << "Conc_nw_strikt,";
   os << "Conc_nw_ruim,";
-  os << "semtype_nw,";
   os << "semtype_bvnw,";
+  os << "Conc_bvnw_strikt,";
+  os << "Conc_bvnw_ruim,";
   os << "semtype_ww,";
 }
 
-void wordStats::concreetToCSV( ostream& os ) const {
-  if ( sem_type == CONCRETE_HUMAN_NOUN || sem_type == CONCRETE_OTHER_NOUN ){
-    os << "1,1,";
+bool wordStats::isStrictNoun() const {
+  switch ( sem_type ){
+  case CONCRETE_HUMAN_NOUN:
+  case ABSTRACT_DYNAMIC_NOUN:
+  case ABSTRACT_NONDYNAMIC_NOUN:
+  case CONCRETE_NONHUMAN_NOUN:
+  case CONCRETE_ARTEFACT_NOUN:
+  case CONCRETE_SUBSTANCE_NOUN:
+  case CONCRETE_OTHER_NOUN:
+    return true;
+    break;
+  default:
+    return false;
   }
-  else if ( sem_type == BROAD_CONCRETE_TIME_NOUN
-	    || sem_type == BROAD_CONCRETE_PLACE_NOUN
-	    || sem_type == BROAD_CONCRETE_MEASURE_NOUN ){
-    os << "0,1,";
+}
+
+bool wordStats::isBroadNoun() const {
+  switch ( sem_type ){
+  case CONCRETE_HUMAN_NOUN:
+  case ABSTRACT_DYNAMIC_NOUN:
+  case ABSTRACT_NONDYNAMIC_NOUN:
+  case CONCRETE_NONHUMAN_NOUN:
+  case CONCRETE_ARTEFACT_NOUN:
+  case CONCRETE_SUBSTANCE_NOUN:
+  case CONCRETE_OTHER_NOUN:
+  case BROAD_CONCRETE_PLACE_NOUN:
+  case BROAD_CONCRETE_TIME_NOUN:
+  case BROAD_CONCRETE_MEASURE_NOUN:
+    return true;
+    break;
+  default:
+    return false;
+  }
+}
+
+bool wordStats::isStrictAdj() const {
+  switch( sem_type ){
+  case HUMAN_ADJ:
+  case EMO_ADJ:
+  case NONHUMAN_SHAPE_ADJ:
+  case NONHUMAN_COLOR_ADJ:
+  case NONHUMAN_MATTER_ADJ:
+  case NONHUMAN_SOUND_ADJ:
+  case NONHUMAN_OTHER_ADJ:
+    return true;
+    break;
+  default:
+    return false;
+  }
+}
+
+bool wordStats::isBroadAdj() const {
+  switch( sem_type ){
+  case HUMAN_ADJ:
+  case EMO_ADJ:
+  case NONHUMAN_SHAPE_ADJ:
+  case NONHUMAN_COLOR_ADJ:
+  case NONHUMAN_MATTER_ADJ:
+  case NONHUMAN_SOUND_ADJ:
+  case NONHUMAN_OTHER_ADJ:
+  case TIME_ADJ:
+  case PLACE_ADJ:
+    return true;
+    break;
+  default:
+    return false;
+  }
+}
+
+void wordStats::concreetToCSV( ostream& os ) const {
+  if ( tag == CGN::N ){
+    os << sem_type << ",";
   }
   else {
-    os << "0,0,";
+    os << "0,";
   }
-  if ( tag == CGN::N ){
-    os << sem_type << ",0,0,";
+  os << isStrictNoun() << "," << isBroadNoun() << ",";
+  if ( tag == CGN::ADJ ){
+    os << sem_type << ",";
   }
-  else if ( tag == CGN::ADJ ){
-    os << "0," << sem_type << ",0,";
+  else {
+    os << "0,";
   }
-  else if ( tag == CGN::WW ){
-    os << "0,0," << sem_type << ",";
+  os << isStrictAdj() << "," << isBroadAdj() << ",";
+  if ( tag == CGN::WW ){
+    os << sem_type << ",";
   }
   else
-    os << "0,0,0,";
+    os << "0,";
 }
 
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
