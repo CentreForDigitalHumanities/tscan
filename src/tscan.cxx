@@ -2085,7 +2085,7 @@ void argument_overlap( const string w_or_l,
 }
 
 #define DEBUG_COMPOUNDS
-enum CompoundType { NOCOMP, NN, PN, VN, PV, BB };
+enum CompoundType { NOCOMP, NN, PN, VN, PV, BB, BV };
 
 ostream& operator<<( ostream&os, const CompoundType& cc ){
   switch( cc ){
@@ -2103,6 +2103,9 @@ ostream& operator<<( ostream&os, const CompoundType& cc ){
     break;
   case BB:
     os << "BB-compound";
+    break;
+  case BV:
+    os << "BV-compound";
     break;
   case NOCOMP:
     os << "no-compound";
@@ -2172,7 +2175,8 @@ CompoundType detect_compound( const Morpheme *m ){
 	      ++counts["N"];
 	    }
 	  }
-	  else if ( cmp == PV ){
+	  else if ( cmp == PV
+		    || cmp == BV ){
 	    if ( counts["V"] == 0 ){
 	      counts["V"] = 2;
 	    }
@@ -2211,8 +2215,11 @@ CompoundType detect_compound( const Morpheme *m ){
 	}
       }
       else if ( topPos == "V" ){
-	if ( counts["P"] > 1 ){
+	if ( counts["P"] > 0 && counts["V"] > 0 ){
 	  result = PV;
+	}
+	else if ( counts["B"] > 0 && counts["V"] > 0 ){
+	  result = BV;
 	}
       }
       else if ( topPos == "B" ){
@@ -2866,12 +2873,10 @@ struct structStats: public basicStats {
     lsa_par_ctx(NA),
     al_gem(NA),
     al_max(NA),
-    broadConcreteNounCnt(0),
-    strictConcreteNounCnt(0),
-    broadAbstractNounCnt(0),
-    strictAbstractNounCnt(0),
-    broadConcreteAdjCnt(0),
-    strictConcreteAdjCnt(0),
+    broadNounCnt(0),
+    strictNounCnt(0),
+    broadAdjCnt(0),
+    strictAdjCnt(0),
     subjectiveAdjCnt(0),
     abstractWwCnt(0),
     concreteWwCnt(0),
@@ -3058,12 +3063,10 @@ struct structStats: public basicStats {
   double lsa_par_ctx;
   double al_gem;
   double al_max;
-  int broadConcreteNounCnt;
-  int strictConcreteNounCnt;
-  int broadAbstractNounCnt;
-  int strictAbstractNounCnt;
-  int broadConcreteAdjCnt;
-  int strictConcreteAdjCnt;
+  int broadNounCnt;
+  int strictNounCnt;
+  int broadAdjCnt;
+  int strictAdjCnt;
   int subjectiveAdjCnt;
   int abstractWwCnt;
   int concreteWwCnt;
@@ -3280,12 +3283,10 @@ void structStats::merge( structStats *ss ){
   pron3Cnt += ss->pron3Cnt;
   persRefCnt += ss->persRefCnt;
   pronRefCnt += ss->pronRefCnt;
-  strictAbstractNounCnt += ss->strictAbstractNounCnt;
-  broadAbstractNounCnt += ss->broadAbstractNounCnt;
-  strictConcreteNounCnt += ss->strictConcreteNounCnt;
-  broadConcreteNounCnt += ss->broadConcreteNounCnt;
-  strictConcreteAdjCnt += ss->strictConcreteAdjCnt;
-  broadConcreteAdjCnt += ss->broadConcreteAdjCnt;
+  strictNounCnt += ss->strictNounCnt;
+  broadNounCnt += ss->broadNounCnt;
+  strictAdjCnt += ss->strictAdjCnt;
+  broadAdjCnt += ss->broadAdjCnt;
   subjectiveAdjCnt += ss->subjectiveAdjCnt;
   abstractWwCnt += ss->abstractWwCnt;
   concreteWwCnt += ss->concreteWwCnt;
@@ -3562,8 +3563,8 @@ void structStats::addMetrics( ) const {
   if ( perplexity != NA )
     addOneMetric( doc, el, "wopr_perplexity", toString(perplexity) );
 
-  addOneMetric( doc, el, "concrete_broad_adj", toString(broadConcreteAdjCnt) );
-  addOneMetric( doc, el, "concrete_strict_adj", toString(strictConcreteAdjCnt) );
+  addOneMetric( doc, el, "broad_adj", toString(broadAdjCnt) );
+  addOneMetric( doc, el, "strict_adj", toString(strictAdjCnt) );
   addOneMetric( doc, el, "human_adj_count", toString(humanAdjCnt) );
   addOneMetric( doc, el, "emo_adj_count", toString(emoAdjCnt) );
   addOneMetric( doc, el, "nonhuman_adj_count", toString(nonhumanAdjCnt) );
@@ -3588,10 +3589,8 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "covered_adj_count", toString(adjCnt-uncoveredAdjCnt) );
   addOneMetric( doc, el, "uncovered_adj_count", toString(uncoveredAdjCnt) );
 
-  addOneMetric( doc, el, "concrete_broad_noun", toString(broadConcreteNounCnt) );
-  addOneMetric( doc, el, "concrete_strict_noun", toString(strictConcreteNounCnt) );
-  addOneMetric( doc, el, "abstract_broad_noun", toString(broadAbstractNounCnt) );
-  addOneMetric( doc, el, "abstract_strict_noun", toString(strictAbstractNounCnt) );
+  addOneMetric( doc, el, "broad_noun", toString(broadNounCnt) );
+  addOneMetric( doc, el, "strict_noun", toString(strictNounCnt) );
   addOneMetric( doc, el, "human_nouns_count", toString(humanCnt) );
   addOneMetric( doc, el, "nonhuman_nouns_count", toString(nonHumanCnt) );
   addOneMetric( doc, el, "artefact_nouns_count", toString(artefactCnt) );
@@ -3973,10 +3972,10 @@ void structStats::concreetHeader( ostream& os ) const {
 }
 
 void structStats::concreetToCSV( ostream& os ) const {
-  os << proportion( strictConcreteNounCnt, nounCnt+nameCnt ) << ",";
-  os << density( strictConcreteNounCnt, wordCnt ) << ",";
-  os << proportion( broadConcreteNounCnt, nounCnt+nameCnt ) << ",";
-  os << density( broadConcreteNounCnt, wordCnt ) << ",";
+  os << proportion( strictNounCnt, nounCnt+nameCnt ) << ",";
+  os << density( strictNounCnt, wordCnt ) << ",";
+  os << proportion( broadNounCnt, nounCnt+nameCnt ) << ",";
+  os << density( broadNounCnt, wordCnt ) << ",";
   os << proportion( nonHumanCnt, nounCnt+nameCnt ) << ",";
   os << density( nonHumanCnt, wordCnt ) << ",";
   os << proportion( artefactCnt, nounCnt+nameCnt ) << ",";
@@ -4044,10 +4043,10 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << density( posAdjCnt + negAdjCnt, wordCnt ) << ",";
   os << proportion( epiPosAdjCnt + epiNegAdjCnt ,adjCnt ) << ",";
   os << density( epiPosAdjCnt + epiNegAdjCnt ,wordCnt ) << ",";
-  os << proportion( strictConcreteAdjCnt, adjCnt ) << ",";
-  os << density( strictConcreteAdjCnt, wordCnt ) << ",";
-  os << proportion( broadConcreteAdjCnt, adjCnt ) << ",";
-  os << density( broadConcreteAdjCnt, wordCnt ) << ",";
+  os << proportion( strictAdjCnt, adjCnt ) << ",";
+  os << density( strictAdjCnt, wordCnt ) << ",";
+  os << proportion( broadAdjCnt, adjCnt ) << ",";
+  os << density( broadAdjCnt, wordCnt ) << ",";
   os << proportion( subjectiveAdjCnt ,adjCnt ) << ",";
   os << density( subjectiveAdjCnt, wordCnt ) << ",";
   os << proportion( undefinedAdjCnt, adjCnt ) << ",";
@@ -4059,8 +4058,8 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << density( abstractWwCnt,pastCnt + presentCnt ) << ",";
   os << proportion( undefinedWwCnt,pastCnt + presentCnt ) << ",";
   os << proportion( pastCnt+presentCnt - uncoveredVerbCnt,pastCnt + presentCnt ) << ",";
-  os << proportion( concreteWwCnt + strictConcreteAdjCnt + strictConcreteNounCnt, wordCnt ) << ",";
-  os << density( concreteWwCnt + strictConcreteAdjCnt + strictConcreteNounCnt, wordCnt ) << ",";
+  os << proportion( concreteWwCnt + strictAdjCnt + strictNounCnt, wordCnt ) << ",";
+  os << density( concreteWwCnt + strictAdjCnt + strictNounCnt, wordCnt ) << ",";
 }
 
 void structStats::persoonlijkheidHeader( ostream& os ) const {
@@ -5434,106 +5433,103 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 	break;
       case CONCRETE_HUMAN_NOUN:
 	humanCnt++;
-	strictConcreteNounCnt++;
-	broadConcreteNounCnt++;
+	strictNounCnt++;
+	broadNounCnt++;
 	break;
       case CONCRETE_NONHUMAN_NOUN:
 	nonHumanCnt++;
-	strictConcreteNounCnt++;
-	broadConcreteNounCnt++;
+	strictNounCnt++;
+	broadNounCnt++;
 	break;
       case CONCRETE_ARTEFACT_NOUN:
 	artefactCnt++;
-	strictConcreteNounCnt++;
-	broadConcreteNounCnt++;
+	strictNounCnt++;
+	broadNounCnt++;
 	break;
       case CONCRETE_SUBSTANCE_NOUN:
 	substanceCnt++;
-	strictConcreteNounCnt++;
-	broadConcreteNounCnt++;
+	strictNounCnt++;
+	broadNounCnt++;
 	break;
       case CONCRETE_OTHER_NOUN:
-	strictConcreteNounCnt++;
-	broadConcreteNounCnt++;
+	strictNounCnt++;
+	broadNounCnt++;
 	break;
       case BROAD_CONCRETE_PLACE_NOUN:
 	++placeCnt;
-	broadConcreteNounCnt++;
-	broadAbstractNounCnt++;
+	broadNounCnt++;
 	break;
       case BROAD_CONCRETE_TIME_NOUN:
 	++timeCnt;
-	broadConcreteNounCnt++;
-	broadAbstractNounCnt++;
+	broadNounCnt++;
 	break;
       case BROAD_CONCRETE_MEASURE_NOUN:
 	++measureCnt;
-	broadConcreteNounCnt++;
-	broadAbstractNounCnt++;
+	broadNounCnt++;
 	break;
       case ABSTRACT_DYNAMIC_NOUN:
 	++dynamicCnt;
-	strictAbstractNounCnt++;
-	broadAbstractNounCnt++;
+	strictNounCnt++;
+	broadNounCnt++;
 	break;
       case ABSTRACT_NONDYNAMIC_NOUN:
 	++nonDynamicCnt;
-	strictAbstractNounCnt++;
-	broadAbstractNounCnt++;
+	strictNounCnt++;
+	broadNounCnt++;
 	break;
       case INSTITUT_NOUN:
 	institutCnt++;
 	break;
       case HUMAN_ADJ:
 	humanAdjCnt++;
-	broadConcreteAdjCnt++;
-	strictConcreteAdjCnt++;
+	broadAdjCnt++;
+	strictAdjCnt++;
 	break;
       case EMO_ADJ:
 	emoAdjCnt++;
-	broadConcreteAdjCnt++;
-	strictConcreteAdjCnt++;
+	broadAdjCnt++;
+	strictAdjCnt++;
 	break;
       case NONHUMAN_SHAPE_ADJ:
 	nonhumanAdjCnt++;
 	shapeAdjCnt++;
-	broadConcreteAdjCnt++;
-	strictConcreteAdjCnt++;
+	broadAdjCnt++;
+	strictAdjCnt++;
 	break;
       case NONHUMAN_COLOR_ADJ:
 	nonhumanAdjCnt++;
 	colorAdjCnt++;
-	broadConcreteAdjCnt++;
-	strictConcreteAdjCnt++;
+	broadAdjCnt++;
+	strictAdjCnt++;
 	break;
       case NONHUMAN_MATTER_ADJ:
 	nonhumanAdjCnt++;
 	matterAdjCnt++;
-	broadConcreteAdjCnt++;
-	strictConcreteAdjCnt++;
+	broadAdjCnt++;
+	strictAdjCnt++;
 	break;
       case NONHUMAN_SOUND_ADJ:
 	nonhumanAdjCnt++;
 	soundAdjCnt++;
-	broadConcreteAdjCnt++;
-	strictConcreteAdjCnt++;
+	broadAdjCnt++;
+	strictAdjCnt++;
 	break;
       case NONHUMAN_OTHER_ADJ:
 	nonhumanAdjCnt++;
 	nonhumanOtherAdjCnt++;
-	broadConcreteAdjCnt++;
-	strictConcreteAdjCnt++;
+	broadAdjCnt++;
+	strictAdjCnt++;
 	break;
       case TECH_ADJ:
 	techAdjCnt++;
 	break;
       case TIME_ADJ:
 	timeAdjCnt++;
-	broadConcreteAdjCnt++;
+	broadAdjCnt++;
 	break;
       case PLACE_ADJ:
 	placeAdjCnt++;
-	broadConcreteAdjCnt++;
+	broadAdjCnt++;
 	break;
       case SPEC_POS_ADJ:
 	specPosAdjCnt++;
