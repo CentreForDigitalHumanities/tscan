@@ -2294,7 +2294,7 @@ wordStats::wordStats( int index,
     for ( size_t q=0; q < ml.size(); ++q ){
       vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set, false );
       if ( m.size() == 1  && m[0]->cls() == "complex" ){
-	comp = detect_compound( m[0] );
+	//	comp = detect_compound( m[0] );
 	// nested morphemes
 	string desc = m[0]->description();
 	vector<string> parts;
@@ -2323,7 +2323,7 @@ wordStats::wordStats( int index,
     if ( morphemes.size() == 0 ){
       cerr << "unable to retrieve morphemes from folia." << endl;
     }
-    cerr << "Morphemes " << word << "= " << morphemes << endl;
+    //    cerr << "Morphemes " << word << "= " << morphemes << endl;
     isPropNeg = checkPropNeg();
     isMorphNeg = checkMorphNeg();
     connType = checkConnective( alpWord );
@@ -2346,7 +2346,7 @@ wordStats::wordStats( int index,
       compPartCnt = runDecompoundWord( word, workdir_name,
 				       settings.decompounderPath );
       if ( compPartCnt > 0 || comp != NOCOMP ){
-	cerr << morphemes << " is a " << comp << " - " << compPartCnt << endl;
+	//	cerr << morphemes << " is a " << comp << " - " << compPartCnt << endl;
       }
     }
   }
