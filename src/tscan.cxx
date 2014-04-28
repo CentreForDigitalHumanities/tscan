@@ -1287,12 +1287,12 @@ ostream& operator<<( ostream& os, const ratio& r ){
 }
 
 
-enum WordProp { ISNAME, ISLET,
-		ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL, ISSUBJ,
-		ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
-		JUSTAWORD, NOTAWORD };
+enum CGNProp { ISNAME, ISLET,
+	       ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL, ISSUBJ,
+	       ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
+	       JUSTAWORD, NOTAWORD };
 
-string toString( const WordProp& w ){
+string toString( const CGNProp& w ){
   switch ( w ){
   case ISNAME:
     return "naam";
@@ -1325,10 +1325,31 @@ string toString( const WordProp& w ){
   }
 }
 
-ostream& operator<<( ostream& os, const WordProp& p ){
+ostream& operator<<( ostream& os, const CGNProp& p ){
   os << toString( p );
   return os;
 }
+
+enum CGNPosition { NOMIN, PRENOM, VRIJ, NOPOS };
+
+string toString( const CGNPosition& w ){
+  switch ( w ){
+  case NOMIN:
+    return "nom";
+  case PRENOM:
+    return "prenom";
+  case VRIJ:
+    return "vrij";
+  default:
+    return "onbekende positie";
+  }
+}
+
+ostream& operator<<( ostream& os, const CGNPosition& p ){
+  os << toString( p );
+  return os;
+}
+
 
 enum ConnType { NOCONN, TEMPOREEL, OPSOMMEND, CONTRASTIEF, COMPARATIEF, CAUSAAL };
 
@@ -1428,7 +1449,7 @@ struct basicStats {
   virtual string Lemma() const { return ""; };
   virtual string llemma() const { return ""; };
   virtual CGN::Type postag() const { return CGN::UNASS; };
-  virtual WordProp wordProperty() const { return NOTAWORD; };
+  virtual CGNProp wordProperty() const { return NOTAWORD; };
   virtual ConnType getConnType() const { return NOCONN; };
   virtual void setConnType( ConnType ){
     throw logic_error("setConnType() only valid for words" );
@@ -1495,8 +1516,8 @@ struct wordStats : public basicStats {
   ConnType check_small_connector( const xmlNode * ) const;
   SituationType checkSituation() const;
   bool checkNominal( const xmlNode * ) const;
-  WordProp checkProps( const PosAnnotation* );
-  WordProp wordProperty() const { return prop; };
+  void setCGNProps( const PosAnnotation* );
+  CGNProp wordProperty() const { return prop; };
   SemType checkSemProps( ) const;
   bool isBroadAdj() const;
   bool isStrictAdj() const;
@@ -1547,7 +1568,8 @@ struct wordStats : public basicStats {
   double word_freq_log;
   double lemma_freq_log;
   double logprob10;
-  WordProp prop;
+  CGNProp prop;
+  CGNPosition position;
   SemType sem_type;
   vector<string> morphemes;
   multimap<DD_type,int> distances;
@@ -1768,19 +1790,44 @@ bool wordStats::checkNominal( const xmlNode *alpWord ) const {
   return false;
 }
 
-WordProp wordStats::checkProps( const PosAnnotation* pa ) {
+void wordStats::setCGNProps( const PosAnnotation* pa ) {
   if ( tag == CGN::LET )
     prop = ISLET;
   else if ( tag == CGN::SPEC && pos.find("eigen") != string::npos )
     prop = ISNAME;
   else if ( tag == CGN::WW ){
     string wvorm = pa->feat("wvorm");
-    if ( wvorm == "inf" )
+    if ( wvorm == "inf" ){
       prop = ISINF;
-    else if ( wvorm == "vd" )
+    }
+    else if ( wvorm == "vd" ){
       prop = ISVD;
-    else if ( wvorm == "od" )
+      string pos = pa->feat("positie");
+      if ( pos == "vrij" ){
+	position = VRIJ;
+      }
+      else if ( pos == "prenom" ){
+	position = PRENOM;
+      }
+      else if ( pos == "nom" ){
+	position = NOMIN;
+      }
+      //      cerr << word << " is een VD " << position << endl;
+    }
+    else if ( wvorm == "od" ){
       prop = ISOD;
+      string pos = pa->feat("positie");
+      if ( pos == "vrij" ){
+	position = VRIJ;
+      }
+      else if ( pos == "prenom" ){
+	position = PRENOM;
+      }
+      else if ( pos == "nom" ){
+	position = NOMIN;
+      }
+      //      cerr << word << " is een OD " << position << endl;
+    }
     else if ( wvorm == "pv" ){
       string tijd = pa->feat("pvtijd");
       if ( tijd == "tgw" )
@@ -1840,54 +1887,66 @@ WordProp wordStats::checkProps( const PosAnnotation* pa ) {
     string cp = pa->feat("conjtype");
     isOnder = cp == "onder";
   }
-  return prop;
 }
 
 SemType wordStats::checkSemProps( ) const {
   if ( tag == CGN::N ){
-    SemType sem2 = UNFOUND_NOUN;
+    SemType sem = UNFOUND_NOUN;
     //    cerr << "lookup " << lemma << endl;
     map<string,SemType>::const_iterator sit = settings.noun_sem.find( lemma );
     if ( sit != settings.noun_sem.end() ){
-      sem2 = sit->second;
+      sem = sit->second;
     }
-    //    cerr << "semtype=" << sem2 << endl;
-    return sem2;
+    //    cerr << "semtype=" << sem << endl;
+    return sem;
   }
   else if ( prop == ISNAME ){
     // Names are te be looked up in the Noun list too
-    SemType sem2 = UNFOUND_NOUN;
+    SemType sem = UNFOUND_NOUN;
     map<string,SemType>::const_iterator sit = settings.noun_sem.find( lemma );
     if ( sit != settings.noun_sem.end() ){
-      sem2 = sit->second;
+      sem = sit->second;
     }
-    return sem2;
+    return sem;
   }
   else if ( tag == CGN::ADJ ) {
-    SemType sem2 = UNFOUND_ADJ;
+    SemType sem = UNFOUND_ADJ;
     map<string,SemType>::const_iterator sit = settings.adj_sem.find( lemma );
     if ( sit == settings.adj_sem.end() ){
       // lemma not found. maybe the whole word?
       sit = settings.adj_sem.find( word );
     }
     if ( sit != settings.adj_sem.end() ){
-      sem2 = sit->second;
+      sem = sit->second;
     }
-    return sem2;
+    return sem;
   }
   else if ( tag == CGN::WW ) {
-    SemType sem2 = UNFOUND_VERB;
+    cerr << "check semtype " << lemma << endl;
+    SemType sem = UNFOUND_VERB;
     map<string,SemType>::const_iterator sit = settings.verb_sem.end();
     if ( !full_lemma.empty() ) {
       sit = settings.verb_sem.find( full_lemma );
     }
     if ( sit == settings.verb_sem.end() ){
+      if ( position == PRENOM
+	   && ( prop == ISVD || prop == ISOD ) ){
+	// might be a 'hidden' adj!
+	cerr << "lookup a probable ADJ " << prop << " (" << word << ") " << endl;
+	sit = settings.adj_sem.find( word );
+	if ( sit == settings.adj_sem.end() )
+	  sit = settings.verb_sem.end();
+      }
+    }
+    if ( sit == settings.verb_sem.end() ){
+      cerr << "lookup lemma as verb (" << lemma << ") " << endl;
       sit = settings.verb_sem.find( lemma );
     }
     if ( sit != settings.verb_sem.end() ){
-      sem2 = sit->second;
+      sem = sit->second;
     }
-    return sem2;
+    cerr << "found semtype " << sem << endl;
+    return sem;
   }
   return NO_SEMTYPE;
 }
@@ -2250,7 +2309,7 @@ wordStats::wordStats( int index,
   top_freq(notFound), word_freq(0), lemma_freq(0),
   wordOverlapCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NA), lemma_freq_log(NA),
-  logprob10(NA), prop(JUSTAWORD), sem_type(NO_SEMTYPE),afkType(NO_A)
+  logprob10(NA), prop(JUSTAWORD), position(NOPOS), sem_type(NO_SEMTYPE),afkType(NO_A)
 {
   UnicodeString us = w->text();
   charCnt = us.length();
@@ -2268,7 +2327,7 @@ wordStats::wordStats( int index,
   us = UTF8ToUnicode( lemma );
   l_lemma = UnicodeToUTF8( us.toLower() );
 
-  prop = checkProps( pa );
+  setCGNProps( pa );
   if ( alpWord ){
     distances = getDependencyDist( alpWord, puncts);
     if ( tag == CGN::WW ){
