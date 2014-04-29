@@ -94,7 +94,7 @@ enum SemType { NO_SEMTYPE,
 	       EPI_POS_ADJ, EPI_NEG_ADJ,
 	       MORE_ADJ, LESS_ADJ,
 	       ABSTRACT_ADJ,
-	       ABSTRACT_VERB, CONCRETE_VERB, UNDEFINED_VERB,
+	       ABSTRACT_UNDEFINED, CONCRETE_UNDEFINED, UNDEFINED_VERB,
 	       ABSTRACT_STATE, CONCRETE_STATE, UNDEFINED_STATE,
 	       ABSTRACT_ACTION, CONCRETE_ACTION, UNDEFINED_ACTION,
 	       ABSTRACT_PROCESS, CONCRETE_PROCESS, UNDEFINED_PROCESS };
@@ -211,11 +211,11 @@ string toString( const SemType st ){
     return "weaker-adj";
     break;
 
-  case ABSTRACT_VERB:
-    return "abstract-verb";
+  case ABSTRACT_UNDEFINED:
+    return "abstract-undefined";
     break;
-  case CONCRETE_VERB:
-    return "concrete-verb";
+  case CONCRETE_UNDEFINED:
+    return "concrete-undefined";
     break;
   case UNDEFINED_VERB:
     return "undefined-verb";
@@ -494,9 +494,9 @@ SemType classifyNoun( const string& s ){
 SemType classifyWW( const string& s, const string& c = "" ){
   if ( s == "undefined" ){
     if ( c == "abstract" )
-      return ABSTRACT_VERB;
+      return ABSTRACT_UNDEFINED;
     else if ( c == "concreet" )
-      return CONCRETE_VERB;
+      return CONCRETE_UNDEFINED;
     else if ( c == "undefined" )
       return UNDEFINED_VERB;
   }
@@ -523,14 +523,6 @@ SemType classifyWW( const string& s, const string& c = "" ){
       return CONCRETE_PROCESS;
     else if ( c == "undefined" )
       return UNDEFINED_PROCESS;
-  }
-  else if (s == "undefined" ){
-    if ( c == "abstract" )
-      return ABSTRACT_VERB;
-    else if ( c == "concreet" )
-      return CONCRETE_VERB;
-    else if ( c == "undefined" )
-      return UNDEFINED_VERB;
   }
   return UNFOUND_VERB;
 }
@@ -4111,12 +4103,12 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << proportion( undefinedAdjCnt, adjCnt ) << ",";
   os << proportion( adjCnt - uncoveredAdjCnt ,adjCnt ) << ",";
   os << proportion( adjCnt-uncoveredAdjCnt+undefinedAdjCnt ,adjCnt ) << ",";
-  os << proportion( concreteWwCnt,pastCnt + presentCnt ) << ",";
-  os << density( concreteWwCnt,pastCnt + presentCnt ) << ",";
-  os << proportion( abstractWwCnt,pastCnt + presentCnt ) << ",";
-  os << density( abstractWwCnt,pastCnt + presentCnt ) << ",";
-  os << proportion( undefinedWwCnt,pastCnt + presentCnt ) << ",";
-  os << proportion( pastCnt+presentCnt - uncoveredVerbCnt,pastCnt + presentCnt ) << ",";
+  os << proportion( concreteWwCnt,verbCnt ) << ",";
+  os << density( concreteWwCnt, wordCnt ) << ",";
+  os << proportion( abstractWwCnt, verbCnt ) << ",";
+  os << density( abstractWwCnt, wordCnt ) << ",";
+  os << proportion( undefinedWwCnt, verbCnt ) << ",";
+  os << proportion( verbCnt - uncoveredVerbCnt, verbCnt ) << ",";
   os << proportion( concreteWwCnt + strictAdjCnt + strictNounCnt, wordCnt ) << ",";
   os << density( concreteWwCnt + strictAdjCnt + strictNounCnt, wordCnt ) << ",";
 }
@@ -5661,10 +5653,10 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 	undefinedWwCnt++;
 	processCnt++;
 	break;
-      case ABSTRACT_VERB:
+      case ABSTRACT_UNDEFINED:
 	abstractWwCnt++;
 	break;
-      case CONCRETE_VERB:
+      case CONCRETE_UNDEFINED:
 	concreteWwCnt++;
 	break;
       case UNDEFINED_VERB:
