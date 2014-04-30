@@ -36,7 +36,6 @@
 #include "omp.h"
 #endif
 
-#include "timbl/TimblAPI.h"
 #include "timblserver/FdStream.h"
 #include "timblserver/ServerBase.h"
 #include "libfolia/document.h"
@@ -44,6 +43,7 @@
 #include "ticcutils/LogStream.h"
 #include "ticcutils/Configuration.h"
 #include "ticcutils/FileUtils.h"
+#include "ticcutils/CommandLine.h"
 #include "tscan/Alpino.h"
 #include "tscan/decomp.h"
 
@@ -729,12 +729,13 @@ bool fillADJ( map<string,SemType>& m, istream& is ){
     else {
       res = classifyADJ( parts[1], parts[2] );
     }
-    if ( m.find(parts[0]) != m.end() ){
-      cerr << "multiple entry '" << parts[0] << "' in ADJ lex" << endl;
+    string low = lowercase( parts[0] );
+    if ( m.find(low) != m.end() ){
+      cerr << "Information: multiple entry '" << low << "' in ADJ lex" << endl;
     }
     if ( res != UNFOUND_ADJ ){
       // no use to store undefined values
-      m[parts[0]] = res;
+      m[low] = res;
     }
   }
   return true;
@@ -1902,19 +1903,22 @@ SemType wordStats::checkSemProps( ) const {
     return sem;
   }
   else if ( tag == CGN::ADJ ) {
+    //    cerr << "ADJ check semtype " << l_lemma << endl;
     SemType sem = UNFOUND_ADJ;
-    map<string,SemType>::const_iterator sit = settings.adj_sem.find( lemma );
+    map<string,SemType>::const_iterator sit = settings.adj_sem.find( l_lemma );
     if ( sit == settings.adj_sem.end() ){
       // lemma not found. maybe the whole word?
-      sit = settings.adj_sem.find( word );
+      //      cerr << "ADJ check semtype " << word << endl;
+      sit = settings.adj_sem.find( l_word );
     }
     if ( sit != settings.adj_sem.end() ){
       sem = sit->second;
     }
+    //    cerr << "found semtype " << sem << endl;
     return sem;
   }
   else if ( tag == CGN::WW ) {
-    cerr << "check semtype " << lemma << endl;
+    //    cerr << "check semtype " << lemma << endl;
     SemType sem = UNFOUND_VERB;
     map<string,SemType>::const_iterator sit = settings.verb_sem.end();
     if ( !full_lemma.empty() ) {
@@ -1924,20 +1928,20 @@ SemType wordStats::checkSemProps( ) const {
       if ( position == PRENOM
 	   && ( prop == ISVD || prop == ISOD ) ){
 	// might be a 'hidden' adj!
-	cerr << "lookup a probable ADJ " << prop << " (" << word << ") " << endl;
-	sit = settings.adj_sem.find( word );
+	//	cerr << "lookup a probable ADJ " << prop << " (" << word << ") " << endl;
+	sit = settings.adj_sem.find( l_word );
 	if ( sit == settings.adj_sem.end() )
 	  sit = settings.verb_sem.end();
       }
     }
     if ( sit == settings.verb_sem.end() ){
-      cerr << "lookup lemma as verb (" << lemma << ") " << endl;
+      //      cerr << "lookup lemma as verb (" << lemma << ") " << endl;
       sit = settings.verb_sem.find( lemma );
     }
     if ( sit != settings.verb_sem.end() ){
       sem = sit->second;
     }
-    cerr << "found semtype " << sem << endl;
+    //    cerr << "found semtype " << sem << endl;
     return sem;
   }
   return NO_SEMTYPE;
@@ -4101,8 +4105,8 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << proportion( subjectiveAdjCnt ,adjCnt ) << ",";
   os << density( subjectiveAdjCnt, wordCnt ) << ",";
   os << proportion( undefinedAdjCnt, adjCnt ) << ",";
-  os << proportion( adjCnt - uncoveredAdjCnt ,adjCnt ) << ",";
-  os << proportion( adjCnt-uncoveredAdjCnt+undefinedAdjCnt ,adjCnt ) << ",";
+  os << proportion( adjCnt - uncoveredAdjCnt - undefinedAdjCnt ,adjCnt ) << ",";
+  os << proportion( adjCnt-uncoveredAdjCnt ,adjCnt ) << ",";
   os << proportion( concreteWwCnt,verbCnt ) << ",";
   os << density( concreteWwCnt, wordCnt ) << ",";
   os << proportion( abstractWwCnt, verbCnt ) << ",";
@@ -6406,28 +6410,28 @@ int main(int argc, char *argv[]) {
   }
   LOG << "TScan " << VERSION << endl;
   LOG << "working dir " << workdir_name << endl;
-  Timbl::TimblOpts opts( argc, argv );
+  TiCC::CL_Options opts( argc, argv );
   string val;
   bool mood;
-  if ( opts.Find( "h", val, mood ) ||
-       opts.Find( "help", val, mood ) ){
+  if ( opts.find( 'h', val, mood ) ||
+       opts.find( "help", val ) ){
     usage();
     exit( EXIT_SUCCESS );
   }
-  if ( opts.Find( "V", val, mood ) ||
-       opts.Find( "version", val, mood ) ){
+  if ( opts.find( 'V', val, mood ) ||
+       opts.find( "version", val ) ){
     exit( EXIT_SUCCESS );
   }
   string t_option;
-  if ( opts.Find( 't', val, mood ) ){
+  if ( opts.find( 't', val, mood ) ){
     t_option = val;
   }
   string d_option;
-  if ( opts.Find( 'd', val, mood ) ){
+  if ( opts.find( 'd', val, mood ) ){
     d_option = val;
   }
   string e_option;
-  if ( opts.Find( 'e', val, mood ) ){
+  if ( opts.find( 'e', val, mood ) ){
     e_option = val;
     if ( e_option.size() > 0 && e_option[e_option.size()-1] != '$' )
       e_option += "$";
@@ -6436,23 +6440,30 @@ int main(int argc, char *argv[]) {
     cerr << "-t and -d options cannot be combined" << endl;
     exit( EXIT_FAILURE );
   }
+
+  vector<string> inputnames;
+
   if ( t_option.empty() && d_option.empty() ){
     if ( e_option.empty() ){
-      cerr << "missing one of -t, -d or -e options" << endl;
-      exit( EXIT_FAILURE );
+      inputnames = opts.getMassOpts();
+      if ( inputnames.size() == 0 ){
+	cerr << "missing one of -t, -d or -e options" << endl;
+	exit( EXIT_FAILURE );
+      }
     }
     else {
       d_option = ".";
     }
   }
 
-  vector<string> inputnames;
-  if ( !t_option.empty() ){
-    inputnames = searchFiles( t_option );
-  }
-  else {
-    cerr << "search files matching pattern: " << d_option << e_option << endl;
-    inputnames = searchFilesMatch( d_option, e_option, false );
+  if ( inputnames.empty() ){
+    if ( !t_option.empty() ){
+      inputnames = searchFiles( t_option );
+    }
+    else {
+      cerr << "search files matching pattern: " << d_option << e_option << endl;
+      inputnames = searchFilesMatch( d_option, e_option, false );
+    }
   }
   // for ( size_t i = 0; i < inputnames.size(); ++i ){
   //   cerr << i << " - " << inputnames[i] << endl;
@@ -6463,7 +6474,7 @@ int main(int argc, char *argv[]) {
   }
 
   string o_option;
-  if ( opts.Find( 'o', val, mood ) ){
+  if ( opts.find( 'o', val, mood ) ){
     if ( inputnames.size() > 1 ){
       cerr << "-o option not supported for multiple input files" << endl;
       exit(EXIT_FAILURE);
@@ -6471,7 +6482,7 @@ int main(int argc, char *argv[]) {
     o_option = val;
   }
 
-  if ( opts.Find( "threads", val, mood ) ){
+  if ( opts.find( "threads", val ) ){
 #ifdef HAVE_OPENMP
     int num = TiCC::stringTo<int>( val );
     if ( num < 1 || num > 4 ){
@@ -6487,9 +6498,9 @@ int main(int argc, char *argv[]) {
 #endif
   }
 
-  if ( opts.Find( "config", val, mood ) ){
+  if ( opts.find( "config", val ) ){
     configFile = val;
-    opts.Delete( "config" );
+    opts.remove( "config" );
   }
   if ( !configFile.empty() &&
        config.fill( configFile ) ){
@@ -6499,7 +6510,7 @@ int main(int argc, char *argv[]) {
     cerr << "invalid configuration" << endl;
     exit( EXIT_FAILURE );
   }
-  if ( opts.Find( 'D', val, mood ) ){
+  if ( opts.find( 'D', val, mood ) ){
     if ( val == "Normal" )
       cur_log.setlevel( LogNormal );
     else if ( val == "Debug" )
@@ -6511,9 +6522,9 @@ int main(int argc, char *argv[]) {
     else {
       cerr << "Unknown Debug mode! (-D " << val << ")" << endl;
     }
-    opts.Delete( 'D' );
+    opts.remove( 'D' );
   }
-  if ( opts.Find( "skip", val, mood)) {
+  if ( opts.find( "skip", val ) ) {
     string skip = val;
     if ( skip.find_first_of("wW") != string::npos ){
       settings.doWopr = false;
@@ -6531,7 +6542,7 @@ int main(int argc, char *argv[]) {
     if ( skip.find_first_of("cC") != string::npos ){
       settings.doXfiles = false;
     }
-    opts.Delete("skip");
+    opts.remove("skip");
   };
 
   if ( inputnames.size() > 1 ){
