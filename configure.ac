@@ -47,17 +47,6 @@ AX_ICU_CHECK( [3.6],
 	       LIBS="$ICU_LIBPATH $ICU_LIBS $ICU_IOLIBS $LIBS"],
 	      [AC_MSG_FAILURE( "No ICU development environment found. Please check if libicu-dev or the like is installed" )] )
 
-AC_ARG_WITH(timbl,
-       [  --with-timbl=DIR       use timbl installed in <DIR>;
-               note that you can install timbl in a non-default directory with
-               ./configure --prefix=<DIR> in the timbl installation directory],
-       [PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$withval/lib/pkgconfig"],
-       [PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$prefix/lib/pkgconfig"])
-#  AC_MSG_NOTICE( [pkg-config search path: $PKG_CONFIG_PATH] )
-PKG_CHECK_MODULES([timbl], [timbl >= 6.4.2] )
-CXXFLAGS="$CXXFLAGS $timbl_CFLAGS"
-LIBS="$timbl_LIBS $LIBS"
-
 AC_ARG_WITH(timblserver,
        [  --with-timblserver=DIR       use timblserver installed in <DIR>;
                note that you can install timbl in a non-default directory with
