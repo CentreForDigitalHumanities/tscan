@@ -2139,8 +2139,8 @@ void argument_overlap( const string w_or_l,
   }
 }
 
-#define DEBUG_COMPOUNDS
-enum CompoundType { NOCOMP, NN, PN, VN, PV, BB, BV };
+//#define DEBUG_COMPOUNDS
+enum CompoundType { NOCOMP, NN, PN, VN, PV, AB, BB, BN, BV };
 
 ostream& operator<<( ostream&os, const CompoundType& cc ){
   switch( cc ){
@@ -2159,8 +2159,14 @@ ostream& operator<<( ostream&os, const CompoundType& cc ){
   case BB:
     os << "BB-compound";
     break;
+  case AB:
+    os << "AB-compound";
+    break;
   case BV:
     os << "BV-compound";
+    break;
+  case BN:
+    os << "BN-compound";
     break;
   case NOCOMP:
     os << "no-compound";
@@ -2169,8 +2175,9 @@ ostream& operator<<( ostream&os, const CompoundType& cc ){
   return os;
 }
 
-CompoundType detect_compound( const Morpheme *m ){
+CompoundType detect_compound( const Morpheme *m, int& len ){
   CompoundType result = NOCOMP;
+  len = 0;
 #ifdef DEBUG_COMPOUNDS
   cerr << "top morph: " << m << endl;
 #endif
@@ -2219,16 +2226,12 @@ CompoundType detect_compound( const Morpheme *m ){
 #ifdef DEBUG_COMPOUNDS
 	  cerr << "recurse: " << endl;
 #endif
-	  CompoundType cmp = detect_compound( mV[i] );
+	  int len = 0;
+	  CompoundType cmp = detect_compound( mV[i], len );
 	  if ( cmp == PN
 	       || cmp == VN
 	       || cmp == NN ){
-	    if ( counts["N"] == 0 ){
-	      counts["N"] = 2;
-	    }
-	    else {
-	      ++counts["N"];
-	    }
+	    counts["N"] += len;
 	  }
 	  else if ( cmp == PV
 		    || cmp == BV ){
@@ -2252,6 +2255,23 @@ CompoundType detect_compound( const Morpheme *m ){
 	    break;
 	  }
 	}
+	else if ( mV[i]->cls() == "derivational" ) {
+#ifdef DEBUG_COMPOUNDS
+	  cerr << "bekijk derivational kind morph: " << mV[i] << endl;
+#endif
+	  vector<PosAnnotation*> posV2 = mV[i]->select<PosAnnotation>(false);
+	  string childPos = posV2[0]->cls();
+	  if ( childPos[0] == 'N'
+	       || childPos[0] == 'V' ){
+	    string pos;
+	    pos = childPos[0];
+	    pos += "*";
+#ifdef DEBUG_COMPOUNDS
+	    cerr << "kind result pos = " << pos << endl;
+#endif
+	    ++counts[pos];
+	  }
+	}
 	else {
 #ifdef DEBUG_COMPOUNDS
 	  cerr << "skip a " << mV[i]->cls() << " morpheme" << endl;
@@ -2259,33 +2279,51 @@ CompoundType detect_compound( const Morpheme *m ){
 	}
       }
       if ( topPos == "N" ){
-	if ( counts["V"] > 0 && counts["N"] > 0 ){
+	cerr << "TOP=N" << endl;
+	cerr << counts << endl;
+	if ( (counts["V"] > 0 || counts["V*"] > 0 )
+	     && (counts["N"] > 0 || counts["N*"] > 0) ){
 	  result = VN;
+	  len = counts["V"] + counts["N"];
 	}
-	else if ( counts["P"] > 0 && counts["N"] > 0 ){
+	else if ( counts["P"] > 0 && (counts["N"] > 0 || counts["N*"] > 0) ){
 	  result = PN;
+	  len = counts["P"] + counts["N"];
 	}
-	else if ( counts["N"] > 1 ){
+	else if ( counts["B"] > 0 && (counts["N"] > 0 || counts["N*"] > 0) ){
+	  result = BN;
+	  len = counts["B"] + counts["N"];
+	}
+	else if ( counts["N"] > 1 || (counts["N"] > 0 && counts["N*"] > 0 ) ){
 	  result = NN;
+	  len = counts["N"];
 	}
       }
       else if ( topPos == "V" ){
 	if ( counts["P"] > 0 && counts["V"] > 0 ){
 	  result = PV;
+	  len = counts["P"] + counts["V"];
 	}
 	else if ( counts["B"] > 0 && counts["V"] > 0 ){
 	  result = BV;
+	  len = counts["B"] + counts["V"];
 	}
       }
       else if ( topPos == "B" ){
 	if ( counts["B"] > 1 ){
 	  result = BB;
+	  len = counts["B"];
+	}
+	else if ( counts["A"] > 0 && counts["B"] > 0 ){
+	  result = AB;
+	  len = counts["A"] + counts["B"];
 	}
       }
     }
   }
+
 #ifdef DEBUG_COMPOUNDS
-  cerr << "detected " << result << endl;
+  cerr << "detected " << result << " (" << len << ")" << endl;
 #endif
   return result;
 }
@@ -2342,6 +2380,7 @@ wordStats::wordStats( int index,
   }
   isContent = checkContent();
   if ( prop != ISLET ){
+    int compLen = 0;
     CompoundType comp = NOCOMP;
     vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
     size_t max = 0;
@@ -2349,7 +2388,8 @@ wordStats::wordStats( int index,
     for ( size_t q=0; q < ml.size(); ++q ){
       vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set, false );
       if ( m.size() == 1  && m[0]->cls() == "complex" ){
-	//	comp = detect_compound( m[0] );
+	int len;
+	//	comp = detect_compound( m[0], compLen );
 	// nested morphemes
 	string desc = m[0]->description();
 	vector<string> parts;
@@ -2400,9 +2440,10 @@ wordStats::wordStats( int index,
     if ( settings.doDecompound ){
       compPartCnt = runDecompoundWord( word, workdir_name,
 				       settings.decompounderPath );
-      if ( compPartCnt > 0 || comp != NOCOMP ){
-	//	cerr << morphemes << " is a " << comp << " - " << compPartCnt << endl;
-      }
+      // if ( compPartCnt > 0 || comp != NOCOMP ){
+      // 	cerr << morphemes << " is a " << comp << "(" << compLen << ") - "
+      // 	     << compPartCnt << endl;
+      // }
     }
   }
 }
@@ -2841,8 +2882,11 @@ void wordStats::toCSV( ostream& os ) const {
   os << ",";
   os << '"' << full_lemma << '"';
   os << ",";
-  os << '"' << morphemes << '"';
-  os << ",";
+  os << '"';
+  for( size_t i=0; i < morphemes.size(); ++i ){
+    os << "[" << morphemes[i] << "]";
+  }
+  os << "\",";
   wordSortToCSV( os );
   wordDifficultiesToCSV( os );
   coherenceToCSV( os );
