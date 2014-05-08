@@ -42,6 +42,8 @@ if test "x$PKG_CONFIG_PATH" = x; then
 fi
 PKG_PROG_PKG_CONFIG
 
+#AC_MSG_NOTICE( [pkg-config search path: $PKG_CONFIG_PATH] )
+
 AX_ICU_CHECK( [3.6],
 	      [CXXFLAGS="$CXXFLAGS $ICU_CPPSEARCHPATH"
 	       LIBS="$ICU_LIBPATH $ICU_LIBS $ICU_IOLIBS $LIBS"],
@@ -51,8 +53,8 @@ AC_ARG_WITH(timblserver,
        [  --with-timblserver=DIR       use timblserver installed in <DIR>;
                note that you can install timbl in a non-default directory with
                ./configure --prefix=<DIR> in the timbl installation directory],
-       [PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$withval/lib/pkgconfig"])
-#  AC_MSG_NOTICE( [pkg-config search path: $PKG_CONFIG_PATH] )
+       [PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$withval/lib/pkgconfig"],
+       [PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$prefix/lib/pkgconfig"])
 PKG_CHECK_MODULES([timblserver], [timblserver >= 1.7] )
 CXXFLAGS="$CXXFLAGS $timblserver_CFLAGS"
 LIBS="$timblserver_LIBS $LIBS"
