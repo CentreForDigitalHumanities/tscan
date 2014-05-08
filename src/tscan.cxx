@@ -6454,7 +6454,17 @@ int main(int argc, char *argv[]) {
   }
   LOG << "TScan " << VERSION << endl;
   LOG << "working dir " << workdir_name << endl;
-  TiCC::CL_Options opts( argc, argv );
+  string shortOpt = "ht:d:e:o:";
+  string longOpt = "threads:,config,skip:";
+  TiCC::CL_Options opts( shortOpt, longOpt );
+  try {
+    opts.init( argc, argv );
+  }
+  catch( OptionError& e ){
+    cerr << e.what() << endl;
+    usage();
+    exit( EXIT_SUCCESS );
+  }
   string val;
   bool mood;
   if ( opts.find( 'h', val, mood ) ||
