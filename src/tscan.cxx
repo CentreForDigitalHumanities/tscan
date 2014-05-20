@@ -2716,8 +2716,8 @@ void wordStats::concreetHeader( ostream& os ) const {
 bool wordStats::isStrictNoun() const {
   switch ( sem_type ){
   case CONCRETE_HUMAN_NOUN:
-  case ABSTRACT_DYNAMIC_NOUN:
-  case ABSTRACT_NONDYNAMIC_NOUN:
+  // case ABSTRACT_DYNAMIC_NOUN:
+  // case ABSTRACT_NONDYNAMIC_NOUN:
   case CONCRETE_NONHUMAN_NOUN:
   case CONCRETE_ARTEFACT_NOUN:
   case CONCRETE_SUBSTANCE_NOUN:
@@ -2732,8 +2732,8 @@ bool wordStats::isStrictNoun() const {
 bool wordStats::isBroadNoun() const {
   switch ( sem_type ){
   case CONCRETE_HUMAN_NOUN:
-  case ABSTRACT_DYNAMIC_NOUN:
-  case ABSTRACT_NONDYNAMIC_NOUN:
+  // case ABSTRACT_DYNAMIC_NOUN:
+  // case ABSTRACT_NONDYNAMIC_NOUN:
   case CONCRETE_NONHUMAN_NOUN:
   case CONCRETE_ARTEFACT_NOUN:
   case CONCRETE_SUBSTANCE_NOUN:
@@ -3859,7 +3859,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
      << proportion( clauseCnt, wordCnt )  << ",";
   os << proportion( wordCnt, npCnt ) << ",";
   os << density( onderCnt, wordCnt ) << ","
-     << density( onderCnt, sentCnt ) << ","
+     << proportion( onderCnt, sentCnt ) << ","
      << density( betrCnt, wordCnt ) << ","
      << proportion( betrCnt, clauseCnt ) << ","
      << density( clauseCnt, wordCnt ) << ","
@@ -3996,8 +3996,8 @@ void structStats::coherenceToCSV( ostream& os ) const {
 	 << "NA,NA,";
     }
     else {
-      os << double(wordOverlapCnt) << ",NA,"
-	 << double(lemmaOverlapCnt) << ",NA,";
+      os << density( wordOverlapCnt, wordCnt ) << ",NA,"
+	 << density( lemmaOverlapCnt, wordCnt ) << ",NA,";
     }
   }
   else {
@@ -4071,92 +4071,96 @@ void structStats::concreetHeader( ostream& os ) const {
 }
 
 void structStats::concreetToCSV( ostream& os ) const {
-  os << proportion( strictNounCnt, nounCnt+nameCnt ) << ",";
+  int coveredNouns = nounCnt+nameCnt-uncoveredNounCnt;
+  os << proportion( strictNounCnt, coveredNouns ) << ",";
   os << density( strictNounCnt, wordCnt ) << ",";
-  os << proportion( broadNounCnt, nounCnt+nameCnt ) << ",";
+  os << proportion( broadNounCnt, coveredNouns ) << ",";
   os << density( broadNounCnt, wordCnt ) << ",";
-  os << proportion( nonHumanCnt, nounCnt+nameCnt ) << ",";
+  os << proportion( nonHumanCnt, coveredNouns ) << ",";
   os << density( nonHumanCnt, wordCnt ) << ",";
-  os << proportion( artefactCnt, nounCnt+nameCnt ) << ",";
+  os << proportion( artefactCnt, coveredNouns ) << ",";
   os << density( artefactCnt, wordCnt ) << ",";
-  os << proportion( substanceCnt, nounCnt+nameCnt ) << ",";
+  os << proportion( substanceCnt, coveredNouns ) << ",";
   os << density( substanceCnt, wordCnt ) << ",";
-  os << proportion( placeCnt, nounCnt+nameCnt ) << ",";
+  os << proportion( placeCnt, coveredNouns ) << ",";
   os << density( placeCnt, wordCnt ) << ",";
-  os << proportion( timeCnt, nounCnt+nameCnt ) << ",";
+  os << proportion( timeCnt, coveredNouns ) << ",";
   os << density( timeCnt, wordCnt ) << ",";
-  os << proportion( measureCnt, nounCnt+nameCnt ) << ",";
+  os << proportion( measureCnt, coveredNouns ) << ",";
   os << density( measureCnt, wordCnt ) << ",";
-  os << proportion( institutCnt, nounCnt+nameCnt ) << ",";
-  os << density( institutCnt, wordCnt ) << ",";
-  os << proportion( dynamicCnt, nounCnt+nameCnt ) << ",";
+  os << proportion( dynamicCnt, coveredNouns ) << ",";
   os << density( dynamicCnt, wordCnt ) << ",";
-  os << proportion( nonDynamicCnt, nounCnt+nameCnt ) << ",";
+  os << proportion( institutCnt, coveredNouns ) << ",";
+  os << density( institutCnt, wordCnt ) << ",";
+  os << proportion( nonDynamicCnt, coveredNouns ) << ",";
   os << density( nonDynamicCnt, wordCnt ) << ",";
-  os << proportion( undefinedNounCnt, nounCnt + nameCnt ) << ",";
-  os << proportion( (nounCnt+nameCnt-uncoveredNounCnt), nounCnt + nameCnt ) << ",";
+  os << proportion( undefinedNounCnt, coveredNouns ) << ",";
+  os << proportion( coveredNouns, nounCnt + nameCnt ) << ",";
 
-  os << proportion( humanAdjCnt,adjCnt ) << ",";
+  int coveredAdj = adjCnt-uncoveredAdjCnt;
+  os << proportion( humanAdjCnt, coveredAdj ) << ",";
   os << density( humanAdjCnt,wordCnt ) << ",";
-  os << proportion( emoAdjCnt,adjCnt ) << ",";
+  os << proportion( emoAdjCnt, coveredAdj ) << ",";
   os << density( emoAdjCnt,wordCnt ) << ",";
-  os << proportion( nonhumanAdjCnt,adjCnt ) << ",";
+  os << proportion( nonhumanAdjCnt, coveredAdj ) << ",";
   os << density( nonhumanAdjCnt,wordCnt ) << ",";
-  os << proportion( shapeAdjCnt,adjCnt ) << ",";
+  os << proportion( shapeAdjCnt, coveredAdj ) << ",";
   os << density( shapeAdjCnt,wordCnt ) << ",";
-  os << proportion( colorAdjCnt,adjCnt ) << ",";
+  os << proportion( colorAdjCnt, coveredAdj ) << ",";
   os << density( colorAdjCnt,wordCnt ) << ",";
-  os << proportion( matterAdjCnt,adjCnt ) << ",";
+  os << proportion( matterAdjCnt, coveredAdj ) << ",";
   os << density( matterAdjCnt,wordCnt ) << ",";
-  os << proportion( soundAdjCnt,adjCnt ) << ",";
+  os << proportion( soundAdjCnt, coveredAdj ) << ",";
   os << density( soundAdjCnt,wordCnt ) << ",";
-  os << proportion( nonhumanOtherAdjCnt,adjCnt ) << ",";
+  os << proportion( nonhumanOtherAdjCnt, coveredAdj ) << ",";
   os << density( nonhumanOtherAdjCnt,wordCnt ) << ",";
-  os << proportion( techAdjCnt,adjCnt ) << ",";
+  os << proportion( techAdjCnt, coveredAdj ) << ",";
   os << density( techAdjCnt,wordCnt ) << ",";
-  os << proportion( timeAdjCnt,adjCnt ) << ",";
+  os << proportion( timeAdjCnt, coveredAdj ) << ",";
   os << density( timeAdjCnt,wordCnt ) << ",";
-  os << proportion( placeAdjCnt,adjCnt ) << ",";
+  os << proportion( placeAdjCnt, coveredAdj ) << ",";
   os << density( placeAdjCnt,wordCnt ) << ",";
-  os << proportion( specPosAdjCnt,adjCnt ) << ",";
+  os << proportion( specPosAdjCnt, coveredAdj ) << ",";
   os << density( specPosAdjCnt,wordCnt ) << ",";
-  os << proportion( specNegAdjCnt,adjCnt ) << ",";
+  os << proportion( specNegAdjCnt, coveredAdj ) << ",";
   os << density( specNegAdjCnt,wordCnt ) << ",";
-  os << proportion( posAdjCnt,adjCnt ) << ",";
+  os << proportion( posAdjCnt, coveredAdj ) << ",";
   os << density( posAdjCnt,wordCnt ) << ",";
-  os << proportion( negAdjCnt,adjCnt ) << ",";
+  os << proportion( negAdjCnt, coveredAdj ) << ",";
   os << density( negAdjCnt,wordCnt ) << ",";
-  os << proportion( epiPosAdjCnt,adjCnt ) << ",";
+  os << proportion( epiPosAdjCnt, coveredAdj ) << ",";
   os << density( epiPosAdjCnt,wordCnt ) << ",";
-  os << proportion( epiNegAdjCnt,adjCnt ) << ",";
+  os << proportion( epiNegAdjCnt, coveredAdj ) << ",";
   os << density( epiNegAdjCnt,wordCnt ) << ",";
-  os << proportion( moreAdjCnt,adjCnt ) << ",";
+  os << proportion( moreAdjCnt, coveredAdj ) << ",";
   os << density( moreAdjCnt,wordCnt ) << ",";
-  os << proportion( lessAdjCnt,adjCnt ) << ",";
+  os << proportion( lessAdjCnt, coveredAdj ) << ",";
   os << density( lessAdjCnt,wordCnt ) << ",";
-  os << proportion( abstractAdjCnt,adjCnt ) << ",";
+  os << proportion( abstractAdjCnt, coveredAdj ) << ",";
   os << density( abstractAdjCnt,wordCnt ) << ",";
-  os << proportion( specPosAdjCnt + specNegAdjCnt ,adjCnt ) << ",";
+  os << proportion( specPosAdjCnt + specNegAdjCnt, coveredAdj ) << ",";
   os << density( specPosAdjCnt + specNegAdjCnt, wordCnt ) << ",";
-  os << proportion( posAdjCnt + negAdjCnt,adjCnt ) << ",";
+  os << proportion( posAdjCnt + negAdjCnt, coveredAdj ) << ",";
   os << density( posAdjCnt + negAdjCnt, wordCnt ) << ",";
-  os << proportion( epiPosAdjCnt + epiNegAdjCnt ,adjCnt ) << ",";
+  os << proportion( epiPosAdjCnt + epiNegAdjCnt, coveredAdj ) << ",";
   os << density( epiPosAdjCnt + epiNegAdjCnt ,wordCnt ) << ",";
-  os << proportion( strictAdjCnt, adjCnt ) << ",";
+  os << proportion( strictAdjCnt, coveredAdj ) << ",";
   os << density( strictAdjCnt, wordCnt ) << ",";
-  os << proportion( broadAdjCnt, adjCnt ) << ",";
+  os << proportion( broadAdjCnt, coveredAdj ) << ",";
   os << density( broadAdjCnt, wordCnt ) << ",";
-  os << proportion( subjectiveAdjCnt ,adjCnt ) << ",";
+  os << proportion( subjectiveAdjCnt ,coveredAdj ) << ",";
   os << density( subjectiveAdjCnt, wordCnt ) << ",";
-  os << proportion( undefinedAdjCnt, adjCnt ) << ",";
-  os << proportion( adjCnt - uncoveredAdjCnt - undefinedAdjCnt ,adjCnt ) << ",";
-  os << proportion( adjCnt-uncoveredAdjCnt ,adjCnt ) << ",";
-  os << proportion( concreteWwCnt,verbCnt ) << ",";
+  os << proportion( undefinedAdjCnt, coveredAdj ) << ",";
+  os << proportion( coveredAdj - undefinedAdjCnt ,coveredAdj ) << ",";
+  os << proportion( coveredAdj ,adjCnt ) << ",";
+
+  int coveredVerb = verbCnt - uncoveredVerbCnt;
+  os << proportion( concreteWwCnt, coveredVerb ) << ",";
   os << density( concreteWwCnt, wordCnt ) << ",";
-  os << proportion( abstractWwCnt, verbCnt ) << ",";
+  os << proportion( abstractWwCnt, coveredVerb ) << ",";
   os << density( abstractWwCnt, wordCnt ) << ",";
-  os << proportion( undefinedWwCnt, verbCnt ) << ",";
-  os << proportion( verbCnt - uncoveredVerbCnt, verbCnt ) << ",";
+  os << proportion( undefinedWwCnt, coveredVerb ) << ",";
+  os << proportion( coveredVerb, verbCnt ) << ",";
   os << proportion( concreteWwCnt + strictAdjCnt + strictNounCnt, wordCnt ) << ",";
   os << density( concreteWwCnt + strictAdjCnt + strictNounCnt, wordCnt ) << ",";
 }
@@ -5568,13 +5572,13 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 	break;
       case ABSTRACT_DYNAMIC_NOUN:
 	++dynamicCnt;
-	strictNounCnt++;
-	broadNounCnt++;
+	// strictNounCnt++;
+	// broadNounCnt++;
 	break;
       case ABSTRACT_NONDYNAMIC_NOUN:
 	++nonDynamicCnt;
-	strictNounCnt++;
-	broadNounCnt++;
+	// strictNounCnt++;
+	// broadNounCnt++;
 	break;
       case INSTITUT_NOUN:
 	institutCnt++;
