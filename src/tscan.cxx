@@ -597,10 +597,42 @@ SemType classifyADJ( const string& s, const string& sub = "" ){
   return result;
 }
 
+istream& safe_getline( istream& is, string& t ){
+  t.clear();
+
+  // The characters in the stream are read one-by-one using a std::streambuf.
+  // That is faster than reading them one-by-one using the std::istream.
+  // Code that uses streambuf this way must be guarded by a sentry object.
+  // The sentry object performs various tasks,
+  // such as thread synchronization and updating the stream state.
+
+  istream::sentry se(is, true);
+  streambuf* sb = is.rdbuf();
+
+  for(;;) {
+    int c = sb->sbumpc();
+    switch (c) {
+    case '\n':
+      return is;
+    case '\r':
+      if(sb->sgetc() == '\n'){
+	sb->sbumpc();
+      }
+      return is;
+    case EOF:
+      // Also handle the case when the last line has no line ending
+      if(t.empty())
+	is.setstate(std::ios::eofbit);
+      return is;
+    default:
+      t += (char)c;
+    }
+  }
+}
 
 bool fillN( map<string,SemType>& m, istream& is ){
   string line;
-  while( getline( is, line ) ){
+  while( safe_getline( is, line ) ){
     vector<string> parts;
     int n = split_at( line, parts, "\t" ); // split at tab
     if ( n != 2 ){
@@ -695,7 +727,7 @@ bool fillN( map<string,SemType>& m, istream& is ){
 
 bool fillWW( map<string,SemType>& m, istream& is ){
   string line;
-  while( getline( is, line ) ){
+  while( safe_getline( is, line ) ){
     vector<string> parts;
     int n = split_at( line, parts, "\t" ); // split at tab
     if ( n != 3 ){
@@ -714,7 +746,7 @@ bool fillWW( map<string,SemType>& m, istream& is ){
 
 bool fillADJ( map<string,SemType>& m, istream& is ){
   string line;
-  while( getline( is, line ) ){
+  while( safe_getline( is, line ) ){
     vector<string> parts;
     int n = split_at( line, parts, "\t" ); // split at tab
     if ( n <2 || n > 3 ){
@@ -759,7 +791,7 @@ bool fill( CGN::Type tag, map<string,SemType>& m, const string& filename ){
 
 bool fill_freqlex( map<string,cf_data>& m, istream& is ){
   string line;
-  while( getline( is, line ) ){
+  while( safe_getline( is, line ) ){
     vector<string> parts;
     size_t n = split_at( line, parts, "\t" ); // split at tabs
     if ( n != 4 ){
@@ -800,7 +832,7 @@ bool fill_topvals( map<string,top_val>& m, istream& is ){
   string line;
   int line_count = 0;
   top_val val = top2000;
-  while( getline( is, line ) ){
+  while( safe_getline( is, line ) ){
     ++line_count;
     if ( line_count > 10000 )
       val = top20000;
@@ -842,7 +874,7 @@ bool fill_connectors( map<CGN::Type,set<string> >& c1,
 		      istream& is ){
   cM.clear();
   string line;
-  while( getline( is, line ) ){
+  while( safe_getline( is, line ) ){
     // a line is supposed to be :
     // a comment, starting with '#'
     // like: '# comment'
@@ -903,7 +935,7 @@ bool fill_connectors( map<CGN::Type, set<string> >& c1,
 bool fill_vzexpr( set<string>& vz2, set<string>& vz3, set<string>& vz4,
 		  istream& is ){
   string line;
-  while( getline( is, line ) ){
+  while( safe_getline( is, line ) ){
     // a line is supposed to be :
     // a comment, starting with '#'
     // like: '# comment'
@@ -955,7 +987,7 @@ bool fill_vzexpr( set<string>& vz2, set<string>& vz3, set<string>& vz4,
 
 bool fill( map<string,AfkType>& afkos, istream& is ){
   string line;
-  while( getline( is, line ) ){
+  while( safe_getline( is, line ) ){
     // a line is supposed to be :
     // a comment, starting with '#'
     // like: '# comment'
@@ -6363,8 +6395,8 @@ Document *getFrogResult( istream& is ){
   DBG << "start input loop" << endl;
   bool incomment = false;
   string line;
-  while ( getline( is, line ) ){
-    DBG << "read: " << line << endl;
+  while ( safe_getline( is, line ) ){
+    DBG << "read: '" << line << "'" << endl;
     if ( line.length() > 2 ){
       string start = line.substr(0,3);
       if ( start == "###" )
