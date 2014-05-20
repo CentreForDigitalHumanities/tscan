@@ -633,6 +633,8 @@ istream& safe_getline( istream& is, string& t ){
 bool fillN( map<string,SemType>& m, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
+    if ( line.empty() )
+      continue;
     vector<string> parts;
     int n = split_at( line, parts, "\t" ); // split at tab
     if ( n != 2 ){
@@ -728,6 +730,8 @@ bool fillN( map<string,SemType>& m, istream& is ){
 bool fillWW( map<string,SemType>& m, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
+    if ( line.empty() )
+      continue;
     vector<string> parts;
     int n = split_at( line, parts, "\t" ); // split at tab
     if ( n != 3 ){
@@ -747,6 +751,8 @@ bool fillWW( map<string,SemType>& m, istream& is ){
 bool fillADJ( map<string,SemType>& m, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
+    if ( line.empty() )
+      continue;
     vector<string> parts;
     int n = split_at( line, parts, "\t" ); // split at tab
     if ( n <2 || n > 3 ){
@@ -792,6 +798,8 @@ bool fill( CGN::Type tag, map<string,SemType>& m, const string& filename ){
 bool fill_freqlex( map<string,cf_data>& m, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
+    if ( line.empty() )
+      continue;
     vector<string> parts;
     size_t n = split_at( line, parts, "\t" ); // split at tabs
     if ( n != 4 ){
