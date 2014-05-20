@@ -3043,6 +3043,7 @@ struct structStats: public basicStats {
     humanCnt(0),
     nonHumanCnt(0),
     artefactCnt(0),
+    concrotherCnt(0),
     substanceCnt(0),
     timeCnt(0),
     placeCnt(0),
@@ -3233,6 +3234,7 @@ struct structStats: public basicStats {
   int humanCnt;
   int nonHumanCnt;
   int artefactCnt;
+  int concrotherCnt;
   int substanceCnt;
   int timeCnt;
   int placeCnt;
@@ -3453,6 +3455,7 @@ void structStats::merge( structStats *ss ){
   humanCnt += ss->humanCnt;
   nonHumanCnt += ss->nonHumanCnt;
   artefactCnt += ss->artefactCnt;
+  concrotherCnt += ss->concrotherCnt;
   substanceCnt += ss->substanceCnt;
   timeCnt += ss->timeCnt;
   placeCnt += ss->placeCnt;
@@ -3725,6 +3728,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "human_nouns_count", toString(humanCnt) );
   addOneMetric( doc, el, "nonhuman_nouns_count", toString(nonHumanCnt) );
   addOneMetric( doc, el, "artefact_nouns_count", toString(artefactCnt) );
+  addOneMetric( doc, el, "concrother_nouns_count", toString(concrotherCnt) );
   addOneMetric( doc, el, "substance_nouns_count", toString(substanceCnt) );
   addOneMetric( doc, el, "time_nouns_count", toString(timeCnt) );
   addOneMetric( doc, el, "place_nouns_count", toString(placeCnt) );
@@ -4057,6 +4061,7 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Conc_nw_ruim_p,Conc_nw_ruim_d,";
   os << "PlantDier_nw_p,PlantDier_nw_d,";
   os << "Gebr_nw_p,Gebr_nw_d,";
+  os << "Concr_ov_nw_p,Concr_ov_nw_d,";
   os << "Subst_nw_p,Subst_nw_d,";
   os << "Plaats_nw_p,Plaats_nw_d,";
   os << "Tijd_nw_p,Tijd_nw_d,";
@@ -4112,6 +4117,8 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << density( nonHumanCnt, wordCnt ) << ",";
   os << proportion( artefactCnt, coveredNouns ) << ",";
   os << density( artefactCnt, wordCnt ) << ",";
+  os << proportion( concrotherCnt, coveredNouns ) << ",";
+  os << density( concrotherCnt, wordCnt ) << ",";
   os << proportion( substanceCnt, coveredNouns ) << ",";
   os << density( substanceCnt, wordCnt ) << ",";
   os << proportion( placeCnt, coveredNouns ) << ",";
@@ -5587,6 +5594,7 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 	broadNounCnt++;
 	break;
       case CONCRETE_OTHER_NOUN:
+	concrotherCnt++;
 	strictNounCnt++;
 	broadNounCnt++;
 	break;
