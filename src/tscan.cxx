@@ -2915,7 +2915,7 @@ void wordStats::toCSV( ostream& os ) const {
   os << '"' << word << '"';
   os << ",";
   if ( parseFail ){
-    na( os, 59 );
+    na( os, 58 );
     return;
   }
   os << '"' << lemma << '"';
