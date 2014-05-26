@@ -1874,6 +1874,9 @@ void wordStats::setCGNProps( const PosAnnotation* pa ) {
 	exit(3);
       }
     }
+    else if ( wvorm == "" ){
+      // probably WW(dial)
+    }
     else {
       cerr << "PANIEK: een onverwachte ww vorm: " << wvorm << endl;
       exit(3);
@@ -6694,4 +6697,3 @@ int main(int argc, char *argv[]) {
   }
   exit(EXIT_SUCCESS);
 }
-
