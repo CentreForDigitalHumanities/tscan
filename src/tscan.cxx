@@ -422,6 +422,7 @@ struct settingData {
   bool doWopr;
   bool doLsa;
   bool doXfiles;
+  bool showUnfound;
   string decompounderPath;
   string style;
   int rarityLevel;
@@ -1053,6 +1054,7 @@ void settingData::init( const Configuration& cf ){
   doXfiles = true;
   doAlpino = false;
   doAlpinoServer = false;
+  showUnfound = true;
   string val = cf.lookUp( "useAlpinoServer" );
   if ( !val.empty() ){
     if ( !TiCC::stringTo( val, doAlpinoServer ) ){
@@ -1933,6 +1935,9 @@ SemType wordStats::checkSemProps( ) const {
     if ( sit != settings.noun_sem.end() ){
       sem = sit->second;
     }
+    else if ( settings.showUnfound ){
+      cerr << "N niet gevonden: woord:" << word << " lemma:" << lemma << endl;
+    }
     //    cerr << "semtype=" << sem << endl;
     return sem;
   }
@@ -1942,6 +1947,9 @@ SemType wordStats::checkSemProps( ) const {
     map<string,SemType>::const_iterator sit = settings.noun_sem.find( lemma );
     if ( sit != settings.noun_sem.end() ){
       sem = sit->second;
+    }
+    else if ( settings.showUnfound ){
+      cerr << "Name niet gevonden: woord:" << word << " lemma:" << lemma << endl;
     }
     return sem;
   }
@@ -1956,6 +1964,9 @@ SemType wordStats::checkSemProps( ) const {
     }
     if ( sit != settings.adj_sem.end() ){
       sem = sit->second;
+    }
+    else if ( settings.showUnfound ){
+      cerr << "ADJ niet gevonden: woord:" << l_word << " lemma:" << l_lemma << endl;
     }
     //    cerr << "found semtype " << sem << endl;
     return sem;
@@ -1979,10 +1990,17 @@ SemType wordStats::checkSemProps( ) const {
     }
     if ( sit == settings.verb_sem.end() ){
       //      cerr << "lookup lemma as verb (" << lemma << ") " << endl;
-      sit = settings.verb_sem.find( lemma );
+      sit = settings.verb_sem.find( l_lemma );
     }
     if ( sit != settings.verb_sem.end() ){
       sem = sit->second;
+    }
+    else if ( settings.showUnfound ){
+      cerr << "WW niet gevonden: woord:" << l_word << " lemma:" << l_lemma;
+      if ( !full_lemma.empty() )
+	cerr << " full_lemma " << full_lemma << endl;
+      else
+	cerr << endl;
     }
     //    cerr << "found semtype " << sem << endl;
     return sem;
