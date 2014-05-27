@@ -40,7 +40,6 @@
 #include "timblserver/ServerBase.h"
 #include "libfolia/document.h"
 #include "ticcutils/StringOps.h"
-#include "ticcutils/LogStream.h"
 #include "ticcutils/Configuration.h"
 #include "ticcutils/FileUtils.h"
 #include "ticcutils/CommandLine.h"
@@ -51,11 +50,6 @@ using namespace std;
 using namespace TiCC;
 using namespace folia;
 
-TiCC::LogStream cur_log( "T-scan", StampMessage );
-
-#define LOG (*Log(cur_log))
-#define DBG (*Dbg(cur_log))
-
 const double NA = -123456789;
 const string frog_pos_set = "http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn";
 const string frog_lemma_set = "http://ilk.uvt.nl/folia/sets/frog-mblem-nl";
@@ -65,6 +59,8 @@ const string frog_ner_set = "http://ilk.uvt.nl/folia/sets/frog-ner-nl";
 enum csvKind { DOC_CSV, PAR_CSV, SENT_CSV, WORD_CSV };
 
 string configFile = "tscan.cfg";
+string probFilename = "problems.log";
+ofstream problemFile;
 Configuration config;
 string workdir_name;
 
@@ -422,7 +418,7 @@ struct settingData {
   bool doWopr;
   bool doLsa;
   bool doXfiles;
-  bool showUnfound;
+  bool showProblems;
   string decompounderPath;
   string style;
   int rarityLevel;
@@ -634,6 +630,7 @@ istream& safe_getline( istream& is, string& t ){
 bool fillN( map<string,SemType>& m, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
+    line = TiCC::trim( line );
     if ( line.empty() )
       continue;
     vector<string> parts;
@@ -731,6 +728,7 @@ bool fillN( map<string,SemType>& m, istream& is ){
 bool fillWW( map<string,SemType>& m, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
+    line = TiCC::trim( line );
     if ( line.empty() )
       continue;
     vector<string> parts;
@@ -752,6 +750,7 @@ bool fillWW( map<string,SemType>& m, istream& is ){
 bool fillADJ( map<string,SemType>& m, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
+    line = TiCC::trim( line );
     if ( line.empty() )
       continue;
     vector<string> parts;
@@ -799,6 +798,7 @@ bool fill( CGN::Type tag, map<string,SemType>& m, const string& filename ){
 bool fill_freqlex( map<string,cf_data>& m, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
+    line = TiCC::trim( line );
     if ( line.empty() )
       continue;
     vector<string> parts;
@@ -842,6 +842,9 @@ bool fill_topvals( map<string,top_val>& m, istream& is ){
   int line_count = 0;
   top_val val = top2000;
   while( safe_getline( is, line ) ){
+    line = TiCC::trim( line );
+    if ( line.empty() )
+      continue;
     ++line_count;
     if ( line_count > 10000 )
       val = top20000;
@@ -1054,7 +1057,6 @@ void settingData::init( const Configuration& cf ){
   doXfiles = true;
   doAlpino = false;
   doAlpinoServer = false;
-  showUnfound = true;
   string val = cf.lookUp( "useAlpinoServer" );
   if ( !val.empty() ){
     if ( !TiCC::stringTo( val, doAlpinoServer ) ){
@@ -1082,6 +1084,14 @@ void settingData::init( const Configuration& cf ){
   if ( !val.empty() ){
     if ( !TiCC::stringTo( val, doLsa ) ){
       cerr << "invalid value for 'useLsa' in config file" << endl;
+      exit( EXIT_FAILURE );
+    }
+  }
+  showProblems = true;
+  val = cf.lookUp( "logProblems" );
+  if ( !val.empty() ){
+    if ( !TiCC::stringTo( val, showProblems ) ){
+      cerr << "invalid value for 'showProblems' in config file" << endl;
       exit( EXIT_FAILURE );
     }
   }
@@ -1872,16 +1882,14 @@ void wordStats::setCGNProps( const PosAnnotation* pa ) {
       else if ( tijd == "conj" )
 	prop = ISSUBJ;
       else {
-	cerr << "PANIEK: een onverwachte ww tijd: " << tijd << endl;
-	exit(3);
+	cerr << "cgnProps: een onverwachte ww tijd: " << tijd << endl;
       }
     }
     else if ( wvorm == "" ){
       // probably WW(dial)
     }
     else {
-      cerr << "PANIEK: een onverwachte ww vorm: " << wvorm << endl;
-      exit(3);
+      cerr << "cgnProps: een onverwachte ww vorm: " << wvorm << endl;
     }
   }
   else if ( tag == CGN::VNW ){
@@ -1905,9 +1913,8 @@ void wordStats::setCGNProps( const PosAnnotation* pa ) {
 	    isPronRef = ( vwtype == "pers" || vwtype == "bez" );
 	  }
 	  else {
-	    cerr << "PANIEK: een onverwachte PRONOUN persoon : " << persoon
+	    cerr << "cgnProps: een onverwachte PRONOUN persoon : " << persoon
 		 << " for word " << word << endl;
-	    exit(3);
 	  }
 	}
       }
@@ -1935,8 +1942,8 @@ SemType wordStats::checkSemProps( ) const {
     if ( sit != settings.noun_sem.end() ){
       sem = sit->second;
     }
-    else if ( settings.showUnfound ){
-      cerr << "N niet gevonden: woord:" << word << " lemma:" << lemma << endl;
+    else if ( settings.showProblems ){
+      problemFile << "N niet gevonden: woord:" << word << " lemma:" << lemma << endl;
     }
     //    cerr << "semtype=" << sem << endl;
     return sem;
@@ -1948,8 +1955,8 @@ SemType wordStats::checkSemProps( ) const {
     if ( sit != settings.noun_sem.end() ){
       sem = sit->second;
     }
-    else if ( settings.showUnfound ){
-      cerr << "Name niet gevonden: woord:" << word << " lemma:" << lemma << endl;
+    else if ( settings.showProblems ){
+      problemFile << "Name niet gevonden: woord:" << word << " lemma:" << lemma << endl;
     }
     return sem;
   }
@@ -1965,8 +1972,8 @@ SemType wordStats::checkSemProps( ) const {
     if ( sit != settings.adj_sem.end() ){
       sem = sit->second;
     }
-    else if ( settings.showUnfound ){
-      cerr << "ADJ niet gevonden: woord:" << l_word << " lemma:" << l_lemma << endl;
+    else if ( settings.showProblems ){
+      problemFile << "ADJ niet gevonden: woord:" << l_word << " lemma:" << l_lemma << endl;
     }
     //    cerr << "found semtype " << sem << endl;
     return sem;
@@ -1995,8 +2002,8 @@ SemType wordStats::checkSemProps( ) const {
     if ( sit != settings.verb_sem.end() ){
       sem = sit->second;
     }
-    else if ( settings.showUnfound ){
-      cerr << "WW niet gevonden: woord:" << l_word << " lemma:" << l_lemma;
+    else if ( settings.showProblems ){
+      problemFile << "WW niet gevonden: woord:" << l_word << " lemma:" << l_lemma;
       if ( !full_lemma.empty() )
 	cerr << " full_lemma " << full_lemma << endl;
       else
@@ -4407,22 +4414,22 @@ void structStats::resolveLSA( const map<string,double>& LSA_dists ){
 	net += result;
       }
 #ifdef DEBUG_LSA
-      LOG << "LSA: " << category << " lookup '" << call << "' ==> " << result << endl;
+      cerr << "LSA: " << category << " lookup '" << call << "' ==> " << result << endl;
 #endif
     }
   }
 #ifdef DEBUG_LSA
-  LOG << "LSA-" << category << "-SUC sum = " << suc << ", size = " << sv.size() << endl;
-  LOG << "LSA-" << category << "-NET sum = " << net << ", node count = " << node_count << endl;
-  LOG << "LSA-" << category << "-CTX sum = " << ctx << ", size = " << sv.size() << endl;
+  cerr << "LSA-" << category << "-SUC sum = " << suc << ", size = " << sv.size() << endl;
+  cerr << "LSA-" << category << "-NET sum = " << net << ", node count = " << node_count << endl;
+  cerr << "LSA-" << category << "-CTX sum = " << ctx << ", size = " << sv.size() << endl;
 #endif
   suc = suc/sv.size();
   net = net/node_count;
   ctx = ctx/sv.size();
 #ifdef DEBUG_LSA
-  LOG << "LSA-" << category << "-SUC result = " << suc << endl;
-  LOG << "LSA-" << category << "-NET result = " << net << endl;
-  LOG << "LSA-" << category << "-CTX result = " << ctx << endl;
+  cerr << "LSA-" << category << "-SUC result = " << suc << endl;
+  cerr << "LSA-" << category << "-NET result = " << net << endl;
+  cerr << "LSA-" << category << "-CTX result = " << ctx << endl;
 #endif
   setLSAvalues( suc, net, ctx );
 }
@@ -4465,15 +4472,15 @@ void structStats::calculate_LSA_summary(){
     }
   }
 #ifdef DEBUG_LSA
-  LOG << category << " calculate summary, for " << size << " items" << endl;
-  LOG << "word_suc = " << word_suc << endl;
-  LOG << "word_net = " << word_net << endl;
-  LOG << "sent_suc = " << sent_suc << endl;
-  LOG << "sent_net = " << sent_net << endl;
-  LOG << "sent_ctx = " << sent_ctx << endl;
-  LOG << "par_suc = " << par_suc << endl;
-  LOG << "par_net = " << par_net << endl;
-  LOG << "par_ctx = " << par_ctx << endl;
+  cerr << category << " calculate summary, for " << size << " items" << endl;
+  cerr << "word_suc = " << word_suc << endl;
+  cerr << "word_net = " << word_net << endl;
+  cerr << "sent_suc = " << sent_suc << endl;
+  cerr << "sent_net = " << sent_net << endl;
+  cerr << "sent_ctx = " << sent_ctx << endl;
+  cerr << "par_suc = " << par_suc << endl;
+  cerr << "par_net = " << par_net << endl;
+  cerr << "par_ctx = " << par_ctx << endl;
 #endif
   if ( word_suc > 0 ){
     lsa_word_suc = word_suc/size;
@@ -5138,20 +5145,20 @@ void sentStats::resolveLSA( const map<string,double>& LSAword_dists ){
 	net += result;
       }
 #ifdef DEBUG_LSA
-      LOG << "LSA-sent lookup '" << call << "' ==> " << result << endl;
+      cerr << "LSA-sent lookup '" << call << "' ==> " << result << endl;
 #endif
     }
   }
 #ifdef DEBUG_LSA
-  LOG << "size = " << sv.size() << ", LETS = " << lets << endl;
-  LOG << "LSA-sent-SUC sum = " << suc << endl;
-  LOG << "LSA-sent=NET sum = " << net << ", node count = " << node_count << endl;
+  cerr << "size = " << sv.size() << ", LETS = " << lets << endl;
+  cerr << "LSA-sent-SUC sum = " << suc << endl;
+  cerr << "LSA-sent=NET sum = " << net << ", node count = " << node_count << endl;
 #endif
   suc = suc/(sv.size()-lets);
   net = net/node_count;
 #ifdef DEBUG_LSA
-  LOG << "LSA-sent-SUC result = " << suc << endl;
-  LOG << "LSA-sent-NET result = " << net << endl;
+  cerr << "LSA-sent-SUC result = " << suc << endl;
+  cerr << "LSA-sent-NET result = " << net << endl;
 #endif
   setLSAvalues( suc, net, 0 );
 }
@@ -5221,33 +5228,42 @@ void sentStats::resolvePrepExpr(){
   }
 }
 
+//#define DEBUG_WOPR
 void orderWopr( const string& txt, vector<double>& wordProbsV,
 		double& sentProb, double& entropy, double& perplexity ){
   string host = config.lookUp( "host", "wopr" );
   string port = config.lookUp( "port", "wopr" );
   Sockets::ClientSocket client;
   if ( !client.connect( host, port ) ){
-    LOG << "failed to open Wopr connection: "<< host << ":" << port << endl;
-    LOG << "Reason: " << client.getMessage() << endl;
+    cerr << "failed to open Wopr connection: "<< host << ":" << port << endl;
+    cerr << "Reason: " << client.getMessage() << endl;
     exit( EXIT_FAILURE );
   }
-  LOG << "calling Wopr" << endl;
+#ifdef DEBUG_WOPR
+  cerr << "calling Wopr" << endl;
+#endif
   client.write( txt + "\n\n" );
   string result;
   string s;
   while ( client.read(s) ){
     result += s + "\n";
   }
-  DBG << "received data [" << result << "]" << endl;
+#ifdef DEBUG_WOPR
+  cerr << "received data [" << result << "]" << endl;
+#endif
   if ( !result.empty() && result.size() > 10 ){
-    DBG << "start FoLiA parsing" << endl;
+#ifdef DEBUG_WOPR
+    cerr << "start FoLiA parsing" << endl;
+#endif
     Document *doc = new Document();
     try {
       doc->readFromString( result );
-      DBG << "finished parsing" << endl;
+#ifdef DEBUG_WOPR
+      cerr << "finished parsing" << endl;
+#endif
       vector<Word*> wv = doc->words();
       if ( wv.size() !=  wordProbsV.size() ){
-	LOG << "unforseen mismatch between de number of words returned by WOPR"
+	cerr << "unforseen mismatch between de number of words returned by WOPR"
 	    << endl << " and the number of words in the input sentence. "
 	    << endl;
 	return;
@@ -5292,15 +5308,17 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
       }
     }
     catch ( std::exception& e ){
-      LOG << "FoLiaParsing failed:" << endl
+      cerr << "FoLiaParsing failed:" << endl
 	  << e.what() << endl;
     }
   }
   else {
-    LOG << "No usable FoLia date retrieved from Wopr. Got '"
+    cerr << "No usable FoLia date retrieved from Wopr. Got '"
 	<< result << "'" << endl;
   }
-  LOG << "finished Wopr" << endl;
+#ifdef DEBUG_WOPR
+  cerr << "finished Wopr" << endl;
+#endif
 }
 
 xmlDoc *AlpinoServerParse( Sentence *);
@@ -5309,7 +5327,7 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 		      const map<string,double>& LSAword_dists ):
   structStats( index, s, "sent" ){
   text = UnicodeToUTF8( s->toktext() );
-  LOG << "analyse tokenized sentence=" << text << endl;
+  cerr << "analyse tokenized sentence=" << text << endl;
   vector<Word*> w = s->words();
   vector<double> woprProbsV(w.size(),NA);
   double sentProb = NA;
@@ -5324,20 +5342,20 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
     {
       if ( settings.doAlpino || settings.doAlpinoServer ){
 	if ( settings.doAlpinoServer ){
-	  LOG << "calling Alpino Server" << endl;
+	  cerr << "calling Alpino Server" << endl;
 	  alpDoc = AlpinoServerParse( s );
 	  if ( !alpDoc ){
 	    cerr << "alpino parser failed!" << endl;
 	  }
-	  LOG << "done with Alpino Server" << endl;
+	  cerr << "done with Alpino Server" << endl;
 	}
 	else if ( settings.doAlpino ){
-	  LOG << "calling Alpino parser" << endl;
+	  cerr << "calling Alpino parser" << endl;
 	  alpDoc = AlpinoParse( s, workdir_name );
 	  if ( !alpDoc ){
 	    cerr << "alpino parser failed!" << endl;
 	  }
-	  LOG << "done with Alpino parser" << endl;
+	  cerr << "done with Alpino parser" << endl;
 	}
 	if ( alpDoc ){
 	  parseFailCnt = 0; // OK
@@ -5989,8 +6007,8 @@ void docStats::gather_LSA_word_info( Document *doc ){
   string port = config.lookUp( "port", "lsa_words" );
   Sockets::ClientSocket client;
   if ( !client.connect( host, port ) ){
-    LOG << "failed to open LSA connection: "<< host << ":" << port << endl;
-    LOG << "Reason: " << client.getMessage() << endl;
+    cerr << "failed to open LSA connection: "<< host << ":" << port << endl;
+    cerr << "Reason: " << client.getMessage() << endl;
     exit( EXIT_FAILURE );
   }
   vector<Word*> wv = doc->words();
@@ -6011,27 +6029,27 @@ void docStats::gather_LSA_word_info( Document *doc ){
       string rcall = *it + "\t" + word;
       if ( LSA_word_dists.find( call ) == LSA_word_dists.end() ){
 #ifdef DEBUG_LSA_SERVER
-	LOG << "calling LSA: '" << call << "'" << endl;
+	cerr << "calling LSA: '" << call << "'" << endl;
 #endif
 	client.write( call + "\r\n" );
 	string s;
 	if ( !client.read(s) ){
-	  LOG << "LSA connection failed " << endl;
+	  cerr << "LSA connection failed " << endl;
 	  exit( EXIT_FAILURE );
 	}
 #ifdef DEBUG_LSA_SERVER
-	LOG << "received data [" << s << "]" << endl;
+	cerr << "received data [" << s << "]" << endl;
 #endif
 	double result = 0;
 	if ( !stringTo( s , result ) ){
-	  LOG << "LSA result conversion failed: " << s << endl;
+	  cerr << "LSA result conversion failed: " << s << endl;
 	  result = 0;
 	}
 #ifdef DEBUG_LSA_SERVER
-	LOG << "LSA result: " << result << endl;
+	cerr << "LSA result: " << result << endl;
 #endif
 #ifdef DEBUG_LSA
-	LOG << "LSA: '" << call << "' ==> " << result << endl;
+	cerr << "LSA: '" << call << "' ==> " << result << endl;
 #endif
 	if ( result != 0 ){
 	  LSA_word_dists[call] = result;
@@ -6048,8 +6066,8 @@ void docStats::gather_LSA_doc_info( Document *doc ){
   string port = config.lookUp( "port", "lsa_docs" );
   Sockets::ClientSocket client;
   if ( !client.connect( host, port ) ){
-    LOG << "failed to open LSA connection: "<< host << ":" << port << endl;
-    LOG << "Reason: " << client.getMessage() << endl;
+    cerr << "failed to open LSA connection: "<< host << ":" << port << endl;
+    cerr << "Reason: " << client.getMessage() << endl;
     exit( EXIT_FAILURE );
   }
   vector<Paragraph*> pv = doc->paragraphs();
@@ -6078,19 +6096,19 @@ void docStats::gather_LSA_doc_info( Document *doc ){
     norm_pv[pv[p]->id()] = norm_p;
   }
 #ifdef DEBUG_LSA_SERVER
-  LOG << "LSA doc Paragraaf results" << endl;
+  cerr << "LSA doc Paragraaf results" << endl;
   for ( map<string,string>::const_iterator it = norm_pv.begin();
 	it != norm_pv.end();
 	++it ){
-    LOG << "paragraaf " << it->first << endl;
-    LOG << it->second << endl;
+    cerr << "paragraaf " << it->first << endl;
+    cerr << it->second << endl;
   }
-  LOG << "en de Zinnen" << endl;
+  cerr << "en de Zinnen" << endl;
   for ( map<string,string>::const_iterator it = norm_sv.begin();
 	it != norm_sv.end();
 	++it ){
-    LOG << "zin " <<  it->first << endl;
-    LOG << it->second << endl;
+    cerr << "zin " <<  it->first << endl;
+    cerr << it->second << endl;
   }
 #endif
 
@@ -6105,32 +6123,32 @@ void docStats::gather_LSA_doc_info( Document *doc ){
       string index = it1->first + "<==>" + it2->first;
       string rindex = it2->first + "<==>" + it1->first;
 #ifdef DEBUG_LSA
-      LOG << "LSA combine paragraaf " << index << endl;
+      cerr << "LSA combine paragraaf " << index << endl;
 #endif
       string call = it1->second + "\t" + it2->second;
       if ( LSA_paragraph_dists.find( index ) == LSA_paragraph_dists.end() ){
 #ifdef DEBUG_LSA_SERVER
-	LOG << "calling LSA docs: '" << call << "'" << endl;
+	cerr << "calling LSA docs: '" << call << "'" << endl;
 #endif
 	client.write( call + "\r\n" );
 	string s;
 	if ( !client.read(s) ){
-	  LOG << "LSA connection failed " << endl;
+	  cerr << "LSA connection failed " << endl;
 	  exit( EXIT_FAILURE );
 	}
 #ifdef DEBUG_LSA_SERVER
-	LOG << "received data [" << s << "]" << endl;
+	cerr << "received data [" << s << "]" << endl;
 #endif
 	double result = 0;
 	if ( !stringTo( s , result ) ){
-	  LOG << "LSA result conversion failed: " << s << endl;
+	  cerr << "LSA result conversion failed: " << s << endl;
 	  result = 0;
 	}
 #ifdef DEBUG_LSA_SERVER
-	LOG << "LSA result: " << result << endl;
+	cerr << "LSA result: " << result << endl;
 #endif
 #ifdef DEBUG_LSA
-	LOG << "LSA: '" << index << "' ==> " << result << endl;
+	cerr << "LSA: '" << index << "' ==> " << result << endl;
 #endif
 	if ( result != 0 ){
 	  LSA_paragraph_dists[index] = result;
@@ -6150,32 +6168,32 @@ void docStats::gather_LSA_doc_info( Document *doc ){
       string index = it1->first + "<==>" + it2->first;
       string rindex = it2->first + "<==>" + it1->first;
 #ifdef DEBUG_LSA
-      LOG << "LSA combine sentence " << index << endl;
+      cerr << "LSA combine sentence " << index << endl;
 #endif
       string call = it1->second + "\t" + it2->second;
       if ( LSA_sentence_dists.find( index ) == LSA_sentence_dists.end() ){
 #ifdef DEBUG_LSA_SERVER
-	LOG << "calling LSA docs: '" << call << "'" << endl;
+	cerr << "calling LSA docs: '" << call << "'" << endl;
 #endif
 	client.write( call + "\r\n" );
 	string s;
 	if ( !client.read(s) ){
-	  LOG << "LSA connection failed " << endl;
+	  cerr << "LSA connection failed " << endl;
 	  exit( EXIT_FAILURE );
 	}
 #ifdef DEBUG_LSA_SERVER
-	LOG << "received data [" << s << "]" << endl;
+	cerr << "received data [" << s << "]" << endl;
 #endif
 	double result = 0;
 	if ( !stringTo( s , result ) ){
-	  LOG << "LSA result conversion failed: " << s << endl;
+	  cerr << "LSA result conversion failed: " << s << endl;
 	  result = 0;
 	}
 #ifdef DEBUG_LSA_SERVER
-	LOG << "LSA result: " << result << endl;
+	cerr << "LSA result: " << result << endl;
 #endif
 #ifdef DEBUG_LSA
-	LOG << "LSA: '" << index << "' ==> " << result << endl;
+	cerr << "LSA: '" << index << "' ==> " << result << endl;
 #endif
 	if ( result != 0 ){
 	  LSA_sentence_dists[index] = result;
@@ -6358,10 +6376,10 @@ void docStats::toCSV( const string& name,
       CSVheader( out, "Inputfile" );
       out << name << ",";
       structStats::toCSV( out );
-      LOG << "stored document statistics in " << fname << endl;
+      cerr << "stored document statistics in " << fname << endl;
     }
     else {
-      LOG << "storing document statistics in " << fname << " FAILED!" << endl;
+      cerr << "storing document statistics in " << fname << " FAILED!" << endl;
     }
   }
   else if ( what == PAR_CSV ){
@@ -6374,10 +6392,10 @@ void docStats::toCSV( const string& name,
 	out << name << "," << sv[par]->id << ",";
 	sv[par]->toCSV( out );
       }
-      LOG << "stored paragraph statistics in " << fname << endl;
+      cerr << "stored paragraph statistics in " << fname << endl;
     }
     else {
-      LOG << "storing paragraph statistics in " << fname << " FAILED!" << endl;
+      cerr << "storing paragraph statistics in " << fname << " FAILED!" << endl;
     }
   }
   else if ( what == SENT_CSV ){
@@ -6392,10 +6410,10 @@ void docStats::toCSV( const string& name,
 	  sv[par]->sv[sent]->toCSV( out );
 	}
       }
-      LOG << "stored sentence statistics in " << fname << endl;
+      cerr << "stored sentence statistics in " << fname << endl;
     }
     else {
-      LOG << "storing sentence statistics in " << fname << " FAILED!" << endl;
+      cerr << "storing sentence statistics in " << fname << " FAILED!" << endl;
     }
   }
   else if ( what == WORD_CSV ){
@@ -6412,35 +6430,40 @@ void docStats::toCSV( const string& name,
 	  }
 	}
       }
-      LOG << "stored word statistics in " << fname << endl;
+      cerr << "stored word statistics in " << fname << endl;
     }
     else {
-      LOG << "storing word statistics in " << fname << " FAILED!" << endl;
+      cerr << "storing word statistics in " << fname << " FAILED!" << endl;
     }
   }
 }
 
+//#define DEBUG_FROG
 Document *getFrogResult( istream& is ){
   string host = config.lookUp( "host", "frog" );
   string port = config.lookUp( "port", "frog" );
   Sockets::ClientSocket client;
   if ( !client.connect( host, port ) ){
-    LOG << "failed to open Frog connection: "<< host << ":" << port << endl;
-    LOG << "Reason: " << client.getMessage() << endl;
+    cerr << "failed to open Frog connection: "<< host << ":" << port << endl;
+    cerr << "Reason: " << client.getMessage() << endl;
     return 0;
   }
-  DBG << "start input loop" << endl;
+#ifdef DEBUG_FROG
+  cerr << "start input loop" << endl;
+#endif
   bool incomment = false;
   string line;
   while ( safe_getline( is, line ) ){
-    DBG << "read: '" << line << "'" << endl;
+#ifdef DEBUG_FROG
+    cerr << "read: '" << line << "'" << endl;
+#endif
     if ( line.length() > 2 ){
       string start = line.substr(0,3);
       if ( start == "###" )
 	continue;
       else if ( start == "<<<" ){
 	if ( incomment ){
-	  LOG << "Nested comment (<<<) not allowed!" << endl;
+	  cerr << "Nested comment (<<<) not allowed!" << endl;
 	  return 0;
 	}
 	else {
@@ -6449,7 +6472,7 @@ Document *getFrogResult( istream& is ){
       }
       else if ( start == ">>>" ){
 	if ( !incomment ){
-	  LOG << "end of comment (>>>) found without start." << endl;
+	  cerr << "end of comment (>>>) found without start." << endl;
 	  return 0;
 	}
 	else {
@@ -6470,33 +6493,43 @@ Document *getFrogResult( istream& is ){
       break;
     result += s + "\n";
   }
-  DBG << "received data [" << result << "]" << endl;
+#ifdef DEBUG_FROG
+  cerr << "received data [" << result << "]" << endl;
+#endif
   Document *doc = 0;
   if ( !result.empty() && result.size() > 10 ){
-    DBG << "start FoLiA parsing" << endl;
+#ifdef DEBUG_FROG
+    cerr << "start FoLiA parsing" << endl;
+#endif
     doc = new Document();
     try {
       doc->readFromString( result );
-      DBG << "finished" << endl;
+#ifdef DEBUG_FROG
+      cerr << "finished" << endl;
+#endif
     }
     catch ( std::exception& e ){
-      LOG << "FoLiaParsing failed:" << endl
+      cerr << "FoLiaParsing failed:" << endl
 	   << e.what() << endl;
     }
   }
   return doc;
 }
 
+//#define DEBUG_ALPINO
+
 xmlDoc *AlpinoServerParse( Sentence *sent ){
   string host = config.lookUp( "host", "alpino" );
   string port = config.lookUp( "port", "alpino" );
   Sockets::ClientSocket client;
   if ( !client.connect( host, port ) ){
-    LOG << "failed to open Alpino connection: "<< host << ":" << port << endl;
-    LOG << "Reason: " << client.getMessage() << endl;
+    cerr << "failed to open Alpino connection: "<< host << ":" << port << endl;
+    cerr << "Reason: " << client.getMessage() << endl;
     exit( EXIT_FAILURE );
   }
-  DBG << "start input loop" << endl;
+#ifdef DEBUG_ALPINO
+  cerr << "start input loop" << endl;
+#endif
   string txt = folia::UnicodeToUTF8(sent->toktext());
   client.write( txt + "\n\n" );
   string result;
@@ -6504,7 +6537,9 @@ xmlDoc *AlpinoServerParse( Sentence *sent ){
   while ( client.read(s) ){
     result += s + "\n";
   }
-  DBG << "received data [" << result << "]" << endl;
+#ifdef DEBUG_ALPINO
+  cerr << "received data [" << result << "]" << endl;
+#endif
   xmlDoc *doc = xmlReadMemory( result.c_str(), result.length(),
 			       0, 0, XML_PARSE_NOBLANKS );
   string txtfile = workdir_name + "1.xml";
@@ -6525,8 +6560,8 @@ int main(int argc, char *argv[]) {
       exit( EXIT_FAILURE );
     }
   }
-  LOG << "TScan " << VERSION << endl;
-  LOG << "working dir " << workdir_name << endl;
+  cerr << "TScan " << VERSION << endl;
+  cerr << "working dir " << workdir_name << endl;
   string shortOpt = "ht:d:e:o:";
   string longOpt = "threads:,config,skip:";
   TiCC::CL_Options opts( shortOpt, longOpt );
@@ -6637,19 +6672,8 @@ int main(int argc, char *argv[]) {
     cerr << "invalid configuration" << endl;
     exit( EXIT_FAILURE );
   }
-  if ( opts.find( 'D', val, mood ) ){
-    if ( val == "Normal" )
-      cur_log.setlevel( LogNormal );
-    else if ( val == "Debug" )
-      cur_log.setlevel( LogDebug );
-    else if ( val == "Heavy" )
-      cur_log.setlevel( LogHeavy );
-    else if ( val == "Extreme" )
-      cur_log.setlevel( LogExtreme );
-    else {
-      cerr << "Unknown Debug mode! (-D " << val << ")" << endl;
-    }
-    opts.remove( 'D' );
+  if ( settings.showProblems ){
+    problemFile.open( "problems.log" );
   }
   if ( opts.find( "skip", val ) ) {
     string skip = val;
@@ -6673,11 +6697,10 @@ int main(int argc, char *argv[]) {
   };
 
   if ( inputnames.size() > 1 ){
-    LOG << "processing " << inputnames.size() << " files." << endl;
+    cerr << "processing " << inputnames.size() << " files." << endl;
   }
   for ( size_t i = 0; i < inputnames.size(); ++i ){
     string inName = inputnames[i];
-    LOG << "file: " << inName << endl;
     string outName;
     if ( !o_option.empty() ){
       // just 1 inputfile
@@ -6689,14 +6712,14 @@ int main(int argc, char *argv[]) {
     ifstream is( inName.c_str() );
     if ( !is ){
       cerr << "failed to open file '" << inName << "'" << endl;
-      exit(EXIT_FAILURE);
+      continue;
     }
     else {
-      LOG << "opened file " <<  inName << endl;
+      cerr << "opened file " <<  inName << endl;
       Document *doc = getFrogResult( is );
       if ( !doc ){
 	cerr << "big trouble: no FoLiA document created " << endl;
-	exit(EXIT_FAILURE);
+	continue;
       }
       else {
 	docStats analyse( doc );
@@ -6709,7 +6732,7 @@ int main(int argc, char *argv[]) {
 	  analyse.toCSV( inName, WORD_CSV );
 	}
 	delete doc;
-	LOG << "saved output in " << outName << endl;
+	cerr << "saved output in " << outName << endl;
       }
     }
   }
