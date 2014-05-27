@@ -400,7 +400,7 @@ string toString( const AfkType& afk ){
   case GENERIEK_A:
     return "Generiek";
   default:
-    return "PANIEK";
+    return "UnknownAfkType";
   };
 }
 
@@ -2005,9 +2005,9 @@ SemType wordStats::checkSemProps( ) const {
     else if ( settings.showProblems ){
       problemFile << "WW niet gevonden: woord:" << l_word << " lemma:" << l_lemma;
       if ( !full_lemma.empty() )
-	cerr << " full_lemma " << full_lemma << endl;
+	problemFile << " full_lemma " << full_lemma << endl;
       else
-	cerr << endl;
+	problemFile << endl;
     }
     //    cerr << "found semtype " << sem << endl;
     return sem;
@@ -4095,6 +4095,7 @@ void structStats::coherenceToCSV( ostream& os ) const {
 void structStats::concreetHeader( ostream& os ) const {
   os << "Conc_nw_strikt_p,Conc_nw_strikt_d,";
   os << "Conc_nw_ruim_p,Conc_nw_ruim_d,";
+  os << "Pers_nw_p,Pers_nw_d,";
   os << "PlantDier_nw_p,PlantDier_nw_d,";
   os << "Gebr_nw_p,Gebr_nw_d,";
   os << "Concr_ov_nw_p,Concr_ov_nw_d,";
@@ -4149,6 +4150,8 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << density( strictNounCnt, wordCnt ) << ",";
   os << proportion( broadNounCnt, coveredNouns ) << ",";
   os << density( broadNounCnt, wordCnt ) << ",";
+  os << proportion( humanCnt, coveredNouns ) << ",";
+  os << density( humanCnt, wordCnt ) << ",";
   os << proportion( nonHumanCnt, coveredNouns ) << ",";
   os << density( nonHumanCnt, wordCnt ) << ",";
   os << proportion( artefactCnt, coveredNouns ) << ",";
@@ -4245,7 +4248,7 @@ void structStats::persoonlijkheidHeader( ostream& os ) const {
      << "Namen_p,Names_r,Names_d,"
      << "Pers_namen_p, Pers_namen_d, Plaatsnamen_d, Org_namen_d, Prod_namen_d, Event_namen_d,"
      << "Actieww_p,Actieww_d,Toestww_p,Toestww_d,"
-     << "Processww_p,Processww_d,Pers_nw_p,Pers_nw_d,"
+     << "Processww_p,Processww_d,"
      << "Emo_bvnw_p,Emo_bvnw_d,Imp_p,Imp_d,"
      << "Vragen_p,Vragen_d,";
 }
@@ -4280,8 +4283,6 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << density( stateCnt, wordCnt ) << ",";
   os << proportion( processCnt, verbCnt ) << ",";
   os << density( processCnt, wordCnt ) << ",";
-  os << proportion( humanCnt, nounCnt+nameCnt ) << ",";
-  os << density( humanCnt, wordCnt ) << ",";
   os << proportion( emoAdjCnt, adjCnt ) << ",";
   os << density( emoAdjCnt, wordCnt ) << ",";
   os << proportion( impCnt, clauseCnt ) << ",";
