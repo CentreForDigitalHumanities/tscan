@@ -2208,7 +2208,9 @@ void argument_overlap( const string w_or_l,
 }
 
 //#define DEBUG_COMPOUNDS
-enum CompoundType { NOCOMP, NN, PN, VN, PV, AB, BB, BN, BV };
+
+enum CompoundType { NOCOMP, NN, PN, VN, PV, AB, AV, BB, BN, BV, CN,
+		    CV, AA, VA };
 
 ostream& operator<<( ostream&os, const CompoundType& cc ){
   switch( cc ){
@@ -2221,17 +2223,32 @@ ostream& operator<<( ostream&os, const CompoundType& cc ){
   case VN:
     os << "VN-compound";
     break;
+  case VA:
+    os << "VA-compound";
+    break;
   case PV:
     os << "PV-compound";
     break;
   case BB:
     os << "BB-compound";
     break;
+  case AV:
+    os << "AV-compound";
+    break;
   case AB:
     os << "AB-compound";
     break;
+  case AA:
+    os << "AA-compound";
+    break;
   case BV:
     os << "BV-compound";
+    break;
+  case CV:
+    os << "complexV-compound";
+    break;
+  case CN:
+    os << "complexN-compound";
     break;
   case BN:
     os << "BN-compound";
@@ -2243,11 +2260,11 @@ ostream& operator<<( ostream&os, const CompoundType& cc ){
   return os;
 }
 
-CompoundType detect_compound( const Morpheme *m, int& len ){
+CompoundType detect_compound( const Morpheme *m, int& len, int depth=0 ){
   CompoundType result = NOCOMP;
   len = 0;
 #ifdef DEBUG_COMPOUNDS
-  cerr << "top morph: " << m << endl;
+  cerr << "top morph: " << m << " " << m->text() << endl;
 #endif
   vector<PosAnnotation*> posV1 = m->select<PosAnnotation>(false);
   if ( posV1.size() == 1 ){
@@ -2255,8 +2272,15 @@ CompoundType detect_compound( const Morpheme *m, int& len ){
     cerr << "pos " << posV1[0] << endl;
 #endif
     string topPos = posV1[0]->cls();
+    if ( depth > 1 ){
+      if ( topPos == "N" )
+	return CN;
+      else if ( topPos == "V" )
+	return CV;
+    }
     map<string,int> counts;
     if ( topPos == "N"
+	 || topPos == "A"
 	 || topPos == "B"
 	 || topPos == "V" ){
 #ifdef DEBUG_COMPOUNDS
@@ -2266,7 +2290,7 @@ CompoundType detect_compound( const Morpheme *m, int& len ){
       for( size_t i=0; i < mV.size(); ++i ){
 	if ( mV[i]->cls() == "stem" ){
 #ifdef DEBUG_COMPOUNDS
-	  cerr << "bekijk stem kind morph: " << mV[i] << endl;
+	  cerr << "bekijk stem kind morph: " << mV[i] << " " << mV[i]->text() << endl;
 #endif
 	  vector<PosAnnotation*> posV2 = mV[i]->select<PosAnnotation>(false);
 	  for( size_t j=0; j < posV2.size(); ++j ){
@@ -2295,7 +2319,7 @@ CompoundType detect_compound( const Morpheme *m, int& len ){
 	  cerr << "recurse: " << endl;
 #endif
 	  int len = 0;
-	  CompoundType cmp = detect_compound( mV[i], len );
+	  CompoundType cmp = detect_compound( mV[i], len, depth+1 );
 	  if ( cmp == PN
 	       || cmp == VN
 	       || cmp == NN ){
@@ -2310,6 +2334,12 @@ CompoundType detect_compound( const Morpheme *m, int& len ){
 	      ++counts["V"];
 	    }
 	  }
+	  else if ( cmp == CV ){
+	    ++counts["V"];
+	  }
+	  else if ( cmp == CN ){
+	    ++counts["N"];
+	  }
 	  else if ( cmp == BB ){
 	    if ( counts["B"] == 0 ){
 	      counts["B"] = 2;
@@ -2319,10 +2349,13 @@ CompoundType detect_compound( const Morpheme *m, int& len ){
 	    }
 	  }
 	  else {
+#ifdef DEBUG_COMPOUNDS
+	    cerr << "clear counts vanwege cmp=" << cmp << endl;
+#endif
 	    counts.clear();
 	    break;
 	  }
-	}
+	  }
 	else if ( mV[i]->cls() == "derivational" ) {
 #ifdef DEBUG_COMPOUNDS
 	  cerr << "bekijk derivational kind morph: " << mV[i] << endl;
@@ -2330,7 +2363,7 @@ CompoundType detect_compound( const Morpheme *m, int& len ){
 	  vector<PosAnnotation*> posV2 = mV[i]->select<PosAnnotation>(false);
 	  string childPos = posV2[0]->cls();
 	  if ( childPos[0] == 'N'
-	       || childPos[0] == 'V' ){
+	      || childPos[0] == 'V' ){
 	    string pos;
 	    pos = childPos[0];
 	    pos += "*";
@@ -2345,10 +2378,20 @@ CompoundType detect_compound( const Morpheme *m, int& len ){
 	  cerr << "skip a " << mV[i]->cls() << " morpheme" << endl;
 #endif
 	}
-      }
+#ifdef DEBUG_COMPOUNDS
+	cerr << "Tussenstand " << counts << endl;
+#endif
+
+       }
       if ( topPos == "N" ){
+#ifdef DEBUG_COMPOUNDS
 	cerr << "TOP=N" << endl;
 	cerr << counts << endl;
+#endif
+	if ( counts["N"] == 1 && counts["N*"] == 1 ){
+	  result = CV;
+	  len = 1;
+	}
 	if ( (counts["V"] > 0 || counts["V*"] > 0 )
 	     && (counts["N"] > 0 || counts["N*"] > 0) ){
 	  result = VN;
@@ -2368,13 +2411,21 @@ CompoundType detect_compound( const Morpheme *m, int& len ){
 	}
       }
       else if ( topPos == "V" ){
-	if ( counts["P"] > 0 && counts["V"] > 0 ){
+	if ( counts["V"] == 1 && counts["V*"] == 1 ){
+	  result = CV;
+	  len = 1;
+	}
+	else if ( counts["P"] > 0 && counts["V"] > 0 ){
 	  result = PV;
 	  len = counts["P"] + counts["V"];
 	}
 	else if ( counts["B"] > 0 && counts["V"] > 0 ){
 	  result = BV;
 	  len = counts["B"] + counts["V"];
+	}
+	else if ( counts["A"] > 0 && counts["V"] > 0 ){
+	  result = AV;
+	  len = counts["A"] + counts["V"];
 	}
       }
       else if ( topPos == "B" ){
@@ -2385,6 +2436,16 @@ CompoundType detect_compound( const Morpheme *m, int& len ){
 	else if ( counts["A"] > 0 && counts["B"] > 0 ){
 	  result = AB;
 	  len = counts["A"] + counts["B"];
+	}
+      }
+      else if ( topPos == "A" ){
+	if ( counts["A"] > 1 ){
+	  result = AA;
+	  len = counts["A"];
+	}
+	else if ( counts["A"] > 0 && counts["V"] > 0 ){
+	  result = VA;
+	  len = counts["A"] + counts["V"];
 	}
       }
     }
@@ -2457,7 +2518,7 @@ wordStats::wordStats( int index,
       vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set, false );
       if ( m.size() == 1  && m[0]->cls() == "complex" ){
 	int len;
-	//	comp = detect_compound( m[0], compLen );
+	comp = detect_compound( m[0], compLen );
 	// nested morphemes
 	string desc = m[0]->description();
 	vector<string> parts;
@@ -2508,10 +2569,10 @@ wordStats::wordStats( int index,
     if ( settings.doDecompound ){
       compPartCnt = runDecompoundWord( word, workdir_name,
 				       settings.decompounderPath );
-      // if ( compPartCnt > 0 || comp != NOCOMP ){
-      // 	cerr << morphemes << " is a " << comp << "(" << compLen << ") - "
-      // 	     << compPartCnt << endl;
-      // }
+      if ( compPartCnt > 0 || comp != NOCOMP ){
+       	cerr << morphemes << " is a " << comp << "(" << compLen << ") - "
+       	     << compPartCnt << endl;
+      }
     }
   }
 }
@@ -6440,6 +6501,7 @@ void docStats::toCSV( const string& name,
 }
 
 //#define DEBUG_FROG
+
 Document *getFrogResult( istream& is ){
   string host = config.lookUp( "host", "frog" );
   string port = config.lookUp( "port", "frog" );
