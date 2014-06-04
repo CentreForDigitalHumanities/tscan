@@ -2761,8 +2761,8 @@ void wordStats::wordDifficultiesHeader( ostream& os ) const {
      << "Sam_delen_per_wrd,Sam_d,"
      << "Freq50_staph,Freq65_Staph,Freq77_Staph,Feq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
-     << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,"
-     <<" so_suc,so_ctx,";
+     << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,";
+  //     <<" so_suc,so_ctx,";
 }
 
 void wordStats::wordDifficultiesToCSV( ostream& os ) const {
@@ -2823,8 +2823,8 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
   os << (top_freq<=top5000?1:0) << ",";
   os << (top_freq<=top10000?1:0) << ",";
   os << (top_freq<=top20000?1:0) << ",";
-  os << lsa_opv << ",";
-  os << lsa_ctx << ",";
+  // os << lsa_opv << ",";
+  // os << lsa_ctx << ",";
 }
 
 void wordStats::coherenceHeader( ostream& os ) const {
@@ -3931,10 +3931,10 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
      << "Sam_delen_per_wrd,Sam_d,"
      << "Freq50_staph,Freq65_Staph,Freq77_Staph,Feq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
-     << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,"
-     << "so_word_suc,so_word_net,"
-     << "so_sent_suc,so_sent_net,so_sent_ctx,"
-     << "so_par_suc,so_par_net,so_par_ctx,";
+     << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,";
+     // << "so_word_suc,so_word_net,"
+     // << "so_sent_suc,so_sent_net,so_sent_ctx,"
+     // << "so_par_suc,so_par_net,so_par_ctx,";
 }
 
 void structStats::wordDifficultiesToCSV( ostream& os ) const {
@@ -3964,11 +3964,11 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
   os << proportion( top5000Cnt, wordCnt ) << ",";
   os << proportion( top10000Cnt, wordCnt ) << ",";
   os << proportion( top20000Cnt, wordCnt ) << ",";
-  os << toMString(lsa_word_suc) << "," << toMString(lsa_word_net) << ",";
-  os << toMString(lsa_sent_suc) << "," << toMString(lsa_sent_net) << ","
-     << toMString(lsa_sent_ctx) << ",";
-  os << toMString(lsa_par_suc) << "," << toMString(lsa_par_net) << ","
-     << toMString(lsa_par_ctx) << ",";
+  // os << toMString(lsa_word_suc) << "," << toMString(lsa_word_net) << ",";
+  // os << toMString(lsa_sent_suc) << "," << toMString(lsa_sent_net) << ","
+  //    << toMString(lsa_sent_ctx) << ",";
+  // os << toMString(lsa_par_suc) << "," << toMString(lsa_par_net) << ","
+  //    << toMString(lsa_par_ctx) << ",";
 }
 
 void structStats::sentDifficultiesHeader( ostream& os ) const {
@@ -3980,7 +3980,7 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
     os << "D_level,";
   }
   else {
-    os  << "D_level,D_level_gt4_p,D_level_gt4_r,";
+    os  << "D_level,D_level_gt4_p,";
   }
   os << "Nom_d,Lijdv_d,Lijdv_dz,Ontk_zin_d,Ontk_zin_dz,"
      << "Ontk_morf_d,Ont_morf_dz,Ontk_tot_d,Ontk_tot_dz,"
@@ -4008,7 +4008,6 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
      << proportion( dLevel, sentCnt ) << ",";
   if ( !isSentence() ){
     os << proportion( dLevel_gt4, sentCnt ) << ",";
-    os << ratio( dLevel_gt4, sentCnt ) << ",";
   }
   os << density( nominalCnt, wordCnt ) << ","
      << density( passiveCnt, wordCnt ) << ",";
@@ -4045,7 +4044,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 void structStats::infoHeader( ostream& os ) const {
   os << "TTR_wrd,MTLD_wrd,TTR_lem,MTLD_lem,"
      << "TTR_namen,MTLD_namen,TTR_inhwrd,MTLD_inhwrd,"
-     << "Inhwrd_r,Inhwrd_d,Inhwrd_dz,"
+     << "Inhwrd_d,Inhwrd_dz,"
      << "Zeldz_index,Bijw_bep_d,Bijw_bep_dz,"
      << "Attr_bijv_nw_d,Attr_bijv_nw_dz,Bijv_bep_d,Bijv_bep_dz,"
      << "Ov_bijv_bep_d,Ov_bijv_bep_dz,Nwg_d,Nwg_dz,";
@@ -4061,7 +4060,6 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   os << name_mtld << ",";
   os << proportion( unique_contents.size(), contentCnt ) << ",";
   os << content_mtld << ",";
-  os << ratio( contentCnt, wordCnt ) << ",";
   os << density( contentCnt, wordCnt ) << ",";
   os << proportion( contentCnt, clauseCnt ) << ",";
   os << rarity( settings.rarityLevel ) << ",";
@@ -4092,7 +4090,7 @@ void structStats::coherenceHeader( ostream& os ) const {
      << "Vnw_ref_d,Vnw_ref_dz,"
      << "Arg_over_vzin_d,Arg_over_vzin_dz,Lem_over_vzin_d,Lem_over_vzin_dz,"
      << "Arg_over_buf_d,Arg_over_buf_dz,Lem_over_buf_d,Lem_over_buf_dz,"
-     << "Onbep_nwg_p,Onbep_nwg_r,Onbep_nwg_dz,";
+     << "Onbep_nwg_p,Onbep_nwg_dz,";
 }
 
 void structStats::coherenceToCSV( ostream& os ) const {
@@ -4157,7 +4155,6 @@ void structStats::coherenceToCSV( ostream& os ) const {
        << proportion( lemma_overlapCnt(), clauseCnt )<< ",";
   }
   os << proportion( indefNpCnt, npCnt ) << ",";
-  os << ratio( indefNpCnt, npCnt ) << ",";
   os << density( indefNpCnt, wordCnt ) << ",";
 }
 
@@ -4314,11 +4311,12 @@ void structStats::concreetToCSV( ostream& os ) const {
 
 void structStats::persoonlijkheidHeader( ostream& os ) const {
   os << "Pers_ref_d,Pers_vnw1_d,Pers_vnw2_d,Pers_vnw3_d,Pers_vnw_d,"
-     << "Namen_p,Names_r,Names_d,"
-     << "Pers_namen_p, Pers_namen_d, Plaatsnamen_d, Org_namen_d, Prod_namen_d, Event_namen_d,"
+     << "Namen_p,Namen_d,"
+     << "Pers_namen_p, Pers_namen_d, Plaatsnamen_d,"
+     << "Org_namen_d, Prod_namen_d, Event_namen_d,"
      << "Actieww_p,Actieww_d,Toestww_p,Toestww_d,"
      << "Processww_p,Processww_d,"
-     << "Emo_bvnw_p,Emo_bvnw_d,Imp_p,Imp_d,"
+     << "Imp_p,Imp_d,"
      << "Vragen_p,Vragen_d,";
 }
 
@@ -4331,7 +4329,6 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << density( pron1Cnt+pron2Cnt+pron3Cnt, wordCnt ) << ",";
 
   os << proportion( nameCnt, nounCnt ) << ",";
-  os << ratio( nameCnt, wordCnt ) << ",";
   os << density( nameCnt, wordCnt ) << ",";
 
   int val = at( ners, PER_B );
@@ -4352,8 +4349,6 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << density( stateCnt, wordCnt ) << ",";
   os << proportion( processCnt, verbCnt ) << ",";
   os << density( processCnt, wordCnt ) << ",";
-  os << proportion( emoAdjCnt, adjCnt ) << ",";
-  os << density( emoAdjCnt, wordCnt ) << ",";
   os << proportion( impCnt, clauseCnt ) << ",";
   os << density( impCnt, wordCnt ) << ",";
   os << proportion( questCnt, sentCnt ) << ",";
@@ -4400,7 +4395,7 @@ void structStats::wordSortToCSV( ostream& os ) const {
 }
 
 void structStats::miscHeader( ostream& os ) const {
-  os << "Vzu_d, Vzu_dz, Ww_tt_r,Ww_tt_dz,Ww_mod_d_,Ww_mod_dz,"
+  os << "Vzu_d, Vzu_dz, Ww_tt_p,Ww_tt_dz,Ww_mod_d_,Ww_mod_dz,"
      << "Huww_tijd_d,Huww_tijd_dz,Koppelww_d,Koppelww_dz,"
      << "Arch_d,Vol_dw_d,Vol_dw_dz,"
      << "Onvol_dw_d,Onvol_dw_dz,Infin_d,Infin_g,"
@@ -4411,7 +4406,7 @@ void structStats::miscToCSV( ostream& os ) const {
   double clauseCnt = pastCnt + presentCnt;
   os << density( prepExprCnt, wordCnt ) << ",";
   os << proportion( prepExprCnt, sentCnt ) << ",";
-  os << proportion( presentCnt, pastCnt ) << ",";
+  os << proportion( presentCnt, clauseCnt ) << ",";
   os  << density( presentCnt, wordCnt ) << ","
       << density( modalCnt, wordCnt ) << ",";
   os << proportion( modalCnt, clauseCnt ) << ",";
