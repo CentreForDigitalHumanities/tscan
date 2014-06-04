@@ -2758,7 +2758,7 @@ void wordStats::CSVheader( ostream& os, const string& intro ) const {
 void wordStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
-     << "Sam_delen_per_wrd,Sam_d,"
+     << "Namen,Sam_delen_per_wrd,Sam_d,"
      << "Freq50_staph,Freq65_Staph,Freq77_Staph,Feq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,";
@@ -2795,6 +2795,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
 	 << 1.0/double(morphCnt) << ",";
     }
   }
+  os << (prop == ISNAME) << ",";
   os << double(compPartCnt) << ",";
   os << (compPartCnt?1:0) << ",";
   os << (f50?1:0) << ",";
@@ -2943,7 +2944,7 @@ void wordStats::concreetToCSV( ostream& os ) const {
 
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
   os << "Pers_ref,Pers_vnw1,Pers_vnw2,Pers_vnw3,Pers_vnw,"
-     << "Namen, NER,"
+     << "NER,"
      << "Pers_nw,"
      << "Emo_bvn,Imp,";
 }
@@ -2953,8 +2954,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << (prop == ISPPRON1 ) << ","
      << (prop == ISPPRON2 ) << ","
      << (prop == ISPPRON3 ) << ","
-     << (prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3) << ","
-     << (prop == ISNAME) << ",";
+     << (prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3) << ",";
   if ( nerProp == NONER )
     os << "0,";
   else
@@ -3928,6 +3928,7 @@ void structStats::toCSV( ostream& os ) const {
 void structStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
+     << "Namen_p,Namen_d,"
      << "Sam_delen_per_wrd,Sam_d,"
      << "Freq50_staph,Freq65_Staph,Freq77_Staph,Feq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
@@ -3947,6 +3948,10 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
      << proportion( wordCnt, morphCnt ) << ","
      << proportion( morphCntExNames, (wordCnt-nameCnt) ) << ","
      << proportion( (wordCnt-nameCnt), morphCntExNames ) << ","
+
+     << proportion( nameCnt, nounCnt ) << ","
+     << density( nameCnt, wordCnt ) << ","
+
      << proportion( compPartCnt, wordCnt ) << ","
      << density( compCnt, wordCnt ) << ",";
 
@@ -4311,7 +4316,6 @@ void structStats::concreetToCSV( ostream& os ) const {
 
 void structStats::persoonlijkheidHeader( ostream& os ) const {
   os << "Pers_ref_d,Pers_vnw1_d,Pers_vnw2_d,Pers_vnw3_d,Pers_vnw_d,"
-     << "Namen_p,Namen_d,"
      << "Pers_namen_p, Pers_namen_d, Plaatsnamen_d,"
      << "Org_namen_d, Prod_namen_d, Event_namen_d,"
      << "Actieww_p,Actieww_d,Toestww_p,Toestww_d,"
@@ -4327,9 +4331,6 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << density( pron2Cnt, wordCnt ) << ",";
   os << density( pron3Cnt, wordCnt ) << ",";
   os << density( pron1Cnt+pron2Cnt+pron3Cnt, wordCnt ) << ",";
-
-  os << proportion( nameCnt, nounCnt ) << ",";
-  os << density( nameCnt, wordCnt ) << ",";
 
   int val = at( ners, PER_B );
   os << proportion( val, nerCnt ) << ",";
