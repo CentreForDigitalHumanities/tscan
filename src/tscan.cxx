@@ -1079,11 +1079,16 @@ void settingData::init( const Configuration& cf ){
       exit( EXIT_FAILURE );
     }
   }
-  doLsa = true;
+  doLsa = false;
   val = cf.lookUp( "useLsa" );
   if ( !val.empty() ){
     if ( !TiCC::stringTo( val, doLsa ) ){
       cerr << "invalid value for 'useLsa' in config file" << endl;
+      exit( EXIT_FAILURE );
+    }
+    if ( doLsa ){
+      cerr << "sorry, but LSA is disabled. Please remove 'useLsa' from the "
+     	   << "config file, or set it to false." << endl;
       exit( EXIT_FAILURE );
     }
   }
@@ -1943,7 +1948,7 @@ SemType wordStats::checkSemProps( ) const {
       sem = sit->second;
     }
     else if ( settings.showProblems ){
-      problemFile << "N niet gevonden: woord:" << word << " lemma:" << lemma << endl;
+      problemFile << "N," << word << ", " << lemma << endl;
     }
     //    cerr << "semtype=" << sem << endl;
     return sem;
@@ -1955,9 +1960,9 @@ SemType wordStats::checkSemProps( ) const {
     if ( sit != settings.noun_sem.end() ){
       sem = sit->second;
     }
-    else if ( settings.showProblems ){
-      problemFile << "Name niet gevonden: woord:" << word << " lemma:" << lemma << endl;
-    }
+    // else if ( settings.showProblems ){
+    //   problemFile << "Name, " << word << ", " << lemma << endl;
+    // }
     return sem;
   }
   else if ( tag == CGN::ADJ ) {
@@ -1973,7 +1978,7 @@ SemType wordStats::checkSemProps( ) const {
       sem = sit->second;
     }
     else if ( settings.showProblems ){
-      problemFile << "ADJ niet gevonden: woord:" << l_word << " lemma:" << l_lemma << endl;
+      problemFile << "ADJ," << l_word << "," << l_lemma << endl;
     }
     //    cerr << "found semtype " << sem << endl;
     return sem;
@@ -2003,9 +2008,9 @@ SemType wordStats::checkSemProps( ) const {
       sem = sit->second;
     }
     else if ( settings.showProblems ){
-      problemFile << "WW niet gevonden: woord:" << l_word << " lemma:" << l_lemma;
+      problemFile << "WW," << l_word << "," << l_lemma;
       if ( !full_lemma.empty() )
-	problemFile << " full_lemma " << full_lemma << endl;
+	problemFile << "," << full_lemma << endl;
       else
 	problemFile << endl;
     }
@@ -2450,7 +2455,10 @@ CompoundType detect_compound( const Morpheme *m, int& len, int depth=0 ){
       }
     }
   }
-
+  if ( len == 1 && depth == 0 ){
+     result = NOCOMP;
+     len = 0;
+  }
 #ifdef DEBUG_COMPOUNDS
   cerr << "detected " << result << " (" << len << ")" << endl;
 #endif
@@ -4065,7 +4073,7 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   os << proportion( npModCnt, clauseCnt ) << ",";
   os << density( (npModCnt-adjNpModCnt), wordCnt ) << ",";
   os << proportion( (npModCnt-adjNpModCnt), clauseCnt ) << ",";
-  os << proportion( npCnt, wordCnt ) << ",";
+  os << density( npCnt, wordCnt ) << ",";
   os << proportion( npCnt, clauseCnt ) << ",";
 }
 
@@ -4603,32 +4611,39 @@ double calculate_mtld( const vector<string>& v ){
     unique_tokens.insert(v[i]);
     token_ttr = unique_tokens.size() / double(token_count);
 #ifdef DEBUG_MTLD
-    cerr << v[i] << " types " << unique_tokens.size() << " token "
-	 << token_count << " ttr " << token_ttr << endl;
+    cerr << v[i] << "\t [" << unique_tokens.size() << "/"
+	 << token_count << "] >> ttr " << token_ttr << endl;
 #endif
     if ( token_ttr <= settings.mtld_threshold ){
 #ifdef KOIZUMI
       if ( token_count >=10 ){
-	++token_factor;
+	token_factor += 1.0;
       }
 #else
-      ++token_factor;
+      token_factor += 1.0;
 #endif
       token_count = 0;
       token_ttr = 1.0;
       unique_tokens.clear();
+#ifdef DEBUG_MTLD
+      cerr <<"\treset: token_factor = " << token_factor << endl << endl;
+#endif
     }
-  }
-  if ( token_count > 0 ){
-    // partial result
-    if ( token_ttr == 1.0 ){
-      ++token_factor;
-    }
-    else {
+    else if ( i == v.size()-1 ){
+#ifdef DEBUG_MTLD
+      cerr << "\trestje: huidige token_ttr= " << token_ttr;
+#endif
+      // partial result
       double threshold = ( 1 - token_ttr ) / (1 - settings.mtld_threshold);
+#ifdef DEBUG_MTLD
+      cerr << " dus verhoog de factor met " << (1 - token_ttr)
+	   << "/" << ( 1 - settings.mtld_threshold) << endl;
+#endif
       token_factor += threshold;
     }
   }
+  if ( token_factor == 0.0 )
+    token_factor = 1.0;
 #ifdef DEBUG_MTLD
   cerr << "Factor = " << token_factor << " #words = " << v.size() << endl;
 #endif
@@ -4636,14 +4651,17 @@ double calculate_mtld( const vector<string>& v ){
 }
 
 double average_mtld( vector<string>& tokens ){
+#ifdef DEBUG_MTLD
+  cerr << "bereken MTLD van " << tokens << endl;
+#endif
   double mtld1 = calculate_mtld( tokens );
 #ifdef DEBUG_MTLD
-  cerr << "forward = " << mtld1 << endl;
+  cerr << "VOORUIT = " << mtld1 << endl;
 #endif
   reverse( tokens.begin(), tokens.end() );
   double mtld2 = calculate_mtld( tokens );
 #ifdef DEBUG_MTLD
-  cerr << "backward = " << mtld1 << endl;
+  cerr << "ACHTERUIT = " << mtld2 << endl;
 #endif
   double result = (mtld1 + mtld2)/2.0;
 #ifdef DEBUG_MTLD
@@ -6737,6 +6755,7 @@ int main(int argc, char *argv[]) {
   }
   if ( settings.showProblems ){
     problemFile.open( "problems.log" );
+    problemFile << "missing,word,lemma,full_lemma" << endl;
   }
   if ( opts.find( "skip", val ) ) {
     string skip = val;
