@@ -13,4 +13,3 @@ CONFIG=${FROGPATH}/etc/frog/tscan-frog.cfg
 mv $LOGFILE $LOGFILE.sav # poor mans solution
 
 ${FROGPATH}/bin/frog -X --id=${ID} -c ${CONFIG} --skip=mp -S${PORT} 2> $LOGFILE
-

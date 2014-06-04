@@ -67,9 +67,10 @@ if 'useWopr' in clamdata and clamdata['useWopr'] == 'yes':
     f.write("useWopr=1\n")
 else:
     f.write("useWopr=0\n")
-if 'useLsa' in clamdata and clamdata['useLsa'] == 'yes':
-    f.write("useLsa=1\n")
-else:
+# !!! disable lsa  !!!
+#if 'useLsa' in clamdata and clamdata['useLsa'] == 'yes':
+#    f.write("useLsa=1\n")
+#else:
     f.write("useLsa=0\n")
 f.write("decompounderPath=\"" + TSCANDIR + "\"\n")
 f.write("surprisalPath=\"" + TSCANDIR + "\"\n")

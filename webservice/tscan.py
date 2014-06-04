@@ -251,7 +251,7 @@ PARAMETERS =  [
         FloatParameter(id='mtldThreshold',name='MTLD factor size',description='MTLD factor size',default=0.720),
         ChoiceParameter(id='useAlpino',name='Use Alpino parser',description='Use Alpino parser?', choices=['yes','no'],default='yes'),
         ChoiceParameter(id='useWopr',name='Use Wopr',description='Use Wopr?', choices=['yes','no'],default='yes'),
-        ChoiceParameter(id='useLsa',name='Use LSA analyzer',description='Use LSA?', choices=['yes','no'],default='no'),
+#        ChoiceParameter(id='useLsa',name='Use LSA analyzer',description='Use LSA?', choices=['yes','no'],default='no'),
         ChoiceParameter(id='word_freq_lex', name='Word Frequency List', description="Word frequency list", choices=wordfreqlist, default="SoNaR500.wordfreqlist_words.freq"),
         ChoiceParameter(id='lemma_freq_lex', name='Lemma Frequency List', description="Lemma frequency list", choices=lemmafreqlist, default="SoNaR500.wordfreqlist_lemma.freq"),
         ChoiceParameter(id='top_freq_lex', name='Top Frequency List', description="Top frequency list", choices=topfreqlist, default="SoNaR500.wordfreqlist20000.freq"),
