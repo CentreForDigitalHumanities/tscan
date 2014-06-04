@@ -2845,6 +2845,7 @@ void wordStats::concreetHeader( ostream& os ) const {
   os << "semtype_nw,";
   os << "Conc_nw_strikt,";
   os << "Conc_nw_ruim,";
+  os << "Pers_nw,";
   os << "semtype_bvnw,";
   os << "Conc_bvnw_strikt,";
   os << "Conc_bvnw_ruim,";
@@ -2928,6 +2929,7 @@ void wordStats::concreetToCSV( ostream& os ) const {
     os << "0,";
   }
   os << isStrictNoun() << "," << isBroadNoun() << ",";
+  os << (sem_type == CONCRETE_HUMAN_NOUN ) << ",";
   if ( tag == CGN::ADJ ){
     os << sem_type << ",";
   }
@@ -2945,7 +2947,6 @@ void wordStats::concreetToCSV( ostream& os ) const {
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
   os << "Pers_ref,Pers_vnw1,Pers_vnw2,Pers_vnw3,Pers_vnw,"
      << "NER,"
-     << "Pers_nw,"
      << "Emo_bvn,Imp,";
 }
 
@@ -2960,8 +2961,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
   else
     os << nerProp << ",";
 
-  os << (sem_type == CONCRETE_HUMAN_NOUN ) << ","
-     << (sem_type == EMO_ADJ ) << ","
+  os << (sem_type == EMO_ADJ ) << ","
      << isImperative << ",";
 }
 
@@ -4047,16 +4047,32 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 }
 
 void structStats::infoHeader( ostream& os ) const {
-  os << "TTR_wrd,MTLD_wrd,TTR_lem,MTLD_lem,"
+  os << "Bijw_bep_d,Bijw_bep_dz,"
+     << "Attr_bijv_nw_d,Attr_bijv_nw_dz,Bijv_bep_d,Bijv_bep_dz,"
+     << "Ov_bijv_bep_d,Ov_bijv_bep_dz,Nwg_d,Nwg_dz,"
+     << "TTR_wrd,MTLD_wrd,TTR_lem,MTLD_lem,"
      << "TTR_namen,MTLD_namen,TTR_inhwrd,MTLD_inhwrd,"
      << "Inhwrd_d,Inhwrd_dz,"
-     << "Zeldz_index,Bijw_bep_d,Bijw_bep_dz,"
-     << "Attr_bijv_nw_d,Attr_bijv_nw_dz,Bijv_bep_d,Bijv_bep_dz,"
-     << "Ov_bijv_bep_d,Ov_bijv_bep_dz,Nwg_d,Nwg_dz,";
+     << "Zeldz_index,"
+     << "Vnw_ref_d,Vnw_ref_dz,"
+     << "Arg_over_vzin_d,Arg_over_vzin_dz,Lem_over_vzin_d,Lem_over_vzin_dz,"
+     << "Arg_over_buf_d,Arg_over_buf_dz,Lem_over_buf_d,Lem_over_buf_dz,"
+     << "Onbep_nwg_p,Onbep_nwg_dz,";
 }
 
 void structStats::informationDensityToCSV( ostream& os ) const {
   double clauseCnt = pastCnt + presentCnt;
+  os << density( vcModCnt, wordCnt ) << ",";
+  os << proportion( vcModCnt, clauseCnt ) << ",";
+  os << density( adjNpModCnt, wordCnt ) << ",";
+  os << proportion( adjNpModCnt, clauseCnt ) << ",";
+  os << density( npModCnt, wordCnt ) << ",";
+  os << proportion( npModCnt, clauseCnt ) << ",";
+  os << density( (npModCnt-adjNpModCnt), wordCnt ) << ",";
+  os << proportion( (npModCnt-adjNpModCnt), clauseCnt ) << ",";
+  os << density( npCnt, wordCnt ) << ",";
+  os << proportion( npCnt, clauseCnt ) << ",";
+
   os << proportion( unique_words.size(), wordCnt ) << ",";
   os << word_mtld << ",";
   os << proportion( unique_lemmas.size(), wordCnt ) << ",";
@@ -4068,18 +4084,36 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   os << density( contentCnt, wordCnt ) << ",";
   os << proportion( contentCnt, clauseCnt ) << ",";
   os << rarity( settings.rarityLevel ) << ",";
-  os << density( vcModCnt, wordCnt ) << ",";
-  os << proportion( vcModCnt, clauseCnt ) << ",";
-  os << density( adjNpModCnt, wordCnt ) << ",";
-  os << proportion( adjNpModCnt, clauseCnt ) << ",";
-  os << density( npModCnt, wordCnt ) << ",";
-  os << proportion( npModCnt, clauseCnt ) << ",";
-  os << density( (npModCnt-adjNpModCnt), wordCnt ) << ",";
-  os << proportion( (npModCnt-adjNpModCnt), clauseCnt ) << ",";
-  os << density( npCnt, wordCnt ) << ",";
-  os << proportion( npCnt, clauseCnt ) << ",";
+  os << density( pronRefCnt, wordCnt ) << ","
+     << proportion( pronRefCnt, clauseCnt ) << ",";
+  if ( isSentence() ){
+    if ( index == 0 ){
+      os << "NA,NA,"
+	 << "NA,NA,";
+    }
+    else {
+      os << density( wordOverlapCnt, wordCnt ) << ",NA,"
+	 << density( lemmaOverlapCnt, wordCnt ) << ",NA,";
+    }
+  }
+  else {
+    os << density( wordOverlapCnt, wordCnt ) << ","
+       << proportion( wordOverlapCnt, sentCnt ) << ",";
+    os << density( lemmaOverlapCnt, wordCnt ) << ","
+       << proportion( lemmaOverlapCnt, sentCnt ) << ",";
+  }
+  if ( !isDocument() ){
+    os << "NA,NA,NA,NA,";
+  }
+  else {
+    os << density( word_overlapCnt(), wordCnt - settings.overlapSize ) << ","
+       << proportion( word_overlapCnt(), clauseCnt ) << ","
+       << density( lemma_overlapCnt(), wordCnt  - settings.overlapSize ) << ","
+       << proportion( lemma_overlapCnt(), clauseCnt )<< ",";
+  }
+  os << proportion( indefNpCnt, npCnt ) << ",";
+  os << density( indefNpCnt, wordCnt ) << ",";
 }
-
 
 void structStats::coherenceHeader( ostream& os ) const {
   os << "Conn_temp_d,Conn_temp_dz,Conn_temp_TTR,Conn_temp_MTLD,"
@@ -4091,11 +4125,7 @@ void structStats::coherenceHeader( ostream& os ) const {
      << "Causaal_TTR,Causaal_MTLD,"
      << "Ruimte_TTR,Ruimte_MTLD,"
      << "Tijd_TTR,Tijd_MTLD,"
-     << "Emotie_TTR,Emotie_MTLD,"
-     << "Vnw_ref_d,Vnw_ref_dz,"
-     << "Arg_over_vzin_d,Arg_over_vzin_dz,Lem_over_vzin_d,Lem_over_vzin_dz,"
-     << "Arg_over_buf_d,Arg_over_buf_dz,Lem_over_buf_d,Lem_over_buf_dz,"
-     << "Onbep_nwg_p,Onbep_nwg_dz,";
+     << "Emotie_TTR,Emotie_MTLD,";
 }
 
 void structStats::coherenceToCSV( ostream& os ) const {
@@ -4131,36 +4161,7 @@ void structStats::coherenceToCSV( ostream& os ) const {
      << proportion( unique_tijd_sits.size(), timeSitCnt ) << ","
      << tijd_sit_mtld << ","
      << proportion( unique_emotion_sits.size(), emoSitCnt ) << ","
-     << emotion_sit_mtld << ","
-     << density( pronRefCnt, wordCnt ) << ","
-     << proportion( pronRefCnt, clauseCnt ) << ",";
-  if ( isSentence() ){
-    if ( index == 0 ){
-      os << "NA,NA,"
-	 << "NA,NA,";
-    }
-    else {
-      os << density( wordOverlapCnt, wordCnt ) << ",NA,"
-	 << density( lemmaOverlapCnt, wordCnt ) << ",NA,";
-    }
-  }
-  else {
-    os << density( wordOverlapCnt, wordCnt ) << ","
-       << proportion( wordOverlapCnt, sentCnt ) << ",";
-    os << density( lemmaOverlapCnt, wordCnt ) << ","
-       << proportion( lemmaOverlapCnt, sentCnt ) << ",";
-  }
-  if ( !isDocument() ){
-    os << "NA,NA,NA,NA,";
-  }
-  else {
-    os << density( word_overlapCnt(), wordCnt - settings.overlapSize ) << ","
-       << proportion( word_overlapCnt(), clauseCnt ) << ","
-       << density( lemma_overlapCnt(), wordCnt  - settings.overlapSize ) << ","
-       << proportion( lemma_overlapCnt(), clauseCnt )<< ",";
-  }
-  os << proportion( indefNpCnt, npCnt ) << ",";
-  os << density( indefNpCnt, wordCnt ) << ",";
+     << emotion_sit_mtld << ",";
 }
 
 void structStats::concreetHeader( ostream& os ) const {
