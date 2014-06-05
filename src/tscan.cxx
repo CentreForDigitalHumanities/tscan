@@ -2526,7 +2526,7 @@ wordStats::wordStats( int index,
       vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set, false );
       if ( m.size() == 1  && m[0]->cls() == "complex" ){
 	int len;
-	comp = detect_compound( m[0], compLen );
+	//	comp = detect_compound( m[0], compLen );
 	// nested morphemes
 	string desc = m[0]->description();
 	vector<string> parts;
@@ -2577,10 +2577,10 @@ wordStats::wordStats( int index,
     if ( settings.doDecompound ){
       compPartCnt = runDecompoundWord( word, workdir_name,
 				       settings.decompounderPath );
-      if ( compPartCnt > 0 || comp != NOCOMP ){
-       	cerr << morphemes << " is a " << comp << "(" << compLen << ") - "
-       	     << compPartCnt << endl;
-      }
+      // if ( compPartCnt > 0 || comp != NOCOMP ){
+      //  	cerr << morphemes << " is a " << comp << "(" << compLen << ") - "
+      //  	     << compPartCnt << endl;
+      // }
     }
   }
 }
@@ -2757,7 +2757,7 @@ void wordStats::CSVheader( ostream& os, const string& intro ) const {
 void wordStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
-     << "Namen,Sam_delen_per_wrd,Sam_d,"
+     << "Naam_POS,Sam_delen_per_wrd,Sam_d,"
      << "Freq50_staph,Freq65_Staph,Freq77_Staph,Feq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,";
@@ -2828,7 +2828,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
 }
 
 void wordStats::coherenceHeader( ostream& os ) const {
-  os << "connector_type,multiword,Vnw_ref,";
+  os << "connector_type,Wrdcombi,Vnw_ref,";
 }
 
 void wordStats::coherenceToCSV( ostream& os ) const {
@@ -2945,7 +2945,7 @@ void wordStats::concreetToCSV( ostream& os ) const {
 
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
   os << "Pers_ref,Pers_vnw1,Pers_vnw2,Pers_vnw3,Pers_vnw,"
-     << "NER,"
+     << "Naam_NER,"
      << "Emo_bvn,Imp,";
 }
 
@@ -2965,7 +2965,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
 }
 
 void wordStats::wordSortHeader( ostream& os ) const {
-  os << "InputFile,Segment,word,lemma,full_lemma,morfemen,POS,Afk,";
+  os << "InputFile,Segment,Woord,lemma,Voll_lemma,morfemen,Wrdsoort,Afk,";
 }
 
 void na( ostream& os, int cnt ){
@@ -6751,7 +6751,7 @@ int main(int argc, char *argv[]) {
   }
   if ( settings.showProblems ){
     problemFile.open( "problems.log" );
-    problemFile << "missing,word,lemma,full_lemma" << endl;
+    problemFile << "missing,word,lemma,voll_lemma" << endl;
   }
   if ( opts.find( "skip", val ) ) {
     string skip = val;
