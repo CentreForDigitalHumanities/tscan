@@ -1474,7 +1474,7 @@ struct basicStats {
     }
   };
   virtual ~basicStats(){};
-  virtual void CSVheader( ostream&, const string& ) const = 0;
+  virtual void CSVheader( ostream&, const string& ="" ) const = 0;
   virtual void wordDifficultiesHeader( ostream& ) const = 0;
   virtual void wordDifficultiesToCSV( ostream& ) const = 0;
   virtual void sentDifficultiesHeader( ostream& ) const = 0;
@@ -2745,7 +2745,6 @@ void wordStats::addMetrics( ) const {
 }
 
 void wordStats::CSVheader( ostream& os, const string& intro ) const {
-  os << intro << ",";
   wordSortHeader( os );
   wordDifficultiesHeader( os );
   coherenceHeader( os );
@@ -2966,10 +2965,30 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
 }
 
 void wordStats::wordSortHeader( ostream& os ) const {
-  os << "POS,Afk,";
+  os << "InputFile,Segment,word,lemma,full_lemma,morfemen,POS,Afk,";
+}
+
+void na( ostream& os, int cnt ){
+  for ( int i=0; i < cnt; ++i ){
+    os << "NA,";
+  }
+  os << endl;
 }
 
 void wordStats::wordSortToCSV( ostream& os ) const {
+  os << id << ",";
+  os << '"' << word << "\",";
+  if ( parseFail ){
+    na( os, 56 );
+    return;
+  }
+  os << '"' << lemma << "\",";
+  os << '"' << full_lemma << "\",";
+  os << '"';
+  for( size_t i=0; i < morphemes.size(); ++i ){
+    os << "[" << morphemes[i] << "]";
+  }
+  os << "\",";
   os << tag << ",";
   if ( afkType == NO_A ) {
     os << "0,";
@@ -3001,30 +3020,10 @@ void wordStats::miscToCSV( ostream& os ) const {
     os << logprob10 << ",";
 }
 
-void na( ostream& os, int cnt ){
-  for ( int i=0; i < cnt; ++i ){
-    os << "NA,";
-  }
-  os << endl;
-}
-
 void wordStats::toCSV( ostream& os ) const {
-  os << '"' << word << '"';
-  os << ",";
-  if ( parseFail ){
-    na( os, 58 );
-    return;
-  }
-  os << '"' << lemma << '"';
-  os << ",";
-  os << '"' << full_lemma << '"';
-  os << ",";
-  os << '"';
-  for( size_t i=0; i < morphemes.size(); ++i ){
-    os << "[" << morphemes[i] << "]";
-  }
-  os << "\",";
   wordSortToCSV( os );
+  if ( parseFail )
+    return;
   wordDifficultiesToCSV( os );
   coherenceToCSV( os );
   concreetToCSV( os );
@@ -6501,8 +6500,8 @@ void docStats::toCSV( const string& name,
 	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
 	  for ( size_t word=0; word < sv[par]->sv[sent]->sv.size(); ++word ){
 	    if ( par == 0 && sent == 0 && word == 0 )
-	      sv[0]->sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment,word,lemma,full_lemma,morfemen" );
-	    out << name << "," << sv[par]->sv[sent]->sv[word]->id << ",";
+	      sv[0]->sv[0]->sv[0]->CSVheader( out );
+	    out << name << ",";
 	    sv[par]->sv[sent]->sv[word]->toCSV( out );
 	  }
 	}
