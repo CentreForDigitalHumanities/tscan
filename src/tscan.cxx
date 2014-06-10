@@ -2760,7 +2760,7 @@ void wordStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
      << "Naam_POS,Sam_delen_per_wrd,Sam_d,"
-     << "Freq50_staph,Freq65_Staph,Freq77_Staph,Feq80_Staph,"
+     << "Freq50_staph,Freq65_Staph,Freq77_Staph,Freq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,";
   //     <<" so_suc,so_ctx,";
@@ -4184,14 +4184,14 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Waarn_mens_bvnw_p,Waarn_mens_bvnw_d,";
   os << "Emosoc_bvnw_p,Emosoc_bvnw_d,";
   os << "Waarn_nmens_bvnw_p,Waarn_nmens_bvnw_d,";
-  os << "Vorm_omvang_bvnw_p,Vorm_omvan_bvnw_d,";
+  os << "Vorm_omvang_bvnw_p,Vorm_omvang_bvnw_d,";
   os << "Kleur_bvnw_p,Kleur_bvnw_d,";
   os << "Stof_bvnw_p,Stof_bvnw_d,";
   os << "Geluid_bvnw_p,Geluid_bvnw_d,";
   os << "Waarn_nmens_ov_bvnw_p,Waarn_nmens_ov_bvnw_d,";
   os << "Technisch_bvnw_p,Technisch_bvnw_d,";
-  os << "Time_bvnw_p,Time_bvnw_d,";
-  os << "Place_bvnw_p,Place_bvnw_d,";
+  os << "Tijd_bvnw_p,Tijd_bvnw_d,";
+  os << "Plaats_bvnw_p,Plaats_bvnw_d,";
   os << "Spec_positief_bvnw_p,Spec_positief_bvnw_d,";
   os << "Spec_negatief_bvnw_p,Spec_negatief_bvnw_d,";
   os << "Alg_positief_bvnw_p,Alg_positief_bvnw_d,";
@@ -4209,7 +4209,7 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Subj_bvnw_p,Subj_bvnw_d,";
   os << "Undefined_bvnw_p,";
   os << "Gelabeld_bvnw_p,";
-  os << "Gedekt_bvnw_p,";
+  os << "Gedekte_bvnw_p,";
   os << "Conc_ww_p,Conc_ww_d,";
   os << "Abstr_ww_p,Abstr_ww_d,";
   os << "Undefined_ww_p,";
@@ -4318,10 +4318,10 @@ void structStats::concreetToCSV( ostream& os ) const {
 
 void structStats::persoonlijkheidHeader( ostream& os ) const {
   os << "Pers_ref_d,Pers_vnw1_d,Pers_vnw2_d,Pers_vnw3_d,Pers_vnw_d,"
-     << "Pers_namen_p, Pers_namen_d, Plaatsnamen_d,"
+     << "Pers_namen_p, Pers_namen_p2, Pers_namen_d, Plaatsnamen_d,"
      << "Org_namen_d, Prod_namen_d, Event_namen_d,"
      << "Actieww_p,Actieww_d,Toestww_p,Toestww_d,"
-     << "Processww_p,Processww_d,"
+     << "Procesww_p,Procesww_d,"
      << "Imp_p,Imp_d,"
      << "Vragen_p,Vragen_d,";
 }
@@ -4336,6 +4336,7 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
 
   int val = at( ners, PER_B );
   os << proportion( val, nerCnt ) << ",";
+  os << proportion( val, nounCnt + nameCnt ) << ",";
   os << density( val, wordCnt ) << ",";
   val = at( ners, LOC_B );
   os << density( val, wordCnt ) << ",";
