@@ -273,6 +273,8 @@ namespace CGN {
       return BW;
     else if ( s == "WW" )
       return WW;
+    else if ( s == "TSW" )
+      return TSW;
     else if ( s == "TW" )
       return TW;
     else if ( s == "VZ" )
@@ -2921,7 +2923,7 @@ bool wordStats::isBroadAdj() const {
 }
 
 void wordStats::concreetToCSV( ostream& os ) const {
-  if ( tag == CGN::N ){
+  if ( tag == CGN::N || prop == ISNAME ){
     os << sem_type << ",";
   }
   else {
