@@ -5,7 +5,7 @@ ACLOCAL_AMFLAGS =-I m4 --install
 
 SUBDIRS = src include docs data config
 
-EXTRA_DIST = bootstrap AUTHORS TODO NEWS
+EXTRA_DIST = bootstrap.sh AUTHORS TODO NEWS tscan.cfg.example
 
 ChangeLog: NEWS
 	svn update; svn2cl --include-rev
