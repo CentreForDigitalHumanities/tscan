@@ -5318,9 +5318,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
     cerr << "Reason: " << client.getMessage() << endl;
     exit( EXIT_FAILURE );
   }
-#ifdef DEBUG_WOPR
   cerr << "calling Wopr" << endl;
-#endif
   client.write( txt + "\n\n" );
   string result;
   string s;
@@ -5395,9 +5393,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
     cerr << "No usable FoLia date retrieved from Wopr. Got '"
 	<< result << "'" << endl;
   }
-#ifdef DEBUG_WOPR
   cerr << "finished Wopr" << endl;
-#endif
 }
 
 xmlDoc *AlpinoServerParse( Sentence *);
