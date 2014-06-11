@@ -3128,6 +3128,7 @@ struct structStats: public basicStats {
     abstractWwCnt(0),
     concreteWwCnt(0),
     undefinedWwCnt(0),
+    undefinedATPCnt(0),
     stateCnt(0),
     actionCnt(0),
     processCnt(0),
@@ -3325,6 +3326,7 @@ struct structStats: public basicStats {
   int abstractWwCnt;
   int concreteWwCnt;
   int undefinedWwCnt;
+  int undefinedATPCnt;
   int stateCnt;
   int actionCnt;
   int processCnt;
@@ -3552,6 +3554,7 @@ void structStats::merge( structStats *ss ){
   abstractWwCnt += ss->abstractWwCnt;
   concreteWwCnt += ss->concreteWwCnt;
   undefinedWwCnt += ss->undefinedWwCnt;
+  undefinedATPCnt += ss->undefinedATPCnt;
   stateCnt += ss->stateCnt;
   actionCnt += ss->actionCnt;
   processCnt += ss->processCnt;
@@ -3877,6 +3880,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "abstract_ww", toString(abstractWwCnt) );
   addOneMetric( doc, el, "concrete_ww", toString(concreteWwCnt) );
   addOneMetric( doc, el, "undefined_ww", toString(undefinedWwCnt) );
+  addOneMetric( doc, el, "undefined_ATP", toString(undefinedATPCnt) );
   addOneMetric( doc, el, "state_count", toString(stateCnt) );
   addOneMetric( doc, el, "action_count", toString(actionCnt) );
   addOneMetric( doc, el, "process_count", toString(processCnt) );
@@ -4349,7 +4353,7 @@ void structStats::persoonlijkheidHeader( ostream& os ) const {
      << "Pers_namen_p, Pers_namen_p2, Pers_namen_d, Plaatsnamen_d,"
      << "Org_namen_d, Prod_namen_d, Event_namen_d,"
      << "Actieww_p,Actieww_d,Toestww_p,Toestww_d,"
-     << "Procesww_p,Procesww_d,"
+     << "Procesww_p,Procesww_d,Undefined_ATP_ww_p,"
      << "Imp_p,Imp_d,"
      << "Vragen_p,Vragen_d,";
 }
@@ -4381,6 +4385,7 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << density( stateCnt, wordCnt ) << ",";
   os << proportion( processCnt, verbCnt ) << ",";
   os << density( processCnt, wordCnt ) << ",";
+  os << proportion( undefinedATPCnt, verbCnt - uncoveredVerbCnt ) << ",";
   os << proportion( impCnt, clauseCnt ) << ",";
   os << density( impCnt, wordCnt ) << ",";
   os << proportion( questCnt, sentCnt ) << ",";
@@ -5963,6 +5968,7 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 	break;
       case UNDEFINED_VERB:
 	undefinedWwCnt++;
+	undefinedATPCnt++;
 	break;
       default:
 	;
