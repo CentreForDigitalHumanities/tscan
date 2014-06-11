@@ -1851,6 +1851,16 @@ void wordStats::setCGNProps( const PosAnnotation* pa ) {
     string wvorm = pa->feat("wvorm");
     if ( wvorm == "inf" ){
       prop = ISINF;
+      string pos = pa->feat("positie");
+      if ( pos == "vrij" ){
+	position = VRIJ;
+      }
+      else if ( pos == "prenom" ){
+	position = PRENOM;
+      }
+      else if ( pos == "nom" ){
+	position = NOMIN;
+      }
     }
     else if ( wvorm == "vd" ){
       prop = ISVD;
@@ -1864,7 +1874,6 @@ void wordStats::setCGNProps( const PosAnnotation* pa ) {
       else if ( pos == "nom" ){
 	position = NOMIN;
       }
-      //      cerr << word << " is een VD " << position << endl;
     }
     else if ( wvorm == "od" ){
       prop = ISOD;
@@ -1878,7 +1887,6 @@ void wordStats::setCGNProps( const PosAnnotation* pa ) {
       else if ( pos == "nom" ){
 	position = NOMIN;
       }
-      //      cerr << word << " is een OD " << position << endl;
     }
     else if ( wvorm == "pv" ){
       string tijd = pa->feat("pvtijd");
@@ -3012,9 +3020,9 @@ void wordStats::miscToCSV( ostream& os ) const {
     os << wwform << ",";
   }
   os << (prop == ISPVTGW) << ",";
-  os << (prop == ISVD ) << ","
-     << (prop == ISOD) << ","
-     << (prop == ISINF ) << ",";
+  os << (prop == ISVD?toString(position):"0") << ","
+     << (prop == ISOD?toString(position):"0") << ","
+     << (prop == ISINF?toString(position):"0") << ",";
   os << archaic << ",";
   if ( logprob10 == NA )
     os << "NA,";
@@ -3040,8 +3048,10 @@ struct structStats: public basicStats {
     wordCnt(0),
     sentCnt(0),
     parseFailCnt(0),
-    vdCnt(0),odCnt(0),
-    infCnt(0), presentCnt(0), pastCnt(0), subjonctCnt(0),
+    vdBvCnt(0), vdNwCnt(0), vdVrijCnt(0),
+    odBvCnt(0), odNwCnt(0), odVrijCnt(0),
+    infBvCnt(0), infNwCnt(0), infVrijCnt(0),
+    presentCnt(0), pastCnt(0), subjonctCnt(0),
     nameCnt(0),
     pron1Cnt(0), pron2Cnt(0), pron3Cnt(0),
     passiveCnt(0),modalCnt(0),timeVCnt(0),koppelCnt(0),
@@ -3221,9 +3231,15 @@ struct structStats: public basicStats {
   int wordCnt;
   int sentCnt;
   int parseFailCnt;
-  int vdCnt;
-  int odCnt;
-  int infCnt;
+  int vdBvCnt;
+  int vdNwCnt;
+  int vdVrijCnt;
+  int odBvCnt;
+  int odNwCnt;
+  int odVrijCnt;
+  int infBvCnt;
+  int infNwCnt;
+  int infVrijCnt;
   int presentCnt;
   int pastCnt;
   int subjonctCnt;
@@ -3440,9 +3456,15 @@ void structStats::merge( structStats *ss ){
   morphCnt += ss->morphCnt;
   morphCntExNames += ss->morphCntExNames;
   nameCnt += ss->nameCnt;
-  vdCnt += ss->vdCnt;
-  odCnt += ss->odCnt;
-  infCnt += ss->infCnt;
+  infBvCnt += ss->infBvCnt;
+  infNwCnt += ss->infNwCnt;
+  infVrijCnt += ss->infVrijCnt;
+  vdBvCnt += ss->vdBvCnt;
+  vdNwCnt += ss->vdNwCnt;
+  vdVrijCnt += ss->vdVrijCnt;
+  odBvCnt += ss->odBvCnt;
+  odNwCnt += ss->odNwCnt;
+  odVrijCnt += ss->odVrijCnt;
   passiveCnt += ss->passiveCnt;
   modalCnt += ss->modalCnt;
   timeVCnt += ss->timeVCnt;
@@ -3659,9 +3681,15 @@ void structStats::addMetrics( ) const {
   FoliaElement *el = folia_node;
   Document *doc = el->doc();
   addOneMetric( doc, el, "word_count", toString(wordCnt) );
-  addOneMetric( doc, el, "vd_count", toString(vdCnt) );
-  addOneMetric( doc, el, "od_count", toString(odCnt) );
-  addOneMetric( doc, el, "inf_count", toString(infCnt) );
+  addOneMetric( doc, el, "bv_vd_count", toString(vdBvCnt) );
+  addOneMetric( doc, el, "nw_vd_count", toString(vdNwCnt) );
+  addOneMetric( doc, el, "vrij_vd_count", toString(vdVrijCnt) );
+  addOneMetric( doc, el, "bv_od_count", toString(odBvCnt) );
+  addOneMetric( doc, el, "nw_od_count", toString(odNwCnt) );
+  addOneMetric( doc, el, "vrij_od_count", toString(odVrijCnt) );
+  addOneMetric( doc, el, "bv_inf_count", toString(infBvCnt) );
+  addOneMetric( doc, el, "nw_inf_count", toString(infNwCnt) );
+  addOneMetric( doc, el, "vrij_inf_count", toString(infVrijCnt) );
   addOneMetric( doc, el, "present_verb_count", toString(presentCnt) );
   addOneMetric( doc, el, "past_verb_count", toString(pastCnt) );
   addOneMetric( doc, el, "subjonct_count", toString(subjonctCnt) );
@@ -4401,8 +4429,16 @@ void structStats::wordSortToCSV( ostream& os ) const {
 void structStats::miscHeader( ostream& os ) const {
   os << "Vzu_d, Vzu_dz, Ww_tt_p,Ww_tt_dz,Ww_mod_d_,Ww_mod_dz,"
      << "Huww_tijd_d,Huww_tijd_dz,Koppelww_d,Koppelww_dz,"
-     << "Arch_d,Vol_dw_d,Vol_dw_dz,"
-     << "Onvol_dw_d,Onvol_dw_dz,Infin_d,Infin_g,"
+     << "Arch_d,"
+     << "Infin_bv_d,Infin_bv_dz,"
+     << "Infin_nw_d,Infin_nw_dz,"
+     << "Infin_vrij_d,Infin_vrij_dz,"
+     << "Vd_bv_d,Vd_bv_dz,"
+     << "Vd_nw_d,Vd_nw_dz,"
+     << "Vd_vrij_d,Vd_vrij_dz,"
+     << "Ovd_bv_d,Ovd_bv_dz,"
+     << "Ovd_nw_d,Ovd_nw_dz,"
+     << "Ovd_vrij_d,Ovd_vrij_dz,"
      << "Log_prob,Entropie,Perplexiteit,";
 }
 
@@ -4418,13 +4454,29 @@ void structStats::miscToCSV( ostream& os ) const {
   os << proportion( timeVCnt, clauseCnt ) << ",";
   os << density( koppelCnt, wordCnt ) << ",";
   os << proportion( koppelCnt, clauseCnt ) << ",";
-  os << density( archaicsCnt, wordCnt ) << ","
-     << density( vdCnt, wordCnt ) << ",";
-  os << proportion( vdCnt, clauseCnt ) << ",";
-  os << density( odCnt, wordCnt ) << ",";
-  os << proportion( odCnt, clauseCnt ) << ",";
-  os << density( infCnt, wordCnt ) << ",";
-  os << proportion( infCnt, clauseCnt ) << ",";
+  os << density( archaicsCnt, wordCnt ) << ",";
+
+  os << density( infBvCnt, wordCnt ) << ",";
+  os << proportion( infBvCnt, clauseCnt ) << ",";
+  os << density( infNwCnt, wordCnt ) << ",";
+  os << proportion( infNwCnt, clauseCnt ) << ",";
+  os << density( infVrijCnt, wordCnt ) << ",";
+  os << proportion( infVrijCnt, clauseCnt ) << ",";
+
+  os << density( vdBvCnt, wordCnt ) << ",";
+  os << proportion( vdBvCnt, clauseCnt ) << ",";
+  os << density( vdNwCnt, wordCnt ) << ",";
+  os << proportion( vdNwCnt, clauseCnt ) << ",";
+  os << density( vdVrijCnt, wordCnt ) << ",";
+  os << proportion( vdVrijCnt, clauseCnt ) << ",";
+
+  os << density( odBvCnt, wordCnt ) << ",";
+  os << proportion( odBvCnt, clauseCnt ) << ",";
+  os << density( odNwCnt, wordCnt ) << ",";
+  os << proportion( odNwCnt, clauseCnt ) << ",";
+  os << density( odVrijCnt, wordCnt ) << ",";
+  os << proportion( odVrijCnt, clauseCnt ) << ",";
+
   os << proportion( avg_prob10, sentCnt ) << ",";
   os << proportion( entropy, sentCnt ) << ",";
   os << proportion( perplexity, sentCnt ) << ",";
@@ -5555,13 +5607,49 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 	unique_names[ws->l_word] +=1;
 	break;
       case ISVD:
-	vdCnt++;
+	switch ( ws->position ){
+	case NOMIN:
+	  vdNwCnt++;
+	  break;
+	case PRENOM:
+	  vdBvCnt++;
+	  break;
+	case VRIJ:
+	  vdVrijCnt++;
+	  break;
+	default:
+	  break;
+	}
 	break;
       case ISINF:
-	infCnt++;
+	switch ( ws->position ){
+	case NOMIN:
+	  infNwCnt++;
+	  break;
+	case PRENOM:
+	  infBvCnt++;
+	  break;
+	case VRIJ:
+	  infVrijCnt++;
+	  break;
+	default:
+	  break;
+	}
 	break;
       case ISOD:
-	odCnt++;
+	switch ( ws->position ){
+	case NOMIN:
+	  odNwCnt++;
+	  break;
+	case PRENOM:
+	  odBvCnt++;
+	  break;
+	case VRIJ:
+	  odVrijCnt++;
+	  break;
+	default:
+	  break;
+	}
 	break;
       case ISPVVERL:
 	pastCnt++;
