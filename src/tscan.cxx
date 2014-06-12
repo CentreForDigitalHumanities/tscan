@@ -6732,8 +6732,8 @@ int main(int argc, char *argv[]) {
   }
   cerr << "TScan " << VERSION << endl;
   cerr << "working dir " << workdir_name << endl;
-  string shortOpt = "ht:d:e:o:";
-  string longOpt = "threads:,config,skip:";
+  string shortOpt = "ht:d:e:o:V";
+  string longOpt = "threads:,config,skip:,version";
   TiCC::CL_Options opts( shortOpt, longOpt );
   try {
     opts.init( argc, argv );
