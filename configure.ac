@@ -95,6 +95,7 @@ AC_CONFIG_FILES([Makefile
                  include/tscan/Makefile
                  src/Makefile
 		 data/Makefile
+		 webservice/Makefile
 		 config/Makefile
                  docs/Makefile])
 AC_OUTPUT
