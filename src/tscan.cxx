@@ -1241,20 +1241,13 @@ void settingData::init( const Configuration& cf ){
 }
 
 inline void usage(){
-  cerr << "usage:  tscan [options] -t <inputfile> " << endl;
+  cerr << "usage:  tscan [options] <inputfiles> " << endl;
   cerr << "options: " << endl;
-  cerr << "\t-o <file> store XML in file " << endl;
+  cerr << "\t-o <file> store XML in 'file' " << endl;
   cerr << "\t--config=<file> read configuration from 'file' " << endl;
   cerr << "\t-V or --version show version " << endl;
-  cerr << "\t-D <value> set debug level " << endl;
   cerr << "\t--skip=[acdlw]    Skip Alpino (a), CSV output (c), Decompounder (d), Lsa (l) or Wopr (w).\n";
-  cerr << "\t-t <file> process the 'file'." << endl;
-  cerr << "\t-e <exp> process the files using the (possibly wildcarded) expression 'exp'." << endl;
-  cerr << "\t\t Wildcards must be escaped!" << endl;
-  cerr << "\t-d <dir> use path 'dir' as a prefix for -e ." << endl;
-  cerr << "\t\t example: -e \\*.txt" << endl;
-  cerr << "\t\t          -e 'b*.txt'" << endl;
-  cerr << "\t\t          -d tests -e '*.example'" << endl;
+  cerr << "\t-t <file> process the 'file'. (deprecated)" << endl;
   cerr << endl;
 }
 
@@ -6732,7 +6725,7 @@ int main(int argc, char *argv[]) {
   }
   cerr << "TScan " << VERSION << endl;
   cerr << "working dir " << workdir_name << endl;
-  string shortOpt = "ht:d:e:o:V";
+  string shortOpt = "ht:o:V";
   string longOpt = "threads:,config,skip:,version";
   TiCC::CL_Options opts( shortOpt, longOpt );
   try {
@@ -6758,52 +6751,22 @@ int main(int argc, char *argv[]) {
   if ( opts.find( 't', val, mood ) ){
     t_option = val;
   }
-  string d_option;
-  if ( opts.find( 'd', val, mood ) ){
-    d_option = val;
-  }
-  string e_option;
-  if ( opts.find( 'e', val, mood ) ){
-    e_option = val;
-    if ( e_option.size() > 0 && e_option[e_option.size()-1] != '$' )
-      e_option += "$";
-  }
-  if ( !t_option.empty() && !d_option.empty() ){
-    cerr << "-t and -d options cannot be combined" << endl;
-    exit( EXIT_FAILURE );
-  }
 
   vector<string> inputnames;
-
-  if ( t_option.empty() && d_option.empty() ){
-    if ( e_option.empty() ){
-      inputnames = opts.getMassOpts();
-      if ( inputnames.size() == 0 ){
-	cerr << "missing one of -t, -d or -e options" << endl;
-	exit( EXIT_FAILURE );
-      }
-    }
-    else {
-      d_option = ".";
-    }
+  if ( t_option.empty() ){
+    inputnames = opts.getMassOpts();
+  }
+  else {
+    inputnames = searchFiles( t_option );
   }
 
-  if ( inputnames.empty() ){
-    if ( !t_option.empty() ){
-      inputnames = searchFiles( t_option );
-    }
-    else {
-      cerr << "search files matching pattern: " << d_option << e_option << endl;
-      inputnames = searchFilesMatch( d_option, e_option, false );
-    }
-  }
-  // for ( size_t i = 0; i < inputnames.size(); ++i ){
-  //   cerr << i << " - " << inputnames[i] << endl;
-  // }
   if ( inputnames.size() == 0 ){
     cerr << "no input file(s) found" << endl;
     exit(EXIT_FAILURE);
   }
+  // for ( size_t i = 0; i < inputnames.size(); ++i ){
+  //   cerr << i << " - " << inputnames[i] << endl;
+  // }
 
   string o_option;
   if ( opts.find( 'o', val, mood ) ){
