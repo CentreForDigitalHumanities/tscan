@@ -432,8 +432,11 @@ struct settingData {
   map <string, SemType> verb_sem;
   map <string, double> pol_lex;
   map<string, cf_data> staph_word_freq_lex;
+  long int staph_total;
   map<string, cf_data> word_freq_lex;
+  long int word_total;
   map<string, cf_data> lemma_freq_lex;
+  long int lemma_total;
   map<string, top_val> top_freq_lex;
   map<CGN::Type, set<string> > temporals1;
   set<string> multi_temporals;
@@ -797,7 +800,8 @@ bool fill( CGN::Type tag, map<string,SemType>& m, const string& filename ){
   return false;
 }
 
-bool fill_freqlex( map<string,cf_data>& m, istream& is ){
+bool fill_freqlex( map<string,cf_data>& m, long int& total, istream& is ){
+  total = 0;
   string line;
   while( safe_getline( is, line ) ){
     line = TiCC::trim( line );
@@ -812,26 +816,30 @@ bool fill_freqlex( map<string,cf_data>& m, istream& is ){
     }
     cf_data data;
     data.count = TiCC::stringTo<long int>( parts[1] );
+    data.freq = TiCC::stringTo<double>( parts[3] );
     if ( data.count == 1 ){
       // we are done. Skip all singleton stuff
       return true;
     }
-    data.freq = TiCC::stringTo<double>( parts[3] );
     if ( settings.freq_clip > 0 ){
       // skip low frequent word, when desired
       if ( data.freq > settings.freq_clip ){
 	return true;
       }
     }
+    total += data.count;
     m[parts[0]] = data;
   }
   return true;
 }
 
-bool fill_freqlex( map<string,cf_data>& m, const string& filename ){
+bool fill_freqlex( map<string,cf_data>& m, long int& total,
+		   const string& filename ){
   ifstream is( filename.c_str() );
   if ( is ){
-    return fill_freqlex( m, is );
+    fill_freqlex( m, total, is );
+    cout << "read " << filename << " (" << total << " entries)" << endl;
+    return true;
   }
   else {
     cerr << "couldn't open file: " << filename << endl;
@@ -1161,19 +1169,25 @@ void settingData::init( const Configuration& cf ){
     if ( !fill( CGN::WW, verb_sem, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
+  staph_total = 0;
   val = cf.lookUp( "staph_word_freq_lex" );
   if ( !val.empty() ){
-    if ( !fill_freqlex( staph_word_freq_lex, cf.configDir() + "/" + val ) )
+    if ( !fill_freqlex( staph_word_freq_lex, staph_total,
+			cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
+  word_total = 0;
   val = cf.lookUp( "word_freq_lex" );
   if ( !val.empty() ){
-    if ( !fill_freqlex( word_freq_lex, cf.configDir() + "/" + val ) )
+    if ( !fill_freqlex( word_freq_lex, word_total,
+			cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
+  lemma_total = 0;
   val = cf.lookUp( "lemma_freq_lex" );
   if ( !val.empty() ){
-    if ( !fill_freqlex( lemma_freq_lex, cf.configDir() + "/" + val ) )
+    if ( !fill_freqlex( lemma_freq_lex, lemma_total,
+			cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "top_freq_lex" );
@@ -2045,7 +2059,7 @@ void wordStats::freqLookup(){
   map<string,cf_data>::const_iterator it = settings.word_freq_lex.find( l_word );
   if ( it != settings.word_freq_lex.end() ){
     word_freq = it->second.count;
-    word_freq_log = log10(word_freq);
+    word_freq_log = log10((word_freq/double(settings.word_total))*10e6);
   }
   else {
     word_freq = 1;
@@ -2061,7 +2075,7 @@ void wordStats::freqLookup(){
   }
   if ( it != settings.lemma_freq_lex.end() ){
     lemma_freq = it->second.count;
-    lemma_freq_log = log10(lemma_freq);
+    lemma_freq_log = log10( (lemma_freq/double(settings.lemma_total))*10e6);
   }
   else {
     lemma_freq = 1;
