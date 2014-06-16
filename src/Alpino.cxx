@@ -26,8 +26,6 @@
 */
 
 #include <cstdio> // for remove()
-#include <cstring> // for strerror()
-#include <cassert> // for assert()
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
@@ -42,6 +40,7 @@ using namespace TiCC;
 
 
 xmlNode *getAlpNodeWord( xmlDoc *doc, const Word *w ){
+  // search the XML node that matches de FoLiA word w
   string id = w->id();
   string::size_type ppos = id.find_last_of( '.' );
   string posS = id.substr( ppos + 1 );
@@ -62,6 +61,7 @@ xmlNode *getAlpNodeWord( xmlDoc *doc, const Word *w ){
 	int finish = TiCC::stringTo<int>( epos );
 	//	cerr << "begin = " << start << ", end=" << finish << endl;
 	if ( start + 1 == finish ){
+	  // the node must exactly be 1 long
 	  return pnt;
 	}
       }
@@ -72,6 +72,7 @@ xmlNode *getAlpNodeWord( xmlDoc *doc, const Word *w ){
 }
 
 vector< xmlNode*> getSibblings( const xmlNode *node ){
+  // create a list of all sibblings of 'node'
   vector<xmlNode *> result;
   xmlNode *pnt = node->parent->children;
   while ( pnt ){
@@ -85,9 +86,10 @@ vector< xmlNode*> getSibblings( const xmlNode *node ){
 xmlNode *node_search( const xmlNode* node,
 		      const string& att,
 		      const string& val ){
+  // resursively search for a node with att=val
   xmlNode *pnt = node->children;
   while ( pnt ){
-    // breath first search
+    // breadth first search
     if ( pnt->type == XML_ELEMENT_NODE ){
       if ( getAttribute( pnt, att ) == val ){
 	return pnt;
@@ -113,6 +115,7 @@ xmlNode *node_search( const xmlNode* node,
 xmlNode *node_search( const xmlNode* node,
 		      const string& att,
 		      const set<string>& values ){
+  // resursively search for a node with an att that has one of the values
   xmlNode *pnt = node->children;
   while ( pnt ){
     // breath first search
@@ -140,6 +143,7 @@ xmlNode *node_search( const xmlNode* node,
 }
 
 void get_index_nodes( const xmlNode* node, vector<xmlNode*>& result ){
+  // recursively search for nodes with the 'index' attribute
   xmlNode *pnt = node->children;
   while ( pnt ){
     if ( pnt->type == XML_ELEMENT_NODE ){
@@ -157,6 +161,7 @@ void get_index_nodes( const xmlNode* node, vector<xmlNode*>& result ){
 }
 
 vector<xmlNode *> getIndexNodes( xmlDoc *doc ){
+  // search for nodes with the 'index' attribute
   xmlNode *pnt = xmlDocGetRootElement( doc );
   vector<xmlNode*> result;
   get_index_nodes( pnt->children, result );
@@ -170,8 +175,10 @@ const string modalA[] = { "kunnen", "moeten", "hoeven", "behoeven", "mogen",
 const string koppelA[] = { "zijn", "worden", "blijven", "lijken", "schijnen",
 			   "heten", "blijken", "dunken", "voorkomen" };
 
-set<string> modals = set<string>( modalA, modalA + 10 );
-set<string> koppels = set<string>( koppelA, koppelA + 9 );
+set<string> modals = set<string>( modalA,
+				  modalA + sizeof(modalA)/sizeof(string) );
+set<string> koppels = set<string>( koppelA,
+				   koppelA + sizeof(koppelA)/sizeof(string) );
 
 string toString( const DD_type& t ){
   string result;
@@ -228,7 +235,7 @@ string toString( const DD_type& t ){
     result = "verb-nounc";
     break;
   default:
-    result = "ERROR unknown translation for DD_type(" + toString(t ) + ")";
+    result = "ERROR unknown translation for DD_type";
   }
   return result;
 }
@@ -241,6 +248,7 @@ int get_begin( const xmlNode *n ){
 void store_result( multimap<DD_type,int>& result, DD_type type,
 		   const xmlNode *n1, const xmlNode*n2,
 		   const set<size_t>& puncts ){
+  // store distances per type. Compensate for skipped punctuation
   int pos1 = get_begin( n1 );
   int pos2 = get_begin( n2 );
   if ( pos1 > pos2 )
@@ -259,6 +267,7 @@ void store_result( multimap<DD_type,int>& result, DD_type type,
 
 multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
 					  const set<size_t>& puncts ){
+  // walk down the Alpino tree and gather all types of distances
   multimap<DD_type,int> result;
   if ( head_node ){
     KWargs atts = getAttributes( head_node );
@@ -605,6 +614,8 @@ string toString( const WWform& wf ){
 
 WWform classifyVerb( const xmlNode *wnode, const string& lemma,
 		     string& full_lemma ){
+  // classify a Verb.
+  // also detect 'splits' like 'bel op' giving 'opbellen'
   full_lemma.clear();
   if ( wnode ){
     vector< xmlNode *> siblinglist = getSibblings( wnode );
@@ -692,6 +703,7 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma,
 
 void getRelNodesValue( xmlNode *pnt, set<xmlNode*>& result,
 		       const string& val ){
+  // collect all nodes witl attribute 'rel' of value 'val'
   while ( pnt ){
     if ( pnt->type == XML_ELEMENT_NODE && Name(pnt) == "node" ){
       if ( getAttribute( pnt, "rel" ) == val )
@@ -712,6 +724,7 @@ int cntRelNodesValue( xmlNode *pnt ){
 }
 
 int get_d_level( const Sentence *s, xmlDoc *alp ){
+  // determine de d-level of a sentence
   vector<PosAnnotation*> poslist;
   vector<Word*> wordlist = s->words();
   int pv_counter = 0;
@@ -939,6 +952,7 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
 }
 
 bool checkImp( const xmlNode *alp_node ){
+  // check if this is an Imperative
   vector< xmlNode *> siblings = getSibblings( alp_node );
   bool su_found = false;
   for ( size_t i=0; i < siblings.size(); ++i ){
@@ -951,9 +965,11 @@ bool checkImp( const xmlNode *alp_node ){
 
 void mod_stats( xmlDoc *doc, int& vcMod,
 		int& adjNpMod, int& npMod ){
+  // collect some statistics about Modals
   vcMod = 0;
   adjNpMod = 0;
   npMod = 0;
+  // first search all head verbs
   list<xmlNode*> hdnodes = TiCC::FindNodes( doc, "//node[@rel='hd' and @pos='verb']" );
   list<xmlNode*>::const_iterator it = hdnodes.begin();
   while ( it != hdnodes.end() ){
@@ -964,6 +980,7 @@ void mod_stats( xmlDoc *doc, int& vcMod,
     }
     ++it;
   }
+  // and the 'np' nodes
   list<xmlNode*> npnodes = TiCC::FindNodes( doc, "//node[@cat='np']" );
   it = npnodes.begin();
   set< xmlNode* > nnodes;
@@ -973,7 +990,7 @@ void mod_stats( xmlDoc *doc, int& vcMod,
     // I would like an xPath. But there isn't a way to say:
     //  recursively search all node with these properties but don't recurse
     //  deeper when you are at a 'root' node
-    //
+    // or?
     int cnt = cntRelNodesValue( (*it)->children );
     npMod += cnt;
     ++it;
@@ -981,7 +998,7 @@ void mod_stats( xmlDoc *doc, int& vcMod,
 }
 
 bool isSmallCnj( const xmlNode *eNode ){
-  //  cerr << "test EN/OF conjunction " << getAttributes( eNode ) << endl;
+  // determine if this is a 'small' conjunction
   vector< xmlNode *> sl = getSibblings( eNode );
   string pos;
   for ( size_t i=0; i < sl.size(); ++i ){
@@ -1007,6 +1024,7 @@ bool isSmallCnj( const xmlNode *eNode ){
 }
 
 xmlDoc *AlpinoParse( const folia::Sentence *s, const string& dirname ){
+  //  parse a FoLiA Sentence into an Alpino tree.
   string txt = folia::UnicodeToUTF8(s->toktext());
   //  cerr << "parse line: " << txt << endl;
   string txtfile = dirname + "parse.txt";
@@ -1028,4 +1046,3 @@ xmlDoc *AlpinoParse( const folia::Sentence *s, const string& dirname ){
   }
   return 0;
 }
-

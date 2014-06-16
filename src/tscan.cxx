@@ -2757,6 +2757,40 @@ void wordStats::CSVheader( ostream& os, const string& intro ) const {
   os << endl;
 }
 
+void wordStats::wordSortHeader( ostream& os ) const {
+  os << "InputFile,Segment,Woord,lemma,Voll_lemma,morfemen,Wrdsoort,Afk,";
+}
+
+void na( ostream& os, int cnt ){
+  for ( int i=0; i < cnt; ++i ){
+    os << "NA,";
+  }
+  os << endl;
+}
+
+void wordStats::wordSortToCSV( ostream& os ) const {
+  os << id << ",";
+  os << '"' << word << "\",";
+  if ( parseFail ){
+    na( os, 56 );
+    return;
+  }
+  os << '"' << lemma << "\",";
+  os << '"' << full_lemma << "\",";
+  os << '"';
+  for( size_t i=0; i < morphemes.size(); ++i ){
+    os << "[" << morphemes[i] << "]";
+  }
+  os << "\",";
+  os << tag << ",";
+  if ( afkType == NO_A ) {
+    os << "0,";
+  }
+  else {
+    os << afkType << ",";
+  }
+}
+
 void wordStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
@@ -2967,39 +3001,6 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << isImperative << ",";
 }
 
-void wordStats::wordSortHeader( ostream& os ) const {
-  os << "InputFile,Segment,Woord,lemma,Voll_lemma,morfemen,Wrdsoort,Afk,";
-}
-
-void na( ostream& os, int cnt ){
-  for ( int i=0; i < cnt; ++i ){
-    os << "NA,";
-  }
-  os << endl;
-}
-
-void wordStats::wordSortToCSV( ostream& os ) const {
-  os << id << ",";
-  os << '"' << word << "\",";
-  if ( parseFail ){
-    na( os, 56 );
-    return;
-  }
-  os << '"' << lemma << "\",";
-  os << '"' << full_lemma << "\",";
-  os << '"';
-  for( size_t i=0; i < morphemes.size(); ++i ){
-    os << "[" << morphemes[i] << "]";
-  }
-  os << "\",";
-  os << tag << ",";
-  if ( afkType == NO_A ) {
-    os << "0,";
-  }
-  else {
-    os << afkType << ",";
-  }
-}
 
 void wordStats::miscHeader( ostream& os ) const {
   os << "Ww_vorm,Ww_tt,Vol_dw,Onvol_dw,Infin,Archaisch,Log_prob";
@@ -5443,7 +5444,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
     cerr << "No usable FoLia date retrieved from Wopr. Got '"
 	<< result << "'" << endl;
   }
-  cerr << "finished Wopr" << endl;
+  cerr << "Done with Wopr" << endl;
 }
 
 xmlDoc *AlpinoServerParse( Sentence *);
