@@ -150,17 +150,38 @@ f.close()
 os.system('svn info ' + TSCANDIR + ' >&2')
 
 
-#-- Iterate over all input files? --
 
+#collect all input files
+inputfiles= []
 for inputfile in clamdata.inputfiles('textinput'):
    if '"' in str(inputfile):
        clam.common.status.write(statusfile, "Failed, filename has a &quot;, illegal!",100) # status update
        sys.exit(2)
    inputtemplate = inputfile.metadata.inputtemplate
-   clam.common.status.write(statusfile, "Processing " + os.path.basename(str(inputfile)),50) # status update
-   ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg -t \"' + str(inputfile) + '\" -o \"' + outputdir + '/' + os.path.basename(str(inputfile).replace('.txt','') + '.xml') + '"')
-   if ref != 0:
-        clam.common.status.write(statusfile, "Failed",50) # status update
+   inputfiles.append(str(inputfile))
+
+#pass all input files at once
+clam.common.status.write(statusfile, "Processing " + str(len(inputfiles)) + " files",10) # status update
+ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg ' + ' '.join(['"' + x + '"' for x in inputfiles]))
+
+#collect output
+clam.common.status.write(statusfile, "Postprocessing",90) # status update
+for inputfile in inputfiles:
+    os.rename(inputfile, outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan','').replace('.txt','') + '.xml')
+
+if ref != 0:
+    clam.common.status.write(statusfile, "Failed",90) # status update
+
+#old code, file by file:
+#for inputfile in clamdata.inputfiles('textinput'):
+   #if '"' in str(inputfile):
+       #clam.common.status.write(statusfile, "Failed, filename has a &quot;, illegal!",100) # status update
+       #sys.exit(2)
+   #inputtemplate = inputfile.metadata.inputtemplate
+   #clam.common.status.write(statusfile, "Processing " + os.path.basename(str(inputfile)),50) # status update
+   #ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg -t \"' + str(inputfile) + '\" -o \"' + outputdir + '/' + os.path.basename(str(inputfile).replace('.txt','') + '.xml') + '"')
+   #if ref != 0:
+        #clam.common.status.write(statusfile, "Failed",50) # status update
 
 #tscan writes CSV file in input directory, move:
 os.system("mv -f " + inputdir + "/*.csv " + outputdir)
@@ -181,4 +202,4 @@ shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
 #A nice status message to indicate we're done
 clam.common.status.write(statusfile, "Done",100) # status update
 
-sys.exit(0) #non-zero exit codes indicate an error and will be picked up by CLAM as such!
+sys.exit(ref) #non-zero exit codes indicate an error and will be picked up by CLAM as such!
