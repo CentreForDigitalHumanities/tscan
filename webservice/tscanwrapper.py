@@ -161,7 +161,7 @@ for inputfile in clamdata.inputfiles('textinput'):
    inputfiles.append(str(inputfile))
 
 #pass all input files at once
-clam.common.status.write(statusfile, "Processing " + str(len(inputfiles)) + " files",10) # status update
+clam.common.status.write(statusfile, "Processing " + str(len(inputfiles)) + " files, this may take a while...",10) # status update
 ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg ' + ' '.join(['"' + x + '"' for x in inputfiles]))
 
 #collect output
