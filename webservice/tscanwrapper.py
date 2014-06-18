@@ -167,7 +167,7 @@ ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdi
 #collect output
 clam.common.status.write(statusfile, "Postprocessing",90) # status update
 for inputfile in inputfiles:
-    os.rename(inputfile, outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan','').replace('.txt','') + '.xml')
+    os.rename(inputfile + '.tscan.xml', outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan','').replace('.txt','') + '.xml')
 
 if ref != 0:
     clam.common.status.write(statusfile, "Failed",90) # status update
