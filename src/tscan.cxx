@@ -2542,7 +2542,6 @@ wordStats::wordStats( int index,
     for ( size_t q=0; q < ml.size(); ++q ){
       vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set, false );
       if ( m.size() == 1  && m[0]->cls() == "complex" ){
-	int len;
 	//	comp = detect_compound( m[0], compLen );
 	// nested morphemes
 	string desc = m[0]->description();
@@ -2761,7 +2760,7 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "afktype", toString(afkType) );
 }
 
-void wordStats::CSVheader( ostream& os, const string& intro ) const {
+void wordStats::CSVheader( ostream& os, const string& ) const {
   wordSortHeader( os );
   wordDifficultiesHeader( os );
   coherenceHeader( os );
