@@ -127,6 +127,8 @@ CUSTOM_FORMATS_MODULE = None
 #    InputSource(id='sampledocs',label='Sample texts',path=ROOT+'/inputsources/sampledata',defaultmetadata=PlainTextFormat(None, encoding='utf-8') ),
 #]
 
+CUSTOMHTML_INDEX = CUSTOMHTML_PROJECTSTART = "<p>Voor het juiste gebruik van T-scan is het sterk aan te raden eerst de <a href=\"http://lst.science.ru.nl/~proycon/tscanhandleiding.pdf\">handleiding</a> te raadplegen</a>"
+
 # ======== PROFILE DEFINITIONS ===========
 
 PROFILES = [
