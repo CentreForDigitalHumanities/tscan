@@ -6762,7 +6762,7 @@ int main(int argc, char *argv[]) {
     exit( EXIT_SUCCESS );
   }
   string t_option;
-  if ( opts.is_present( 't', val, mood ) ){
+  if ( opts.extract( 't', val, mood ) ){
     t_option = val;
   }
 
@@ -6778,12 +6778,8 @@ int main(int argc, char *argv[]) {
     cerr << "no input file(s) found" << endl;
     exit(EXIT_FAILURE);
   }
-  // for ( size_t i = 0; i < inputnames.size(); ++i ){
-  //   cerr << i << " - " << inputnames[i] << endl;
-  // }
-
   string o_option;
-  if ( opts.is_present( 'o', val, mood ) ){
+  if ( opts.extract( 'o', val, mood ) ){
     if ( inputnames.size() > 1 ){
       cerr << "-o option not supported for multiple input files" << endl;
       exit(EXIT_FAILURE);
@@ -6791,7 +6787,7 @@ int main(int argc, char *argv[]) {
     o_option = val;
   }
 
-  if ( opts.is_present( "threads", val ) ){
+  if ( opts.extract( "threads", val ) ){
 #ifdef HAVE_OPENMP
     int num = TiCC::stringTo<int>( val );
     if ( num < 1 || num > 4 ){
@@ -6807,9 +6803,8 @@ int main(int argc, char *argv[]) {
 #endif
   }
 
-  if ( opts.is_present( "config", val ) ){
+  if ( opts.extract( "config", val ) ){
     configFile = val;
-    opts.remove( "config" );
   }
   if ( !configFile.empty() &&
        config.fill( configFile ) ){
@@ -6823,7 +6818,7 @@ int main(int argc, char *argv[]) {
     problemFile.open( "problems.log" );
     problemFile << "missing,word,lemma,voll_lemma" << endl;
   }
-  if ( opts.is_present( "skip", val ) ) {
+  if ( opts.extract( "skip", val ) ) {
     string skip = val;
     if ( skip.find_first_of("wW") != string::npos ){
       settings.doWopr = false;
@@ -6841,7 +6836,6 @@ int main(int argc, char *argv[]) {
     if ( skip.find_first_of("cC") != string::npos ){
       settings.doXfiles = false;
     }
-    opts.remove("skip");
   };
 
   if ( inputnames.size() > 1 ){
