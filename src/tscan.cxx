@@ -6740,7 +6740,7 @@ int main(int argc, char *argv[]) {
   cerr << "TScan " << VERSION << endl;
   cerr << "working dir " << workdir_name << endl;
   string shortOpt = "ht:o:V";
-  string longOpt = "threads:,config,skip:,version";
+  string longOpt = "threads:,config:,skip:,version";
   TiCC::CL_Options opts( shortOpt, longOpt );
   try {
     opts.init( argc, argv );
@@ -6751,21 +6751,17 @@ int main(int argc, char *argv[]) {
     exit( EXIT_SUCCESS );
   }
   string val;
-  bool mood;
-  if ( opts.is_present( 'h', val, mood ) ||
-       opts.is_present( "help", val ) ){
+  if ( opts.extract( 'h' ) ||
+       opts.extract( "help" ) ){
     usage();
     exit( EXIT_SUCCESS );
   }
-  if ( opts.is_present( 'V', val, mood ) ||
-       opts.is_present( "version", val ) ){
+  if ( opts.extract( 'V' ) ||
+       opts.extract( "version" ) ){
     exit( EXIT_SUCCESS );
   }
   string t_option;
-  if ( opts.extract( 't', val, mood ) ){
-    t_option = val;
-  }
-
+  opts.extract( 't', t_option );
   vector<string> inputnames;
   if ( t_option.empty() ){
     inputnames = opts.getMassOpts();
@@ -6779,12 +6775,11 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
   string o_option;
-  if ( opts.extract( 'o', val, mood ) ){
+  if ( opts.extract( 'o', o_option ) ){
     if ( inputnames.size() > 1 ){
       cerr << "-o option not supported for multiple input files" << endl;
       exit(EXIT_FAILURE);
     }
-    o_option = val;
   }
 
   if ( opts.extract( "threads", val ) ){
@@ -6803,9 +6798,7 @@ int main(int argc, char *argv[]) {
 #endif
   }
 
-  if ( opts.extract( "config", val ) ){
-    configFile = val;
-  }
+  opts.extract( "config", configFile );
   if ( !configFile.empty() &&
        config.fill( configFile ) ){
     settings.init( config );
@@ -6837,6 +6830,10 @@ int main(int argc, char *argv[]) {
       settings.doXfiles = false;
     }
   };
+  if ( !opts.empty() ){
+    cerr << "unsupported options in command: " << opts.toString() << endl;
+    exit(EXIT_FAILURE);
+  }
 
   if ( inputnames.size() > 1 ){
     cerr << "processing " << inputnames.size() << " files." << endl;
