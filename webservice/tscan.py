@@ -62,6 +62,7 @@ if hostname == 'applejack': #final server in Nijmegen
 	    #'accesslist': environ['accesslist'].split(' ')
     }
     REALM = "WEBSERVICES-LST"
+    ADMINS = ['proycon','antalb','wstoop']
 else: #local
     TSCANDIR = os.path.dirname(sys.argv[0])
     ROOT = "/tmp/tscan.clam/"
