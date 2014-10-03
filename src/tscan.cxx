@@ -3953,7 +3953,7 @@ void structStats::CSVheader( ostream& os, const string& intro ) const {
 }
 
 void structStats::toCSV( ostream& os ) const {
-  os << parseFailCnt << ",";
+  os << wordCnt << "," << parseFailCnt << ","; // 20141003: New feature: word count per structure
   wordDifficultiesToCSV( os );
   sentDifficultiesToCSV( os );
   informationDensityToCSV( os );
@@ -4089,7 +4089,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 void structStats::infoHeader( ostream& os ) const {
   os << "Bijw_bep_d,Bijw_bep_dz,"
      << "Attr_bijv_nw_d,Attr_bijv_nw_dz,Bijv_bep_d,Bijv_bep_dz,"
-     << "Ov_bijv_bep_d,Ov_bijv_bep_dz,Nwg_d,Nwg_dz,"
+     << "Ov_bijv_bep_d,Ov_bijv_bep_dz," // 20141003: Nwg_d and Nwg_dz deleted
      << "TTR_wrd,MTLD_wrd,TTR_lem,MTLD_lem,"
      << "TTR_namen,MTLD_namen,TTR_inhwrd,MTLD_inhwrd,"
      << "Inhwrd_d,Inhwrd_dz,"
@@ -4110,8 +4110,8 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   os << proportion( npModCnt, clauseCnt ) << ",";
   os << density( (npModCnt-adjNpModCnt), wordCnt ) << ",";
   os << proportion( (npModCnt-adjNpModCnt), clauseCnt ) << ",";
-  os << density( npCnt, wordCnt ) << ",";
-  os << proportion( npCnt, clauseCnt ) << ",";
+  // os << density( npCnt, wordCnt ) << ","; // 20141003: Nwg_d deleted
+  // os << proportion( npCnt, clauseCnt ) << ","; // 20141003: Nwg_dz deleted
 
   os << proportion( unique_words.size(), wordCnt ) << ",";
   os << word_mtld << ",";
@@ -4209,7 +4209,7 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Conc_nw_ruim_p,Conc_nw_ruim_d,";
   os << "Pers_nw_p,Pers_nw_d,";
   os << "PlantDier_nw_p,PlantDier_nw_d,";
-  os << "Gebr_nw_p,Gebr_nw_d,";
+  os << "Gebr_vw_nw_p,Gebr_vw_nw_d,"; // 20141003: Features renamed
   os << "Concr_ov_nw_p,Concr_ov_nw_d,";
   os << "Subst_nw_p,Subst_nw_d,";
   os << "Plaats_nw_p,Plaats_nw_d,";
@@ -4361,7 +4361,7 @@ void structStats::persoonlijkheidHeader( ostream& os ) const {
      << "Org_namen_d, Prod_namen_d, Event_namen_d,"
      << "Actieww_p,Actieww_d,Toestww_p,Toestww_d,"
      << "Procesww_p,Procesww_d,Undefined_ATP_ww_p,"
-     << "Imp_p,Imp_d,"
+     << "Imp_ellips_p,Imp_ellips_d," // 20141003: Features renamed
      << "Vragen_p,Vragen_d,";
 }
 
@@ -6549,8 +6549,9 @@ void docStats::toCSV( const string& name,
     string fname = name + ".document.csv";
     ofstream out( fname.c_str() );
     if ( out ){
-      CSVheader( out, "Inputfile" );
-      out << name << ",";
+      // 20141003: New features: paragraphs/sentences/words per document
+      CSVheader( out, "Inputfile,Par_per_doc,Zin_per_doc,Word_per_doc" ); 
+      out << name << "," << sv.size() << "," << sentCnt << ","; 
       structStats::toCSV( out );
       cerr << "stored document statistics in " << fname << endl;
     }
@@ -6564,10 +6565,11 @@ void docStats::toCSV( const string& name,
     if ( out ){
       for ( size_t par=0; par < sv.size(); ++par ){
 	if ( par == 0 )
-	  sv[0]->CSVheader( out, "Inputfile,Segment" );
-	out << name << "," << sv[par]->id << ",";
+    // 20141003: New features: sentences/words per paragraph
+	  sv[0]->CSVheader( out, "Inputfile,Segment,Zin_per_par,Wrd_per_par" );
+	out << name << "," << sv[par]->id << "," << sv[par]->sv.size() << ","; 
 	sv[par]->toCSV( out );
-      }
+    }
       cerr << "stored paragraph statistics in " << fname << endl;
     }
     else {
@@ -6581,7 +6583,8 @@ void docStats::toCSV( const string& name,
       for ( size_t par=0; par < sv.size(); ++par ){
 	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
 	  if ( par == 0 && sent == 0 )
-	    sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment" );
+      // 20141003: New feature: words per sentence
+	    sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment,Wrd_per_zin" );
 	  out << name << "," << sv[par]->sv[sent]->id << ",";
 	  sv[par]->sv[sent]->toCSV( out );
 	}
