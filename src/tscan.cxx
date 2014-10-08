@@ -3953,7 +3953,11 @@ void structStats::CSVheader( ostream& os, const string& intro ) const {
 }
 
 void structStats::toCSV( ostream& os ) const {
-  os << wordCnt << "," << parseFailCnt << ","; // 20141003: New feature: word count per structure
+  if (!isSentence())
+  {
+    os << wordCnt << ","; // 20141003: New feature: word count per document/paragraph
+  } 
+  os << parseFailCnt << ","; 
   wordDifficultiesToCSV( os );
   sentDifficultiesToCSV( os );
   informationDensityToCSV( os );
@@ -6583,8 +6587,7 @@ void docStats::toCSV( const string& name,
       for ( size_t par=0; par < sv.size(); ++par ){
 	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
 	  if ( par == 0 && sent == 0 )
-      // 20141003: New feature: words per sentence
-	    sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment,Wrd_per_zin" );
+	    sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment" );
 	  out << name << "," << sv[par]->sv[sent]->id << ",";
 	  sv[par]->sv[sent]->toCSV( out );
 	}
