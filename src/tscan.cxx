@@ -74,7 +74,7 @@ enum top_val { top1000, top2000, top3000, top5000, top10000, top20000, notFound 
 enum SemType { NO_SEMTYPE,
 	       UNFOUND_NOUN, UNFOUND_ADJ, UNFOUND_VERB,
 	       UNDEFINED_NOUN, UNDEFINED_ADJ,
-	       ABSTRACT_DYNAMIC_NOUN, ABSTRACT_NONDYNAMIC_NOUN,
+	       CONCRETE_DYNAMIC_NOUN, ABSTRACT_DYNAMIC_NOUN, ABSTRACT_NONDYNAMIC_NOUN,
 	       BROAD_CONCRETE_PLACE_NOUN,
 	       BROAD_CONCRETE_TIME_NOUN,
 	       BROAD_CONCRETE_MEASURE_NOUN,
@@ -114,6 +114,9 @@ string toString( const SemType st ){
     break;
   case UNDEFINED_ADJ:
     return "undefined-adj";
+    break;
+  case CONCRETE_DYNAMIC_NOUN:
+    return "concrete-dynamic_noun";
     break;
   case ABSTRACT_DYNAMIC_NOUN:
     return "abstract-dynamic_noun";
@@ -479,7 +482,9 @@ SemType classifyNoun( const string& s ){
     return CONCRETE_NONHUMAN_NOUN;
   else if ( s == "human" )
     return CONCRETE_HUMAN_NOUN;
-  else if ( s == "dynamic" )
+  else if ( s == "dynamic_conc" ) // 20141031: Added new SemType
+    return CONCRETE_DYNAMIC_NOUN;
+  else if ( s == "dynamic_abstr" )
     return ABSTRACT_DYNAMIC_NOUN;
   else if ( s == "nondynamic" )
     return ABSTRACT_NONDYNAMIC_NOUN;
@@ -674,6 +679,7 @@ bool fillN( map<string,SemType>& m, istream& is ){
 	// CONCRETE_SUBSTANCE_NOUN
 	// CONCRETE_ARTEFACT_NOUN
 	// CONCRETE_NONHUMAN_NOUN
+  // CONCRETE_DYNAMIC_NOUN
 	// ABSTRACT_DYNAMIC_NOUN
 	// ABSTRACT_NONDYNAMIC_NOUN
 	// CONCRETE_HUMAN_NOUN
@@ -708,6 +714,11 @@ bool fillN( map<string,SemType>& m, istream& is ){
 	    res = CONCRETE_HUMAN_NOUN;
 	  }
 	}
+  else if ( values.find(CONCRETE_DYNAMIC_NOUN) != values.end() ){
+    if ( values.find(ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
+      res = CONCRETE_DYNAMIC_NOUN;
+    }
+  }
 	else if ( values.find(ABSTRACT_DYNAMIC_NOUN) != values.end() ){
 	  if ( values.find(ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
 	    res = ABSTRACT_DYNAMIC_NOUN;
@@ -2904,12 +2915,11 @@ void wordStats::concreetHeader( ostream& os ) const {
 bool wordStats::isStrictNoun() const {
   switch ( sem_type ){
   case CONCRETE_HUMAN_NOUN:
-  // case ABSTRACT_DYNAMIC_NOUN:
-  // case ABSTRACT_NONDYNAMIC_NOUN:
   case CONCRETE_NONHUMAN_NOUN:
   case CONCRETE_ARTEFACT_NOUN:
   case CONCRETE_SUBSTANCE_NOUN:
   case CONCRETE_OTHER_NOUN:
+  case CONCRETE_DYNAMIC_NOUN:
     return true;
     break;
   default:
@@ -2920,12 +2930,11 @@ bool wordStats::isStrictNoun() const {
 bool wordStats::isBroadNoun() const {
   switch ( sem_type ){
   case CONCRETE_HUMAN_NOUN:
-  // case ABSTRACT_DYNAMIC_NOUN:
-  // case ABSTRACT_NONDYNAMIC_NOUN:
   case CONCRETE_NONHUMAN_NOUN:
   case CONCRETE_ARTEFACT_NOUN:
   case CONCRETE_SUBSTANCE_NOUN:
   case CONCRETE_OTHER_NOUN:
+  case CONCRETE_DYNAMIC_NOUN:
   case BROAD_CONCRETE_PLACE_NOUN:
   case BROAD_CONCRETE_TIME_NOUN:
   case BROAD_CONCRETE_MEASURE_NOUN:
@@ -3172,7 +3181,8 @@ struct structStats: public basicStats {
     timeCnt(0),
     placeCnt(0),
     measureCnt(0),
-    dynamicCnt(0),
+    dynamicConcCnt(0),
+    dynamicAbstrCnt(0),
     nonDynamicCnt(0),
     institutCnt(0),
     npCnt(0),
@@ -3370,7 +3380,8 @@ struct structStats: public basicStats {
   int timeCnt;
   int placeCnt;
   int measureCnt;
-  int dynamicCnt;
+  int dynamicConcCnt;
+  int dynamicAbstrCnt;
   int nonDynamicCnt;
   int institutCnt;
   int npCnt;
@@ -3598,7 +3609,8 @@ void structStats::merge( structStats *ss ){
   timeCnt += ss->timeCnt;
   placeCnt += ss->placeCnt;
   measureCnt += ss->measureCnt;
-  dynamicCnt += ss->dynamicCnt;
+  dynamicConcCnt += ss->dynamicConcCnt;
+  dynamicAbstrCnt += ss->dynamicAbstrCnt;
   nonDynamicCnt += ss->nonDynamicCnt;
   institutCnt += ss->institutCnt;
   npCnt += ss->npCnt;
@@ -3877,7 +3889,8 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "time_nouns_count", toString(timeCnt) );
   addOneMetric( doc, el, "place_nouns_count", toString(placeCnt) );
   addOneMetric( doc, el, "measure_nouns_count", toString(measureCnt) );
-  addOneMetric( doc, el, "dynamic_nouns_count", toString(dynamicCnt) );
+  addOneMetric( doc, el, "dynamic_conc_nouns_count", toString(dynamicConcCnt) );
+  addOneMetric( doc, el, "dynamic_abstr_nouns_count", toString(dynamicAbstrCnt) );
   addOneMetric( doc, el, "nondynamic_nouns_count", toString(nonDynamicCnt) );
   addOneMetric( doc, el, "institut_nouns_count", toString(institutCnt) );
   addOneMetric( doc, el, "undefined_nouns_count", toString(undefinedNounCnt) );
@@ -4219,9 +4232,10 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Plaats_nw_p,Plaats_nw_d,";
   os << "Tijd_nw_p,Tijd_nw_d,";
   os << "Maat_nw_p,Maat_nw_d,";
-  os << "Gebeuren_nw_p,Gebeuren_nw_d,";
+  os << "Gebeuren_nw_conc_p,Gebeuren_nw_conc_d,"; // 20141031: Features split
+  os << "Gebeuren_nw_abstr_p,Gebeuren_nw_abstr_d,"; // 20141031: Features split
   os << "Organisatie_nw_p,Organisatie_nw_d,";
-  os << "Abstract_nw_p,Abstract_nw_d,";
+  os << "Stat_nw_abstr_p,Stat_nw_abstr_d,"; // 20141031: Features renamed
   os << "Undefined_nw_p,";
   os << "Gedekte_nw_p,";
   os << "Waarn_mens_bvnw_p,Waarn_mens_bvnw_d,";
@@ -4282,8 +4296,10 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << density( timeCnt, wordCnt ) << ",";
   os << proportion( measureCnt, coveredNouns ) << ",";
   os << density( measureCnt, wordCnt ) << ",";
-  os << proportion( dynamicCnt, coveredNouns ) << ",";
-  os << density( dynamicCnt, wordCnt ) << ",";
+  os << proportion( dynamicConcCnt, coveredNouns ) << ","; 
+  os << density( dynamicConcCnt, wordCnt ) << ",";
+  os << proportion( dynamicAbstrCnt, coveredNouns ) << ","; 
+  os << density( dynamicAbstrCnt, wordCnt ) << ",";
   os << proportion( institutCnt, coveredNouns ) << ",";
   os << density( institutCnt, wordCnt ) << ",";
   os << proportion( nonDynamicCnt, coveredNouns ) << ",";
@@ -5836,15 +5852,16 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 	++measureCnt;
 	broadNounCnt++;
 	break;
+      case CONCRETE_DYNAMIC_NOUN:
+  ++dynamicConcCnt;
+  strictNounCnt++;
+  broadNounCnt++;
+  break;
       case ABSTRACT_DYNAMIC_NOUN:
-	++dynamicCnt;
-	// strictNounCnt++;
-	// broadNounCnt++;
+	++dynamicAbstrCnt;
 	break;
       case ABSTRACT_NONDYNAMIC_NOUN:
 	++nonDynamicCnt;
-	// strictNounCnt++;
-	// broadNounCnt++;
 	break;
       case INSTITUT_NOUN:
 	institutCnt++;
