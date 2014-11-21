@@ -134,8 +134,8 @@ CUSTOMHTML_INDEX = CUSTOMHTML_PROJECTSTART = "<p>Voor het juiste gebruik van T-s
 
 PROFILES = [
     Profile(
-        InputTemplate('textinput', PlainTextFormat,"Text Input",
-            StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file', value='utf-8'),
+        InputTemplate('textinput', PlainTextFormat, 'Text Input',
+            StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file',value='utf-8'),
             #PDFtoTextConverter(id='pdfconv',label='Convert from PDF Document'),
             #MSWordConverter(id='docconv',label='Convert from MS Word Document'),
             extension='.txt',
@@ -143,6 +143,13 @@ PROFILES = [
             #unique=True #set unique=True if the user may only upload a file for this input template once. Set multi=True if you the user may upload multiple of such files
             acceptarchive=True,
             multi=True
+        ),
+        # 20141121: Added possibility to enter custom noun classification
+        InputTemplate('nounclassification', PlainTextFormat, 'Noun Classification',
+            StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file',value='utf-8'),
+            extension='.data',
+            optional=True,
+            unique=True,
         ),
         #------------------------------------------------------------------------------------------------------------------------
         OutputTemplate('foliaout',FoLiAXMLFormat,'Output analysis',

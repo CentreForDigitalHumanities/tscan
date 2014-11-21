@@ -1172,7 +1172,7 @@ void settingData::init( const Configuration& cf ){
   }
   val = cf.lookUp( "noun_semtypes" );
   if ( !val.empty() ){
-    if ( !fill( CGN::N, noun_sem, cf.configDir() + "/" + val ) )
+    if ( !fill( CGN::N, noun_sem, val ) ) // 20141121: Full path necessary to allow custom input
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "verb_semtypes" );
