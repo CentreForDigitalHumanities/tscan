@@ -3987,7 +3987,7 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
      << "Namen_p,Namen_d,"
      << "Sam_delen_per_wrd,Sam_d,"
-     << "Freq50_staph,Freq65_Staph,Freq77_Staph,Feq80_Staph,"
+     << "Freq50_staph,Freq65_Staph,Freq77_Staph,Freq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,";
      // << "so_word_suc,so_word_net,"
