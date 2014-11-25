@@ -2,7 +2,7 @@
 if [ `hostname` == "applejack" ]; then
 	WOPRPATH="/vol/customopt/uvt-ru/"
 else
-	WOPRPATH="/home/sloot/usr/local/"
+	WOPRPATH="/nethome/3020371/tscan/"
 fi
 PORT=7002
 DATADIR=../data

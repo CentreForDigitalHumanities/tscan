@@ -3311,12 +3311,12 @@ struct structStats: public basicStats {
   int top5000Cnt;
   int top10000Cnt;
   int top20000Cnt;
-  int word_freq;
-  int word_freq_n;
+  double word_freq;
+  double word_freq_n;
   double word_freq_log;
   double word_freq_log_n;
-  int lemma_freq;
-  int lemma_freq_n;
+  double lemma_freq;
+  double lemma_freq_n;
   double lemma_freq_log;
   double lemma_freq_log_n;
   double avg_prob10;
@@ -4013,10 +4013,10 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
   os << proportion( f65Cnt, wordCnt ) << ",";
   os << proportion( f77Cnt, wordCnt ) << ",";
   os << proportion( f80Cnt, wordCnt ) << ",";
-  os << proportion( word_freq_log, wordCnt ) << ",";
-  os << proportion( word_freq_log_n, (wordCnt-nameCnt) ) << ",";
-  os << proportion( lemma_freq_log, wordCnt ) << ",";
-  os << proportion( lemma_freq_log_n, (wordCnt-nameCnt) ) << ",";
+  os << word_freq_log << ",";
+  os << word_freq_log_n << ",";
+  os << lemma_freq_log << ",";
+  os << lemma_freq_log_n << ",";
   os << proportion( top1000Cnt, wordCnt ) << ",";
   os << proportion( top2000Cnt, wordCnt ) << ",";
   os << proportion( top3000Cnt, wordCnt ) << ",";
@@ -5624,11 +5624,13 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
       if ( ws->compPartCnt > 0 )
 	++compCnt;
       compPartCnt += ws->compPartCnt;
-      word_freq += ws->word_freq;
-      lemma_freq += ws->lemma_freq;
-      if ( ws->prop != ISNAME ){
-	word_freq_n += ws->word_freq;
-	lemma_freq_n += ws->lemma_freq;
+      if ( ws->isContent ) {
+        word_freq += ws->word_freq_log;
+        lemma_freq += ws->lemma_freq_log;
+        if ( ws->prop != ISNAME ){
+          word_freq_n += ws->word_freq_log;
+          lemma_freq_n += ws->lemma_freq_log;
+        }
       }
       switch ( ws->prop ){
       case ISNAME:
@@ -6022,19 +6024,19 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
   else
-    word_freq_log = log10( word_freq / contentCnt );
+    word_freq_log = word_freq / contentCnt;
   if ( lemma_freq == 0 || contentCnt == 0 )
     lemma_freq_log = NA;
   else
-    lemma_freq_log = log10( lemma_freq / contentCnt );
+    lemma_freq_log = lemma_freq / contentCnt;
   if ( contentCnt == nameCnt || word_freq_n == 0 )
     word_freq_log_n = NA;
   else
-    word_freq_log_n = log10( word_freq_n / (contentCnt-nameCnt) );
+    word_freq_log_n = word_freq_n / (contentCnt-nameCnt);
   if ( contentCnt == nameCnt || lemma_freq_n == 0 )
     lemma_freq_log_n = NA;
   else
-    lemma_freq_log_n = log10( lemma_freq_n / (contentCnt-nameCnt) );
+    lemma_freq_log_n = lemma_freq_n / (contentCnt-nameCnt);
   np_length( s, npCnt, indefNpCnt, npSize );
 }
 
@@ -6078,19 +6080,19 @@ parStats::parStats( int index,
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
   else
-    word_freq_log = log10( word_freq /contentCnt );
+    word_freq_log = word_freq / contentCnt;
   if ( contentCnt == nameCnt || word_freq_n == 0 )
     word_freq_log_n = NA;
   else
-    word_freq_log_n = log10( word_freq_n / (contentCnt-nameCnt) );
+    word_freq_log_n = word_freq_n / (contentCnt-nameCnt);
   if ( lemma_freq == 0 || contentCnt == 0 )
     lemma_freq_log = NA;
   else
-    lemma_freq_log = log10( lemma_freq / contentCnt );
+    lemma_freq_log = lemma_freq / contentCnt;
   if ( contentCnt == nameCnt || lemma_freq_n == 0 )
     lemma_freq_log_n = NA;
   else
-    lemma_freq_log_n = log10( lemma_freq_n / (contentCnt-nameCnt) );
+    lemma_freq_log_n = lemma_freq_n / (contentCnt-nameCnt);
 }
 
 
@@ -6430,19 +6432,19 @@ docStats::docStats( Document *doc ):
   if ( word_freq == 0 || contentCnt == 0 )
     word_freq_log = NA;
   else
-    word_freq_log = log10( word_freq / contentCnt );
+    word_freq_log = word_freq / contentCnt;
   if ( contentCnt == nameCnt || word_freq_n == 0 )
     word_freq_log_n = NA;
   else
-    word_freq_log_n = log10( word_freq_n / (contentCnt-nameCnt) );
+    word_freq_log_n = word_freq_n / (contentCnt-nameCnt);
   if ( lemma_freq == 0 || contentCnt == 0 )
     lemma_freq_log = NA;
   else
-    lemma_freq_log = log10( lemma_freq / contentCnt );
+    lemma_freq_log = lemma_freq / contentCnt;
   if ( contentCnt == nameCnt || lemma_freq_n == 0 )
     lemma_freq_log_n = NA;
   else
-    lemma_freq_log_n = log10( lemma_freq_n / (contentCnt-nameCnt) );
+    lemma_freq_log_n = lemma_freq_n / (contentCnt-nameCnt);
   calculate_doc_overlap( );
 
 }
