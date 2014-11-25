@@ -2818,7 +2818,7 @@ void wordStats::wordSortToCSV( ostream& os ) const {
 void wordStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
-     << "Naam_POS,Sam_delen_per_wrd,Sam_d,"
+     << "Sam_delen_per_wrd,Sam_d,"
      << "Freq50_staph,Freq65_Staph,Freq77_Staph,Freq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,";
@@ -2855,7 +2855,6 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
 	 << 1.0/double(morphCnt) << ",";
     }
   }
-  os << (prop == ISNAME) << ",";
   os << double(compPartCnt) << ",";
   os << (compPartCnt?1:0) << ",";
   os << (f50?1:0) << ",";
@@ -2905,7 +2904,6 @@ void wordStats::concreetHeader( ostream& os ) const {
   os << "semtype_nw,";
   os << "Conc_nw_strikt,";
   os << "Conc_nw_ruim,";
-  os << "Pers_nw,";
   os << "semtype_bvnw,";
   os << "Conc_bvnw_strikt,";
   os << "Conc_bvnw_ruim,";
@@ -2987,7 +2985,6 @@ void wordStats::concreetToCSV( ostream& os ) const {
     os << "0,";
   }
   os << isStrictNoun() << "," << isBroadNoun() << ",";
-  os << (sem_type == CONCRETE_HUMAN_NOUN ) << ",";
   if ( tag == CGN::ADJ ){
     os << sem_type << ",";
   }
@@ -3004,8 +3001,8 @@ void wordStats::concreetToCSV( ostream& os ) const {
 
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
   os << "Pers_ref,Pers_vnw1,Pers_vnw2,Pers_vnw3,Pers_vnw,"
-     << "Naam_NER,"
-     << "Emo_bvn,Imp,";
+     << "Naam_POS,Naam_NER," // 20141125: Feature Naam_POS moved
+     << "Pers_nw,Imp,"; // 20141125: Feature Pers_nw moved and Emo_bvn deleted
 }
 
 void wordStats::persoonlijkheidToCSV( ostream& os ) const {
@@ -3014,13 +3011,13 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << (prop == ISPPRON2 ) << ","
      << (prop == ISPPRON3 ) << ","
      << (prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3) << ",";
+  os << (prop == ISNAME) << ",";
   if ( nerProp == NONER )
     os << "0,";
   else
     os << nerProp << ",";
-
-  os << (sem_type == EMO_ADJ ) << ","
-     << isImperative << ",";
+  os << ( sem_type == CONCRETE_HUMAN_NOUN ) << ",";
+  os << isImperative << ",";
 }
 
 
@@ -4257,7 +4254,7 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Ep_negatief_bvnw_p,Ep_negatief_bvnw_d,";
   os << "Versterker_bvnw_p,Versterker_bvnw_d,";
   os << "Verzwakker_bvnw_p,Verzwakker_bvnw_d,";
-  os << "Abstract_bvnw_p,Abstract_bvnw_d,";
+  os << "Abstract_ov_bvnw_p,Abstract_ov_bvnw_d,"; // 20141125: Features renamed
   os << "Spec_ev_bvnw_p,Spec_ev_bvnw_d,";
   os << "Alg_ev_bvnw_p,Alg_ev_bvnw_d,";
   os << "Ep_ev_bvnw_p,Ep_ev_bvnw_d,";
