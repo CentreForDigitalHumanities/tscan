@@ -64,7 +64,7 @@ if hostname == 'applejack': #final server in Nijmegen
     REALM = "WEBSERVICES-LST"
     ADMINS = ['proycon','antalb','wstoop']
 else: #local
-    TSCANDIR = '/nethome/3020371/tscan/tscan-svn'
+    TSCANDIR = os.path.dirname(sys.argv[0])
     ROOT = "/tmp/tscan.clam/"
     PORT= 8080
     USERS = None

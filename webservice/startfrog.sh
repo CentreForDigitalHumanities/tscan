@@ -3,7 +3,7 @@ if [ `hostname` == "applejack" ]; then
 	FROGPATH="/vol/customopt/uvt-ru/"
     LOGFILE="/scratch2/www/webservices-lst/live/writable/tscan/frog.log"
 else
-    FROGPATH="/nethome/3020371/tscan/"
+    FROGPATH="/home/sloot/usr/local/"
     LOGFILE="/tmp/frog-tscan.log"
 fi
 PORT=7001
