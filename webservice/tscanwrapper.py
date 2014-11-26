@@ -20,6 +20,7 @@ import sys
 import os
 import shutil
 import glob
+import signal
 
 #import CLAM-specific modules. The CLAM API makes a lot of stuff easily accessible.
 import clam.common.data
@@ -107,7 +108,7 @@ f.write("verb_semtypes=\"verbs_semtype.data\"\n")
 
 # 20141121: This allows a custom noun classification. Does require to specify the full path to the files.
 try:
-  nc = clamdata.inputfile('nounclassification') 
+  nc = clamdata.inputfile('nounclassification')
   f.write("noun_semtypes=\"" + inputdir + nc.filename + "\"\n")
 except Exception:
   # When no inputfile is found, revert to the default
@@ -167,6 +168,30 @@ for inputfile in clamdata.inputfiles('textinput'):
    inputtemplate = inputfile.metadata.inputtemplate
    inputfiles.append(str(inputfile))
 
+def sigterm_handler():
+    #collect output
+    clam.common.status.write(statusfile, "Postprocessing after forceful abortion",90) # status update
+    for inputfile in inputfiles:
+        os.rename(inputfile + '.tscan.xml', outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan','').replace('.txt','') + '.xml')
+
+    #tscan writes CSV file in input directory, move:
+    os.system("mv -f " + inputdir + "/*.csv " + outputdir)
+
+    os.system("cat " + outputdir + "/*.words.csv | head -n 1 > " + outputdir + "/total.word.csv")
+    os.system("cat " + outputdir + "/*.paragraphs.csv | head -n 1 > " + outputdir + "/total.par.csv")
+    os.system("cat " + outputdir + "/*.sentences.csv | head -n 1 > " + outputdir + "/total.sen.csv")
+    os.system("cat " + outputdir + "/*.document.csv | head -n 1 > " + outputdir + "/total.doc.csv")
+
+    for f in glob.glob(outputdir + "/*.words.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.word.csv")
+    for f in glob.glob(outputdir + "/*.paragraphs.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.par.csv")
+    for f in glob.glob(outputdir + "/*.sentences.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.sen.csv")
+    for f in glob.glob(outputdir + "/*.document.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.doc.csv")
+    sys.exit(5)
+
+signal.signal(signal.SIGTERM, sigterm_handler)
+
+shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
+
 #pass all input files at once
 clam.common.status.write(statusfile, "Processing " + str(len(inputfiles)) + " files, this may take a while...",10) # status update
 ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg ' + ' '.join(['"' + x + '"' for x in inputfiles]))
@@ -203,8 +228,6 @@ for f in glob.glob(outputdir + "/*.paragraphs.csv"): os.system("sed 1d " + f + "
 for f in glob.glob(outputdir + "/*.sentences.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.sen.csv")
 for f in glob.glob(outputdir + "/*.document.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.doc.csv")
 
-
-shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
 
 #A nice status message to indicate we're done
 clam.common.status.write(statusfile, "Done",100) # status update
