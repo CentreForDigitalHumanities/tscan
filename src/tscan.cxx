@@ -4053,8 +4053,13 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
 
 void structStats::sentDifficultiesToCSV( ostream& os ) const {
   double clauseCnt = pastCnt + presentCnt;
-  os << proportion( wordCnt, sentCnt ) << ","
-     << proportion( wordCnt, clauseCnt ) << ","
+  if ( parseFailCnt > 0 ) {
+    os << "NA" << ",";
+  } 
+  else {
+    os << proportion( wordCnt, sentCnt ) << ",";
+  }
+  os << proportion( wordCnt, clauseCnt ) << ","
      << proportion( sentCnt, wordCnt )  << ","
      << proportion( clauseCnt, wordCnt )  << ",";
   os << proportion( wordCnt, npCnt ) << ",";
@@ -4062,9 +4067,14 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
      << proportion( onderCnt, sentCnt ) << ","
      << density( betrCnt, wordCnt ) << ","
      << proportion( betrCnt, clauseCnt ) << ","
-     << density( clauseCnt, wordCnt ) << ","
-     << proportion( clauseCnt, sentCnt ) << ","
-     << proportion( dLevel, sentCnt ) << ",";
+     << density( clauseCnt, wordCnt ) << ",";
+  if ( parseFailCnt > 0 ) {
+    os << "NA" << ",";
+  } 
+  else {
+    os << proportion( clauseCnt, sentCnt ) << ",";
+  }
+  os << proportion( dLevel, sentCnt ) << ",";
   if ( !isSentence() ){
     os << proportion( dLevel_gt4, sentCnt ) << ",";
   }
