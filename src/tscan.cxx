@@ -1507,8 +1507,14 @@ struct basicStats {
   virtual void concreetToCSV( ostream& ) const = 0;
   virtual void persoonlijkheidHeader( ostream& ) const = 0;
   virtual void persoonlijkheidToCSV( ostream& ) const = 0;
+  virtual void verbHeader( ostream& ) const = 0;
+  virtual void verbToCSV( ostream& ) const = 0;
+  virtual void imperativeHeader( ostream& ) const = 0;
+  virtual void imperativeToCSV( ostream& ) const = 0;
   virtual void wordSortHeader( ostream& ) const = 0;
   virtual void wordSortToCSV( ostream& ) const = 0;
+  virtual void prepPhraseHeader( ostream& ) const = 0;
+  virtual void prepPhraseToCSV( ostream& ) const = 0;
   virtual void miscToCSV( ostream& ) const = 0;
   virtual void miscHeader( ostream& ) const = 0;
   virtual string rarity( int ) const { return "NA"; };
@@ -1564,8 +1570,14 @@ struct wordStats : public basicStats {
   void concreetToCSV( ostream& ) const;
   void persoonlijkheidHeader( ostream& ) const;
   void persoonlijkheidToCSV( ostream& ) const;
+  void verbHeader( ostream& ) const {};
+  void verbToCSV( ostream& ) const {};
+  void imperativeHeader( ostream& ) const {};
+  void imperativeToCSV( ostream& ) const {};
   void wordSortHeader( ostream& ) const;
   void wordSortToCSV( ostream& ) const;
+  void prepPhraseHeader( ostream& ) const {};
+  void prepPhraseToCSV( ostream& ) const {};
   void miscHeader( ostream& os ) const;
   void miscToCSV( ostream& ) const;
   void toCSV( ostream& ) const;
@@ -3222,8 +3234,14 @@ struct structStats: public basicStats {
   void concreetToCSV( ostream& ) const;
   void persoonlijkheidHeader( ostream& ) const;
   void persoonlijkheidToCSV( ostream& ) const;
+  void verbHeader( ostream& ) const;
+  void verbToCSV( ostream& ) const;
+  void imperativeHeader( ostream& ) const;
+  void imperativeToCSV( ostream& ) const;
   void wordSortHeader( ostream& ) const;
   void wordSortToCSV( ostream& ) const;
+  void prepPhraseHeader( ostream& ) const;
+  void prepPhraseToCSV( ostream& ) const;
   void miscHeader( ostream& ) const;
   void miscToCSV( ostream& ) const;
   void CSVheader( ostream&, const string& ) const;
@@ -3957,7 +3975,10 @@ void structStats::CSVheader( ostream& os, const string& intro ) const {
   coherenceHeader( os );
   concreetHeader( os );
   persoonlijkheidHeader( os );
+  verbHeader( os );
+  imperativeHeader( os );
   wordSortHeader( os );
+  prepPhraseHeader( os );
   miscHeader( os );
   os << endl;
 }
@@ -3974,7 +3995,10 @@ void structStats::toCSV( ostream& os ) const {
   coherenceToCSV( os );
   concreetToCSV( os );
   persoonlijkheidToCSV( os );
+  verbToCSV( os );
+  imperativeToCSV( os );
   wordSortToCSV( os );
+  prepPhraseToCSV( os );
   miscToCSV( os );
   os << endl;
 }
@@ -4385,11 +4409,7 @@ void structStats::concreetToCSV( ostream& os ) const {
 void structStats::persoonlijkheidHeader( ostream& os ) const {
   os << "Pers_ref_d,Pers_vnw1_d,Pers_vnw2_d,Pers_vnw3_d,Pers_vnw_d,"
      << "Pers_namen_p, Pers_namen_p2, Pers_namen_d, Plaatsnamen_d,"
-     << "Org_namen_d, Prod_namen_d, Event_namen_d,"
-     << "Actieww_p,Actieww_d,Toestww_p,Toestww_d,"
-     << "Procesww_p,Procesww_d,Undefined_ATP_ww_p,"
-     << "Imp_ellips_p,Imp_ellips_d," // 20141003: Features renamed
-     << "Vragen_p,Vragen_d,";
+     << "Org_namen_d, Prod_namen_d, Event_namen_d,";
 }
 
 void structStats::persoonlijkheidToCSV( ostream& os ) const {
@@ -4412,6 +4432,26 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << density( val, wordCnt ) << ",";
   val = at( ners, EVE_B );
   os << density( val, wordCnt ) << ",";
+}
+
+void structStats::verbHeader( ostream& os ) const {
+  os << "Actieww_p,Actieww_d,Toestww_p,Toestww_d,"
+     << "Procesww_p,Procesww_d,Undefined_ATP_ww_p,"
+     << "Ww_tt_p,Ww_tt_dz,Ww_mod_d_,Ww_mod_dz,"
+     << "Huww_tijd_d,Huww_tijd_dz,Koppelww_d,Koppelww_dz,"
+     << "Infin_bv_d,Infin_bv_dz,"
+     << "Infin_nw_d,Infin_nw_dz,"
+     << "Infin_vrij_d,Infin_vrij_dz,"
+     << "Vd_bv_d,Vd_bv_dz,"
+     << "Vd_nw_d,Vd_nw_dz,"
+     << "Vd_vrij_d,Vd_vrij_dz,"
+     << "Ovd_bv_d,Ovd_bv_dz,"
+     << "Ovd_nw_d,Ovd_nw_dz,"
+     << "Ovd_vrij_d,Ovd_vrij_dz,";
+}
+
+void structStats::verbToCSV( ostream& os ) const {
+  double clauseCnt = pastCnt + presentCnt;
 
   os << proportion( actionCnt, verbCnt ) << ",";
   os << density( actionCnt, wordCnt) << ",";
@@ -4420,6 +4460,46 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << proportion( processCnt, verbCnt ) << ",";
   os << density( processCnt, wordCnt ) << ",";
   os << proportion( undefinedATPCnt, verbCnt - uncoveredVerbCnt ) << ",";
+
+  os << proportion( presentCnt, clauseCnt ) << ",";
+  os << density( presentCnt, wordCnt ) << ",";
+  os << density( modalCnt, wordCnt ) << ",";
+  os << proportion( modalCnt, clauseCnt ) << ",";
+  os << density( timeVCnt, wordCnt ) << ",";
+  os << proportion( timeVCnt, clauseCnt ) << ",";
+  os << density( koppelCnt, wordCnt ) << ",";
+  os << proportion( koppelCnt, clauseCnt ) << ",";
+
+  os << density( infBvCnt, wordCnt ) << ",";
+  os << proportion( infBvCnt, clauseCnt ) << ",";
+  os << density( infNwCnt, wordCnt ) << ",";
+  os << proportion( infNwCnt, clauseCnt ) << ",";
+  os << density( infVrijCnt, wordCnt ) << ",";
+  os << proportion( infVrijCnt, clauseCnt ) << ",";
+
+  os << density( vdBvCnt, wordCnt ) << ",";
+  os << proportion( vdBvCnt, clauseCnt ) << ",";
+  os << density( vdNwCnt, wordCnt ) << ",";
+  os << proportion( vdNwCnt, clauseCnt ) << ",";
+  os << density( vdVrijCnt, wordCnt ) << ",";
+  os << proportion( vdVrijCnt, clauseCnt ) << ",";
+
+  os << density( odBvCnt, wordCnt ) << ",";
+  os << proportion( odBvCnt, clauseCnt ) << ",";
+  os << density( odNwCnt, wordCnt ) << ",";
+  os << proportion( odNwCnt, clauseCnt ) << ",";
+  os << density( odVrijCnt, wordCnt ) << ",";
+  os << proportion( odVrijCnt, clauseCnt ) << ",";
+}
+
+void structStats::imperativeHeader( ostream& os ) const {
+  os << "Imp_ellips_p,Imp_ellips_d," // 20141003: Features renamed
+     << "Vragen_p,Vragen_d,";
+}
+
+void structStats::imperativeToCSV( ostream& os ) const {
+  double clauseCnt = pastCnt + presentCnt;
+
   os << proportion( impCnt, clauseCnt ) << ",";
   os << density( impCnt, wordCnt ) << ",";
   os << proportion( questCnt, sentCnt ) << ",";
@@ -4465,57 +4545,21 @@ void structStats::wordSortToCSV( ostream& os ) const {
      << density( zorga, wordCnt ) << ",";
 }
 
+void structStats::prepPhraseHeader( ostream& os ) const {
+  os << "Vzu_d,Vzu_dz,Arch_d,";
+}
+
+void structStats::prepPhraseToCSV( ostream& os ) const {
+  os << density( prepExprCnt, wordCnt ) << ",";
+  os << proportion( prepExprCnt, sentCnt ) << ",";
+  os << density( archaicsCnt, wordCnt ) << ",";
+}
+
 void structStats::miscHeader( ostream& os ) const {
-  os << "Vzu_d, Vzu_dz, Ww_tt_p,Ww_tt_dz,Ww_mod_d_,Ww_mod_dz,"
-     << "Huww_tijd_d,Huww_tijd_dz,Koppelww_d,Koppelww_dz,"
-     << "Arch_d,"
-     << "Infin_bv_d,Infin_bv_dz,"
-     << "Infin_nw_d,Infin_nw_dz,"
-     << "Infin_vrij_d,Infin_vrij_dz,"
-     << "Vd_bv_d,Vd_bv_dz,"
-     << "Vd_nw_d,Vd_nw_dz,"
-     << "Vd_vrij_d,Vd_vrij_dz,"
-     << "Ovd_bv_d,Ovd_bv_dz,"
-     << "Ovd_nw_d,Ovd_nw_dz,"
-     << "Ovd_vrij_d,Ovd_vrij_dz,"
-     << "Log_prob,Entropie,Perplexiteit,";
+  os << "Log_prob,Entropie,Perplexiteit,";
 }
 
 void structStats::miscToCSV( ostream& os ) const {
-  double clauseCnt = pastCnt + presentCnt;
-  os << density( prepExprCnt, wordCnt ) << ",";
-  os << proportion( prepExprCnt, sentCnt ) << ",";
-  os << proportion( presentCnt, clauseCnt ) << ",";
-  os  << density( presentCnt, wordCnt ) << ","
-      << density( modalCnt, wordCnt ) << ",";
-  os << proportion( modalCnt, clauseCnt ) << ",";
-  os << density( timeVCnt, wordCnt ) << ",";
-  os << proportion( timeVCnt, clauseCnt ) << ",";
-  os << density( koppelCnt, wordCnt ) << ",";
-  os << proportion( koppelCnt, clauseCnt ) << ",";
-  os << density( archaicsCnt, wordCnt ) << ",";
-
-  os << density( infBvCnt, wordCnt ) << ",";
-  os << proportion( infBvCnt, clauseCnt ) << ",";
-  os << density( infNwCnt, wordCnt ) << ",";
-  os << proportion( infNwCnt, clauseCnt ) << ",";
-  os << density( infVrijCnt, wordCnt ) << ",";
-  os << proportion( infVrijCnt, clauseCnt ) << ",";
-
-  os << density( vdBvCnt, wordCnt ) << ",";
-  os << proportion( vdBvCnt, clauseCnt ) << ",";
-  os << density( vdNwCnt, wordCnt ) << ",";
-  os << proportion( vdNwCnt, clauseCnt ) << ",";
-  os << density( vdVrijCnt, wordCnt ) << ",";
-  os << proportion( vdVrijCnt, clauseCnt ) << ",";
-
-  os << density( odBvCnt, wordCnt ) << ",";
-  os << proportion( odBvCnt, clauseCnt ) << ",";
-  os << density( odNwCnt, wordCnt ) << ",";
-  os << proportion( odNwCnt, clauseCnt ) << ",";
-  os << density( odVrijCnt, wordCnt ) << ",";
-  os << proportion( odVrijCnt, clauseCnt ) << ",";
-
   os << proportion( avg_prob10, sentCnt ) << ",";
   os << proportion( entropy, sentCnt ) << ",";
   os << proportion( perplexity, sentCnt ) << ",";
