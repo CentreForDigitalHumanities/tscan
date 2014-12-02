@@ -107,12 +107,13 @@ f.write("adj_semtypes=\"adjs_semtype.data\"\n")
 f.write("verb_semtypes=\"verbs_semtype.data\"\n")
 
 # 20141121: This allows a custom noun classification. Does require to specify the full path to the files.
-try:
-  nc = clamdata.inputfile('nounclassification')
-  f.write("noun_semtypes=\"" + inputdir + nc.filename + "\"\n")
-except Exception:
+for nc in clamdata.inputfiles('nounclassification'):
+  nounclassification = inputdir + nc.filename
+  break
+else:
   # When no inputfile is found, revert to the default
-  f.write("noun_semtypes=\"" + TSCANDIR + "/data/nouns_semtype.data\"\n")
+  nounclassification = TSCANDIR + "/data/nouns_semtype.data" 
+f.write("noun_semtypes=\"" + nounclassification + "\"\n")
 
 f.write("word_freq_lex=\"" + clamdata['word_freq_lex'] + "\"\n")  #freqlist_staphorsius_CLIB_words.freq
 f.write("lemma_freq_lex=\"" + clamdata['lemma_freq_lex'] + "\"\n") #freqlist_staphorsius_CLIB_lemma.freq
