@@ -3124,6 +3124,12 @@ struct structStats: public basicStats {
     top5000Cnt(0),
     top10000Cnt(0),
     top20000Cnt(0),
+    top1000ContentCnt(0),
+    top2000ContentCnt(0),
+    top3000ContentCnt(0),
+    top5000ContentCnt(0),
+    top10000ContentCnt(0),
+    top20000ContentCnt(0),
     word_freq(0),
     word_freq_n(0),
     word_freq_log(NA),
@@ -3329,6 +3335,12 @@ struct structStats: public basicStats {
   int top5000Cnt;
   int top10000Cnt;
   int top20000Cnt;
+  int top1000ContentCnt;
+  int top2000ContentCnt;
+  int top3000ContentCnt;
+  int top5000ContentCnt;
+  int top10000ContentCnt;
+  int top20000ContentCnt;
   double word_freq;
   double word_freq_n;
   double word_freq_log;
@@ -3548,6 +3560,12 @@ void structStats::merge( structStats *ss ){
   top5000Cnt += ss->top5000Cnt;
   top10000Cnt += ss->top10000Cnt;
   top20000Cnt += ss->top20000Cnt;
+  top1000ContentCnt += ss->top1000ContentCnt;
+  top2000ContentCnt += ss->top2000ContentCnt;
+  top3000ContentCnt += ss->top3000ContentCnt;
+  top5000ContentCnt += ss->top5000ContentCnt;
+  top10000ContentCnt += ss->top10000ContentCnt;
+  top20000ContentCnt += ss->top20000ContentCnt;
   word_freq += ss->word_freq;
   word_freq_n += ss->word_freq_n;
   lemma_freq += ss->lemma_freq;
@@ -3849,6 +3867,12 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "top5000", toString(top5000Cnt) );
   addOneMetric( doc, el, "top10000", toString(top10000Cnt) );
   addOneMetric( doc, el, "top20000", toString(top20000Cnt) );
+  addOneMetric( doc, el, "top1000Content", toString(top1000ContentCnt) );
+  addOneMetric( doc, el, "top2000Content", toString(top2000ContentCnt) );
+  addOneMetric( doc, el, "top3000Content", toString(top3000ContentCnt) );
+  addOneMetric( doc, el, "top5000Content", toString(top5000ContentCnt) );
+  addOneMetric( doc, el, "top10000Content", toString(top10000ContentCnt) );
+  addOneMetric( doc, el, "top20000Content", toString(top20000ContentCnt) );
   addOneMetric( doc, el, "word_freq", toString(word_freq) );
   addOneMetric( doc, el, "word_freq_no_names", toString(word_freq_n) );
   if ( word_freq_log != NA  )
@@ -4010,7 +4034,10 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
      << "Sam_delen_per_wrd,Sam_d,"
      << "Freq50_staph,Freq65_Staph,Freq77_Staph,Freq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
-     << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,";
+     << "Freq1000,Freq2000,Freq3000,"
+     << "Freq5000,Freq10000,Freq20000,"
+     << "Freq1000_inhwrd,Freq2000_inhwrd,Freq3000_inhwrd,"
+     << "Freq5000_inhwrd,Freq10000_inhwrd,Freq20000_inhwrd,";
      // << "so_word_suc,so_word_net,"
      // << "so_sent_suc,so_sent_net,so_sent_ctx,"
      // << "so_par_suc,so_par_net,so_par_ctx,";
@@ -4047,6 +4074,12 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
   os << proportion( top5000Cnt, wordCnt ) << ",";
   os << proportion( top10000Cnt, wordCnt ) << ",";
   os << proportion( top20000Cnt, wordCnt ) << ",";
+  os << proportion( top1000ContentCnt, contentCnt ) << ",";
+  os << proportion( top2000ContentCnt, contentCnt ) << ",";
+  os << proportion( top3000ContentCnt, contentCnt ) << ",";
+  os << proportion( top5000ContentCnt, contentCnt ) << ",";
+  os << proportion( top10000ContentCnt, contentCnt ) << ",";
+  os << proportion( top20000ContentCnt, contentCnt ) << ",";
   // os << toMString(lsa_word_suc) << "," << toMString(lsa_word_net) << ",";
   // os << toMString(lsa_sent_suc) << "," << toMString(lsa_sent_net) << ","
   //    << toMString(lsa_sent_ctx) << ",";
@@ -5836,19 +5869,25 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
       if ( ws->f80 )
 	f80Cnt++;
       switch ( ws->top_freq ){
-	// NO BREAKS
+	// NO BREAKS (being in top1000 means being in top2000 as well)
       case top1000:
 	++top1000Cnt;
+  if ( ws->isContent ) ++top1000ContentCnt;
       case top2000:
 	++top2000Cnt;
+  if ( ws->isContent ) ++top2000ContentCnt;
       case top3000:
 	++top3000Cnt;
+  if ( ws->isContent ) ++top3000ContentCnt;
       case top5000:
 	++top5000Cnt;
+  if ( ws->isContent ) ++top5000ContentCnt;
       case top10000:
 	++top10000Cnt;
+  if ( ws->isContent ) ++top10000ContentCnt;
       case top20000:
 	++top20000Cnt;
+  if ( ws->isContent ) ++top20000ContentCnt;
       default:
 	break;
       }
