@@ -45,6 +45,8 @@
 #include "ticcutils/CommandLine.h"
 #include "tscan/Alpino.h"
 #include "tscan/decomp.h"
+#include "tscan/cgn.h"
+#include "tscan/sem.h"
 
 using namespace std;
 using namespace TiCC;
@@ -71,251 +73,9 @@ struct cf_data {
 
 enum top_val { top1000, top2000, top3000, top5000, top10000, top20000, notFound  };
 
-enum SemType { NO_SEMTYPE,
-	       UNFOUND_NOUN, UNFOUND_ADJ, UNFOUND_VERB,
-	       UNDEFINED_NOUN, UNDEFINED_ADJ,
-	       CONCRETE_DYNAMIC_NOUN, ABSTRACT_DYNAMIC_NOUN, ABSTRACT_NONDYNAMIC_NOUN,
-	       BROAD_CONCRETE_PLACE_NOUN,
-	       BROAD_CONCRETE_TIME_NOUN,
-	       BROAD_CONCRETE_MEASURE_NOUN,
-	       CONCRETE_OTHER_NOUN, INSTITUT_NOUN,
-	       CONCRETE_SUBSTANCE_NOUN, CONCRETE_ARTEFACT_NOUN,
-	       CONCRETE_HUMAN_NOUN, CONCRETE_NONHUMAN_NOUN,
-	       HUMAN_ADJ, EMO_ADJ,
-	       NONHUMAN_SHAPE_ADJ, NONHUMAN_COLOR_ADJ, NONHUMAN_MATTER_ADJ,
-	       NONHUMAN_SOUND_ADJ, NONHUMAN_OTHER_ADJ,
-	       TECH_ADJ, TIME_ADJ, PLACE_ADJ,
-	       SPEC_POS_ADJ, SPEC_NEG_ADJ,
-	       POS_ADJ, NEG_ADJ,
-	       EPI_POS_ADJ, EPI_NEG_ADJ,
-	       MORE_ADJ, LESS_ADJ,
-	       ABSTRACT_ADJ,
-	       ABSTRACT_UNDEFINED, CONCRETE_UNDEFINED, UNDEFINED_VERB,
-	       ABSTRACT_STATE, CONCRETE_STATE, UNDEFINED_STATE,
-	       ABSTRACT_ACTION, CONCRETE_ACTION, UNDEFINED_ACTION,
-	       ABSTRACT_PROCESS, CONCRETE_PROCESS, UNDEFINED_PROCESS };
-
-string toString( const SemType st ){
-  switch ( st ){
-  case NO_SEMTYPE:
-    return "semtype_error";
-    break;
-  case UNFOUND_NOUN:
-    return "noun_not_found";
-    break;
-  case UNFOUND_ADJ:
-    return "adj_not_found";
-    break;
-  case UNFOUND_VERB:
-    return "verb_not_found";
-    break;
-  case UNDEFINED_NOUN:
-    return "undefined-noun";
-    break;
-  case UNDEFINED_ADJ:
-    return "undefined-adj";
-    break;
-  case CONCRETE_DYNAMIC_NOUN:
-    return "concrete-dynamic_noun";
-    break;
-  case ABSTRACT_DYNAMIC_NOUN:
-    return "abstract-dynamic_noun";
-    break;
-  case ABSTRACT_NONDYNAMIC_NOUN:
-    return "abstract-nondynamic-noun";
-    break;
-  case BROAD_CONCRETE_PLACE_NOUN:
-    return "broad-place-noun";
-    break;
-  case BROAD_CONCRETE_TIME_NOUN:
-    return "broad-time-noun";
-    break;
-  case BROAD_CONCRETE_MEASURE_NOUN:
-    return "broad-measure-noun";
-    break;
-  case CONCRETE_OTHER_NOUN:
-    return "concrete-other-noun";
-    break;
-  case INSTITUT_NOUN:
-    return "institut-noun";
-    break;
-  case CONCRETE_SUBSTANCE_NOUN:
-    return "concrete-substance-noun";
-    break;
-  case CONCRETE_ARTEFACT_NOUN:
-    return "concrete-artefact-noun";
-    break;
-  case CONCRETE_HUMAN_NOUN:
-    return "concrete-human-noun";
-    break;
-  case CONCRETE_NONHUMAN_NOUN:
-    return "concrete-nonhuman-noun";
-    break;
-
-  case ABSTRACT_ADJ:
-    return "abstract-adj";
-    break;
-  case HUMAN_ADJ:
-    return "human-adj";
-    break;
-  case EMO_ADJ:
-    return "emo-adj";
-    break;
-  case NONHUMAN_SHAPE_ADJ:
-    return "shape-adj";
-    break;
-  case NONHUMAN_COLOR_ADJ:
-    return "color-adj";
-    break;
-  case NONHUMAN_MATTER_ADJ:
-    return "matter-adj";
-    break;
-  case NONHUMAN_SOUND_ADJ:
-    return "sound-adj";
-    break;
-  case NONHUMAN_OTHER_ADJ:
-    return "nonhuman-other-adj";
-    break;
-  case TECH_ADJ:
-    return "tech-adj";
-    break;
-  case TIME_ADJ:
-    return "time-adj";
-    break;
-  case PLACE_ADJ:
-    return "place-adj";
-    break;
-  case SPEC_POS_ADJ:
-    return "spec-pos-adj";
-    break;
-  case SPEC_NEG_ADJ:
-    return "spec-neg-adj";
-    break;
-  case POS_ADJ:
-    return "pos-adj";
-    break;
-  case NEG_ADJ:
-    return "neg-adj";
-    break;
-  case EPI_POS_ADJ:
-    return "epi-pos-adj";
-    break;
-  case EPI_NEG_ADJ:
-    return "epi-neg-adj";
-    break;
-  case MORE_ADJ:
-    return "stronger-adj";
-    break;
-  case LESS_ADJ:
-    return "weaker-adj";
-    break;
-
-  case ABSTRACT_UNDEFINED:
-    return "abstract-undefined";
-    break;
-  case CONCRETE_UNDEFINED:
-    return "concrete-undefined";
-    break;
-  case UNDEFINED_VERB:
-    return "undefined-verb";
-    break;
-  case ABSTRACT_STATE:
-    return "abstract-state";
-    break;
-  case CONCRETE_STATE:
-    return "concrete-state";
-    break;
-  case UNDEFINED_STATE:
-    return "undefined-state";
-    break;
-  case ABSTRACT_ACTION:
-    return "abstract-action";
-    break;
-  case CONCRETE_ACTION:
-    return "concrete-action";
-    break;
-  case UNDEFINED_ACTION:
-    return "undefined-action";
-    break;
-  case ABSTRACT_PROCESS:
-    return "abstract-process";
-    break;
-  case CONCRETE_PROCESS:
-    return "concrete-process";
-    break;
-  case UNDEFINED_PROCESS:
-    return "undefined-process";
-    break;
-  default:
-    return "invalid semtype value";
-  }
-}
-
-ostream& operator<<( ostream& os, const SemType s ){
+ostream& operator<<( ostream& os, const SEM::Type s ){
   os << toString( s );
   return os;
-}
-
-namespace CGN {
-  enum Type { UNASS, ADJ, BW, LET, LID, N, SPEC, TSW, TW, VG, VNW, VZ, WW };
-
-  Type toCGN( const string& s ){
-    if ( s == "N" )
-      return N;
-    else if ( s == "ADJ" )
-      return ADJ;
-    else if ( s == "VNW" )
-      return VNW;
-    else if ( s == "LET" )
-      return LET;
-    else if ( s == "LID" )
-      return LID;
-    else if ( s == "SPEC" )
-      return SPEC;
-    else if ( s == "BW" )
-      return BW;
-    else if ( s == "WW" )
-      return WW;
-    else if ( s == "TSW" )
-      return TSW;
-    else if ( s == "TW" )
-      return TW;
-    else if ( s == "VZ" )
-      return VZ;
-    else if ( s == "VG" )
-      return VG;
-    else
-      return UNASS;
-  }
-
-  string toString( const Type& t ){
-    switch ( t ){
-    case N:
-      return "N";
-    case ADJ:
-      return "ADJ";
-    case VNW:
-      return "VNW";
-    case LET:
-      return "LET";
-    case LID:
-      return "LID";
-    case SPEC:
-      return "SPEC";
-    case BW:
-      return "BW";
-    case WW:
-      return "WW";
-    case TW:
-      return "TW";
-    case VZ:
-      return "VZ";
-    case VG:
-      return "VG";
-    default:
-      return "UNASSIGNED";
-    }
-  }
 }
 
 ostream& operator<<( ostream& os, const CGN::Type t ){
@@ -430,9 +190,9 @@ struct settingData {
   unsigned int overlapSize;
   double freq_clip;
   double mtld_threshold;
-  map <string, SemType> adj_sem;
-  map <string, SemType> noun_sem;
-  map <string, SemType> verb_sem;
+  map <string, SEM::Type> adj_sem;
+  map <string, SEM::Type> noun_sem;
+  map <string, SEM::Type> verb_sem;
   map <string, double> pol_lex;
   map<string, cf_data> staph_word_freq_lex;
   long int staph_total;
@@ -467,143 +227,6 @@ struct settingData {
 
 settingData settings;
 
-SemType classifyNoun( const string& s ){
-  if ( s == "undefined" )
-    return UNDEFINED_NOUN;
-  else if ( s == "concrother" )
-    return CONCRETE_OTHER_NOUN;
-  else if ( s == "institut" )
-    return INSTITUT_NOUN;
-  else if ( s == "substance" )
-    return CONCRETE_SUBSTANCE_NOUN;
-  else if ( s == "artefact" )
-    return CONCRETE_ARTEFACT_NOUN;
-  else if ( s == "nonhuman" )
-    return CONCRETE_NONHUMAN_NOUN;
-  else if ( s == "human" )
-    return CONCRETE_HUMAN_NOUN;
-  else if ( s == "dynamic_conc" ) // 20141031: Added new SemType
-    return CONCRETE_DYNAMIC_NOUN;
-  else if ( s == "dynamic_abstr" )
-    return ABSTRACT_DYNAMIC_NOUN;
-  else if ( s == "nondynamic" )
-    return ABSTRACT_NONDYNAMIC_NOUN;
-  else if ( s == "place" )
-    return BROAD_CONCRETE_PLACE_NOUN;
-  else if ( s == "time" )
-    return BROAD_CONCRETE_TIME_NOUN;
-  else if ( s == "measure" )
-    return BROAD_CONCRETE_MEASURE_NOUN;
-  else
-    return UNFOUND_NOUN;
-}
-
-SemType classifyWW( const string& s, const string& c = "" ){
-  if ( s == "undefined" ){
-    if ( c == "abstract" )
-      return ABSTRACT_UNDEFINED;
-    else if ( c == "concreet" )
-      return CONCRETE_UNDEFINED;
-    else if ( c == "undefined" )
-      return UNDEFINED_VERB;
-  }
-  else if ( s == "state" ){
-    if ( c == "abstract" )
-      return ABSTRACT_STATE;
-    else if ( c == "concreet" )
-      return CONCRETE_STATE;
-    else if ( c == "undefined" )
-      return UNDEFINED_STATE;
-  }
-  else if ( s == "action" ){
-    if ( c == "abstract" )
-      return ABSTRACT_ACTION;
-    else if ( c == "concreet" )
-      return CONCRETE_ACTION;
-    else if ( c == "undefined" )
-      return UNDEFINED_ACTION;
-  }
-  else if (s == "process" ){
-    if ( c == "abstract" )
-      return ABSTRACT_PROCESS;
-    else if ( c == "concreet" )
-      return CONCRETE_PROCESS;
-    else if ( c == "undefined" )
-      return UNDEFINED_PROCESS;
-  }
-  return UNFOUND_VERB;
-}
-
-SemType classifyADJ( const string& s, const string& sub = "" ){
-  SemType result = UNFOUND_ADJ;
-  if ( s == "undefined" ){
-    result = UNDEFINED_ADJ;
-  }
-  else if ( s == "waarn_mens" ){
-    result = HUMAN_ADJ;
-  }
-  else if ( s == "emosoc" ){
-    result = EMO_ADJ;
-  }
-  else if ( s == "waarn_niet_mens" ){
-    if ( sub == "vorm_omvang" ){
-      result = NONHUMAN_SHAPE_ADJ;
-    }
-    else if ( sub == "kleur" ){
-      result = NONHUMAN_COLOR_ADJ;
-    }
-    else if ( sub == "stof" ){
-      result = NONHUMAN_MATTER_ADJ;
-    }
-    else if ( sub == "geluid" ){
-      result = NONHUMAN_SOUND_ADJ;
-    }
-    else if ( sub == "waarn_niet_mens_ov" ){
-      result = NONHUMAN_OTHER_ADJ;
-    }
-  }
-  else if ( s == "technisch" ){
-    result = TECH_ADJ;
-  }
-  else if ( s == "time" ){
-    result = TIME_ADJ;
-  }
-  else if ( s == "place" ){
-    result = PLACE_ADJ;
-  }
-  else if ( s == "spec_positief" ){
-    result = SPEC_POS_ADJ;
-  }
-  else if ( s == "spec_negatief" ){
-    result = SPEC_NEG_ADJ;
-  }
-  else if ( s == "alg_positief" ){
-    result = POS_ADJ;
-  }
-  else if ( s == "alg_negatief" ){
-    result = NEG_ADJ;
-  }
-  else if ( s == "ep_positief" ){
-    result = EPI_POS_ADJ;
-  }
-  else if ( s == "ep_negatief" ){
-    result = EPI_NEG_ADJ;
-  }
-  else if ( s == "versterker" ){
-    result = MORE_ADJ;
-  }
-  else if ( s == "verzwakker" ){
-    result = LESS_ADJ;
-  }
-  else if ( s == "abstract_ov" ){
-    result = ABSTRACT_ADJ;
-  }
-  if ( result == UNFOUND_ADJ ){
-    cerr << "classify ADJ " << s << "," << sub << endl;
-  }
-  return result;
-}
-
 istream& safe_getline( istream& is, string& t ){
   t.clear();
 
@@ -637,7 +260,7 @@ istream& safe_getline( istream& is, string& t ){
   }
 }
 
-bool fillN( map<string,SemType>& m, istream& is ){
+bool fillN( map<string,SEM::Type>& m, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
     line = TiCC::trim( line );
@@ -653,7 +276,7 @@ bool fillN( map<string,SemType>& m, istream& is ){
     vector<string> vals;
     n = split_at( parts[1], vals, "," ); // split at ,
     if ( n == 1 ){
-      m[parts[0]] = classifyNoun( vals[0] );
+      m[parts[0]] = SEM::classifyNoun( vals[0] );
     }
     else if ( n == 0 ){
       cerr << "skip line: " << line << " (expected some values, got none."
@@ -661,15 +284,15 @@ bool fillN( map<string,SemType>& m, istream& is ){
       continue;
     }
     else {
-      SemType topval = NO_SEMTYPE;
-      map<SemType,int> stats;
-      set<SemType> values;
+      SEM::Type topval = SEM::NO_SEMTYPE;
+      map<SEM::Type,int> stats;
+      set<SEM::Type> values;
       for ( size_t i=0; i< vals.size(); ++i ){
-	SemType val = classifyNoun( vals[i] );
+	SEM::Type val = SEM::classifyNoun( vals[i] );
 	stats[val]++;
 	values.insert(val);
       }
-      SemType res = UNFOUND_NOUN;
+      SEM::Type res = SEM::UNFOUND_NOUN;
       if ( values.size() == 1 ){
 	// just 1 semtype
 	res = *values.begin();
@@ -686,45 +309,45 @@ bool fillN( map<string,SemType>& m, istream& is ){
 	// INSTITUT_NOUN
 	// CONCRETE_OTHER_NOUN
 	// UNFOUND
-	if ( values.find(CONCRETE_ARTEFACT_NOUN) != values.end() ) {
-	  if ( values.find(CONCRETE_SUBSTANCE_NOUN) != values.end() ){
-	    res = CONCRETE_SUBSTANCE_NOUN;
+	if ( values.find(SEM::CONCRETE_ARTEFACT_NOUN) != values.end() ) {
+	  if ( values.find(SEM::CONCRETE_SUBSTANCE_NOUN) != values.end() ){
+	    res = SEM::CONCRETE_SUBSTANCE_NOUN;
 	  }
 	  else {
-	    res = CONCRETE_ARTEFACT_NOUN;
+	    res = SEM::CONCRETE_ARTEFACT_NOUN;
 	  }
 	}
-	else if ( values.find(CONCRETE_NONHUMAN_NOUN) != values.end() ){
-	  res = CONCRETE_NONHUMAN_NOUN;
+	else if ( values.find(SEM::CONCRETE_NONHUMAN_NOUN) != values.end() ){
+	  res = SEM::CONCRETE_NONHUMAN_NOUN;
 	}
-	else if ( values.find(INSTITUT_NOUN) != values.end() ){
-	  res = INSTITUT_NOUN;
+	else if ( values.find(SEM::INSTITUT_NOUN) != values.end() ){
+	  res = SEM::INSTITUT_NOUN;
 	}
-	else if ( values.find(CONCRETE_OTHER_NOUN) != values.end() ){
-	  if ( values.find(ABSTRACT_DYNAMIC_NOUN) != values.end() ){
-	    res = CONCRETE_OTHER_NOUN;
+	else if ( values.find(SEM::CONCRETE_OTHER_NOUN) != values.end() ){
+	  if ( values.find(SEM::ABSTRACT_DYNAMIC_NOUN) != values.end() ){
+	    res = SEM::CONCRETE_OTHER_NOUN;
 	  }
-	  else if ( values.find(ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
-	    res = CONCRETE_OTHER_NOUN;
+	  else if ( values.find(SEM::ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
+	    res = SEM::CONCRETE_OTHER_NOUN;
 	  }
-	  else if ( values.find(CONCRETE_SUBSTANCE_NOUN) != values.end() ){
-	    res = CONCRETE_SUBSTANCE_NOUN;
+	  else if ( values.find(SEM::CONCRETE_SUBSTANCE_NOUN) != values.end() ){
+	    res = SEM::CONCRETE_SUBSTANCE_NOUN;
 	  }
-	  else if ( values.find(CONCRETE_HUMAN_NOUN) != values.end() ){
-	    res = CONCRETE_HUMAN_NOUN;
+	  else if ( values.find(SEM::CONCRETE_HUMAN_NOUN) != values.end() ){
+	    res = SEM::CONCRETE_HUMAN_NOUN;
 	  }
 	}
-  else if ( values.find(CONCRETE_DYNAMIC_NOUN) != values.end() ){
-    if ( values.find(ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
-      res = CONCRETE_DYNAMIC_NOUN;
+  else if ( values.find(SEM::CONCRETE_DYNAMIC_NOUN) != values.end() ){
+    if ( values.find(SEM::ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
+      res = SEM::CONCRETE_DYNAMIC_NOUN;
     }
   }
-	else if ( values.find(ABSTRACT_DYNAMIC_NOUN) != values.end() ){
-	  if ( values.find(ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
-	    res = ABSTRACT_DYNAMIC_NOUN;
+	else if ( values.find(SEM::ABSTRACT_DYNAMIC_NOUN) != values.end() ){
+	  if ( values.find(SEM::ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
+	    res = SEM::ABSTRACT_DYNAMIC_NOUN;
 	  }
 	}
-	if ( res == UNFOUND_NOUN ){
+	if ( res == SEM::UNFOUND_NOUN ){
 	  cerr << "unable to determine semtype from: " << values << endl;
 	}
       }
@@ -732,7 +355,7 @@ bool fillN( map<string,SemType>& m, istream& is ){
       if ( m.find(parts[0]) != m.end() ){
 	cerr << "multiple entry '" << parts[0] << "' in N lex" << endl;
       }
-      if ( topval != UNFOUND_NOUN ){
+      if ( topval != SEM::UNFOUND_NOUN ){
 	// no use to store undefined values
 	m[parts[0]] = topval;
       }
@@ -741,7 +364,7 @@ bool fillN( map<string,SemType>& m, istream& is ){
   return true;
 }
 
-bool fillWW( map<string,SemType>& m, istream& is ){
+bool fillWW( map<string,SEM::Type>& m, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
     line = TiCC::trim( line );
@@ -754,8 +377,8 @@ bool fillWW( map<string,SemType>& m, istream& is ){
 	   << n << ")" << endl;
       continue;
     }
-    SemType res = classifyWW( parts[1], parts[2] );
-    if ( res != UNFOUND_VERB ){
+    SEM::Type res = SEM::classifyWW( parts[1], parts[2] );
+    if ( res != SEM::UNFOUND_VERB ){
       // no use to store undefined values
       m[parts[0]] = res;
     }
@@ -763,7 +386,7 @@ bool fillWW( map<string,SemType>& m, istream& is ){
   return true;
 }
 
-bool fillADJ( map<string,SemType>& m, istream& is ){
+bool fillADJ( map<string,SEM::Type>& m, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
     line = TiCC::trim( line );
@@ -776,18 +399,18 @@ bool fillADJ( map<string,SemType>& m, istream& is ){
 	   << n << ")" << endl;
       continue;
     }
-    SemType res = UNFOUND_ADJ;
+    SEM::Type res = SEM::UNFOUND_ADJ;
     if ( n == 2 ){
-      res = classifyADJ( parts[1] );
+      res = SEM::classifyADJ( parts[1] );
     }
     else {
-      res = classifyADJ( parts[1], parts[2] );
+      res = SEM::classifyADJ( parts[1], parts[2] );
     }
     string low = lowercase( parts[0] );
     if ( m.find(low) != m.end() ){
       cerr << "Information: multiple entry '" << low << "' in ADJ lex" << endl;
     }
-    if ( res != UNFOUND_ADJ ){
+    if ( res != SEM::UNFOUND_ADJ ){
       // no use to store undefined values
       m[low] = res;
     }
@@ -795,7 +418,7 @@ bool fillADJ( map<string,SemType>& m, istream& is ){
   return true;
 }
 
-bool fill( CGN::Type tag, map<string,SemType>& m, const string& filename ){
+bool fill( CGN::Type tag, map<string,SEM::Type>& m, const string& filename ){
   ifstream is( filename.c_str() );
   if ( is ){
     if ( tag == CGN::N )
@@ -1600,11 +1223,7 @@ struct wordStats : public basicStats {
   bool checkNominal( const xmlNode * ) const;
   void setCGNProps( const PosAnnotation* );
   CGNProp wordProperty() const { return prop; };
-  SemType checkSemProps( ) const;
-  bool isBroadAdj() const;
-  bool isStrictAdj() const;
-  bool isBroadNoun() const;
-  bool isStrictNoun() const;
+  SEM::Type checkSemProps( ) const;
   AfkType checkAfk( ) const;
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
@@ -1652,7 +1271,7 @@ struct wordStats : public basicStats {
   double logprob10;
   CGNProp prop;
   CGNPosition position;
-  SemType sem_type;
+  SEM::Type sem_type;
   vector<string> morphemes;
   multimap<DD_type,int> distances;
   AfkType afkType;
@@ -1979,11 +1598,11 @@ void wordStats::setCGNProps( const PosAnnotation* pa ) {
   }
 }
 
-SemType wordStats::checkSemProps( ) const {
+SEM::Type wordStats::checkSemProps( ) const {
   if ( tag == CGN::N ){
-    SemType sem = UNFOUND_NOUN;
+    SEM::Type sem = SEM::UNFOUND_NOUN;
     //    cerr << "lookup " << lemma << endl;
-    map<string,SemType>::const_iterator sit = settings.noun_sem.find( lemma );
+    map<string,SEM::Type>::const_iterator sit = settings.noun_sem.find( lemma );
     if ( sit != settings.noun_sem.end() ){
       sem = sit->second;
     }
@@ -1995,8 +1614,8 @@ SemType wordStats::checkSemProps( ) const {
   }
   else if ( prop == ISNAME ){
     // Names are te be looked up in the Noun list too
-    SemType sem = UNFOUND_NOUN;
-    map<string,SemType>::const_iterator sit = settings.noun_sem.find( lemma );
+    SEM::Type sem = SEM::UNFOUND_NOUN;
+    map<string,SEM::Type>::const_iterator sit = settings.noun_sem.find( lemma );
     if ( sit != settings.noun_sem.end() ){
       sem = sit->second;
     }
@@ -2007,8 +1626,8 @@ SemType wordStats::checkSemProps( ) const {
   }
   else if ( tag == CGN::ADJ ) {
     //    cerr << "ADJ check semtype " << l_lemma << endl;
-    SemType sem = UNFOUND_ADJ;
-    map<string,SemType>::const_iterator sit = settings.adj_sem.find( l_lemma );
+    SEM::Type sem = SEM::UNFOUND_ADJ;
+    map<string,SEM::Type>::const_iterator sit = settings.adj_sem.find( l_lemma );
     if ( sit == settings.adj_sem.end() ){
       // lemma not found. maybe the whole word?
       //      cerr << "ADJ check semtype " << word << endl;
@@ -2025,8 +1644,8 @@ SemType wordStats::checkSemProps( ) const {
   }
   else if ( tag == CGN::WW ) {
     //    cerr << "check semtype " << lemma << endl;
-    SemType sem = UNFOUND_VERB;
-    map<string,SemType>::const_iterator sit = settings.verb_sem.end();
+    SEM::Type sem = SEM::UNFOUND_VERB;
+    map<string,SEM::Type>::const_iterator sit = settings.verb_sem.end();
     if ( !full_lemma.empty() ) {
       sit = settings.verb_sem.find( full_lemma );
     }
@@ -2057,7 +1676,7 @@ SemType wordStats::checkSemProps( ) const {
     //    cerr << "found semtype " << sem << endl;
     return sem;
   }
-  return NO_SEMTYPE;
+  return SEM::NO_SEMTYPE;
 }
 
 AfkType wordStats::checkAfk() const {
@@ -2520,7 +2139,7 @@ wordStats::wordStats( int index,
   top_freq(notFound), word_freq(0), lemma_freq(0),
   wordOverlapCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NA), lemma_freq_log(NA),
-  logprob10(NA), prop(JUSTAWORD), position(NOPOS), sem_type(NO_SEMTYPE),afkType(NO_A)
+  logprob10(NA), prop(JUSTAWORD), position(NOPOS), sem_type(SEM::NO_SEMTYPE),afkType(NO_A)
 {
   UnicodeString us = w->text();
   charCnt = us.length();
@@ -2637,7 +2256,7 @@ void fill_word_lemma_buffers( const sentStats*,
 
 
 void wordStats::setPersRef() {
-  if ( sem_type == CONCRETE_HUMAN_NOUN ||
+  if ( sem_type == SEM::CONCRETE_HUMAN_NOUN ||
        nerProp == PER_B ||
        prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3 ){
     isPersRef = true;
@@ -2777,7 +2396,7 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "lprob10", toString(logprob10) );
   if ( prop != JUSTAWORD )
     addOneMetric( doc, el, "property", toString(prop) );
-  if ( sem_type != NO_SEMTYPE )
+  if ( sem_type != SEM::NO_SEMTYPE )
     addOneMetric( doc, el, "semtype", toString(sem_type) );
   if ( afkType != NO_A )
     addOneMetric( doc, el, "afktype", toString(afkType) );
@@ -2922,73 +2541,6 @@ void wordStats::concreetHeader( ostream& os ) const {
   os << "semtype_ww,";
 }
 
-bool wordStats::isStrictNoun() const {
-  switch ( sem_type ){
-  case CONCRETE_HUMAN_NOUN:
-  case CONCRETE_NONHUMAN_NOUN:
-  case CONCRETE_ARTEFACT_NOUN:
-  case CONCRETE_SUBSTANCE_NOUN:
-  case CONCRETE_OTHER_NOUN:
-  case CONCRETE_DYNAMIC_NOUN:
-    return true;
-    break;
-  default:
-    return false;
-  }
-}
-
-bool wordStats::isBroadNoun() const {
-  switch ( sem_type ){
-  case CONCRETE_HUMAN_NOUN:
-  case CONCRETE_NONHUMAN_NOUN:
-  case CONCRETE_ARTEFACT_NOUN:
-  case CONCRETE_SUBSTANCE_NOUN:
-  case CONCRETE_OTHER_NOUN:
-  case CONCRETE_DYNAMIC_NOUN:
-  case BROAD_CONCRETE_PLACE_NOUN:
-  case BROAD_CONCRETE_TIME_NOUN:
-  case BROAD_CONCRETE_MEASURE_NOUN:
-    return true;
-    break;
-  default:
-    return false;
-  }
-}
-
-bool wordStats::isStrictAdj() const {
-  switch( sem_type ){
-  case HUMAN_ADJ:
-  case EMO_ADJ:
-  case NONHUMAN_SHAPE_ADJ:
-  case NONHUMAN_COLOR_ADJ:
-  case NONHUMAN_MATTER_ADJ:
-  case NONHUMAN_SOUND_ADJ:
-  case NONHUMAN_OTHER_ADJ:
-    return true;
-    break;
-  default:
-    return false;
-  }
-}
-
-bool wordStats::isBroadAdj() const {
-  switch( sem_type ){
-  case HUMAN_ADJ:
-  case EMO_ADJ:
-  case NONHUMAN_SHAPE_ADJ:
-  case NONHUMAN_COLOR_ADJ:
-  case NONHUMAN_MATTER_ADJ:
-  case NONHUMAN_SOUND_ADJ:
-  case NONHUMAN_OTHER_ADJ:
-  case TIME_ADJ:
-  case PLACE_ADJ:
-    return true;
-    break;
-  default:
-    return false;
-  }
-}
-
 void wordStats::concreetToCSV( ostream& os ) const {
   if ( tag == CGN::N || prop == ISNAME ){
     os << sem_type << ",";
@@ -2996,14 +2548,14 @@ void wordStats::concreetToCSV( ostream& os ) const {
   else {
     os << "0,";
   }
-  os << isStrictNoun() << "," << isBroadNoun() << ",";
+  os << SEM::isStrictNoun(sem_type) << "," << SEM::isBroadNoun(sem_type) << ",";
   if ( tag == CGN::ADJ ){
     os << sem_type << ",";
   }
   else {
     os << "0,";
   }
-  os << isStrictAdj() << "," << isBroadAdj() << ",";
+  os << SEM::isStrictAdj(sem_type) << "," << SEM::isBroadAdj(sem_type) << ",";
   if ( tag == CGN::WW ){
     os << sem_type << ",";
   }
@@ -3028,7 +2580,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
     os << "0,";
   else
     os << nerProp << ",";
-  os << ( sem_type == CONCRETE_HUMAN_NOUN ) << ",";
+  os << ( sem_type == SEM::CONCRETE_HUMAN_NOUN ) << ",";
   os << isImperative << ",";
 }
 
@@ -5892,201 +5444,201 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 	break;
       }
       switch ( ws->sem_type ){
-      case UNDEFINED_NOUN:
+      case SEM::UNDEFINED_NOUN:
 	++undefinedNounCnt;
 	break;
-      case UNDEFINED_ADJ:
+      case SEM::UNDEFINED_ADJ:
 	++undefinedAdjCnt;
 	break;
-      case UNFOUND_NOUN:
+      case SEM::UNFOUND_NOUN:
 	++uncoveredNounCnt;
 	break;
-      case UNFOUND_ADJ:
+      case SEM::UNFOUND_ADJ:
 	++uncoveredAdjCnt;
 	break;
-      case UNFOUND_VERB:
+      case SEM::UNFOUND_VERB:
 	++uncoveredVerbCnt;
 	break;
-      case CONCRETE_HUMAN_NOUN:
+      case SEM::CONCRETE_HUMAN_NOUN:
 	humanCnt++;
 	strictNounCnt++;
 	broadNounCnt++;
 	break;
-      case CONCRETE_NONHUMAN_NOUN:
+      case SEM::CONCRETE_NONHUMAN_NOUN:
 	nonHumanCnt++;
 	strictNounCnt++;
 	broadNounCnt++;
 	break;
-      case CONCRETE_ARTEFACT_NOUN:
+      case SEM::CONCRETE_ARTEFACT_NOUN:
 	artefactCnt++;
 	strictNounCnt++;
 	broadNounCnt++;
 	break;
-      case CONCRETE_SUBSTANCE_NOUN:
+      case SEM::CONCRETE_SUBSTANCE_NOUN:
 	substanceCnt++;
 	strictNounCnt++;
 	broadNounCnt++;
 	break;
-      case CONCRETE_OTHER_NOUN:
+      case SEM::CONCRETE_OTHER_NOUN:
 	concrotherCnt++;
 	strictNounCnt++;
 	broadNounCnt++;
 	break;
-      case BROAD_CONCRETE_PLACE_NOUN:
+      case SEM::BROAD_CONCRETE_PLACE_NOUN:
 	++placeCnt;
 	broadNounCnt++;
 	break;
-      case BROAD_CONCRETE_TIME_NOUN:
+      case SEM::BROAD_CONCRETE_TIME_NOUN:
 	++timeCnt;
 	broadNounCnt++;
 	break;
-      case BROAD_CONCRETE_MEASURE_NOUN:
+      case SEM::BROAD_CONCRETE_MEASURE_NOUN:
 	++measureCnt;
 	broadNounCnt++;
 	break;
-      case CONCRETE_DYNAMIC_NOUN:
+      case SEM::CONCRETE_DYNAMIC_NOUN:
   ++dynamicConcCnt;
   strictNounCnt++;
   broadNounCnt++;
   break;
-      case ABSTRACT_DYNAMIC_NOUN:
+      case SEM::ABSTRACT_DYNAMIC_NOUN:
 	++dynamicAbstrCnt;
 	break;
-      case ABSTRACT_NONDYNAMIC_NOUN:
+      case SEM::ABSTRACT_NONDYNAMIC_NOUN:
 	++nonDynamicCnt;
 	break;
-      case INSTITUT_NOUN:
+      case SEM::INSTITUT_NOUN:
 	institutCnt++;
 	break;
-      case HUMAN_ADJ:
+      case SEM::HUMAN_ADJ:
 	humanAdjCnt++;
 	broadAdjCnt++;
 	strictAdjCnt++;
 	break;
-      case EMO_ADJ:
+      case SEM::EMO_ADJ:
 	emoAdjCnt++;
 	broadAdjCnt++;
 	strictAdjCnt++;
 	break;
-      case NONHUMAN_SHAPE_ADJ:
+      case SEM::NONHUMAN_SHAPE_ADJ:
 	nonhumanAdjCnt++;
 	shapeAdjCnt++;
 	broadAdjCnt++;
 	strictAdjCnt++;
 	break;
-      case NONHUMAN_COLOR_ADJ:
+      case SEM::NONHUMAN_COLOR_ADJ:
 	nonhumanAdjCnt++;
 	colorAdjCnt++;
 	broadAdjCnt++;
 	strictAdjCnt++;
 	break;
-      case NONHUMAN_MATTER_ADJ:
+      case SEM::NONHUMAN_MATTER_ADJ:
 	nonhumanAdjCnt++;
 	matterAdjCnt++;
 	broadAdjCnt++;
 	strictAdjCnt++;
 	break;
-      case NONHUMAN_SOUND_ADJ:
+      case SEM::NONHUMAN_SOUND_ADJ:
 	nonhumanAdjCnt++;
 	soundAdjCnt++;
 	broadAdjCnt++;
 	strictAdjCnt++;
 	break;
-      case NONHUMAN_OTHER_ADJ:
+      case SEM::NONHUMAN_OTHER_ADJ:
 	nonhumanAdjCnt++;
 	nonhumanOtherAdjCnt++;
 	broadAdjCnt++;
 	strictAdjCnt++;
 	break;
-      case TECH_ADJ:
+      case SEM::TECH_ADJ:
 	techAdjCnt++;
 	break;
-      case TIME_ADJ:
+      case SEM::TIME_ADJ:
 	timeAdjCnt++;
 	broadAdjCnt++;
 	break;
-      case PLACE_ADJ:
+      case SEM::PLACE_ADJ:
 	placeAdjCnt++;
 	broadAdjCnt++;
 	break;
-      case SPEC_POS_ADJ:
+      case SEM::SPEC_POS_ADJ:
 	specPosAdjCnt++;
 	subjectiveAdjCnt++;
 	break;
-      case SPEC_NEG_ADJ:
+      case SEM::SPEC_NEG_ADJ:
 	specNegAdjCnt++;
 	subjectiveAdjCnt++;
 	break;
-      case POS_ADJ:
+      case SEM::POS_ADJ:
 	posAdjCnt++;
 	subjectiveAdjCnt++;
 	break;
-      case NEG_ADJ:
+      case SEM::NEG_ADJ:
 	negAdjCnt++;
 	subjectiveAdjCnt++;
 	break;
-      case EPI_POS_ADJ:
+      case SEM::EPI_POS_ADJ:
 	epiPosAdjCnt++;
 	subjectiveAdjCnt++;
 	break;
-      case EPI_NEG_ADJ:
+      case SEM::EPI_NEG_ADJ:
 	epiNegAdjCnt++;
 	subjectiveAdjCnt++;
 	break;
-      case MORE_ADJ:
+      case SEM::MORE_ADJ:
 	moreAdjCnt++;
 	subjectiveAdjCnt++;
 	break;
-      case LESS_ADJ:
+      case SEM::LESS_ADJ:
 	lessAdjCnt++;
 	subjectiveAdjCnt++;
 	break;
-      case ABSTRACT_ADJ:
+      case SEM::ABSTRACT_ADJ:
 	abstractAdjCnt++;
 	break;
-      case ABSTRACT_STATE:
+      case SEM::ABSTRACT_STATE:
 	abstractWwCnt++;
 	stateCnt++;
 	break;
-      case CONCRETE_STATE:
+      case SEM::CONCRETE_STATE:
 	concreteWwCnt++;
 	stateCnt++;
 	break;
-      case UNDEFINED_STATE:
+      case SEM::UNDEFINED_STATE:
 	undefinedWwCnt++;
 	stateCnt++;
 	break;
-      case ABSTRACT_ACTION:
+      case SEM::ABSTRACT_ACTION:
 	abstractWwCnt++;
 	actionCnt++;
 	break;
-      case CONCRETE_ACTION:
+      case SEM::CONCRETE_ACTION:
 	concreteWwCnt++;
 	actionCnt++;
 	break;
-      case UNDEFINED_ACTION:
+      case SEM::UNDEFINED_ACTION:
 	undefinedWwCnt++;
 	actionCnt++;
 	break;
-      case ABSTRACT_PROCESS:
+      case SEM::ABSTRACT_PROCESS:
 	abstractWwCnt++;
 	processCnt++;
 	break;
-      case CONCRETE_PROCESS:
+      case SEM::CONCRETE_PROCESS:
 	concreteWwCnt++;
 	processCnt++;
 	break;
-      case UNDEFINED_PROCESS:
+      case SEM::UNDEFINED_PROCESS:
 	undefinedWwCnt++;
 	processCnt++;
 	break;
-      case ABSTRACT_UNDEFINED:
+      case SEM::ABSTRACT_UNDEFINED:
 	abstractWwCnt++;
 	break;
-      case CONCRETE_UNDEFINED:
+      case SEM::CONCRETE_UNDEFINED:
 	concreteWwCnt++;
 	break;
-      case UNDEFINED_VERB:
+      case SEM::UNDEFINED_VERB:
 	undefinedWwCnt++;
 	undefinedATPCnt++;
 	break;
