@@ -8,6 +8,17 @@ namespace CGN {
     };
     Type toCGN(std::string);
     std::string toString(Type);
+    
+    enum Prop { ISNAME, ISLET,
+	       ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL, ISSUBJ,
+	       ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
+	       JUSTAWORD, NOTAWORD };
+    std::string toString(Prop);
+    
+    enum Position { 
+        NOMIN, PRENOM, VRIJ, NOPOS 
+    };
+    std::string toString(Position);
 }
 
 #endif	/* CGN_H */

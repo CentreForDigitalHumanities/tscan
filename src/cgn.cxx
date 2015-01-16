@@ -62,4 +62,50 @@ namespace CGN {
                 return "UNASSIGNED";
         }
     }
+
+    string toString(Prop w) {
+        switch (w) {
+            case ISNAME:
+                return "naam";
+            case ISLET:
+                return "punctuatie";
+            case ISVD:
+                return "voltooid_deelw";
+            case ISOD:
+                return "onvoltooid_deelw";
+            case ISINF:
+                return "infinitief";
+            case ISPVTGW:
+                return "tegenwoordige_tijd";
+            case ISPVVERL:
+                return "verleden_tijd";
+            case ISSUBJ:
+                return "subjonctive";
+            case ISPPRON1:
+                return "voornaamwoord_1";
+            case ISPPRON2:
+                return "voornaamwoord_2";
+            case ISPPRON3:
+                return "voornaamwoord_3";
+            case ISAANW:
+                return "aanwijzend";
+            case NOTAWORD:
+                return "GEEN_WOORD";
+            default:
+                return "default";
+        }
+    }
+
+    string toString(Position w) {
+        switch (w) {
+            case NOMIN:
+                return "nom";
+            case PRENOM:
+                return "prenom";
+            case VRIJ:
+                return "vrij";
+            default:
+                return "onbekende positie";
+        }
+    }
 }

@@ -979,66 +979,12 @@ ostream& operator<<( ostream& os, const ratio& r ){
   return os;
 }
 
-
-enum CGNProp { ISNAME, ISLET,
-	       ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL, ISSUBJ,
-	       ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
-	       JUSTAWORD, NOTAWORD };
-
-string toString( const CGNProp& w ){
-  switch ( w ){
-  case ISNAME:
-    return "naam";
-  case ISLET:
-    return "punctuatie";
-  case ISVD:
-    return "voltooid_deelw";
-  case ISOD:
-    return "onvoltooid_deelw";
-  case ISINF:
-    return "infinitief";
-  case ISPVTGW:
-    return "tegenwoordige_tijd";
-  case ISPVVERL:
-    return "verleden_tijd";
-  case ISSUBJ:
-    return "subjonctive";
-  case ISPPRON1:
-    return "voornaamwoord_1";
-  case ISPPRON2:
-    return "voornaamwoord_2";
-  case ISPPRON3:
-    return "voornaamwoord_3";
-  case  ISAANW:
-    return "aanwijzend";
-  case  NOTAWORD:
-    return "GEEN_WOORD";
-  default:
-    return "default";
-  }
-}
-
-ostream& operator<<( ostream& os, const CGNProp& p ){
+ostream& operator<<( ostream& os, const CGN::Prop& p ){
   os << toString( p );
   return os;
 }
 
-enum CGNPosition { NOMIN, PRENOM, VRIJ, NOPOS };
-
-string toString( const CGNPosition& w ){
-  switch ( w ){
-  case NOMIN:
-    return "nom";
-  case PRENOM:
-    return "prenom";
-  case VRIJ:
-    return "vrij";
-  default:
-    return "onbekende positie";
-  }
-}
-
-ostream& operator<<( ostream& os, const CGNPosition& p ){
+ostream& operator<<( ostream& os, const CGN::Position& p ){
   os << toString( p );
   return os;
 }
@@ -1148,7 +1094,7 @@ struct basicStats {
   virtual string Lemma() const { return ""; };
   virtual string llemma() const { return ""; };
   virtual CGN::Type postag() const { return CGN::UNASS; };
-  virtual CGNProp wordProperty() const { return NOTAWORD; };
+  virtual CGN::Prop wordProperty() const { return CGN::NOTAWORD; };
   virtual ConnType getConnType() const { return NOCONN; };
   virtual void setConnType( ConnType ){
     throw logic_error("setConnType() only valid for words" );
@@ -1222,7 +1168,7 @@ struct wordStats : public basicStats {
   SituationType checkSituation() const;
   bool checkNominal( const xmlNode * ) const;
   void setCGNProps( const PosAnnotation* );
-  CGNProp wordProperty() const { return prop; };
+  CGN::Prop wordProperty() const { return prop; };
   SEM::Type checkSemProps( ) const;
   AfkType checkAfk( ) const;
   bool checkPropNeg() const;
@@ -1269,8 +1215,8 @@ struct wordStats : public basicStats {
   double word_freq_log;
   double lemma_freq_log;
   double logprob10;
-  CGNProp prop;
-  CGNPosition position;
+  CGN::Prop prop;
+  CGN::Position position;
   SEM::Type sem_type;
   vector<string> morphemes;
   multimap<DD_type,int> distances;
@@ -1384,7 +1330,7 @@ bool wordStats::checkContent() const {
     }
   }
   else {
-    return ( prop == ISNAME
+    return ( prop == CGN::ISNAME
 	     || tag == CGN::N || tag == CGN::BW || tag == CGN::ADJ );
   }
   return false;
@@ -1493,58 +1439,58 @@ bool wordStats::checkNominal( const xmlNode *alpWord ) const {
 
 void wordStats::setCGNProps( const PosAnnotation* pa ) {
   if ( tag == CGN::LET )
-    prop = ISLET;
+    prop = CGN::ISLET;
   else if ( tag == CGN::SPEC && pos.find("eigen") != string::npos )
-    prop = ISNAME;
+    prop = CGN::ISNAME;
   else if ( tag == CGN::WW ){
     string wvorm = pa->feat("wvorm");
     if ( wvorm == "inf" ){
-      prop = ISINF;
+      prop = CGN::ISINF;
       string pos = pa->feat("positie");
       if ( pos == "vrij" ){
-	position = VRIJ;
+	position = CGN::VRIJ;
       }
       else if ( pos == "prenom" ){
-	position = PRENOM;
+	position = CGN::PRENOM;
       }
       else if ( pos == "nom" ){
-	position = NOMIN;
+	position = CGN::NOMIN;
       }
     }
     else if ( wvorm == "vd" ){
-      prop = ISVD;
+      prop = CGN::ISVD;
       string pos = pa->feat("positie");
       if ( pos == "vrij" ){
-	position = VRIJ;
+	position = CGN::VRIJ;
       }
       else if ( pos == "prenom" ){
-	position = PRENOM;
+	position = CGN::PRENOM;
       }
       else if ( pos == "nom" ){
-	position = NOMIN;
+	position = CGN::NOMIN;
       }
     }
     else if ( wvorm == "od" ){
-      prop = ISOD;
+      prop = CGN::ISOD;
       string pos = pa->feat("positie");
       if ( pos == "vrij" ){
-	position = VRIJ;
+	position = CGN::VRIJ;
       }
       else if ( pos == "prenom" ){
-	position = PRENOM;
+	position = CGN::PRENOM;
       }
       else if ( pos == "nom" ){
-	position = NOMIN;
+	position = CGN::NOMIN;
       }
     }
     else if ( wvorm == "pv" ){
       string tijd = pa->feat("pvtijd");
       if ( tijd == "tgw" )
-	prop = ISPVTGW;
+	prop = CGN::ISPVTGW;
       else if ( tijd == "verl" )
-	prop = ISPVVERL;
+	prop = CGN::ISPVVERL;
       else if ( tijd == "conj" )
-	prop = ISSUBJ;
+	prop = CGN::ISSUBJ;
       else {
 	cerr << "cgnProps: een onverwachte ww tijd: " << tijd << endl;
       }
@@ -1569,11 +1515,11 @@ void wordStats::setCGNProps( const PosAnnotation* pa ) {
 	string persoon = pa->feat("persoon");
 	if ( !persoon.empty() ){
 	  if ( persoon[0] == '1' )
-	    prop = ISPPRON1;
+	    prop = CGN::ISPPRON1;
 	  else if ( persoon[0] == '2' )
-	    prop = ISPPRON2;
+	    prop = CGN::ISPPRON2;
 	  else if ( persoon[0] == '3' ){
-	    prop = ISPPRON3;
+	    prop = CGN::ISPPRON3;
 	    isPronRef = ( vwtype == "pers" || vwtype == "bez" );
 	  }
 	  else {
@@ -1583,7 +1529,7 @@ void wordStats::setCGNProps( const PosAnnotation* pa ) {
 	}
       }
       else if ( vwtype == "aanw" ){
-	prop = ISAANW;
+	prop = CGN::ISAANW;
 	isPronRef = true;
       }
     }
@@ -1612,7 +1558,7 @@ SEM::Type wordStats::checkSemProps( ) const {
     //    cerr << "semtype=" << sem << endl;
     return sem;
   }
-  else if ( prop == ISNAME ){
+  else if ( prop == CGN::ISNAME ){
     // Names are te be looked up in the Noun list too
     SEM::Type sem = SEM::UNFOUND_NOUN;
     map<string,SEM::Type>::const_iterator sit = settings.noun_sem.find( lemma );
@@ -1650,8 +1596,8 @@ SEM::Type wordStats::checkSemProps( ) const {
       sit = settings.verb_sem.find( full_lemma );
     }
     if ( sit == settings.verb_sem.end() ){
-      if ( position == PRENOM
-	   && ( prop == ISVD || prop == ISOD ) ){
+      if ( position == CGN::PRENOM
+	   && ( prop == CGN::ISVD || prop == CGN::ISOD ) ){
 	// might be a 'hidden' adj!
 	//	cerr << "lookup a probable ADJ " << prop << " (" << word << ") " << endl;
 	sit = settings.adj_sem.find( l_word );
@@ -2139,7 +2085,7 @@ wordStats::wordStats( int index,
   top_freq(notFound), word_freq(0), lemma_freq(0),
   wordOverlapCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NA), lemma_freq_log(NA),
-  logprob10(NA), prop(JUSTAWORD), position(NOPOS), sem_type(SEM::NO_SEMTYPE),afkType(NO_A)
+  logprob10(NA), prop(CGN::JUSTAWORD), position(CGN::NOPOS), sem_type(SEM::NO_SEMTYPE),afkType(NO_A)
 {
   UnicodeString us = w->text();
   charCnt = us.length();
@@ -2168,14 +2114,14 @@ wordStats::wordStats( int index,
 	//	cerr << "scheidbaar WW: " << full << endl;
 	full_lemma = full;
       }
-      if ( (prop == ISPVTGW || prop == ISPVVERL) &&
+      if ( (prop == CGN::ISPVTGW || prop == CGN::ISPVVERL) &&
 	   wwform != PASSIVE_VERB ){
 	isImperative = checkImp( alpWord );
       }
     }
   }
   isContent = checkContent();
-  if ( prop != ISLET ){
+  if ( prop != CGN::ISLET ){
     int compLen = 0;
     CompoundType comp = NOCOMP;
     vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
@@ -2219,7 +2165,7 @@ wordStats::wordStats( int index,
     connType = checkConnective( alpWord );
     sitType = checkSituation();
     morphCnt = morphemes.size();
-    if ( prop != ISNAME ){
+    if ( prop != CGN::ISNAME ){
       charCntExNames = charCnt;
       morphCntExNames = morphCnt;
     }
@@ -2258,7 +2204,7 @@ void fill_word_lemma_buffers( const sentStats*,
 void wordStats::setPersRef() {
   if ( sem_type == SEM::CONCRETE_HUMAN_NOUN ||
        nerProp == PER_B ||
-       prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3 ){
+       prop == CGN::ISPPRON1 || prop == CGN::ISPPRON2 || prop == CGN::ISPPRON3 ){
     isPersRef = true;
   }
   else {
@@ -2269,9 +2215,9 @@ void wordStats::setPersRef() {
 //#define DEBUG_OL
 
 bool wordStats::isOverlapCandidate() const {
-  if ( ( tag == CGN::VNW && prop != ISAANW ) ||
+  if ( ( tag == CGN::VNW && prop != CGN::ISAANW ) ||
        ( tag == CGN::N ) ||
-       ( prop == ISNAME ) ||
+       ( prop == CGN::ISNAME ) ||
        ( tag == CGN::WW && wwform == HEAD_VERB ) ){
     return true;
   }
@@ -2394,7 +2340,7 @@ void wordStats::addMetrics( ) const {
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
   if ( logprob10 != NA  )
     addOneMetric( doc, el, "lprob10", toString(logprob10) );
-  if ( prop != JUSTAWORD )
+  if ( prop != CGN::JUSTAWORD )
     addOneMetric( doc, el, "property", toString(prop) );
   if ( sem_type != SEM::NO_SEMTYPE )
     addOneMetric( doc, el, "semtype", toString(sem_type) );
@@ -2460,7 +2406,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
   os << std::showpoint
      << double(charCnt) << ","
      << 1.0/double(charCnt) <<  ",";
-  if ( prop == ISNAME ){
+  if ( prop == CGN::ISNAME ){
     os << "NA,NA,";
   }
   else {
@@ -2474,7 +2420,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
     os << double(morphCnt) << ","
        << 1.0/double(morphCnt) << ",";
   }
-  if ( prop == ISNAME ){
+  if ( prop == CGN::ISNAME ){
     os << "NA,NA,";
   }
   else {
@@ -2496,7 +2442,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
     os << "NA,";
   else
     os << word_freq_log << ",";
-  if ( prop == ISNAME || word_freq_log == NA )
+  if ( prop == CGN::ISNAME || word_freq_log == NA )
     os << "NA" << ",";
   else
     os << word_freq_log << ",";
@@ -2504,7 +2450,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
     os << "NA,";
   else
     os << lemma_freq_log << ",";
-  if ( prop == ISNAME || lemma_freq_log == NA )
+  if ( prop == CGN::ISNAME || lemma_freq_log == NA )
     os << "NA" << ",";
   else
     os << lemma_freq_log << ",";
@@ -2542,7 +2488,7 @@ void wordStats::concreetHeader( ostream& os ) const {
 }
 
 void wordStats::concreetToCSV( ostream& os ) const {
-  if ( tag == CGN::N || prop == ISNAME ){
+  if ( tag == CGN::N || prop == CGN::ISNAME ){
     os << sem_type << ",";
   }
   else {
@@ -2571,11 +2517,11 @@ void wordStats::persoonlijkheidHeader( ostream& os ) const {
 
 void wordStats::persoonlijkheidToCSV( ostream& os ) const {
   os << isPersRef << ","
-     << (prop == ISPPRON1 ) << ","
-     << (prop == ISPPRON2 ) << ","
-     << (prop == ISPPRON3 ) << ","
-     << (prop == ISPPRON1 || prop == ISPPRON2 || prop == ISPPRON3) << ",";
-  os << (prop == ISNAME) << ",";
+     << (prop == CGN::ISPPRON1 ) << ","
+     << (prop == CGN::ISPPRON2 ) << ","
+     << (prop == CGN::ISPPRON3 ) << ","
+     << (prop == CGN::ISPPRON1 || prop == CGN::ISPPRON2 || prop == CGN::ISPPRON3) << ",";
+  os << (prop == CGN::ISNAME) << ",";
   if ( nerProp == NONER )
     os << "0,";
   else
@@ -2596,10 +2542,10 @@ void wordStats::miscToCSV( ostream& os ) const {
   else {
     os << wwform << ",";
   }
-  os << (prop == ISPVTGW) << ",";
-  os << (prop == ISVD?toString(position):"0") << ","
-     << (prop == ISOD?toString(position):"0") << ","
-     << (prop == ISINF?toString(position):"0") << ",";
+  os << (prop == CGN::ISPVTGW) << ",";
+  os << (prop == CGN::ISVD?toString(position):"0") << ","
+     << (prop == CGN::ISOD?toString(position):"0") << ","
+     << (prop == CGN::ISINF?toString(position):"0") << ",";
   os << archaic << ",";
   if ( logprob10 == NA )
     os << "NA,";
@@ -4405,7 +4351,7 @@ void structStats::calculate_MTLDs() {
   vector<string> cause_sits;
   vector<string> emotion_sits;
   for ( size_t i=0; i < wordNodes.size(); ++i ){
-    if ( wordNodes[i]->wordProperty() == ISLET ){
+    if ( wordNodes[i]->wordProperty() == CGN::ISLET ){
       continue;
     }
     string word = wordNodes[i]->ltext();
@@ -4415,7 +4361,7 @@ void structStats::calculate_MTLDs() {
     if ( wordNodes[i]->isContent ){
       conts.push_back( wordNodes[i]->ltext() );
     }
-    if ( wordNodes[i]->prop == ISNAME ){
+    if ( wordNodes[i]->prop == CGN::ISNAME ){
       names.push_back( wordNodes[i]->ltext() );
     }
     switch( wordNodes[i]->getConnType() ){
@@ -4921,10 +4867,10 @@ void sentStats::resolveLSA( const map<string,double>& LSAword_dists ){
     }
     sv[i]->setLSAcontext(context/(sv.size()-1));
     for ( size_t j=i+1; j < sv.size(); ++j ){
-      if ( sv[i]->wordProperty() == ISLET ){
+      if ( sv[i]->wordProperty() == CGN::ISLET ){
 	continue;
       }
-      if ( sv[j]->wordProperty() == ISLET ){
+      if ( sv[j]->wordProperty() == CGN::ISLET ){
 	if ( i == 0 )
 	  ++lets;
 	continue;
@@ -5224,7 +5170,7 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
     if ( ws->lemma[ws->lemma.length()-1] == '?' ){
       question = true;
     }
-    if ( ws->prop == ISLET ){
+    if ( ws->prop == CGN::ISLET ){
       letCnt++;
       sv.push_back( ws );
       continue;
@@ -5266,77 +5212,77 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
       if ( ws->isContent ) {
         word_freq += ws->word_freq_log;
         lemma_freq += ws->lemma_freq_log;
-        if ( ws->prop != ISNAME ){
+        if ( ws->prop != CGN::ISNAME ){
           word_freq_n += ws->word_freq_log;
           lemma_freq_n += ws->lemma_freq_log;
         }
       }
       switch ( ws->prop ){
-      case ISNAME:
+      case CGN::ISNAME:
 	nameCnt++;
 	unique_names[ws->l_word] +=1;
 	break;
-      case ISVD:
+      case CGN::ISVD:
 	switch ( ws->position ){
-	case NOMIN:
+	case CGN::NOMIN:
 	  vdNwCnt++;
 	  break;
-	case PRENOM:
+	case CGN::PRENOM:
 	  vdBvCnt++;
 	  break;
-	case VRIJ:
+	case CGN::VRIJ:
 	  vdVrijCnt++;
 	  break;
 	default:
 	  break;
 	}
 	break;
-      case ISINF:
+      case CGN::ISINF:
 	switch ( ws->position ){
-	case NOMIN:
+	case CGN::NOMIN:
 	  infNwCnt++;
 	  break;
-	case PRENOM:
+	case CGN::PRENOM:
 	  infBvCnt++;
 	  break;
-	case VRIJ:
+	case CGN::VRIJ:
 	  infVrijCnt++;
 	  break;
 	default:
 	  break;
 	}
 	break;
-      case ISOD:
+      case CGN::ISOD:
 	switch ( ws->position ){
-	case NOMIN:
+	case CGN::NOMIN:
 	  odNwCnt++;
 	  break;
-	case PRENOM:
+	case CGN::PRENOM:
 	  odBvCnt++;
 	  break;
-	case VRIJ:
+	case CGN::VRIJ:
 	  odVrijCnt++;
 	  break;
 	default:
 	  break;
 	}
 	break;
-      case ISPVVERL:
+      case CGN::ISPVVERL:
 	pastCnt++;
 	break;
-      case ISPVTGW:
+      case CGN::ISPVTGW:
 	presentCnt++;
 	break;
-      case ISSUBJ:
+      case CGN::ISSUBJ:
 	subjonctCnt++;
 	break;
-      case ISPPRON1:
+      case CGN::ISPPRON1:
 	pron1Cnt++;
 	break;
-      case ISPPRON2:
+      case CGN::ISPPRON2:
 	pron2Cnt++;
 	break;
-      case ISPPRON3:
+      case CGN::ISPPRON3:
 	pron3Cnt++;
 	break;
       default:
@@ -5796,7 +5742,7 @@ void docStats::calculate_doc_overlap( ){
   for ( vector<const wordStats*>::const_iterator it = wv2.begin();
 	it != wv2.end();
 	++it ){
-    if ( (*it)->wordProperty() == ISLET )
+    if ( (*it)->wordProperty() == CGN::ISLET )
       continue;
     string l_word =  (*it)->ltext();
     string l_lemma = (*it)->llemma();
