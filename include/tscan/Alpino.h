@@ -50,6 +50,7 @@ inline std::ostream& operator<< (std::ostream&os, const WWform& wf ){
 xmlDoc *AlpinoParse( const folia::Sentence *, const std::string& );
 xmlNode *getAlpNodeWord( xmlDoc *, const folia::Word * );
 bool checkImp( const xmlNode * );
+bool checkModifier( const xmlNode * );
 void countCrdCnj( xmlDoc *, int&, int& );
 void mod_stats( xmlDoc *, int&, int&, int& );
 int get_d_level( const folia::Sentence *s, xmlDoc *alp );

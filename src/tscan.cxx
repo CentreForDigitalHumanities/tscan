@@ -47,6 +47,7 @@
 #include "tscan/decomp.h"
 #include "tscan/cgn.h"
 #include "tscan/sem.h"
+#include "tscan/intensify.h"
 
 using namespace std;
 using namespace TiCC;
@@ -193,6 +194,7 @@ struct settingData {
   map <string, SEM::Type> adj_sem;
   map <string, SEM::Type> noun_sem;
   map <string, SEM::Type> verb_sem;
+  map <string, Intensify::Type> intensify;
   map <string, double> pol_lex;
   map<string, cf_data> staph_word_freq_lex;
   long int staph_total;
@@ -427,6 +429,43 @@ bool fill( CGN::Type tag, map<string,SEM::Type>& m, const string& filename ){
       return fillWW( m, is );
     if ( tag == CGN::ADJ )
       return fillADJ( m, is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
+bool fill_intensify(map<string,Intensify::Type>& m, istream& is){
+  string line;
+  while( safe_getline( is, line ) ){
+    line = TiCC::trim( line );
+    if ( line.empty() )
+      continue;
+    vector<string> parts;
+    int n = TiCC::split_at( line, parts, "\t" ); // split at tab
+    if ( n < 2 || n > 2 ){
+      cerr << "skip line: " << line << " (expected 2 values, got "
+       << n << ")" << endl;
+      continue;
+    }
+    string low = lowercase( parts[0] );
+    Intensify::Type res = Intensify::classify(TiCC::lowercase(parts[1]));
+    if ( m.find(low) != m.end() ){
+      cerr << "Information: multiple entry '" << low << "' in Intensify lex" << endl;
+    }
+    if ( res != Intensify::NO_INTENSIFY ){
+      // no use to store undefined values
+      m[low] = res;
+    }
+  }
+  return true;
+}
+
+bool fill_intensify(map<string,Intensify::Type>& m, const string& filename) {
+  ifstream is( filename.c_str() );
+  if (is) {
+    return fill_intensify(m, is);
   }
   else {
     cerr << "couldn't open file: " << filename << endl;
@@ -803,6 +842,11 @@ void settingData::init( const Configuration& cf ){
     if ( !fill( CGN::WW, verb_sem, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
+  val = cf.lookUp( "intensify" );
+  if ( !val.empty() ){
+    if ( !fill_intensify( intensify, val ) )
+      exit( EXIT_FAILURE );
+  }
   staph_total = 0;
   val = cf.lookUp( "staph_word_freq_lex" );
   if ( !val.empty() ){
@@ -1084,6 +1128,8 @@ struct basicStats {
   virtual void wordSortToCSV( ostream& ) const = 0;
   virtual void prepPhraseHeader( ostream& ) const = 0;
   virtual void prepPhraseToCSV( ostream& ) const = 0;
+  virtual void intensHeader( ostream& ) const = 0;
+  virtual void intensToCSV( ostream& ) const = 0;
   virtual void miscToCSV( ostream& ) const = 0;
   virtual void miscHeader( ostream& ) const = 0;
   virtual string rarity( int ) const { return "NA"; };
@@ -1147,6 +1193,8 @@ struct wordStats : public basicStats {
   void wordSortToCSV( ostream& ) const;
   void prepPhraseHeader( ostream& ) const {};
   void prepPhraseToCSV( ostream& ) const {};
+  void intensHeader( ostream& ) const {};
+  void intensToCSV( ostream& ) const {};
   void miscHeader( ostream& os ) const;
   void miscToCSV( ostream& ) const;
   void toCSV( ostream& ) const;
@@ -1170,6 +1218,7 @@ struct wordStats : public basicStats {
   void setCGNProps( const PosAnnotation* );
   CGN::Prop wordProperty() const { return prop; };
   SEM::Type checkSemProps( ) const;
+  Intensify::Type checkIntensify(const xmlNode*) const;
   AfkType checkAfk( ) const;
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
@@ -1218,6 +1267,7 @@ struct wordStats : public basicStats {
   CGN::Prop prop;
   CGN::Position position;
   SEM::Type sem_type;
+  Intensify::Type intensify_type;
   vector<string> morphemes;
   multimap<DD_type,int> distances;
   AfkType afkType;
@@ -1623,6 +1673,20 @@ SEM::Type wordStats::checkSemProps( ) const {
     return sem;
   }
   return SEM::NO_SEMTYPE;
+}
+
+Intensify::Type wordStats::checkIntensify(const xmlNode *alpWord) const {
+  map<string,Intensify::Type>::const_iterator sit = settings.intensify.find(lemma);
+  Intensify::Type res = Intensify::NO_INTENSIFY;
+  if (sit != settings.intensify.end()) {
+    res = sit->second;  
+    if (res == Intensify::BVBW) 
+    {
+      cerr << lemma << " => " << tag << endl;
+      if (!checkModifier(alpWord)) res = Intensify::NO_INTENSIFY;
+    }
+  }
+  return res;
 }
 
 AfkType wordStats::checkAfk() const {
@@ -2085,7 +2149,8 @@ wordStats::wordStats( int index,
   top_freq(notFound), word_freq(0), lemma_freq(0),
   wordOverlapCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NA), lemma_freq_log(NA),
-  logprob10(NA), prop(CGN::JUSTAWORD), position(CGN::NOPOS), sem_type(SEM::NO_SEMTYPE),afkType(NO_A)
+  logprob10(NA), prop(CGN::JUSTAWORD), position(CGN::NOPOS), 
+  sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY), afkType(NO_A)
 {
   UnicodeString us = w->text();
   charCnt = us.length();
@@ -2170,6 +2235,7 @@ wordStats::wordStats( int index,
       morphCntExNames = morphCnt;
     }
     sem_type = checkSemProps();
+    intensify_type = checkIntensify(alpWord);
     afkType = checkAfk();
     if ( alpWord )
       isNominal = checkNominal( alpWord );
@@ -2344,6 +2410,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "property", toString(prop) );
   if ( sem_type != SEM::NO_SEMTYPE )
     addOneMetric( doc, el, "semtype", toString(sem_type) );
+  if ( intensify_type != Intensify::NO_INTENSIFY )
+    addOneMetric( doc, el, "intensifytype", Intensify::toString(intensify_type) );
   if ( afkType != NO_A )
     addOneMetric( doc, el, "afktype", toString(afkType) );
 }
@@ -2649,6 +2717,14 @@ struct structStats: public basicStats {
     lsa_par_ctx(NA),
     al_gem(NA),
     al_max(NA),
+    intensCnt(0),
+    intensBvnwCnt(0),
+    intensBvbwCnt(0),
+    intensBwCnt(0),
+    intensCombiCnt(0),
+    intensNwCnt(0),
+    intensTussCnt(0),
+    intensWwCnt(0),
     broadNounCnt(0),
     strictNounCnt(0),
     broadAdjCnt(0),
@@ -2746,6 +2822,8 @@ struct structStats: public basicStats {
   void wordSortToCSV( ostream& ) const;
   void prepPhraseHeader( ostream& ) const;
   void prepPhraseToCSV( ostream& ) const;
+  void intensHeader( ostream& ) const;
+  void intensToCSV( ostream& ) const;
   void miscHeader( ostream& ) const;
   void miscToCSV( ostream& ) const;
   void CSVheader( ostream&, const string& ) const;
@@ -2860,6 +2938,14 @@ struct structStats: public basicStats {
   double lsa_par_ctx;
   double al_gem;
   double al_max;
+  int intensCnt;
+  int intensBvnwCnt;
+  int intensBvbwCnt;
+  int intensBwCnt;
+  int intensCombiCnt;
+  int intensNwCnt;
+  int intensTussCnt;
+  int intensWwCnt;
   int broadNounCnt;
   int strictNounCnt;
   int broadAdjCnt;
@@ -3086,7 +3172,15 @@ void structStats::merge( structStats *ss ){
     else
       perplexity += ss->perplexity;
   }
-
+ 
+  intensCnt += ss->intensCnt;
+  intensBvnwCnt += ss->intensBvnwCnt;
+  intensBvbwCnt += ss->intensBvbwCnt;
+  intensBwCnt += ss->intensBwCnt;
+  intensCombiCnt += ss->intensCombiCnt;
+  intensNwCnt += ss->intensNwCnt;
+  intensTussCnt += ss->intensTussCnt;
+  intensWwCnt += ss->intensWwCnt;
   presentCnt += ss->presentCnt;
   pastCnt += ss->pastCnt;
   subjonctCnt += ss->subjonctCnt;
@@ -3415,6 +3509,15 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "undefined_adj_count", toString(undefinedAdjCnt) );
   addOneMetric( doc, el, "covered_adj_count", toString(adjCnt-uncoveredAdjCnt) );
   addOneMetric( doc, el, "uncovered_adj_count", toString(uncoveredAdjCnt) );
+  
+  addOneMetric( doc, el, "intens_count", toString(intensCnt) );
+  addOneMetric( doc, el, "intens_bvnw_count", toString(intensBvnwCnt) );
+  addOneMetric( doc, el, "intens_bvbw_count", toString(intensBvbwCnt) );
+  addOneMetric( doc, el, "intens_bw_count", toString(intensBwCnt) );
+  addOneMetric( doc, el, "intens_combi_count", toString(intensCombiCnt) );
+  addOneMetric( doc, el, "intens_nw_count", toString(intensNwCnt) );
+  addOneMetric( doc, el, "intens_tuss_count", toString(intensTussCnt) );
+  addOneMetric( doc, el, "intens_ww_count", toString(intensWwCnt) );
 
   addOneMetric( doc, el, "broad_noun", toString(broadNounCnt) );
   addOneMetric( doc, el, "strict_noun", toString(strictNounCnt) );
@@ -3501,6 +3604,7 @@ void structStats::CSVheader( ostream& os, const string& intro ) const {
   imperativeHeader( os );
   wordSortHeader( os );
   prepPhraseHeader( os );
+  intensHeader( os );
   miscHeader( os );
   os << endl;
 }
@@ -3521,6 +3625,7 @@ void structStats::toCSV( ostream& os ) const {
   imperativeToCSV( os );
   wordSortToCSV( os );
   prepPhraseToCSV( os );
+  intensToCSV( os );
   miscToCSV( os );
   os << endl;
 }
@@ -4086,6 +4191,23 @@ void structStats::prepPhraseToCSV( ostream& os ) const {
   os << density( archaicsCnt, wordCnt ) << ",";
 }
 
+void structStats::intensHeader( ostream& os ) const {
+  os << "Int_d,Int_bvnw_d,Int_bvbw_d,";
+  os << "Int_bw_d,Int_combi_d,Int_nw_d,";
+  os << "Int_tuss_d,Int_ww_d,";
+}
+
+void structStats::intensToCSV( ostream& os ) const {
+  os << density( intensCnt, wordCnt ) << ",";
+  os << density( intensBvnwCnt, wordCnt ) << ",";
+  os << density( intensBvbwCnt, wordCnt ) << ",";
+  os << density( intensBwCnt, wordCnt ) << ",";
+  os << density( intensCombiCnt, wordCnt ) << ",";
+  os << density( intensNwCnt, wordCnt ) << ",";
+  os << density( intensTussCnt, wordCnt ) << ",";
+  os << density( intensWwCnt, wordCnt ) << ",";
+}
+
 void structStats::miscHeader( ostream& os ) const {
   os << "Log_prob,Entropie,Perplexiteit,";
 }
@@ -4250,6 +4372,7 @@ struct sentStats : public structStats {
   void resolveSituations();
   void setLSAvalues( double, double, double = 0 );
   void resolveLSA( const map<string,double>& );
+  void resolveMultiWordIntensify();
   void resolveMultiWordAfks();
   void incrementConnCnt( ConnType );
   void addMetrics( ) const;
@@ -4906,6 +5029,31 @@ void sentStats::resolveLSA( const map<string,double>& LSAword_dists ){
   cerr << "LSA-sent-NET result = " << net << endl;
 #endif
   setLSAvalues( suc, net, 0 );
+}
+
+void sentStats::resolveMultiWordIntensify(){
+  int max_length_intensify = 5;
+  for ( size_t i = 0; i < sv.size() - 1; ++i ){
+    string startword = sv[i]->text();
+    string multiword = startword;
+
+    for ( size_t j = 1; i + j < sv.size() && j < max_length_intensify; ++j ){
+      // Attach the next word to the expression
+      multiword += " " + sv[i+j]->text();
+
+      // Look for the expression in the list of intensifiers
+      map<string,Intensify::Type>::const_iterator sit;
+      sit = settings.intensify.find( multiword );
+      // If found, update the counts, if not, continue
+      if ( sit != settings.intensify.end() ){
+        intensCombiCnt += j + 1;
+        intensCnt += j + 1;
+        // Break and skip to the first word after this expression
+        i += j; 
+        break; 
+      }
+    }
+  }
 }
 
 void sentStats::resolveMultiWordAfks(){
@@ -5591,6 +5739,36 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
       default:
 	;
       }
+      switch ( ws->intensify_type ) {
+          case Intensify::BVNW:
+              intensBvnwCnt++;
+              intensCnt++;
+              break;
+          case Intensify::BVBW:
+              intensBvbwCnt++;
+              intensCnt++;
+              break;
+          case Intensify::BW:
+              intensBwCnt++;
+              intensCnt++;
+              break;
+          case Intensify::COMBI:
+              intensCombiCnt++;
+              intensCnt++;
+              break;
+          case Intensify::NW:
+              intensNwCnt++;
+              intensCnt++;
+              break;
+          case Intensify::TUSS:
+              intensTussCnt++;
+              intensCnt++;
+              break;
+          case Intensify::WW:
+              intensWwCnt++;
+              intensCnt++;
+              break;
+      }
       sv.push_back( ws );
     }
   }
@@ -5605,6 +5783,7 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
   if ( settings.doLsa ){
     resolveLSA( LSAword_dists );
   }
+  resolveMultiWordIntensify();
   // Disabled for now
   //  resolveMultiWordAfks();
   resolvePrepExpr();
