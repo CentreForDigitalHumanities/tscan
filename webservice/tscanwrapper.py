@@ -115,6 +115,15 @@ else:
   nounclassification = TSCANDIR + "/data/nouns_semtype.data" 
 f.write("noun_semtypes=\"" + nounclassification + "\"\n")
 
+# 20150203: This allows custom intensifying words. Does require to specify the full path to the files.
+for i in clamdata.inputfiles('intensify'):
+  intensify = inputdir + i.filename
+  break
+else:
+  # When no inputfile is found, revert to the default
+  intensify = TSCANDIR + "/data/intensiveringen.data" 
+f.write("intensify=\"" + intensify + "\"\n")
+
 f.write("word_freq_lex=\"" + clamdata['word_freq_lex'] + "\"\n")  #freqlist_staphorsius_CLIB_words.freq
 f.write("lemma_freq_lex=\"" + clamdata['lemma_freq_lex'] + "\"\n") #freqlist_staphorsius_CLIB_lemma.freq
 f.write("staph_word_freq_lex=\"freqlist_staphorsius_CLIB_words.freq\"\n")  #freqlist_staphorsius_CLIB_words.freq

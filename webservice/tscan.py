@@ -151,6 +151,13 @@ PROFILES = [
             optional=True,
             unique=True,
         ),
+        # 20150203: Added possibility to enter custom intensifying words
+        InputTemplate('intensify', PlainTextFormat, 'Intensifying words',
+            StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file',value='utf-8'),
+            extension='.data',
+            optional=True,
+            unique=True,
+        ),
         #------------------------------------------------------------------------------------------------------------------------
         OutputTemplate('foliaout',FoLiAXMLFormat,'Output analysis',
             XSLTViewer(file=TSCANDIR + '/view/tscanview.xsl'),
