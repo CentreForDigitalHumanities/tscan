@@ -449,7 +449,7 @@ bool fill_intensify(map<string,Intensify::Type>& m, istream& is){
        << n << ")" << endl;
       continue;
     }
-    string low = lowercase( parts[0] );
+    string low = TiCC::trim(lowercase( parts[0] ));
     Intensify::Type res = Intensify::classify(TiCC::lowercase(parts[1]));
     if ( m.find(low) != m.end() ){
       cerr << "Information: multiple entry '" << low << "' in Intensify lex" << endl;
@@ -1682,7 +1682,7 @@ Intensify::Type wordStats::checkIntensify(const xmlNode *alpWord) const {
     res = sit->second;  
     if (res == Intensify::BVBW) 
     {
-      cerr << lemma << " => " << tag << endl;
+      // cerr << lemma << " => " << tag << endl;
       if (!checkModifier(alpWord)) res = Intensify::NO_INTENSIFY;
     }
   }
