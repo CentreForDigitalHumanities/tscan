@@ -966,16 +966,16 @@ bool checkImp( const xmlNode *alp_node ){
 bool checkModifier( const xmlNode *alp_node ){
   // check if this node is directly below:
   // - a form AP, PPART, PPRES or INF (adjective or non-conjugated verb)
-  // - a type SMAIN or SSUB (conjugated verb)
+  // - a type SMAIN or SSUB (conjugated verb), and the node itself is a MOD
   bool modifies = false; 
-  //string p_rel = getAttribute(alp_node->parent, "rel");
+  string rel = getAttribute(alp_node, "rel");
   string p_cat = getAttribute(alp_node->parent, "cat");
   
   if (p_cat == "ap" || p_cat == "ppart" || 
       p_cat == "ppres" || p_cat == "inf") {
     modifies = true;
   }
-  else if (p_cat == "smain" || p_cat == "ssub") {
+  else if (rel == "mod" && (p_cat == "smain" || p_cat == "ssub")) {
     modifies = true;
   }
   return modifies;
