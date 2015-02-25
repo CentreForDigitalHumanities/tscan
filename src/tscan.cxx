@@ -5768,6 +5768,8 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
               intensWwCnt++;
               intensCnt++;
               break;
+          default:
+              break;
       }
       sv.push_back( ws );
     }
