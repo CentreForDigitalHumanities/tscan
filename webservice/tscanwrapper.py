@@ -53,7 +53,15 @@ if not 'top_freq_lex' in clamdata:
     print >>sys.stderr, "Missing parameter: top_freq_lex"
     sys.exit(2)
 
-
+def load_custom_wordlist(configfile, inputdir, tscan_name, inputtemplate, default_location):
+  """This allows custom word lists. Does require to specify the full path to the files."""
+  for inputfile in clamdata.inputfiles(inputtemplate):
+    wordlist = inputdir + inputfile.filename
+    break
+  else:
+    # When no inputfile is found, revert to the default
+    wordlist = TSCANDIR + default_location
+  configfile.write(tscan_name + "=\"" + wordlist + "\"\n")
 
 #Write configuration file
 
@@ -103,26 +111,14 @@ f.write("frequencyClip="  + str(freqclip) + "\n")
 f.write("mtldThreshold="  + str(mtldthreshold) + "\n")
 
 f.write("configDir="+ TSCANDIR + "/data\n")
-f.write("adj_semtypes=\"adjs_semtype.data\"\n")
 f.write("verb_semtypes=\"verbs_semtype.data\"\n")
 
-# 20141121: This allows a custom noun classification. Does require to specify the full path to the files.
-for nc in clamdata.inputfiles('nounclassification'):
-  nounclassification = inputdir + nc.filename
-  break
-else:
-  # When no inputfile is found, revert to the default
-  nounclassification = TSCANDIR + "/data/nouns_semtype.data" 
-f.write("noun_semtypes=\"" + nounclassification + "\"\n")
-
-# 20150203: This allows custom intensifying words. Does require to specify the full path to the files.
-for i in clamdata.inputfiles('intensify'):
-  intensify = inputdir + i.filename
-  break
-else:
-  # When no inputfile is found, revert to the default
-  intensify = TSCANDIR + "/data/intensiveringen.data" 
-f.write("intensify=\"" + intensify + "\"\n")
+# 20150316: This allows custom adjective classification.
+load_custom_wordlist(f, inputdir, "adj_semtypes", "adjclassification", "/data/adjs_semtype.data")
+# 20141121: This allows a custom noun classification.
+load_custom_wordlist(f, inputdir, "noun_semtypes", "nounclassification", "/data/nouns_semtype.data")
+# 20150203: This allows custom intensifying words. 
+load_custom_wordlist(f, inputdir, "intensify", "intensify", "/data/intensiveringen.data")
 
 f.write("word_freq_lex=\"" + clamdata['word_freq_lex'] + "\"\n")  #freqlist_staphorsius_CLIB_words.freq
 f.write("lemma_freq_lex=\"" + clamdata['lemma_freq_lex'] + "\"\n") #freqlist_staphorsius_CLIB_lemma.freq
@@ -204,7 +200,7 @@ shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
 
 #pass all input files at once
 clam.common.status.write(statusfile, "Processing " + str(len(inputfiles)) + " files, this may take a while...",10) # status update
-ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg ' + ' '.join(['"' + x + '"' for x in inputfiles]))
+ref = os.system('ALPINO_HOME="/nethome/3020371/tscan/Alpino/" /nethome/3020371/tscan/bin/tscan --config=' + outputdir + '/tscan.cfg ' + ' '.join(['"' + x + '"' for x in inputfiles]))
 
 #collect output
 clam.common.status.write(statusfile, "Postprocessing",90) # status update

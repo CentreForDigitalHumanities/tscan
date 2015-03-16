@@ -144,6 +144,13 @@ PROFILES = [
             acceptarchive=True,
             multi=True
         ),
+        # 20150316: Added possibility to enter custom adjective classification
+        InputTemplate('adjclassification', PlainTextFormat, 'Adjective Classification',
+            StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file',value='utf-8'),
+            extension='.data',
+            optional=True,
+            unique=True,
+        ),
         # 20141121: Added possibility to enter custom noun classification
         InputTemplate('nounclassification', PlainTextFormat, 'Noun Classification',
             StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file',value='utf-8'),

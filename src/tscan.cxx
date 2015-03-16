@@ -829,7 +829,7 @@ void settingData::init( const Configuration& cf ){
 
   val = cf.lookUp( "adj_semtypes" );
   if ( !val.empty() ){
-    if ( !fill( CGN::ADJ, adj_sem, cf.configDir() + "/" + val ) )
+    if ( !fill( CGN::ADJ, adj_sem, val ) ) // 20150316: Full path necessary to allow custom input
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "noun_semtypes" );
