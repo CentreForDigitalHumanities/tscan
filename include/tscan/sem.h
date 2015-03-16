@@ -19,9 +19,8 @@ namespace SEM {
         NONHUMAN_SOUND_ADJ, NONHUMAN_OTHER_ADJ,
         TECH_ADJ, TIME_ADJ, PLACE_ADJ,
         SPEC_POS_ADJ, SPEC_NEG_ADJ,
-        POS_ADJ, NEG_ADJ,
+        POS_ADJ, NEG_ADJ, EVALUATIVE_ADJ,
         EPI_POS_ADJ, EPI_NEG_ADJ,
-        MORE_ADJ, LESS_ADJ,
         ABSTRACT_ADJ,
         ABSTRACT_UNDEFINED, CONCRETE_UNDEFINED, UNDEFINED_VERB,
         ABSTRACT_STATE, CONCRETE_STATE, UNDEFINED_STATE,
@@ -36,5 +35,6 @@ namespace SEM {
     bool isBroadNoun(const Type);
     bool isStrictAdj(const Type);
     bool isBroadAdj(const Type);
-};
+}
+
 #endif // SEM_H

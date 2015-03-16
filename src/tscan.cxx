@@ -2752,10 +2752,9 @@ struct structStats: public basicStats {
     specNegAdjCnt(0),
     posAdjCnt(0),
     negAdjCnt(0),
+    evaluativeAdjCnt(0),
     epiPosAdjCnt(0),
     epiNegAdjCnt(0),
-    moreAdjCnt(0),
-    lessAdjCnt(0),
     abstractAdjCnt(0),
     undefinedNounCnt(0),
     uncoveredNounCnt(0),
@@ -2973,10 +2972,9 @@ struct structStats: public basicStats {
   int specNegAdjCnt;
   int posAdjCnt;
   int negAdjCnt;
+  int evaluativeAdjCnt;
   int epiPosAdjCnt;
   int epiNegAdjCnt;
-  int moreAdjCnt;
-  int lessAdjCnt;
   int abstractAdjCnt;
   int undefinedNounCnt;
   int uncoveredNounCnt;
@@ -3216,10 +3214,9 @@ void structStats::merge( structStats *ss ){
   specNegAdjCnt += ss->specNegAdjCnt;
   posAdjCnt += ss->posAdjCnt;
   negAdjCnt += ss->negAdjCnt;
+  evaluativeAdjCnt += ss->evaluativeAdjCnt;
   epiPosAdjCnt += ss->epiPosAdjCnt;
   epiNegAdjCnt += ss->epiNegAdjCnt;
-  moreAdjCnt += ss->moreAdjCnt;
-  lessAdjCnt += ss->lessAdjCnt;
   abstractAdjCnt += ss->abstractAdjCnt;
   undefinedNounCnt += ss->undefinedNounCnt;
   uncoveredNounCnt += ss->uncoveredNounCnt;
@@ -3501,10 +3498,9 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "neg_spec_adj_count", toString(specNegAdjCnt) );
   addOneMetric( doc, el, "pos_adj_count", toString(posAdjCnt) );
   addOneMetric( doc, el, "neg_adj_count", toString(negAdjCnt) );
+  addOneMetric( doc, el, "evaluative_adj_count", toString(evaluativeAdjCnt) );
   addOneMetric( doc, el, "pos_epi_adj_count", toString(epiPosAdjCnt) );
   addOneMetric( doc, el, "neg_epi_adj_count", toString(epiNegAdjCnt) );
-  addOneMetric( doc, el, "versterker_adj_count", toString(moreAdjCnt) );
-  addOneMetric( doc, el, "verzwakker_adj_count", toString(lessAdjCnt) );
   addOneMetric( doc, el, "abstract_adj", toString(abstractAdjCnt) );
   addOneMetric( doc, el, "undefined_adj_count", toString(undefinedAdjCnt) );
   addOneMetric( doc, el, "covered_adj_count", toString(adjCnt-uncoveredAdjCnt) );
@@ -3920,14 +3916,13 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Spec_negatief_bvnw_p,Spec_negatief_bvnw_d,";
   os << "Alg_positief_bvnw_p,Alg_positief_bvnw_d,";
   os << "Alg_negatief_bvnw_p,Alg_negatief_bvnw_d,";
+  os << "Alg_evaluatief_bvnw_p,Alg_evaluatief_bvnw_d,"; // 20150316: Features added
   os << "Ep_positief_bvnw_p,Ep_positief_bvnw_d,";
   os << "Ep_negatief_bvnw_p,Ep_negatief_bvnw_d,";
-  os << "Versterker_bvnw_p,Versterker_bvnw_d,";
-  os << "Verzwakker_bvnw_p,Verzwakker_bvnw_d,";
   os << "Abstract_ov_bvnw_p,Abstract_ov_bvnw_d,"; // 20141125: Features renamed
-  os << "Spec_ev_bvnw_p,Spec_ev_bvnw_d,";
-  os << "Alg_ev_bvnw_p,Alg_ev_bvnw_d,";
-  os << "Ep_ev_bvnw_p,Ep_ev_bvnw_d,";
+  os << "Spec_oordeel_bvnw_p,Spec_oordeel_bvnw_d,"; // 20150316: Features renamed
+  os << "Alg_bvnw_p,Alg_bvnw_d,"; // 20150316: Features renamed
+  os << "Ep_bvnw_p,Ep_bvnw_d,"; // 20150316: Features renamed
   os << "Conc_bvnw_strikt_p,Conc_bvnw_strikt_d,";
   os << "Conc_bvnw_ruim_p,Conc_bvnw_ruim_d,";
   os << "Subj_bvnw_p,Subj_bvnw_d,";
@@ -4005,20 +4000,18 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << density( posAdjCnt,wordCnt ) << ",";
   os << proportion( negAdjCnt, coveredAdj ) << ",";
   os << density( negAdjCnt,wordCnt ) << ",";
+  os << proportion( evaluativeAdjCnt, coveredAdj ) << ",";
+  os << density( evaluativeAdjCnt,wordCnt ) << ",";
   os << proportion( epiPosAdjCnt, coveredAdj ) << ",";
   os << density( epiPosAdjCnt,wordCnt ) << ",";
   os << proportion( epiNegAdjCnt, coveredAdj ) << ",";
   os << density( epiNegAdjCnt,wordCnt ) << ",";
-  os << proportion( moreAdjCnt, coveredAdj ) << ",";
-  os << density( moreAdjCnt,wordCnt ) << ",";
-  os << proportion( lessAdjCnt, coveredAdj ) << ",";
-  os << density( lessAdjCnt,wordCnt ) << ",";
   os << proportion( abstractAdjCnt, coveredAdj ) << ",";
   os << density( abstractAdjCnt,wordCnt ) << ",";
   os << proportion( specPosAdjCnt + specNegAdjCnt, coveredAdj ) << ",";
   os << density( specPosAdjCnt + specNegAdjCnt, wordCnt ) << ",";
-  os << proportion( posAdjCnt + negAdjCnt, coveredAdj ) << ",";
-  os << density( posAdjCnt + negAdjCnt, wordCnt ) << ",";
+  os << proportion( posAdjCnt + negAdjCnt + evaluativeAdjCnt, coveredAdj ) << ",";
+  os << density( posAdjCnt + negAdjCnt + evaluativeAdjCnt, wordCnt ) << ",";
   os << proportion( epiPosAdjCnt + epiNegAdjCnt, coveredAdj ) << ",";
   os << density( epiPosAdjCnt + epiNegAdjCnt ,wordCnt ) << ",";
   os << proportion( strictAdjCnt, coveredAdj ) << ",";
@@ -4049,7 +4042,7 @@ void structStats::persoonlijkheidHeader( ostream& os ) const {
 }
 
 void structStats::persoonlijkheidToCSV( ostream& os ) const {
-  double clauseCnt = pastCnt + presentCnt;
+  //double clauseCnt = pastCnt + presentCnt;
   os << density( persRefCnt, wordCnt ) << ",";
   os << density( pron1Cnt, wordCnt ) << ",";
   os << density( pron2Cnt, wordCnt ) << ",";
@@ -5032,7 +5025,7 @@ void sentStats::resolveLSA( const map<string,double>& LSAword_dists ){
 }
 
 void sentStats::resolveMultiWordIntensify(){
-  int max_length_intensify = 5;
+  size_t max_length_intensify = 5;
   for ( size_t i = 0; i < sv.size() - 1; ++i ){
     string startword = sv[i]->text();
     string multiword = startword;
@@ -5671,20 +5664,16 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 	negAdjCnt++;
 	subjectiveAdjCnt++;
 	break;
+      case SEM::EVALUATIVE_ADJ:
+  evaluativeAdjCnt++;
+  subjectiveAdjCnt++;
+  break;
       case SEM::EPI_POS_ADJ:
 	epiPosAdjCnt++;
 	subjectiveAdjCnt++;
 	break;
       case SEM::EPI_NEG_ADJ:
 	epiNegAdjCnt++;
-	subjectiveAdjCnt++;
-	break;
-      case SEM::MORE_ADJ:
-	moreAdjCnt++;
-	subjectiveAdjCnt++;
-	break;
-      case SEM::LESS_ADJ:
-	lessAdjCnt++;
 	subjectiveAdjCnt++;
 	break;
       case SEM::ABSTRACT_ADJ:

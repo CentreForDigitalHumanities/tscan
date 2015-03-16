@@ -107,17 +107,14 @@ namespace SEM {
             case NEG_ADJ:
                 return "neg-adj";
                 break;
+            case EVALUATIVE_ADJ:
+                return "evaluative-adj";
+                break;
             case EPI_POS_ADJ:
                 return "epi-pos-adj";
                 break;
             case EPI_NEG_ADJ:
                 return "epi-neg-adj";
-                break;
-            case MORE_ADJ:
-                return "stronger-adj";
-                break;
-            case LESS_ADJ:
-                return "weaker-adj";
                 break;
             case ABSTRACT_UNDEFINED:
                 return "abstract-undefined";
@@ -258,14 +255,12 @@ namespace SEM {
             result = POS_ADJ;
         } else if (s == "alg_negatief") {
             result = NEG_ADJ;
+        } else if (s == "alg_evaluatief") {
+            result = EVALUATIVE_ADJ;
         } else if (s == "ep_positief") {
             result = EPI_POS_ADJ;
         } else if (s == "ep_negatief") {
             result = EPI_NEG_ADJ;
-        } else if (s == "versterker") {
-            result = MORE_ADJ;
-        } else if (s == "verzwakker") {
-            result = LESS_ADJ;
         } else if (s == "abstract_ov") {
             result = ABSTRACT_ADJ;
         }
