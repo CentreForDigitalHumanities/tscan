@@ -300,58 +300,8 @@ bool fillN( map<string,SEM::Type>& m, istream& is ){
 	res = *values.begin();
       }
       else {
-	// possible values are (from high to low)
-	// CONCRETE_SUBSTANCE_NOUN
-	// CONCRETE_ARTEFACT_NOUN
-	// CONCRETE_NONHUMAN_NOUN
-  // CONCRETE_DYNAMIC_NOUN
-	// ABSTRACT_DYNAMIC_NOUN
-	// ABSTRACT_NONDYNAMIC_NOUN
-	// CONCRETE_HUMAN_NOUN
-	// INSTITUT_NOUN
-	// CONCRETE_OTHER_NOUN
-	// UNFOUND
-	if ( values.find(SEM::CONCRETE_ARTEFACT_NOUN) != values.end() ) {
-	  if ( values.find(SEM::CONCRETE_SUBSTANCE_NOUN) != values.end() ){
-	    res = SEM::CONCRETE_SUBSTANCE_NOUN;
-	  }
-	  else {
-	    res = SEM::CONCRETE_ARTEFACT_NOUN;
-	  }
-	}
-	else if ( values.find(SEM::CONCRETE_NONHUMAN_NOUN) != values.end() ){
-	  res = SEM::CONCRETE_NONHUMAN_NOUN;
-	}
-	else if ( values.find(SEM::INSTITUT_NOUN) != values.end() ){
-	  res = SEM::INSTITUT_NOUN;
-	}
-	else if ( values.find(SEM::CONCRETE_OTHER_NOUN) != values.end() ){
-	  if ( values.find(SEM::ABSTRACT_DYNAMIC_NOUN) != values.end() ){
-	    res = SEM::CONCRETE_OTHER_NOUN;
-	  }
-	  else if ( values.find(SEM::ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
-	    res = SEM::CONCRETE_OTHER_NOUN;
-	  }
-	  else if ( values.find(SEM::CONCRETE_SUBSTANCE_NOUN) != values.end() ){
-	    res = SEM::CONCRETE_SUBSTANCE_NOUN;
-	  }
-	  else if ( values.find(SEM::CONCRETE_HUMAN_NOUN) != values.end() ){
-	    res = SEM::CONCRETE_HUMAN_NOUN;
-	  }
-	}
-  else if ( values.find(SEM::CONCRETE_DYNAMIC_NOUN) != values.end() ){
-    if ( values.find(SEM::ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
-      res = SEM::CONCRETE_DYNAMIC_NOUN;
-    }
-  }
-	else if ( values.find(SEM::ABSTRACT_DYNAMIC_NOUN) != values.end() ){
-	  if ( values.find(SEM::ABSTRACT_NONDYNAMIC_NOUN) != values.end() ){
-	    res = SEM::ABSTRACT_DYNAMIC_NOUN;
-	  }
-	}
-	if ( res == SEM::UNFOUND_NOUN ){
-	  cerr << "unable to determine semtype from: " << values << endl;
-	}
+	cerr << "multiple semtypes encountered, assuming first: " << values << endl;
+  res = *values.begin();
       }
       topval = res;
       if ( m.find(parts[0]) != m.end() ){
@@ -2765,11 +2715,13 @@ struct structStats: public basicStats {
     nonHumanCnt(0),
     artefactCnt(0),
     concrotherCnt(0),
-    substanceCnt(0),
+    substanceConcCnt(0),
+    foodcareCnt(0),
     timeCnt(0),
     placeCnt(0),
     measureCnt(0),
     dynamicConcCnt(0),
+    substanceAbstrCnt(0),
     dynamicAbstrCnt(0),
     nonDynamicCnt(0),
     institutCnt(0),
@@ -2985,11 +2937,13 @@ struct structStats: public basicStats {
   int nonHumanCnt;
   int artefactCnt;
   int concrotherCnt;
-  int substanceCnt;
+  int substanceConcCnt;
+  int foodcareCnt;
   int timeCnt;
   int placeCnt;
   int measureCnt;
   int dynamicConcCnt;
+  int substanceAbstrCnt;
   int dynamicAbstrCnt;
   int nonDynamicCnt;
   int institutCnt;
@@ -3227,11 +3181,13 @@ void structStats::merge( structStats *ss ){
   nonHumanCnt += ss->nonHumanCnt;
   artefactCnt += ss->artefactCnt;
   concrotherCnt += ss->concrotherCnt;
-  substanceCnt += ss->substanceCnt;
+  substanceConcCnt += ss->substanceConcCnt;
+  foodcareCnt += ss->foodcareCnt;
   timeCnt += ss->timeCnt;
   placeCnt += ss->placeCnt;
   measureCnt += ss->measureCnt;
   dynamicConcCnt += ss->dynamicConcCnt;
+  substanceAbstrCnt += ss->substanceAbstrCnt;
   dynamicAbstrCnt += ss->dynamicAbstrCnt;
   nonDynamicCnt += ss->nonDynamicCnt;
   institutCnt += ss->institutCnt;
@@ -3521,11 +3477,13 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "nonhuman_nouns_count", toString(nonHumanCnt) );
   addOneMetric( doc, el, "artefact_nouns_count", toString(artefactCnt) );
   addOneMetric( doc, el, "concrother_nouns_count", toString(concrotherCnt) );
-  addOneMetric( doc, el, "substance_nouns_count", toString(substanceCnt) );
+  addOneMetric( doc, el, "substance_conc_nouns_count", toString(substanceConcCnt) );
+  addOneMetric( doc, el, "foodcare_nouns_count", toString(foodcareCnt) );
   addOneMetric( doc, el, "time_nouns_count", toString(timeCnt) );
   addOneMetric( doc, el, "place_nouns_count", toString(placeCnt) );
   addOneMetric( doc, el, "measure_nouns_count", toString(measureCnt) );
   addOneMetric( doc, el, "dynamic_conc_nouns_count", toString(dynamicConcCnt) );
+  addOneMetric( doc, el, "substance_abstr_nouns_count", toString(substanceAbstrCnt) );
   addOneMetric( doc, el, "dynamic_abstr_nouns_count", toString(dynamicAbstrCnt) );
   addOneMetric( doc, el, "nondynamic_nouns_count", toString(nonDynamicCnt) );
   addOneMetric( doc, el, "institut_nouns_count", toString(institutCnt) );
@@ -3890,15 +3848,17 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Pers_nw_p,Pers_nw_d,";
   os << "PlantDier_nw_p,PlantDier_nw_d,";
   os << "Gebr_vw_nw_p,Gebr_vw_nw_d,"; // 20141003: Features renamed
+  os << "Subst_conc_nw_p,Subst_conc_nw_d,"; // 20150508: Features renamed
+  os << "Voed_verz_nw_p,Voed_verz_nw_d,"; // 20150508: Features added
   os << "Concr_ov_nw_p,Concr_ov_nw_d,";
-  os << "Subst_nw_p,Subst_nw_d,";
+  os << "Gebeuren_conc_nw_p,Gebeuren_conc_nw_d,"; // 20141031: Features split
   os << "Plaats_nw_p,Plaats_nw_d,";
   os << "Tijd_nw_p,Tijd_nw_d,";
   os << "Maat_nw_p,Maat_nw_d,";
-  os << "Gebeuren_nw_conc_p,Gebeuren_nw_conc_d,"; // 20141031: Features split
-  os << "Gebeuren_nw_abstr_p,Gebeuren_nw_abstr_d,"; // 20141031: Features split
+  os << "Subst_abstr_nw_p,Subst_abstr_nw_d,"; // 20150508: Features added
+  os << "Gebeuren_abstr_nw_p,Gebeuren_abstr_nw_d,"; // 20141031: Features split
   os << "Organisatie_nw_p,Organisatie_nw_d,";
-  os << "Stat_nw_abstr_p,Stat_nw_abstr_d,"; // 20141031: Features renamed
+  os << "Ov_abstr_nw_p,Ov_abstr_nw_d,"; // 20150508: Features renamed
   os << "Undefined_nw_p,";
   os << "Gedekte_nw_p,";
   os << "Waarn_mens_bvnw_p,Waarn_mens_bvnw_d,";
@@ -3948,18 +3908,22 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << density( nonHumanCnt, wordCnt ) << ",";
   os << proportion( artefactCnt, coveredNouns ) << ",";
   os << density( artefactCnt, wordCnt ) << ",";
+  os << proportion( substanceConcCnt, coveredNouns ) << ",";
+  os << density( substanceConcCnt, wordCnt ) << ",";
+  os << proportion( foodcareCnt, coveredNouns ) << ",";
+  os << density( foodcareCnt, wordCnt ) << ",";
   os << proportion( concrotherCnt, coveredNouns ) << ",";
   os << density( concrotherCnt, wordCnt ) << ",";
-  os << proportion( substanceCnt, coveredNouns ) << ",";
-  os << density( substanceCnt, wordCnt ) << ",";
+  os << proportion( dynamicConcCnt, coveredNouns ) << ","; 
+  os << density( dynamicConcCnt, wordCnt ) << ",";
   os << proportion( placeCnt, coveredNouns ) << ",";
   os << density( placeCnt, wordCnt ) << ",";
   os << proportion( timeCnt, coveredNouns ) << ",";
   os << density( timeCnt, wordCnt ) << ",";
   os << proportion( measureCnt, coveredNouns ) << ",";
   os << density( measureCnt, wordCnt ) << ",";
-  os << proportion( dynamicConcCnt, coveredNouns ) << ","; 
-  os << density( dynamicConcCnt, wordCnt ) << ",";
+  os << proportion( substanceAbstrCnt, coveredNouns ) << ","; 
+  os << density( substanceAbstrCnt, wordCnt ) << ",";
   os << proportion( dynamicAbstrCnt, coveredNouns ) << ","; 
   os << density( dynamicAbstrCnt, wordCnt ) << ",";
   os << proportion( institutCnt, coveredNouns ) << ",";
@@ -5562,10 +5526,15 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 	broadNounCnt++;
 	break;
       case SEM::CONCRETE_SUBSTANCE_NOUN:
-	substanceCnt++;
+	substanceConcCnt++;
 	strictNounCnt++;
 	broadNounCnt++;
 	break;
+      case SEM::CONCRETE_FOOD_CARE_NOUN:
+  foodcareCnt++;
+  strictNounCnt++;
+  broadNounCnt++;
+  break;
       case SEM::CONCRETE_OTHER_NOUN:
 	concrotherCnt++;
 	strictNounCnt++;
@@ -5587,6 +5556,9 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
   ++dynamicConcCnt;
   strictNounCnt++;
   broadNounCnt++;
+  break;
+      case SEM::ABSTRACT_SUBSTANCE_NOUN:
+  ++substanceAbstrCnt;
   break;
       case SEM::ABSTRACT_DYNAMIC_NOUN:
 	++dynamicAbstrCnt;

@@ -27,10 +27,10 @@ namespace SEM {
                 return "undefined-adj";
                 break;
             case CONCRETE_DYNAMIC_NOUN:
-                return "concrete-dynamic_noun";
+                return "concrete-dynamic-noun";
                 break;
             case ABSTRACT_DYNAMIC_NOUN:
-                return "abstract-dynamic_noun";
+                return "abstract-dynamic-noun";
                 break;
             case ABSTRACT_NONDYNAMIC_NOUN:
                 return "abstract-nondynamic-noun";
@@ -44,6 +44,9 @@ namespace SEM {
             case BROAD_CONCRETE_MEASURE_NOUN:
                 return "broad-measure-noun";
                 break;
+            case CONCRETE_FOOD_CARE_NOUN:
+                return "concrete-food-care-noun";
+                break;
             case CONCRETE_OTHER_NOUN:
                 return "concrete-other-noun";
                 break;
@@ -52,6 +55,9 @@ namespace SEM {
                 break;
             case CONCRETE_SUBSTANCE_NOUN:
                 return "concrete-substance-noun";
+                break;
+            case ABSTRACT_SUBSTANCE_NOUN:
+                return "abstract-substance-noun";
                 break;
             case CONCRETE_ARTEFACT_NOUN:
                 return "concrete-artefact-noun";
@@ -164,7 +170,7 @@ namespace SEM {
             return CONCRETE_OTHER_NOUN;
         else if (s == "institut")
             return INSTITUT_NOUN;
-        else if (s == "substance")
+        else if (s == "substance_conc")
             return CONCRETE_SUBSTANCE_NOUN;
         else if (s == "artefact")
             return CONCRETE_ARTEFACT_NOUN;
@@ -172,9 +178,13 @@ namespace SEM {
             return CONCRETE_NONHUMAN_NOUN;
         else if (s == "human")
             return CONCRETE_HUMAN_NOUN;
+        else if (s == "voed_verz") // 20150508: Added new SEM::Type
+            return CONCRETE_FOOD_CARE_NOUN;
         else if (s == "dynamic_conc") // 20141031: Added new SEM::Type
             return CONCRETE_DYNAMIC_NOUN;
-        else if (s == "dynamic_abstr")
+        else if (s == "substance_abstr") // 20150508: Added new SEM::Type
+            return ABSTRACT_SUBSTANCE_NOUN;
+        else if (s == "dynamic_abstr") 
             return ABSTRACT_DYNAMIC_NOUN;
         else if (s == "nondynamic")
             return ABSTRACT_NONDYNAMIC_NOUN;
@@ -276,6 +286,7 @@ namespace SEM {
             case CONCRETE_NONHUMAN_NOUN:
             case CONCRETE_ARTEFACT_NOUN:
             case CONCRETE_SUBSTANCE_NOUN:
+            case CONCRETE_FOOD_CARE_NOUN:
             case CONCRETE_OTHER_NOUN:
             case CONCRETE_DYNAMIC_NOUN:
                 return true;
@@ -291,6 +302,7 @@ namespace SEM {
             case CONCRETE_NONHUMAN_NOUN:
             case CONCRETE_ARTEFACT_NOUN:
             case CONCRETE_SUBSTANCE_NOUN:
+            case CONCRETE_FOOD_CARE_NOUN:
             case CONCRETE_OTHER_NOUN:
             case CONCRETE_DYNAMIC_NOUN:
             case BROAD_CONCRETE_PLACE_NOUN:
