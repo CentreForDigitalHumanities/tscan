@@ -27,7 +27,6 @@ import clam.common.data
 import clam.common.status
 
 
-
 #this script takes three arguments from CLAM: $DATAFILE $STATUSFILE $OUTPUTDIRECTORY  (as configured at COMMAND= in the service configuration file)
 datafile = sys.argv[1]
 statusfile = sys.argv[2]
@@ -53,19 +52,20 @@ if not 'top_freq_lex' in clamdata:
     print >>sys.stderr, "Missing parameter: top_freq_lex"
     sys.exit(2)
 
+
 def load_custom_wordlist(configfile, inputdir, tscan_name, inputtemplate, default_location):
-  """This allows custom word lists. Does require to specify the full path to the files."""
-  for inputfile in clamdata.inputfiles(inputtemplate):
-    wordlist = inputdir + inputfile.filename
-    break
-  else:
-    # When no inputfile is found, revert to the default
-    wordlist = TSCANDIR + default_location
-  configfile.write(tscan_name + "=\"" + wordlist + "\"\n")
+    """This allows custom word lists. Does require to specify the full path to the files."""
+    for inputfile in clamdata.inputfiles(inputtemplate):
+        wordlist = inputdir + inputfile.filename
+        break
+    else:
+        # When no inputfile is found, revert to the default
+        wordlist = TSCANDIR + default_location
+    configfile.write(tscan_name + "=\"" + wordlist + "\"\n")
 
 #Write configuration file
 
-f = open(outputdir + '/tscan.cfg','w')
+f = open(outputdir + '/tscan.cfg', 'w')
 if 'useAlpino' in clamdata and clamdata['useAlpino'] == 'yes':
     f.write("useAlpinoServer=1\n")
     f.write("useAlpino=1\n")
@@ -86,49 +86,50 @@ f.write("surprisalPath=\"" + TSCANDIR + "\"\n")
 f.write("styleSheet=\"tscanview.xsl\"\n")
 
 if 'rarityLevel' in clamdata:
-	raritylevel = clamdata['rarityLevel']
+    raritylevel = clamdata['rarityLevel']
 else:
-	raritylevel = 4
+    raritylevel = 4
 
 if 'overlapSize' in clamdata:
-	overlapsize = clamdata['overlapSize']
+    overlapsize = clamdata['overlapSize']
 else:
-	overlapsize = 50
+    overlapsize = 50
 
 if 'frequencyClip' in clamdata:
-        freqclip = clamdata['frequencyClip']
+    freqclip = clamdata['frequencyClip']
 else:
-	freqclip = 99
+    freqclip = 99
 
 if 'mtldThreshold' in clamdata:
-        mtldthreshold = clamdata['mtldThreshold']
+    mtldthreshold = clamdata['mtldThreshold']
 else:
-	mtldthreshold = 0.720
+    mtldthreshold = 0.720
 
-f.write("rarityLevel="  + str(raritylevel) + "\n")
-f.write("overlapSize="  + str(overlapsize) + "\n")
-f.write("frequencyClip="  + str(freqclip) + "\n")
-f.write("mtldThreshold="  + str(mtldthreshold) + "\n")
+f.write("rarityLevel=" + str(raritylevel) + "\n")
+f.write("overlapSize=" + str(overlapsize) + "\n")
+f.write("frequencyClip=" + str(freqclip) + "\n")
+f.write("mtldThreshold=" + str(mtldthreshold) + "\n")
 
-f.write("configDir="+ TSCANDIR + "/data\n")
+f.write("configDir=" + TSCANDIR + "/data\n")
 f.write("verb_semtypes=\"verbs_semtype.data\"\n")
 
 # 20150316: This allows custom adjective classification.
 load_custom_wordlist(f, inputdir, "adj_semtypes", "adjclassification", "/data/adjs_semtype.data")
 # 20141121: This allows a custom noun classification.
 load_custom_wordlist(f, inputdir, "noun_semtypes", "nounclassification", "/data/nouns_semtype.data")
-# 20150203: This allows custom intensifying words. 
+# 20150203: This allows custom intensifying words.
 load_custom_wordlist(f, inputdir, "intensify", "intensify", "/data/intensiveringen.data")
 
-f.write("word_freq_lex=\"" + clamdata['word_freq_lex'] + "\"\n")  #freqlist_staphorsius_CLIB_words.freq
-f.write("lemma_freq_lex=\"" + clamdata['lemma_freq_lex'] + "\"\n") #freqlist_staphorsius_CLIB_lemma.freq
-f.write("staph_word_freq_lex=\"freqlist_staphorsius_CLIB_words.freq\"\n")  #freqlist_staphorsius_CLIB_words.freq
-f.write("top_freq_lex=\"" + clamdata['top_freq_lex'] + "\"\n")  #freqlist_staphorsius_CLIB_words.freq
+f.write("word_freq_lex=\"" + clamdata['word_freq_lex'] + "\"\n")  # freqlist_staphorsius_CLIB_words.freq
+f.write("lemma_freq_lex=\"" + clamdata['lemma_freq_lex'] + "\"\n")  # freqlist_staphorsius_CLIB_lemma.freq
+f.write("staph_word_freq_lex=\"freqlist_staphorsius_CLIB_words.freq\"\n")  # freqlist_staphorsius_CLIB_words.freq
+f.write("top_freq_lex=\"" + clamdata['top_freq_lex'] + "\"\n")  # freqlist_staphorsius_CLIB_words.freq
 
 f.write("voorzetselexpr=\"voorzetseluitdrukkingen.txt\"\n")
 f.write("afkortingen=\"afkortingen.lst\"\n")
 f.write("temporals=\"temporal_connectors.lst\"\n")
-f.write("opsommers=\"opsom_connectors.lst\"\n")
+f.write("opsom_connectors_wg=\"opsom_connectors_wg.lst\"\n")
+f.write("opsom_connectors_zin=\"opsom_connectors_zin.lst\"\n")
 f.write("contrast=\"contrast_connectors.lst\"\n")
 f.write("compars=\"compar_connectors.lst\"\n")
 f.write("causals=\"causal_connectors.lst\"\n")
@@ -138,7 +139,7 @@ f.write("time_situation=\"tijd.txt\"\n")
 f.write("emotion_situation=\"emoties.txt\"\n")
 
 
-f.write("[[frog]]\n") #Frog server should already be runnning, start manually
+f.write("[[frog]]\n")  # Frog server should already be runnning, start manually
 f.write("port=7001\n")
 f.write("host=localhost\n\n")
 
@@ -164,21 +165,21 @@ f.close()
 os.system('svn info ' + TSCANDIR + ' >&2')
 
 
-
 #collect all input files
-inputfiles= []
+inputfiles = []
 for inputfile in clamdata.inputfiles('textinput'):
-   if '"' in str(inputfile):
-       clam.common.status.write(statusfile, "Failed, filename has a &quot;, illegal!",100) # status update
-       sys.exit(2)
-   inputtemplate = inputfile.metadata.inputtemplate
-   inputfiles.append(str(inputfile))
+    if '"' in str(inputfile):
+        clam.common.status.write(statusfile, "Failed, filename has a &quot;, illegal!", 100)  # status update
+        sys.exit(2)
+    inputtemplate = inputfile.metadata.inputtemplate
+    inputfiles.append(str(inputfile))
+
 
 def sigterm_handler():
     #collect output
-    clam.common.status.write(statusfile, "Postprocessing after forceful abortion",90) # status update
+    clam.common.status.write(statusfile, "Postprocessing after forceful abortion", 90)  # status update
     for inputfile in inputfiles:
-        os.rename(inputfile + '.tscan.xml', outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan','').replace('.txt','') + '.xml')
+        os.rename(inputfile + '.tscan.xml', outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan', '').replace('.txt', '') + '.xml')
 
     #tscan writes CSV file in input directory, move:
     os.system("mv -f " + inputdir + "/*.csv " + outputdir)
@@ -188,10 +189,14 @@ def sigterm_handler():
     os.system("cat " + outputdir + "/*.sentences.csv | head -n 1 > " + outputdir + "/total.sen.csv")
     os.system("cat " + outputdir + "/*.document.csv | head -n 1 > " + outputdir + "/total.doc.csv")
 
-    for f in glob.glob(outputdir + "/*.words.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.word.csv")
-    for f in glob.glob(outputdir + "/*.paragraphs.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.par.csv")
-    for f in glob.glob(outputdir + "/*.sentences.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.sen.csv")
-    for f in glob.glob(outputdir + "/*.document.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.doc.csv")
+    for f in glob.glob(outputdir + "/*.words.csv"):
+        os.system("sed 1d " + f + " >> " + outputdir + "/total.word.csv")
+    for f in glob.glob(outputdir + "/*.paragraphs.csv"):
+        os.system("sed 1d " + f + " >> " + outputdir + "/total.par.csv")
+    for f in glob.glob(outputdir + "/*.sentences.csv"):
+        os.system("sed 1d " + f + " >> " + outputdir + "/total.sen.csv")
+    for f in glob.glob(outputdir + "/*.document.csv"):
+        os.system("sed 1d " + f + " >> " + outputdir + "/total.doc.csv")
     sys.exit(5)
 
 signal.signal(signal.SIGTERM, sigterm_handler)
@@ -199,16 +204,16 @@ signal.signal(signal.SIGTERM, sigterm_handler)
 shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
 
 #pass all input files at once
-clam.common.status.write(statusfile, "Processing " + str(len(inputfiles)) + " files, this may take a while...",10) # status update
+clam.common.status.write(statusfile, "Processing " + str(len(inputfiles)) + " files, this may take a while...", 10)  # status update
 ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg ' + ' '.join(['"' + x + '"' for x in inputfiles]))
 
 #collect output
-clam.common.status.write(statusfile, "Postprocessing",90) # status update
+clam.common.status.write(statusfile, "Postprocessing", 90)  # status update
 for inputfile in inputfiles:
-    os.rename(inputfile + '.tscan.xml', outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan','').replace('.txt','') + '.xml')
+    os.rename(inputfile + '.tscan.xml', outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan', '').replace('.txt', '') + '.xml')
 
 if ref != 0:
-    clam.common.status.write(statusfile, "Failed",90) # status update
+    clam.common.status.write(statusfile, "Failed", 90)  # status update
 
 #old code, file by file:
 #for inputfile in clamdata.inputfiles('textinput'):
@@ -229,13 +234,17 @@ os.system("cat " + outputdir + "/*.paragraphs.csv | head -n 1 > " + outputdir + 
 os.system("cat " + outputdir + "/*.sentences.csv | head -n 1 > " + outputdir + "/total.sen.csv")
 os.system("cat " + outputdir + "/*.document.csv | head -n 1 > " + outputdir + "/total.doc.csv")
 
-for f in glob.glob(outputdir + "/*.words.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.word.csv")
-for f in glob.glob(outputdir + "/*.paragraphs.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.par.csv")
-for f in glob.glob(outputdir + "/*.sentences.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.sen.csv")
-for f in glob.glob(outputdir + "/*.document.csv"): os.system("sed 1d " + f + " >> " + outputdir + "/total.doc.csv")
+for f in glob.glob(outputdir + "/*.words.csv"):
+    os.system("sed 1d " + f + " >> " + outputdir + "/total.word.csv")
+for f in glob.glob(outputdir + "/*.paragraphs.csv"):
+    os.system("sed 1d " + f + " >> " + outputdir + "/total.par.csv")
+for f in glob.glob(outputdir + "/*.sentences.csv"):
+    os.system("sed 1d " + f + " >> " + outputdir + "/total.sen.csv")
+for f in glob.glob(outputdir + "/*.document.csv"):
+    os.system("sed 1d " + f + " >> " + outputdir + "/total.doc.csv")
 
 
 #A nice status message to indicate we're done
-clam.common.status.write(statusfile, "Done",100) # status update
+clam.common.status.write(statusfile, "Done", 100)  # status update
 
-sys.exit(ref) #non-zero exit codes indicate an error and will be picked up by CLAM as such!
+sys.exit(ref)  # non-zero exit codes indicate an error and will be picked up by CLAM as such!

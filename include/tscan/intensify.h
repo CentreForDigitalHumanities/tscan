@@ -10,5 +10,4 @@ namespace Intensify {
     Type classify(const std::string&);
 }
 
-#endif	/* INTENSIFY_H */
-
+#endif /* INTENSIFY_H */

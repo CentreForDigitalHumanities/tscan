@@ -48,6 +48,7 @@
 #include "tscan/cgn.h"
 #include "tscan/sem.h"
 #include "tscan/intensify.h"
+#include "tscan/conn.h"
 
 using namespace std;
 using namespace TiCC;
@@ -207,8 +208,10 @@ struct settingData {
   set<string> multi_temporals;
   map<CGN::Type, set<string> > causals1;
   set<string> multi_causals;
-  map<CGN::Type, set<string> > opsommers1;
-  set<string> multi_opsommers;
+  map<CGN::Type, set<string> > opsommers_wg;
+  set<string> multi_opsommers_wg;
+  map<CGN::Type, set<string> > opsommers_zin;
+  set<string> multi_opsommers_zin;
   map<CGN::Type, set<string> > contrast1;
   set<string> multi_contrast;
   map<CGN::Type, set<string> > compars1;
@@ -828,9 +831,14 @@ void settingData::init( const Configuration& cf ){
     if ( !fill_connectors( temporals1, multi_temporals, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
-  val = cf.lookUp( "opsommers" );
+  val = cf.lookUp( "opsom_connectors_wg" );
   if ( !val.empty() ){
-    if ( !fill_connectors( opsommers1, multi_opsommers, cf.configDir() + "/" + val ) )
+    if ( !fill_connectors( opsommers_wg, multi_opsommers_wg, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "opsom_connectors_zin" );
+  if ( !val.empty() ){
+    if ( !fill_connectors( opsommers_zin, multi_opsommers_zin, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "contrast" );
@@ -983,27 +991,7 @@ ostream& operator<<( ostream& os, const CGN::Position& p ){
   return os;
 }
 
-
-enum ConnType { NOCONN, TEMPOREEL, OPSOMMEND, CONTRASTIEF, COMPARATIEF, CAUSAAL };
-
-string toString( const ConnType& c ){
-  if ( c == NOCONN )
-    return "no";
-  else if ( c == TEMPOREEL )
-    return "temporeel";
-  else if ( c == OPSOMMEND )
-    return "opsommend";
-  else if ( c == CONTRASTIEF )
-    return "contrastief";
-  else if ( c == COMPARATIEF )
-    return "comparatief";
-  else if ( c == CAUSAAL )
-    return "causaal";
-  else
-    throw "no translation for ConnType";
-}
-
-ostream& operator<<( ostream& os, const ConnType& s ){
+ostream& operator<<( ostream& os, const Conn::Type& s ){
   os << toString(s);
   return os;
 }
@@ -1091,8 +1079,8 @@ struct basicStats {
   virtual string llemma() const { return ""; };
   virtual CGN::Type postag() const { return CGN::UNASS; };
   virtual CGN::Prop wordProperty() const { return CGN::NOTAWORD; };
-  virtual ConnType getConnType() const { return NOCONN; };
-  virtual void setConnType( ConnType ){
+  virtual Conn::Type getConnType() const { return Conn::NOCONN; };
+  virtual void setConnType( Conn::Type ){
     throw logic_error("setConnType() only valid for words" );
   };
   virtual void setMultiConn(){
@@ -1153,16 +1141,15 @@ struct wordStats : public basicStats {
   string Lemma() const { return lemma; };
   string llemma() const { return l_lemma; };
   CGN::Type postag() const { return tag; };
-  ConnType getConnType() const { return connType; };
-  void setConnType( ConnType t ){ connType = t; };
+  Conn::Type getConnType() const { return connType; };
+  void setConnType( Conn::Type t ){ connType = t; };
   void setMultiConn(){ isMultiConn = true; };
   void setPersRef();
   void setSitType( SituationType t ){ sitType = t; };
   SituationType getSitType() const { return sitType; };
   void addMetrics( ) const;
   bool checkContent() const;
-  ConnType checkConnective( const xmlNode * ) const;
-  ConnType check_small_connector( const xmlNode * ) const;
+  Conn::Type checkConnective() const;
   SituationType checkSituation() const;
   bool checkNominal( const xmlNode * ) const;
   void setCGNProps( const PosAnnotation* );
@@ -1198,7 +1185,7 @@ struct wordStats : public basicStats {
   bool isPropNeg;
   bool isMorphNeg;
   NerProp nerProp;
-  ConnType connType;
+  Conn::Type connType;
   bool isMultiConn;
   SituationType sitType;
   bool f50;
@@ -1229,62 +1216,53 @@ vector<const wordStats*> wordStats::collectWords() const {
   return result;
 }
 
-ConnType wordStats::check_small_connector( const xmlNode *alpWord ) const {
-  if ( alpWord == 0 ){
-    return OPSOMMEND;
-  }
-  else {
-    if ( isSmallCnj( alpWord ) )
-      return NOCONN;
-    else
-      return OPSOMMEND;
-  }
-}
-
-ConnType wordStats::checkConnective( const xmlNode *alpWord ) const {
+Conn::Type wordStats::checkConnective() const {
   if ( tag != CGN::VG && tag != CGN::VZ && tag != CGN::BW )
-    return NOCONN;
+    return Conn::NOCONN;
+
   if ( settings.temporals1[tag].find( l_word )
-       != settings.temporals1[tag].end() ){
-    return TEMPOREEL;
-  }
+       != settings.temporals1[tag].end() )
+    return Conn::TEMPOREEL;
   else if ( settings.temporals1[CGN::UNASS].find( l_word )
-	    != settings.temporals1[CGN::UNASS].end() ){
-    return TEMPOREEL;
-  }
-  else if ( settings.opsommers1[tag].find( l_word )
-	    != settings.opsommers1[tag].end() ){
-    if ( l_word == "en" || l_word == "of" ){
-      return check_small_connector( alpWord );
-    }
-    return OPSOMMEND;
-  }
-  else if ( settings.opsommers1[CGN::UNASS].find( l_word )
-	    != settings.opsommers1[CGN::UNASS].end() ){
-    if ( l_word == "en" || l_word == "of" ){
-      return check_small_connector( alpWord );
-    }
-    return OPSOMMEND;
-  }
+	    != settings.temporals1[CGN::UNASS].end() )
+    return Conn::TEMPOREEL;
+
+  else if ( settings.opsommers_wg[tag].find( l_word )
+      != settings.opsommers_wg[tag].end() )
+    return Conn::OPSOMMEND_WG;
+  else if ( settings.opsommers_wg[CGN::UNASS].find( l_word )
+      != settings.opsommers_wg[CGN::UNASS].end() )
+    return Conn::OPSOMMEND_WG;
+
+  else if ( settings.opsommers_zin[tag].find( l_word )
+      != settings.opsommers_zin[tag].end() )
+    return Conn::OPSOMMEND_ZIN;
+  else if ( settings.opsommers_zin[CGN::UNASS].find( l_word )
+      != settings.opsommers_zin[CGN::UNASS].end() )
+    return Conn::OPSOMMEND_ZIN;
+
   else if ( settings.contrast1[tag].find( l_word )
 	    != settings.contrast1[tag].end() )
-    return CONTRASTIEF;
+    return Conn::CONTRASTIEF;
   else if ( settings.contrast1[CGN::UNASS].find( l_word )
 	    != settings.contrast1[CGN::UNASS].end() )
-    return CONTRASTIEF;
+    return Conn::CONTRASTIEF;
+
   else if ( settings.compars1[tag].find( l_word )
 	    != settings.compars1[tag].end() )
-    return COMPARATIEF;
+    return Conn::COMPARATIEF;
   else if ( settings.compars1[CGN::UNASS].find( l_word )
 	    != settings.compars1[CGN::UNASS].end() )
-    return COMPARATIEF;
+    return Conn::COMPARATIEF;
+
   else if ( settings.causals1[tag].find( l_word )
 	    != settings.causals1[tag].end() )
-    return CAUSAAL;
+    return Conn::CAUSAAL;
   else if ( settings.causals1[CGN::UNASS].find( l_word )
 	    != settings.causals1[CGN::UNASS].end() )
-    return CAUSAAL;
-  return NOCONN;
+    return Conn::CAUSAAL;
+
+  return Conn::NOCONN;
 }
 
 SituationType wordStats::checkSituation() const {
@@ -2094,7 +2072,7 @@ wordStats::wordStats( int index,
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false),
-  nerProp(NONER), connType(NOCONN), isMultiConn(false), sitType(NO_SIT),
+  nerProp(NONER), connType(Conn::NOCONN), isMultiConn(false), sitType(NO_SIT),
   f50(false), f65(false), f77(false), f80(false),  compPartCnt(0),
   top_freq(notFound), word_freq(0), lemma_freq(0),
   wordOverlapCnt(0), lemmaOverlapCnt(0),
@@ -2177,7 +2155,7 @@ wordStats::wordStats( int index,
     //    cerr << "Morphemes " << word << "= " << morphemes << endl;
     isPropNeg = checkPropNeg();
     isMorphNeg = checkMorphNeg();
-    connType = checkConnective( alpWord );
+    connType = checkConnective();
     sitType = checkSituation();
     morphCnt = morphemes.size();
     if ( prop != CGN::ISNAME ){
@@ -2312,7 +2290,7 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "proper_negative", "true" );
   if ( isMorphNeg )
     addOneMetric( doc, el, "morph_negative", "true" );
-  if ( connType != NOCONN )
+  if ( connType != Conn::NOCONN )
     addOneMetric( doc, el, "connective", toString(connType) );
   if ( sitType != NO_SIT )
     addOneMetric( doc, el, "situation", toString(sitType) );
@@ -2487,7 +2465,7 @@ void wordStats::coherenceHeader( ostream& os ) const {
 }
 
 void wordStats::coherenceToCSV( ostream& os ) const {
-  if ( connType == NOCONN )
+  if ( connType == Conn::NOCONN )
     os << "0,";
   else
     os << connType << ",";
@@ -2615,7 +2593,8 @@ struct structStats: public basicStats {
     onderCnt(0),
     betrCnt(0),
     tempConnCnt(0),
-    opsomConnCnt(0),
+    opsomWgConnCnt(0),
+    opsomZinConnCnt(0),
     contrastConnCnt(0),
     compConnCnt(0),
     causeConnCnt(0),
@@ -2741,7 +2720,8 @@ struct structStats: public basicStats {
     content_mtld(0),
     name_mtld(0),
     temp_conn_mtld(0),
-    reeks_conn_mtld(0),
+    reeks_wg_conn_mtld(0),
+    reeks_zin_conn_mtld(0),
     contr_conn_mtld(0),
     comp_conn_mtld(0),
     cause_conn_mtld(0),
@@ -2837,7 +2817,8 @@ struct structStats: public basicStats {
   int onderCnt;
   int betrCnt;
   int tempConnCnt;
-  int opsomConnCnt;
+  int opsomWgConnCnt;
+  int opsomZinConnCnt;
   int contrastConnCnt;
   int compConnCnt;
   int causeConnCnt;
@@ -2966,7 +2947,8 @@ struct structStats: public basicStats {
   map<string,int> unique_cause_sits;
   map<string,int> unique_emotion_sits;
   map<string,int> unique_temp_conn;
-  map<string,int> unique_reeks_conn;
+  map<string,int> unique_reeks_wg_conn;
+  map<string,int> unique_reeks_zin_conn;
   map<string,int> unique_contr_conn;
   map<string,int> unique_comp_conn;
   map<string,int> unique_cause_conn;
@@ -2977,7 +2959,8 @@ struct structStats: public basicStats {
   double content_mtld;
   double name_mtld;
   double temp_conn_mtld;
-  double reeks_conn_mtld;
+  double reeks_wg_conn_mtld;
+  double reeks_zin_conn_mtld;
   double contr_conn_mtld;
   double comp_conn_mtld;
   double cause_conn_mtld;
@@ -3070,7 +3053,8 @@ void structStats::merge( structStats *ss ){
   onderCnt += ss->onderCnt;
   betrCnt += ss->betrCnt;
   tempConnCnt += ss->tempConnCnt;
-  opsomConnCnt += ss->opsomConnCnt;
+  opsomWgConnCnt += ss->opsomWgConnCnt;
+  opsomZinConnCnt += ss->opsomZinConnCnt;
   contrastConnCnt += ss->contrastConnCnt;
   compConnCnt += ss->compConnCnt;
   causeConnCnt += ss->causeConnCnt;
@@ -3218,7 +3202,8 @@ void structStats::merge( structStats *ss ){
   aggregate( unique_cause_sits, ss->unique_cause_sits );
   aggregate( unique_emotion_sits, ss->unique_emotion_sits );
   aggregate( unique_temp_conn, ss->unique_temp_conn );
-  aggregate( unique_reeks_conn, ss->unique_reeks_conn );
+  aggregate( unique_reeks_wg_conn, ss->unique_reeks_wg_conn );
+  aggregate( unique_reeks_zin_conn, ss->unique_reeks_zin_conn );
   aggregate( unique_contr_conn, ss->unique_contr_conn );
   aggregate( unique_comp_conn, ss->unique_comp_conn );
   aggregate( unique_cause_conn, ss->unique_cause_conn );
@@ -3364,7 +3349,8 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "subord_count", toString(onderCnt) );
   addOneMetric( doc, el, "rel_count", toString(betrCnt) );
   addOneMetric( doc, el, "temporal_connector_count", toString(tempConnCnt) );
-  addOneMetric( doc, el, "reeks_connector_count", toString(opsomConnCnt) );
+  addOneMetric( doc, el, "reeks_wg_connector_count", toString(opsomWgConnCnt) );
+  addOneMetric( doc, el, "reeks_zin_connector_count", toString(opsomZinConnCnt) );
   addOneMetric( doc, el, "contrast_connector_count", toString(contrastConnCnt) );
   addOneMetric( doc, el, "comparatief_connector_count", toString(compConnCnt) );
   addOneMetric( doc, el, "causaal_connector_count", toString(causeConnCnt) );
@@ -3795,7 +3781,8 @@ void structStats::informationDensityToCSV( ostream& os ) const {
 
 void structStats::coherenceHeader( ostream& os ) const {
   os << "Conn_temp_d,Conn_temp_dz,Conn_temp_TTR,Conn_temp_MTLD,"
-     << "Conn_reeks_d,Conn_reeks_dz,Conn_reeks_TTR,Conn_reeks_MTLD,"
+     << "Conn_reeks_wg_d,Conn_reeks_wg_dz,Conn_reeks_wg_TTR,Conn_reeks_wg_MTLD,"
+     << "Conn_reeks_zin_d,Conn_reeks_zin_dz,Conn_reeks_zin_TTR,Conn_reeks_zin_MTLD,"
      << "Conn_contr_d,Conn_contr_dz,Conn_contr_TTR,Conn_contr_MTLD,"
      << "Conn_comp_d,Conn_comp_dz,Conn_comp_TTR,Conn_comp_MTLD,"
      << "Conn_caus_d,Conn_caus_dz,Conn_caus_TTR,Conn_caus_MTLD,"
@@ -3812,10 +3799,14 @@ void structStats::coherenceToCSV( ostream& os ) const {
      << proportion( tempConnCnt, clauseCnt ) << ","
      << proportion( unique_temp_conn.size(), tempConnCnt ) << ","
      << temp_conn_mtld << ","
-     << density( opsomConnCnt, wordCnt ) << ","
-     << proportion( opsomConnCnt, clauseCnt ) << ","
-     << proportion( unique_reeks_conn.size(), opsomConnCnt ) << ","
-     << reeks_conn_mtld << ","
+     << density( opsomWgConnCnt, wordCnt ) << ","
+     << proportion( opsomWgConnCnt, clauseCnt ) << ","
+     << proportion( unique_reeks_wg_conn.size(), opsomWgConnCnt ) << ","
+     << reeks_zin_conn_mtld << ","
+     << density( opsomZinConnCnt, wordCnt ) << ","
+     << proportion( opsomZinConnCnt, clauseCnt ) << ","
+     << proportion( unique_reeks_wg_conn.size(), opsomZinConnCnt ) << ","
+     << reeks_zin_conn_mtld << ","
      << density( contrastConnCnt, wordCnt ) << ","
      << proportion( contrastConnCnt, clauseCnt ) << ","
      << proportion( unique_contr_conn.size(), contrastConnCnt ) << ","
@@ -4331,12 +4322,12 @@ struct sentStats : public structStats {
   void resolveLSA( const map<string,double>& );
   void resolveMultiWordIntensify();
   void resolveMultiWordAfks();
-  void incrementConnCnt( ConnType );
+  void incrementConnCnt( Conn::Type );
   void addMetrics( ) const;
   bool checkAls( size_t );
   double getMeanAL() const;
   double getHighestAL() const;
-  ConnType checkMultiConnectives( const string& );
+  Conn::Type checkMultiConnectives( const string& );
   SituationType checkMultiSituations( const string& );
   void resolvePrepExpr();
 };
@@ -4422,7 +4413,8 @@ void structStats::calculate_MTLDs() {
   vector<string> conts;
   vector<string> names;
   vector<string> temp_conn;
-  vector<string> reeks_conn;
+  vector<string> reeks_wg_conn;
+  vector<string> reeks_zin_conn;
   vector<string> contr_conn;
   vector<string> comp_conn;
   vector<string> cause_conn;
@@ -4445,19 +4437,22 @@ void structStats::calculate_MTLDs() {
       names.push_back( wordNodes[i]->ltext() );
     }
     switch( wordNodes[i]->getConnType() ){
-    case TEMPOREEL:
+    case Conn::TEMPOREEL:
       temp_conn.push_back( wordNodes[i]->ltext() );
       break;
-    case OPSOMMEND:
-      reeks_conn.push_back( wordNodes[i]->ltext() );
+    case Conn::OPSOMMEND_WG:
+      reeks_wg_conn.push_back( wordNodes[i]->ltext() );
       break;
-    case CONTRASTIEF:
+    case Conn::OPSOMMEND_ZIN:
+      reeks_zin_conn.push_back( wordNodes[i]->ltext() );
+      break;
+    case Conn::CONTRASTIEF:
       contr_conn.push_back( wordNodes[i]->ltext() );
       break;
-    case COMPARATIEF:
+    case Conn::COMPARATIEF:
       comp_conn.push_back( wordNodes[i]->ltext() );
       break;
-    case CAUSAAL:
+    case Conn::CAUSAAL:
       cause_conn.push_back( wordNodes[i]->ltext() );
       break;
     default:
@@ -4486,7 +4481,8 @@ void structStats::calculate_MTLDs() {
   content_mtld = average_mtld( conts );
   name_mtld = average_mtld( names );
   temp_conn_mtld = average_mtld( temp_conn );
-  reeks_conn_mtld = average_mtld( reeks_conn );
+  reeks_wg_conn_mtld = average_mtld( reeks_wg_conn );
+  reeks_zin_conn_mtld = average_mtld( reeks_zin_conn );
   contr_conn_mtld = average_mtld( contr_conn );
   comp_conn_mtld = average_mtld( comp_conn );
   cause_conn_mtld = average_mtld( cause_conn );
@@ -4631,22 +4627,22 @@ bool sentStats::checkAls( size_t index ){
   if ( als == "als" ){
     if ( index == 0 ){
       // eerste woord, terugkijken kan dus niet
-      sv[0]->setConnType( CAUSAAL );
+      sv[0]->setConnType( Conn::CAUSAAL );
     }
     else {
       for ( size_t i = index-1; i+1 != 0; --i ){
 	string word = sv[i]->ltext();
 	if ( compAlsSet.find( word ) != compAlsSet.end() ){
 	  // kijk naar "evenmin ... als" constructies
-	  sv[i]->setConnType( COMPARATIEF );
-	  sv[index]->setConnType( COMPARATIEF );
+	  sv[i]->setConnType( Conn::COMPARATIEF );
+	  sv[index]->setConnType( Conn::COMPARATIEF );
 	  //	cerr << "ALS comparatief:" << word << endl;
 	  return true;
 	}
 	else if ( opsomAlsSet.find( word ) != opsomAlsSet.end() ){
 	  // kijk naar "zowel ... als" constructies
-	  sv[i]->setConnType( OPSOMMEND );
-	  sv[index]->setConnType( OPSOMMEND );
+	  sv[i]->setConnType( Conn::OPSOMMEND_WG );
+	  sv[index]->setConnType( Conn::OPSOMMEND_WG );
 	  //	cerr << "ALS opsommend:" << word << endl;
 	  return true;
 	}
@@ -4655,11 +4651,11 @@ bool sentStats::checkAls( size_t index ){
 	if ( sv[index-1]->postag() == CGN::ADJ ){
 	  // "groter als"
 	  //	cerr << "ALS comparatief: ADJ: " << sv[index-1]->text() << endl;
-	  sv[index]->setConnType( COMPARATIEF );
+	  sv[index]->setConnType( Conn::COMPARATIEF );
 	}
 	else {
 	  //	cerr << "ALS causaal: " << sv[index-1]->text() << endl;
-	  sv[index]->setConnType( CAUSAAL );
+	  sv[index]->setConnType( Conn::CAUSAAL );
 	}
 	return true;
       }
@@ -4667,29 +4663,32 @@ bool sentStats::checkAls( size_t index ){
     if ( index < sv.size() &&
 	 sv[index+1]->postag() == CGN::TW ){
       // "als eerste" "als dertigste"
-      sv[index]->setConnType( COMPARATIEF );
+      sv[index]->setConnType( Conn::COMPARATIEF );
       return true;
     }
   }
   return false;
 }
 
-ConnType sentStats::checkMultiConnectives( const string& mword ){
-  ConnType conn = NOCONN;
+Conn::Type sentStats::checkMultiConnectives( const string& mword ){
+  Conn::Type conn = Conn::NOCONN;
   if ( settings.multi_temporals.find( mword ) != settings.multi_temporals.end() ){
-    conn = TEMPOREEL;
+    conn = Conn::TEMPOREEL;
   }
-  else if ( settings.multi_opsommers.find( mword ) != settings.multi_opsommers.end() ){
-    conn = OPSOMMEND;
+  else if ( settings.multi_opsommers_wg.find( mword ) != settings.multi_opsommers_wg.end() ){
+    conn = Conn::OPSOMMEND_WG;
+  }
+  else if ( settings.multi_opsommers_zin.find( mword ) != settings.multi_opsommers_zin.end() ){
+    conn = Conn::OPSOMMEND_ZIN;
   }
   else if ( settings.multi_contrast.find( mword ) != settings.multi_contrast.end() ){
-    conn = CONTRASTIEF;
+    conn = Conn::CONTRASTIEF;
   }
   else if ( settings.multi_compars.find( mword ) != settings.multi_compars.end() ){
-    conn = COMPARATIEF;
+    conn = Conn::COMPARATIEF;
   }
   else if ( settings.multi_causals.find( mword ) != settings.multi_causals.end() ){
-    conn = CAUSAAL;
+    conn = Conn::CAUSAAL;
   }
   //  cerr << "multi-conn " << mword << " = " << conn << endl;
   return conn;
@@ -4714,21 +4713,24 @@ SituationType sentStats::checkMultiSituations( const string& mword ){
   return sit;
 }
 
-void sentStats::incrementConnCnt( ConnType t ){
+void sentStats::incrementConnCnt( Conn::Type t ){
   switch ( t ){
-  case TEMPOREEL:
+  case Conn::TEMPOREEL:
     tempConnCnt++;
     break;
-  case OPSOMMEND:
-    opsomConnCnt++;
+  case Conn::OPSOMMEND_WG:
+    opsomWgConnCnt++;
     break;
-  case CONTRASTIEF:
+  case Conn::OPSOMMEND_ZIN:
+    opsomZinConnCnt++;
+    break;
+  case Conn::CONTRASTIEF:
     contrastConnCnt++;
     break;
-  case COMPARATIEF:
+  case Conn::COMPARATIEF:
     compConnCnt++;
     break;
-  case CAUSAAL:
+  case Conn::CAUSAAL:
     break;
   default:
     break;
@@ -4745,12 +4747,12 @@ void sentStats::resolveConnectives(){
 	// (evenmin ... als) (zowel ... als ) etc.
 	// In dat geval niet meer zoeken naar "als ..."
 	//      cerr << "zoek op " << multiword2 << endl;
-	ConnType conn = checkMultiConnectives( multiword2 );
-	if ( conn != NOCONN ){
+	Conn::Type conn = checkMultiConnectives( multiword2 );
+	if ( conn != Conn::NOCONN ){
 	  sv[i]->setMultiConn();
 	  sv[i+1]->setMultiConn();
 	  sv[i]->setConnType( conn );
-	  sv[i+1]->setConnType( NOCONN );
+	  sv[i+1]->setConnType( Conn::NOCONN );
 	}
       }
       if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
@@ -4758,14 +4760,14 @@ void sentStats::resolveConnectives(){
       }
       string multiword3 = multiword2 + " " + sv[i+2]->ltext();
       //      cerr << "zoek op " << multiword3 << endl;
-      ConnType conn = checkMultiConnectives( multiword3 );
-      if ( conn != NOCONN ){
+      Conn::Type conn = checkMultiConnectives( multiword3 );
+      if ( conn != Conn::NOCONN ){
 	sv[i]->setMultiConn();
 	sv[i+1]->setMultiConn();
 	sv[i+2]->setMultiConn();
 	sv[i]->setConnType( conn );
-	sv[i+1]->setConnType( NOCONN );
-	sv[i+2]->setConnType( NOCONN );
+	sv[i+1]->setConnType( Conn::NOCONN );
+	sv[i+2]->setConnType( Conn::NOCONN );
       }
       if ( negatives_long.find( multiword3 ) != negatives_long.end() )
 	propNegCnt++;
@@ -4774,12 +4776,12 @@ void sentStats::resolveConnectives(){
     string multiword2 = sv[sv.size()-2]->ltext() + " "
       + sv[sv.size()-1]->ltext();
     //    cerr << "zoek op " << multiword2 << endl;
-    ConnType conn = checkMultiConnectives( multiword2 );
-    if ( conn != NOCONN ){
+    Conn::Type conn = checkMultiConnectives( multiword2 );
+    if ( conn != Conn::NOCONN ){
       sv[sv.size()-2]->setMultiConn();
       sv[sv.size()-1]->setMultiConn();
       sv[sv.size()-2]->setConnType( conn );
-      sv[sv.size()-1]->setConnType( NOCONN );
+      sv[sv.size()-1]->setConnType( Conn::NOCONN );
     }
     if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
       propNegCnt++;
@@ -4787,23 +4789,27 @@ void sentStats::resolveConnectives(){
   }
   for ( size_t i=0; i < sv.size(); ++i ){
     switch( sv[i]->getConnType() ){
-    case TEMPOREEL:
+    case Conn::TEMPOREEL:
       unique_temp_conn[sv[i]->ltext()]++;
       tempConnCnt++;
       break;
-    case OPSOMMEND:
-      unique_reeks_conn[sv[i]->ltext()]++;
-      opsomConnCnt++;
+    case Conn::OPSOMMEND_WG:
+      unique_reeks_wg_conn[sv[i]->ltext()]++;
+      opsomWgConnCnt++;
       break;
-    case CONTRASTIEF:
+    case Conn::OPSOMMEND_ZIN:
+      unique_reeks_zin_conn[sv[i]->ltext()]++;
+      opsomZinConnCnt++;
+      break;
+    case Conn::CONTRASTIEF:
       unique_contr_conn[sv[i]->ltext()]++;
       contrastConnCnt++;
       break;
-    case COMPARATIEF:
+    case Conn::COMPARATIEF:
       unique_comp_conn[sv[i]->ltext()]++;
       compConnCnt++;
       break;
-    case CAUSAAL:
+    case Conn::CAUSAAL:
       unique_cause_conn[sv[i]->ltext()]++;
       causeConnCnt++;
       break;
@@ -6258,12 +6264,19 @@ void docStats::addMetrics( ) const {
   addOneMetric( el->doc(), el,
 		"temp_conn_mtld", toString(temp_conn_mtld) );
 
-  if ( opsomConnCnt != 0 ){
+  if ( opsomWgConnCnt != 0 ){
     addOneMetric( el->doc(), el,
-		  "opsom_conn_ttr", toString( unique_reeks_conn.size()/double(opsomConnCnt) ) );
+		  "opsom_wg_conn_ttr", toString( unique_reeks_wg_conn.size()/double(opsomWgConnCnt) ) );
   }
   addOneMetric( el->doc(), el,
-		"opsom_conn_mtld", toString(reeks_conn_mtld) );
+		"opsom_wg_conn_mtld", toString(reeks_wg_conn_mtld) );
+
+  if ( opsomZinConnCnt != 0 ){
+    addOneMetric( el->doc(), el,
+      "opsom_zin_conn_ttr", toString( unique_reeks_zin_conn.size()/double(opsomZinConnCnt) ) );
+  }
+  addOneMetric( el->doc(), el,
+    "opsom_zin_conn_mtld", toString(reeks_zin_conn_mtld) );
 
   if ( contrastConnCnt != 0 ){
     addOneMetric( el->doc(), el,
