@@ -3867,13 +3867,13 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Spec_negatief_bvnw_p,Spec_negatief_bvnw_d,";
   os << "Alg_positief_bvnw_p,Alg_positief_bvnw_d,";
   os << "Alg_negatief_bvnw_p,Alg_negatief_bvnw_d,";
-  os << "Alg_evaluatief_bvnw_p,Alg_evaluatief_bvnw_d,"; // 20150316: Features added
+  os << "Alg_ev_zr_bvnw_p,Alg_ev_zr_bvnw_d,"; // 20150316: Features added
   os << "Ep_positief_bvnw_p,Ep_positief_bvnw_d,";
   os << "Ep_negatief_bvnw_p,Ep_negatief_bvnw_d,";
   os << "Abstract_ov_bvnw_p,Abstract_ov_bvnw_d,"; // 20141125: Features renamed
-  os << "Spec_oordeel_bvnw_p,Spec_oordeel_bvnw_d,"; // 20150316: Features renamed
-  os << "Alg_bvnw_p,Alg_bvnw_d,"; // 20150316: Features renamed
-  os << "Ep_bvnw_p,Ep_bvnw_d,"; // 20150316: Features renamed
+  os << "Spec_ev_bvnw_p,Spec_ev_bvnw_d,"; // 20150316: Features renamed
+  os << "Alg_ev_bvnw_p,Alg_ev_bvnw_d,"; // 20150316: Features renamed
+  os << "Ep_ev_bvnw_p,Ep_ev_bvnw_d,"; // 20150316: Features renamed
   os << "Conc_bvnw_strikt_p,Conc_bvnw_strikt_d,";
   os << "Conc_bvnw_ruim_p,Conc_bvnw_ruim_d,";
   os << "Subj_bvnw_p,Subj_bvnw_d,";
