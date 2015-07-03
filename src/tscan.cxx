@@ -2392,10 +2392,8 @@ void wordStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
      << "Sam_delen_per_wrd,Sam_d,"
-     << "Freq50_staph,Freq65_Staph,Freq77_Staph,Freq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,";
-  //     <<" so_suc,so_ctx,";
 }
 
 void wordStats::wordDifficultiesToCSV( ostream& os ) const {
@@ -2430,10 +2428,6 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
   }
   os << double(compPartCnt) << ",";
   os << (compPartCnt?1:0) << ",";
-  os << (f50?1:0) << ",";
-  os << (f65?1:0) << ",";
-  os << (f77?1:0) << ",";
-  os << (f80?1:0) << ",";
   if ( word_freq_log == NA )
     os << "NA,";
   else
@@ -2456,8 +2450,6 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
   os << (top_freq<=top5000?1:0) << ",";
   os << (top_freq<=top10000?1:0) << ",";
   os << (top_freq<=top20000?1:0) << ",";
-  // os << lsa_opv << ",";
-  // os << lsa_ctx << ",";
 }
 
 void wordStats::coherenceHeader( ostream& os ) const {
@@ -2508,7 +2500,7 @@ void wordStats::concreetToCSV( ostream& os ) const {
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
   os << "Pers_ref,Pers_vnw1,Pers_vnw2,Pers_vnw3,Pers_vnw,"
      << "Naam_POS,Naam_NER," // 20141125: Feature Naam_POS moved
-     << "Pers_nw,Imp,"; // 20141125: Feature Pers_nw moved and Emo_bvn deleted
+     << "Imp,"; // 20141125: Feature Pers_nw moved (deleted 20150703) and Emo_bvn deleted
 }
 
 void wordStats::persoonlijkheidToCSV( ostream& os ) const {
@@ -2522,7 +2514,6 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
     os << "0,";
   else
     os << nerProp << ",";
-  os << ( sem_type == SEM::CONCRETE_HUMAN_NOUN ) << ",";
   os << isImperative << ",";
 }
 
