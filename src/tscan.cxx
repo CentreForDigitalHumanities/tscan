@@ -75,16 +75,6 @@ struct cf_data {
 
 enum top_val { top1000, top2000, top3000, top5000, top10000, top20000, notFound  };
 
-ostream& operator<<( ostream& os, const SEM::Type s ){
-  os << toString( s );
-  return os;
-}
-
-ostream& operator<<( ostream& os, const CGN::Type t ){
-  os << toString( t );
-  return os;
-}
-
 enum NerProp { NONER, LOC_B, LOC_I, EVE_B, EVE_I, ORG_B, ORG_I,
 	       MISC_B, MISC_I, PER_B, PER_I, PRO_B, PRO_I };
 
@@ -978,16 +968,6 @@ ostream& operator<<( ostream& os, const ratio& r ){
     os << "NA";
   else
     os << r.r;
-  return os;
-}
-
-ostream& operator<<( ostream& os, const CGN::Prop& p ){
-  os << toString( p );
-  return os;
-}
-
-ostream& operator<<( ostream& os, const CGN::Position& p ){
-  os << toString( p );
   return os;
 }
 

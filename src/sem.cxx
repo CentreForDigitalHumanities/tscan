@@ -344,4 +344,8 @@ namespace SEM {
         }
     }
 
+    ostream& operator<<( ostream& os, const Type& s ){
+      os << toString( s );
+      return os;
+    }
 }

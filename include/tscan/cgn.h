@@ -8,17 +8,21 @@ namespace CGN {
     };
     Type toCGN(std::string);
     std::string toString(Type);
+    std::ostream& operator<<( std::ostream& os, const Type& t );
     
     enum Prop { ISNAME, ISLET,
 	       ISVD, ISOD, ISINF, ISPVTGW, ISPVVERL, ISSUBJ,
 	       ISPPRON1, ISPPRON2, ISPPRON3, ISAANW,
 	       JUSTAWORD, NOTAWORD };
     std::string toString(Prop);
+    std::ostream& operator<<( std::ostream& os, const Prop& p );
     
     enum Position { 
         NOMIN, PRENOM, VRIJ, NOPOS 
     };
     std::string toString(Position);
+    std::ostream& operator<<( std::ostream& os, const Position& p );
+
 }
 
 #endif	/* CGN_H */

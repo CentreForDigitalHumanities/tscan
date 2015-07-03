@@ -108,4 +108,19 @@ namespace CGN {
                 return "onbekende positie";
         }
     }
+
+    ostream& operator<<( ostream& os, const Type& t ){
+        os << toString( t );
+        return os;
+    }
+
+    ostream& operator<<( ostream& os, const Prop& p ){
+        os << toString( p );
+        return os;
+    }
+
+    ostream& operator<<( ostream& os, const Position& p ){
+        os << toString( p );
+        return os;
+    }
 }

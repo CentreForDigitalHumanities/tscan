@@ -29,6 +29,7 @@ namespace SEM {
         ABSTRACT_ACTION, CONCRETE_ACTION, UNDEFINED_ACTION,
         ABSTRACT_PROCESS, CONCRETE_PROCESS, UNDEFINED_PROCESS
     };
+
     std::string toString(Type);
     Type classifyNoun(const std::string&);
     Type classifyWW(const std::string&, const std::string& = "");
@@ -37,6 +38,7 @@ namespace SEM {
     bool isBroadNoun(const Type);
     bool isStrictAdj(const Type);
     bool isBroadAdj(const Type);
+    std::ostream& operator<<( std::ostream& os, const Type& s );
 }
 
 #endif // SEM_H
