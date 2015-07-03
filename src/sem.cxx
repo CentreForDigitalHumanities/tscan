@@ -12,151 +12,146 @@ namespace SEM {
                 return "semtype_error";
                 break;
             case UNFOUND_NOUN:
-                return "noun_not_found";
-                break;
             case UNFOUND_ADJ:
-                return "adj_not_found";
-                break;
             case UNFOUND_VERB:
-                return "verb_not_found";
+                return "niet-gevonden";
                 break;
             case UNDEFINED_NOUN:
-                return "undefined-noun";
-                break;
             case UNDEFINED_ADJ:
-                return "undefined-adj";
+            case UNDEFINED_VERB:
+                return "ongedefinieerd";
                 break;
+            /** Noun semtypes start here */
             case CONCRETE_DYNAMIC_NOUN:
-                return "concrete-dynamic-noun";
+                return "concreet-gebeuren";
                 break;
             case ABSTRACT_DYNAMIC_NOUN:
-                return "abstract-dynamic-noun";
+                return "abstract-gebeuren";
                 break;
             case ABSTRACT_NONDYNAMIC_NOUN:
-                return "abstract-nondynamic-noun";
+                return "abstract-overig";
                 break;
             case BROAD_CONCRETE_PLACE_NOUN:
-                return "broad-place-noun";
+                return "plaats";
                 break;
             case BROAD_CONCRETE_TIME_NOUN:
-                return "broad-time-noun";
+                return "tijd";
                 break;
             case BROAD_CONCRETE_MEASURE_NOUN:
-                return "broad-measure-noun";
+                return "maat";
                 break;
             case CONCRETE_FOOD_CARE_NOUN:
-                return "concrete-food-care-noun";
+                return "voeding-verzorging";
                 break;
             case CONCRETE_OTHER_NOUN:
-                return "concrete-other-noun";
+                return "concreet-overig";
                 break;
             case INSTITUT_NOUN:
-                return "institut-noun";
+                return "organisatie";
                 break;
             case CONCRETE_SUBSTANCE_NOUN:
-                return "concrete-substance-noun";
+                return "concrete-substantie";
                 break;
             case ABSTRACT_SUBSTANCE_NOUN:
-                return "abstract-substance-noun";
+                return "abstracte-substantie";
                 break;
             case CONCRETE_ARTEFACT_NOUN:
-                return "concrete-artefact-noun";
+                return "gebruiksvoorwerp";
                 break;
             case CONCRETE_HUMAN_NOUN:
-                return "concrete-human-noun";
+                return "persoon";
                 break;
             case CONCRETE_NONHUMAN_NOUN:
-                return "concrete-nonhuman-noun";
+                return "plant-dier";
                 break;
+            /** Adjective semtypes start here */
             case ABSTRACT_ADJ:
-                return "abstract-adj";
+                return "abstract";
                 break;
             case HUMAN_ADJ:
-                return "human-adj";
+                return "mens-waarneembaar";
                 break;
             case EMO_ADJ:
-                return "emo-adj";
+                return "emoties-sociaal";
                 break;
             case NONHUMAN_SHAPE_ADJ:
-                return "shape-adj";
+                return "ding-vorm-omvang";
                 break;
             case NONHUMAN_COLOR_ADJ:
-                return "color-adj";
+                return "ding-kleur";
                 break;
             case NONHUMAN_MATTER_ADJ:
-                return "matter-adj";
+                return "ding-stof";
                 break;
             case NONHUMAN_SOUND_ADJ:
-                return "sound-adj";
+                return "ding-geluid";
                 break;
             case NONHUMAN_OTHER_ADJ:
-                return "nonhuman-other-adj";
+                return "ding-overig";
                 break;
             case TECH_ADJ:
-                return "tech-adj";
+                return "niet-waarneembaar";
                 break;
             case TIME_ADJ:
-                return "time-adj";
+                return "tijd";
                 break;
             case PLACE_ADJ:
-                return "place-adj";
+                return "plaats";
                 break;
             case SPEC_POS_ADJ:
-                return "spec-pos-adj";
+                return "spec-positief";
                 break;
             case SPEC_NEG_ADJ:
-                return "spec-neg-adj";
+                return "spec-negatief";
                 break;
             case POS_ADJ:
-                return "pos-adj";
+                return "alg-positief";
                 break;
             case NEG_ADJ:
-                return "neg-adj";
+                return "alg-negatief";
                 break;
             case EVALUATIVE_ADJ:
-                return "evaluative-adj";
+                return "alg-evaluatief";
                 break;
             case EPI_POS_ADJ:
-                return "epi-pos-adj";
+                return "epist-pos";
                 break;
             case EPI_NEG_ADJ:
-                return "epi-neg-adj";
+                return "epist-neg";
                 break;
+            /** Verb semtypes start here */
             case ABSTRACT_UNDEFINED:
-                return "abstract-undefined";
+                return "abstract-ongedefinieerd";
                 break;
             case CONCRETE_UNDEFINED:
-                return "concrete-undefined";
-                break;
-            case UNDEFINED_VERB:
-                return "undefined-verb";
+                return "concreet-ongedefinieerd";
                 break;
             case ABSTRACT_STATE:
-                return "abstract-state";
+                return "abstract-toestand";
                 break;
             case CONCRETE_STATE:
-                return "concrete-state";
+                return "concreet-toestand";
                 break;
             case UNDEFINED_STATE:
-                return "undefined-state";
+                return "ongedefinieerd-toestand";
                 break;
             case ABSTRACT_ACTION:
-                return "abstract-action";
+                return "abstract-actie";
                 break;
             case CONCRETE_ACTION:
-                return "concrete-action";
+                return "concreet-actie";
                 break;
             case UNDEFINED_ACTION:
-                return "undefined-action";
+                return "ongedefinieerd-actie";
                 break;
             case ABSTRACT_PROCESS:
-                return "abstract-process";
+                return "abstract-proces";
                 break;
             case CONCRETE_PROCESS:
-                return "concrete-process";
+                return "concreet-proces";
                 break;
             case UNDEFINED_PROCESS:
-                return "undefined-process";
+                return "ongedefinieerd-proces";
                 break;
             default:
                 return "invalid semtype value";
