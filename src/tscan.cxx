@@ -2453,7 +2453,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
 }
 
 void wordStats::coherenceHeader( ostream& os ) const {
-  os << "connector_type,Wrdcombi,Vnw_ref,";
+  os << "Conn_type,Conn_combi,Vnw_ref,";
 }
 
 void wordStats::coherenceToCSV( ostream& os ) const {
@@ -2466,13 +2466,13 @@ void wordStats::coherenceToCSV( ostream& os ) const {
 }
 
 void wordStats::concreetHeader( ostream& os ) const {
-  os << "semtype_nw,";
+  os << "Semtype_nw,";
   os << "Conc_nw_strikt,";
   os << "Conc_nw_ruim,";
-  os << "semtype_bvnw,";
+  os << "Semtype_bvnw,";
   os << "Conc_bvnw_strikt,";
   os << "Conc_bvnw_ruim,";
-  os << "semtype_ww,";
+  os << "Semtype_ww,";
 }
 
 void wordStats::concreetToCSV( ostream& os ) const {
@@ -2500,7 +2500,7 @@ void wordStats::concreetToCSV( ostream& os ) const {
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
   os << "Pers_ref,Pers_vnw1,Pers_vnw2,Pers_vnw3,Pers_vnw,"
      << "Naam_POS,Naam_NER," // 20141125: Feature Naam_POS moved
-     << "Imp,"; // 20141125: Feature Pers_nw moved (deleted 20150703) and Emo_bvn deleted
+     << "Imp_ellips,"; // 20141125: Feature Pers_nw moved (deleted 20150703) and Emo_bvn deleted
 }
 
 void wordStats::persoonlijkheidToCSV( ostream& os ) const {
