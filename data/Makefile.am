@@ -12,7 +12,8 @@ config_DATA = adjs_semtype.data  nouns_semtype.data \
 	opsom_connectors_wg.lst opsom_connectors_zin.lst \
 	contrast_connectors.lst compar_connectors.lst \
 	causaliteit.txt ruimte.txt tijd.txt emoties.txt \
-	voorzetseluitdrukkingen.txt afkortingen.lst
+	voorzetseluitdrukkingen.txt afkortingen.lst \
+	general_nouns.data
 
 configdir = $(sysconfdir)/tscan
 

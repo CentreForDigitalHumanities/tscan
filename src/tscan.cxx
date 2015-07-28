@@ -49,6 +49,7 @@
 #include "tscan/sem.h"
 #include "tscan/intensify.h"
 #include "tscan/conn.h"
+#include "tscan/generalnoun.h"
 
 using namespace std;
 using namespace TiCC;
@@ -186,6 +187,7 @@ struct settingData {
   map <string, SEM::Type> noun_sem;
   map <string, SEM::Type> verb_sem;
   map <string, Intensify::Type> intensify;
+  map <string, GeneralNoun::Type> general_nouns;
   map <string, double> pol_lex;
   map<string, cf_data> staph_word_freq_lex;
   long int staph_total;
@@ -409,6 +411,43 @@ bool fill_intensify(map<string,Intensify::Type>& m, const string& filename) {
   ifstream is( filename.c_str() );
   if (is) {
     return fill_intensify(m, is);
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
+bool fill_general_nouns(map<string,GeneralNoun::Type>& m, istream& is){
+  string line;
+  while( safe_getline( is, line ) ){
+    line = TiCC::trim( line );
+    if ( line.empty() )
+      continue;
+    vector<string> parts;
+    int n = TiCC::split_at( line, parts, "\t" ); // split at tab
+    if ( n < 2 || n > 2 ){
+      cerr << "skip line: " << line << " (expected 2 values, got "
+       << n << ")" << endl;
+      continue;
+    }
+    string low = TiCC::trim(lowercase( parts[0] ));
+    GeneralNoun::Type res = GeneralNoun::classify(TiCC::lowercase(parts[1]));
+    if ( m.find(low) != m.end() ){
+      cerr << "Information: multiple entry '" << low << "' in GeneralNoun lex" << endl;
+    }
+    if ( res != GeneralNoun::NO_GENERAL_NOUN ){
+      // no use to store undefined values
+      m[low] = res;
+    }
+  }
+  return true;
+}
+
+bool fill_general_nouns(map<string,GeneralNoun::Type>& m, const string& filename) {
+  ifstream is( filename.c_str() );
+  if (is) {
+    return fill_general_nouns(m, is);
   }
   else {
     cerr << "couldn't open file: " << filename << endl;
@@ -790,6 +829,11 @@ void settingData::init( const Configuration& cf ){
     if ( !fill_intensify( intensify, val ) )
       exit( EXIT_FAILURE );
   }
+  val = cf.lookUp( "general_nouns" );
+  if ( !val.empty() ){
+    if ( !fill_general_nouns( general_nouns, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
   staph_total = 0;
   val = cf.lookUp( "staph_word_freq_lex" );
   if ( !val.empty() ){
@@ -1136,6 +1180,7 @@ struct wordStats : public basicStats {
   CGN::Prop wordProperty() const { return prop; };
   SEM::Type checkSemProps( ) const;
   Intensify::Type checkIntensify(const xmlNode*) const;
+  GeneralNoun::Type checkGeneralNoun() const;
   AfkType checkAfk( ) const;
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
@@ -1185,6 +1230,7 @@ struct wordStats : public basicStats {
   CGN::Position position;
   SEM::Type sem_type;
   Intensify::Type intensify_type;
+  GeneralNoun::Type general_noun_type;
   vector<string> morphemes;
   multimap<DD_type,int> distances;
   AfkType afkType;
@@ -1595,6 +1641,16 @@ Intensify::Type wordStats::checkIntensify(const xmlNode *alpWord) const {
     }
   }
   return res;
+}
+
+GeneralNoun::Type wordStats::checkGeneralNoun() const {
+  if (tag == CGN::N) {
+    map<string,GeneralNoun::Type>::const_iterator sit = settings.general_nouns.find(lemma);
+    if (sit != settings.general_nouns.end()) {
+      return sit->second;
+    }
+  }
+  return GeneralNoun::NO_GENERAL_NOUN;
 }
 
 AfkType wordStats::checkAfk() const {
@@ -2058,7 +2114,8 @@ wordStats::wordStats( int index,
   wordOverlapCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NA), lemma_freq_log(NA),
   logprob10(NA), prop(CGN::JUSTAWORD), position(CGN::NOPOS), 
-  sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY), afkType(NO_A)
+  sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY), 
+  general_noun_type(GeneralNoun::NO_GENERAL_NOUN), afkType(NO_A)
 {
   UnicodeString us = w->text();
   charCnt = us.length();
@@ -2144,6 +2201,7 @@ wordStats::wordStats( int index,
     }
     sem_type = checkSemProps();
     intensify_type = checkIntensify(alpWord);
+    general_noun_type = checkGeneralNoun();
     afkType = checkAfk();
     if ( alpWord )
       isNominal = checkNominal( alpWord );
@@ -2320,6 +2378,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "semtype", toString(sem_type) );
   if ( intensify_type != Intensify::NO_INTENSIFY )
     addOneMetric( doc, el, "intensifytype", Intensify::toString(intensify_type) );
+  if ( general_noun_type != GeneralNoun::NO_GENERAL_NOUN )
+    addOneMetric( doc, el, "generalnountype", GeneralNoun::toString(general_noun_type) );
   if ( afkType != NO_A )
     addOneMetric( doc, el, "afktype", toString(afkType) );
 }
@@ -2447,6 +2507,7 @@ void wordStats::coherenceToCSV( ostream& os ) const {
 
 void wordStats::concreetHeader( ostream& os ) const {
   os << "Semtype_nw,";
+  os << "Alg_nw,"; // 20150721: Feature added
   os << "Conc_nw_strikt,";
   os << "Conc_nw_ruim,";
   os << "Semtype_bvnw,";
@@ -2458,6 +2519,12 @@ void wordStats::concreetHeader( ostream& os ) const {
 void wordStats::concreetToCSV( ostream& os ) const {
   if ( tag == CGN::N || prop == CGN::ISNAME ){
     os << sem_type << ",";
+  }
+  else {
+    os << "0,";
+  }
+  if ( tag == CGN::N ){
+    os << general_noun_type << ",";
   }
   else {
     os << "0,";
@@ -2499,7 +2566,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
 
 
 void wordStats::miscHeader( ostream& os ) const {
-  os << "Ww_vorm,Ww_tt,Vol_dw,Onvol_dw,Infin,Archaisch,Log_prob";
+  os << "Ww_vorm,Ww_tt,Vol_dw,Onvol_dw,Infin,Archaisch,Log_prob,Intens";
 }
 
 void wordStats::miscToCSV( ostream& os ) const {
@@ -2518,6 +2585,7 @@ void wordStats::miscToCSV( ostream& os ) const {
     os << "NA,";
   else
     os << logprob10 << ",";
+  os << (intensify_type != Intensify::NO_INTENSIFY ? "1," : "0,");
 }
 
 void wordStats::toCSV( ostream& os ) const {
@@ -2625,6 +2693,13 @@ struct structStats: public basicStats {
     intensNwCnt(0),
     intensTussCnt(0),
     intensWwCnt(0),
+    generalCnt(0),
+    generalSepCnt(0),
+    generalRelCnt(0),
+    generalActCnt(0),
+    generalKnowCnt(0),
+    generalDiscCnt(0),
+    generalDeveCnt(0),
     broadNounCnt(0),
     strictNounCnt(0),
     broadAdjCnt(0),
@@ -2849,6 +2924,13 @@ struct structStats: public basicStats {
   int intensNwCnt;
   int intensTussCnt;
   int intensWwCnt;
+  int generalCnt;
+  int generalSepCnt;
+  int generalRelCnt;
+  int generalActCnt;
+  int generalKnowCnt;
+  int generalDiscCnt;
+  int generalDeveCnt;
   int broadNounCnt;
   int strictNounCnt;
   int broadAdjCnt;
@@ -3088,6 +3170,13 @@ void structStats::merge( structStats *ss ){
   intensNwCnt += ss->intensNwCnt;
   intensTussCnt += ss->intensTussCnt;
   intensWwCnt += ss->intensWwCnt;
+  generalCnt += ss->generalCnt;
+  generalSepCnt += ss->generalSepCnt;
+  generalRelCnt += ss->generalRelCnt;
+  generalActCnt += ss->generalActCnt;
+  generalKnowCnt += ss->generalKnowCnt;
+  generalDiscCnt += ss->generalDiscCnt;
+  generalDeveCnt += ss->generalDeveCnt;
   presentCnt += ss->presentCnt;
   pastCnt += ss->pastCnt;
   subjonctCnt += ss->subjonctCnt;
@@ -3427,6 +3516,14 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "intens_nw_count", toString(intensNwCnt) );
   addOneMetric( doc, el, "intens_tuss_count", toString(intensTussCnt) );
   addOneMetric( doc, el, "intens_ww_count", toString(intensWwCnt) );
+
+  addOneMetric( doc, el, "general_count", toString(generalCnt) );
+  addOneMetric( doc, el, "general_sep_count", toString(generalSepCnt) );
+  addOneMetric( doc, el, "general_rel_count", toString(generalRelCnt) );
+  addOneMetric( doc, el, "general_act_count", toString(generalActCnt) );
+  addOneMetric( doc, el, "general_know_count", toString(generalKnowCnt) );
+  addOneMetric( doc, el, "general_disc_count", toString(generalDiscCnt) );
+  addOneMetric( doc, el, "general_deve_count", toString(generalDeveCnt) );
 
   addOneMetric( doc, el, "broad_noun", toString(broadNounCnt) );
   addOneMetric( doc, el, "strict_noun", toString(strictNounCnt) );
@@ -3823,6 +3920,13 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Ov_abstr_nw_p,Ov_abstr_nw_d,"; // 20150508: Features renamed
   os << "Undefined_nw_p,";
   os << "Gedekte_nw_p,";
+  os << "Alg_nw_d,Alg_nw_p,";
+  os << "Alg_nw_afz_sit_d,Alg_nw_afz_sit_p,";
+  os << "Alg_nw_rel_sit_d,Alg_nw_rel_sit_p,";
+  os << "Alg_nw_hand_d,Alg_nw_hand_p,";
+  os << "Alg_nw_kenn_d,Alg_nw_kenn_p,";
+  os << "Alg_nw_disc_caus_d,Alg_nw_disc_caus_p,";
+  os << "Alg_nw_ontw_d,Alg_nw_ontw_p,";
   os << "Waarn_mens_bvnw_p,Waarn_mens_bvnw_d,";
   os << "Emosoc_bvnw_p,Emosoc_bvnw_d,";
   os << "Waarn_nmens_bvnw_p,Waarn_nmens_bvnw_d,";
@@ -3894,6 +3998,21 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << density( nonDynamicCnt, wordCnt ) << ",";
   os << proportion( undefinedNounCnt, coveredNouns ) << ",";
   os << proportion( coveredNouns, nounCnt + nameCnt ) << ",";
+
+  os << density( generalCnt, wordCnt ) << ",";
+  os << proportion( generalCnt, coveredNouns ) << ",";
+  os << density( generalSepCnt, wordCnt ) << ",";
+  os << proportion( generalSepCnt, coveredNouns ) << ",";
+  os << density( generalRelCnt, wordCnt ) << ",";
+  os << proportion( generalRelCnt, coveredNouns ) << ",";
+  os << density( generalActCnt, wordCnt ) << ",";
+  os << proportion( generalActCnt, coveredNouns ) << ",";
+  os << density( generalKnowCnt, wordCnt ) << ",";
+  os << proportion( generalKnowCnt, coveredNouns ) << ",";
+  os << density( generalDiscCnt, wordCnt ) << ",";
+  os << proportion( generalDiscCnt, coveredNouns ) << ",";
+  os << density( generalDeveCnt, wordCnt ) << ",";
+  os << proportion( generalDeveCnt, coveredNouns ) << ",";
 
   int coveredAdj = adjCnt-uncoveredAdjCnt;
   os << proportion( humanAdjCnt, coveredAdj ) << ",";
@@ -5709,6 +5828,14 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
           default:
               break;
       }
+      if (ws->general_noun_type != GeneralNoun::NO_GENERAL_NOUN) generalCnt++;
+      if (GeneralNoun::isSeparate(ws->general_noun_type)) generalSepCnt++;
+      if (GeneralNoun::isRelated(ws->general_noun_type)) generalRelCnt++;
+      if (GeneralNoun::isActing(ws->general_noun_type)) generalActCnt++;
+      if (GeneralNoun::isKnowledge(ws->general_noun_type)) generalKnowCnt++;
+      if (GeneralNoun::isDiscussion(ws->general_noun_type)) generalDiscCnt++;
+      if (GeneralNoun::isDevelopment(ws->general_noun_type)) generalDeveCnt++;
+
       sv.push_back( ws );
     }
   }
