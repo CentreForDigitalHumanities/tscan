@@ -74,6 +74,15 @@ struct cf_data {
   double freq;
 };
 
+struct noun {
+  SEM::Type type; 
+  bool is_compound;
+  string head;
+  string satellite;
+  string satellite_clean;
+  int compound_parts;
+};
+
 enum top_val { top1000, top2000, top3000, top5000, top10000, top20000, notFound  };
 
 enum NerProp { NONER, LOC_B, LOC_I, EVE_B, EVE_I, ORG_B, ORG_I,
@@ -183,12 +192,12 @@ struct settingData {
   unsigned int overlapSize;
   double freq_clip;
   double mtld_threshold;
-  map <string, SEM::Type> adj_sem;
-  map <string, SEM::Type> noun_sem;
-  map <string, SEM::Type> verb_sem;
-  map <string, Intensify::Type> intensify;
-  map <string, GeneralNoun::Type> general_nouns;
-  map <string, double> pol_lex;
+  map<string, SEM::Type> adj_sem;
+  map<string, noun> noun_sem;
+  map<string, SEM::Type> verb_sem;
+  map<string, Intensify::Type> intensify;
+  map<string, GeneralNoun::Type> general_nouns;
+  map<string, double> pol_lex;
   map<string, cf_data> staph_word_freq_lex;
   long int staph_total;
   map<string, cf_data> word_freq_lex;
@@ -257,58 +266,46 @@ istream& safe_getline( istream& is, string& t ){
   }
 }
 
-bool fillN( map<string,SEM::Type>& m, istream& is ){
+bool fillN( map<string,noun>& m, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
+    // Trim the lines
     line = TiCC::trim( line );
     if ( line.empty() )
       continue;
+
+    // Split at a tab; the line should contain either 3 (non-compounds) or 7 (compounds) values
     vector<string> parts;
-    int n = split_at( line, parts, "\t" ); // split at tab
-    if ( n != 2 ){
-      cerr << "skip line: " << line << " (expected 2 values, got "
-	   << n << ")" << endl;
+    int i = split_at( line, parts, "\t" );
+    if (i != 3 && i != 7) {
+      cerr << "skip line: " << line << " (expected 3 or 7 values, got " << i << ")" << endl;
       continue;
     }
-    vector<string> vals;
-    n = split_at( parts[1], vals, "," ); // split at ,
-    if ( n == 1 ){
-      m[parts[0]] = SEM::classifyNoun( vals[0] );
+
+    // Classify the noun, set the compound values and add the noun to the map
+    noun n;
+    n.type = SEM::classifyNoun(parts[1]);
+    n.is_compound = parts[2] == "1";
+    if (n.is_compound) {
+      n.head = parts[3];
+      n.satellite = parts[4];
+      n.satellite_clean = parts[5];
+      n.compound_parts = atoi(parts[6].c_str());
     }
-    else if ( n == 0 ){
-      cerr << "skip line: " << line << " (expected some values, got none."
-	   << endl;
-      continue;
-    }
-    else {
-      SEM::Type topval = SEM::NO_SEMTYPE;
-      map<SEM::Type,int> stats;
-      set<SEM::Type> values;
-      for ( size_t i=0; i< vals.size(); ++i ){
-	SEM::Type val = SEM::classifyNoun( vals[i] );
-	stats[val]++;
-	values.insert(val);
-      }
-      SEM::Type res = SEM::UNFOUND_NOUN;
-      if ( values.size() == 1 ){
-	// just 1 semtype
-	res = *values.begin();
-      }
-      else {
-	cerr << "multiple semtypes encountered, assuming first: " << values << endl;
-  res = *values.begin();
-      }
-      topval = res;
-      if ( m.find(parts[0]) != m.end() ){
-	cerr << "multiple entry '" << parts[0] << "' in N lex" << endl;
-      }
-      if ( topval != SEM::UNFOUND_NOUN ){
-	// no use to store undefined values
-	m[parts[0]] = topval;
-      }
-    }
+    m[parts[0]] = n;
   }
   return true;
+}
+
+bool fillN( map<string,noun>& m, const string& filename ) {
+  ifstream is( filename.c_str() );
+  if (is) {
+    return fillN(m, is);
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
 }
 
 bool fillWW( map<string,SEM::Type>& m, istream& is ){
@@ -368,11 +365,9 @@ bool fillADJ( map<string,SEM::Type>& m, istream& is ){
 bool fill( CGN::Type tag, map<string,SEM::Type>& m, const string& filename ){
   ifstream is( filename.c_str() );
   if ( is ){
-    if ( tag == CGN::N )
-      return fillN( m, is );
-    else if ( tag == CGN::WW )
+    if ( tag == CGN::WW )
       return fillWW( m, is );
-    if ( tag == CGN::ADJ )
+    else if ( tag == CGN::ADJ )
       return fillADJ( m, is );
   }
   else {
@@ -816,7 +811,7 @@ void settingData::init( const Configuration& cf ){
   }
   val = cf.lookUp( "noun_semtypes" );
   if ( !val.empty() ){
-    if ( !fill( CGN::N, noun_sem, val ) ) // 20141121: Full path necessary to allow custom input
+    if ( !fillN( noun_sem, val ) ) // 20141121: Full path necessary to allow custom input
       exit( EXIT_FAILURE );
   }
   val = cf.lookUp( "verb_semtypes" );
@@ -1145,6 +1140,8 @@ struct wordStats : public basicStats {
   void coherenceToCSV( ostream& ) const;
   void concreetHeader( ostream& ) const;
   void concreetToCSV( ostream& ) const;
+  void compoundHeader( ostream& ) const;
+  void compoundToCSV( ostream& ) const;
   void persoonlijkheidHeader( ostream& ) const;
   void persoonlijkheidToCSV( ostream& ) const;
   void verbHeader( ostream& ) const {};
@@ -1178,6 +1175,7 @@ struct wordStats : public basicStats {
   bool checkNominal( const xmlNode * ) const;
   void setCGNProps( const PosAnnotation* );
   CGN::Prop wordProperty() const { return prop; };
+  void checkNoun();
   SEM::Type checkSemProps( ) const;
   Intensify::Type checkIntensify(const xmlNode*) const;
   GeneralNoun::Type checkGeneralNoun() const;
@@ -1185,7 +1183,8 @@ struct wordStats : public basicStats {
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
   void staphFreqLookup();
-  void topFreqLookup();
+  top_val topFreqLookup(const string&) const;
+  int wordFreqLookup(const string&) const;
   void freqLookup();
   void getSentenceOverlap( const vector<string>&, const vector<string>& );
   bool isOverlapCandidate() const;
@@ -1234,6 +1233,17 @@ struct wordStats : public basicStats {
   vector<string> morphemes;
   multimap<DD_type,int> distances;
   AfkType afkType;
+  bool is_compound;
+  int compound_parts;
+  string compound_head;
+  string compound_sat;
+  int charCntHead;
+  int charCntSat;
+  double word_freq_log_head;
+  double word_freq_log_sat;
+  double word_freq_log_head_sat;
+  top_val top_freq_head;
+  top_val top_freq_sat;
 };
 
 vector<const wordStats*> wordStats::collectWords() const {
@@ -1548,26 +1558,36 @@ void wordStats::setCGNProps( const PosAnnotation* pa ) {
   }
 }
 
-SEM::Type wordStats::checkSemProps( ) const {
+void wordStats::checkNoun() {
   if ( tag == CGN::N ){
-    SEM::Type sem = SEM::UNFOUND_NOUN;
     //    cerr << "lookup " << lemma << endl;
-    map<string,SEM::Type>::const_iterator sit = settings.noun_sem.find( lemma );
+    map<string,noun>::const_iterator sit = settings.noun_sem.find( lemma );
     if ( sit != settings.noun_sem.end() ){
-      sem = sit->second;
+      noun n = sit->second;
+      sem_type = n.type;
+      if (n.is_compound) {
+        is_compound = n.is_compound;
+        compound_parts = n.compound_parts;
+        compound_head = n.head;
+        compound_sat = n.satellite_clean;
+      }
     }
-    else if ( settings.showProblems ){
-      problemFile << "N," << word << ", " << lemma << endl;
+    else {
+      sem_type = SEM::UNFOUND_NOUN;
+      if ( settings.showProblems ){
+        problemFile << "N," << word << ", " << lemma << endl;
+      }
     }
-    //    cerr << "semtype=" << sem << endl;
-    return sem;
   }
-  else if ( prop == CGN::ISNAME ){
+}
+
+SEM::Type wordStats::checkSemProps( ) const {
+  if ( prop == CGN::ISNAME ){
     // Names are te be looked up in the Noun list too
     SEM::Type sem = SEM::UNFOUND_NOUN;
-    map<string,SEM::Type>::const_iterator sit = settings.noun_sem.find( lemma );
+    map<string,noun>::const_iterator sit = settings.noun_sem.find( lemma );
     if ( sit != settings.noun_sem.end() ){
-      sem = sit->second;
+      sem = sit->second.type;
     }
     // else if ( settings.showProblems ){
     //   problemFile << "Name, " << word << ", " << lemma << endl;
@@ -1663,19 +1683,38 @@ AfkType wordStats::checkAfk() const {
   return NO_A;
 }
 
-void wordStats::topFreqLookup(){
-  map<string,top_val>::const_iterator it = settings.top_freq_lex.find( l_word );
-  top_freq = notFound;
+// Returns the position of a word in the top-20000 lexicon
+top_val wordStats::topFreqLookup(const string& w) const {
+  map<string,top_val>::const_iterator it = settings.top_freq_lex.find( w );
+  top_val result = notFound;
   if ( it != settings.top_freq_lex.end() ){
-    top_freq = it->second;
+    result = it->second;
   }
+  return result;
 }
 
+// Returns the frequency of a word in the word lexicon
+int wordStats::wordFreqLookup(const string& w) const {
+  int result = 1;
+  map<string,cf_data>::const_iterator it = settings.word_freq_lex.find( w );
+  if ( it != settings.word_freq_lex.end() ){
+    result = it->second.count;
+  }
+  return result;
+}
+
+// Returns the log of the frequency
+double freqLog(const long int& freq, const long int& total) {
+  return log10((freq/double(total))*10e6);
+}
+
+// Find the frequencies of words and lemmata
+// TODO: refactor this to use wordFreqLookup and freqLog above
 void wordStats::freqLookup(){
   map<string,cf_data>::const_iterator it = settings.word_freq_lex.find( l_word );
   if ( it != settings.word_freq_lex.end() ){
     word_freq = it->second.count;
-    word_freq_log = log10((word_freq/double(settings.word_total))*10e6);
+    word_freq_log = freqLog(word_freq, settings.word_total);
   }
   else {
     word_freq = 1;
@@ -1691,7 +1730,7 @@ void wordStats::freqLookup(){
   }
   if ( it != settings.lemma_freq_lex.end() ){
     lemma_freq = it->second.count;
-    lemma_freq_log = log10( (lemma_freq/double(settings.lemma_total))*10e6);
+    lemma_freq_log = freqLog(lemma_freq, settings.lemma_total);
   }
   else {
     lemma_freq = 1;
@@ -2115,7 +2154,9 @@ wordStats::wordStats( int index,
   word_freq_log(NA), lemma_freq_log(NA),
   logprob10(NA), prop(CGN::JUSTAWORD), position(CGN::NOPOS), 
   sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY), 
-  general_noun_type(GeneralNoun::NO_GENERAL_NOUN), afkType(NO_A)
+  general_noun_type(GeneralNoun::NO_GENERAL_NOUN), afkType(NO_A),
+  is_compound(false), compound_parts(0),
+  word_freq_log_head(NA), word_freq_log_sat(NA), word_freq_log_head_sat(NA)
 {
   UnicodeString us = w->text();
   charCnt = us.length();
@@ -2152,8 +2193,8 @@ wordStats::wordStats( int index,
   }
   isContent = checkContent();
   if ( prop != CGN::ISLET ){
-    int compLen = 0;
-    CompoundType comp = NOCOMP;
+    // int compLen = 0;
+    // CompoundType comp = NOCOMP;
     vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
     size_t max = 0;
     vector<Morpheme*> morphemeV;
@@ -2200,15 +2241,25 @@ wordStats::wordStats( int index,
       morphCntExNames = morphCnt;
     }
     sem_type = checkSemProps();
+    checkNoun();
     intensify_type = checkIntensify(alpWord);
     general_noun_type = checkGeneralNoun();
     afkType = checkAfk();
     if ( alpWord )
       isNominal = checkNominal( alpWord );
-    topFreqLookup();
+    top_freq = topFreqLookup(l_word);
     staphFreqLookup();
     if ( isContent ){
       freqLookup();
+    }
+    if ( is_compound ) {
+      charCntHead = compound_head.length();
+      charCntSat = compound_sat.length();
+      word_freq_log_head = freqLog(wordFreqLookup(compound_head), settings.word_total);
+      word_freq_log_sat = freqLog(wordFreqLookup(compound_sat), settings.word_total);
+      word_freq_log_head_sat = (word_freq_log_head + word_freq_log_sat) / double(2);
+      top_freq_head = topFreqLookup(compound_head);
+      top_freq_sat = topFreqLookup(compound_sat);
     }
     if ( settings.doDecompound ){
       compPartCnt = runDecompoundWord( word, workdir_name,
@@ -2389,6 +2440,7 @@ void wordStats::CSVheader( ostream& os, const string& ) const {
   wordDifficultiesHeader( os );
   coherenceHeader( os );
   concreetHeader( os );
+  compoundHeader( os );
   persoonlijkheidHeader( os );
   miscHeader( os );
   os << endl;
@@ -2544,6 +2596,47 @@ void wordStats::concreetToCSV( ostream& os ) const {
     os << "0,";
 }
 
+void wordStats::compoundHeader( ostream& os ) const {
+  os << "Samenst,Samenst_delen,";
+  os << "Let_per_wrd_hfdwrd,Let_per_wrd_satwrd,";
+  os << "Wrd_freq_log_hfdwrd,Wrd_freq_log_satwrd,Wrd_freq_log_(hfd_sat),";
+  os << "Freq1000_hfdwrd,Freq5000_hfdwrd,Freq20000_hfdwrd,";
+  os << "Freq1000_satwrd,Freq5000_satwrd,Freq20000_satwrd,";
+}
+
+void wordStats::compoundToCSV( ostream& os ) const {
+  os << (is_compound ? 1 : 0) << ",";
+  if (is_compound) {
+    os << double(compound_parts) << ",";
+    os << double(charCntHead) << ",";
+    os << double(charCntSat) << ",";
+    if ( word_freq_log_head == NA )
+      os << "NA,";
+    else
+      os << word_freq_log_head << ",";
+    if ( word_freq_log_sat == NA )
+      os << "NA,";
+    else
+      os << word_freq_log_sat << ",";
+    if ( word_freq_log_head_sat == NA )
+      os << "NA,";
+    else
+      os << word_freq_log_head_sat << ",";
+    os << (top_freq_head == top1000 ? 1 : 0) << ",";
+    os << (top_freq_head <= top5000 ? 1 : 0) << ",";
+    os << (top_freq_head <= top20000 ? 1 : 0) << ",";
+    os << (top_freq_sat == top1000 ? 1 : 0) << ",";
+    os << (top_freq_sat <= top5000 ? 1 : 0) << ",";
+    os << (top_freq_sat <= top20000 ? 1 : 0) << ",";
+  }
+  else {
+    // For non-compounds, just print not applicable for each attribute
+    for (int i = 0; i < 12; i++) { 
+      os << "NA,";
+    }
+  }
+}
+
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
   os << "Pers_ref,Pers_vnw1,Pers_vnw2,Pers_vnw3,Pers_vnw,"
      << "Naam_POS,Naam_NER," // 20141125: Feature Naam_POS moved
@@ -2595,6 +2688,7 @@ void wordStats::toCSV( ostream& os ) const {
   wordDifficultiesToCSV( os );
   coherenceToCSV( os );
   concreetToCSV( os );
+  compoundToCSV( os );
   persoonlijkheidToCSV( os );
   miscToCSV( os );
   os << endl;
