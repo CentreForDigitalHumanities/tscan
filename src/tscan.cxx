@@ -2880,7 +2880,15 @@ struct structStats: public basicStats {
     charCntHead(0),
     charCntSat(0),
     charCntNounCorr(0),
-    charCntCorr(0)
+    charCntCorr(0),
+    word_freq_log_noun(0),
+    word_freq_log_non_comp(0),
+    word_freq_log_comp(0),
+    word_freq_log_head(0),
+    word_freq_log_sat(0),
+    word_freq_log_head_sat(0),
+    word_freq_log_noun_corr(0),
+    word_freq_log_corr(0)
  {};
   ~structStats();
   void addMetrics( ) const;
@@ -3141,6 +3149,14 @@ struct structStats: public basicStats {
   int charCntSat;
   int charCntNounCorr;
   int charCntCorr;
+  double word_freq_log_noun;
+  double word_freq_log_non_comp;
+  double word_freq_log_comp;
+  double word_freq_log_head;
+  double word_freq_log_sat;
+  double word_freq_log_head_sat;
+  double word_freq_log_noun_corr;
+  double word_freq_log_corr;
 };
 
 structStats::~structStats(){
@@ -3376,6 +3392,14 @@ void structStats::merge( structStats *ss ){
   charCntSat += ss->charCntSat;
   charCntNounCorr += ss->charCntNounCorr;
   charCntCorr += ss->charCntCorr;
+  word_freq_log_noun += ss->word_freq_log_noun;
+  word_freq_log_non_comp += ss->word_freq_log_non_comp;
+  word_freq_log_comp += ss->word_freq_log_comp;
+  word_freq_log_head += ss->word_freq_log_head;
+  word_freq_log_sat += ss->word_freq_log_sat;
+  word_freq_log_head_sat += ss->word_freq_log_head_sat;
+  word_freq_log_noun_corr += ss->word_freq_log_noun_corr;
+  word_freq_log_corr += ss->word_freq_log_corr;
   sv.push_back( ss );
   aggregate( heads, ss->heads );
   aggregate( unique_names, ss->unique_names );
@@ -3822,10 +3846,10 @@ void structStats::compoundHeader( ostream& os ) const {
   os << "Let_per_wrd_nw,Let_per_wrd_nsam,Let_per_wrd_sam,";
   os << "Let_per_wrd_hfdwrd,Let_per_wrd_satwrd,";
   os << "Let_per_wrd_nw_corr,Let_per_wrd_corr,";
-  /*os << "Wrd_freq_log_nw,Wrd_freq_log_ong_nw,Wrd_freq_log_sam_nw,";
+  os << "Wrd_freq_log_nw,Wrd_freq_log_ong_nw,Wrd_freq_log_sam_nw,";
   os << "Wrd_freq_log_hfdwrd,Wrd_freq_log_satwrd,Wrd_freq_log_(hfd_sat),";
   os << "Wrd_freq_log_nw_corr,Wrd_freq_log_corr,";
-  os << "Freq1000_nw,Freq5000_nw,Freq20000_nw,";
+  /*os << "Freq1000_nw,Freq5000_nw,Freq20000_nw,";
   os << "Freq1000_nsam_nw,Freq5000_nsam_nw,Freq20000_nsam_nw,";
   os << "Freq1000_sam_nw,Freq5000_sam_nw,Freq20000_sam_nw,";
   os << "Freq1000_hfdwrd_nw,Freq5000_hfdwrd_nw,Freq20000_hfdwrd_nw,";
@@ -3847,6 +3871,14 @@ void structStats::compoundToCSV( ostream& os ) const {
   os << proportion(charCntSat, compoundCnt) << ",";
   os << proportion(charCntNounCorr, nounCnt) << ",";
   os << proportion(charCntCorr, wordCnt) << ",";
+  os << proportion(word_freq_log_noun, nounCnt) << ",";
+  os << proportion(word_freq_log_non_comp, nonCompoundCnt) << ",";
+  os << proportion(word_freq_log_comp, compoundCnt) << ",";
+  os << proportion(word_freq_log_head, compoundCnt) << ",";
+  os << proportion(word_freq_log_sat, compoundCnt) << ",";
+  os << proportion(word_freq_log_head_sat, compoundCnt) << ",";
+  os << proportion(word_freq_log_noun_corr, nounCnt) << ",";
+  os << proportion(word_freq_log_corr, contentCnt) << ",";
 }
 
 void structStats::sentDifficultiesHeader( ostream& os ) const {
@@ -5991,6 +6023,8 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
       // Counts for compounds
       if (ws->tag == CGN::N) {
         charCntNoun += ws->charCnt;
+        word_freq_log_noun += ws->word_freq_log;
+
         if (ws->is_compound) {
           compoundCnt++;
           if (ws->compound_parts == 3) {
@@ -6002,15 +6036,30 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
           charCntSat += ws->charCntSat;
           charCntNounCorr += ws->charCntHead;
           charCntCorr += ws->charCntHead;
+
+          word_freq_log_comp += ws->word_freq_log;
+          word_freq_log_head += ws->word_freq_log_head;
+          word_freq_log_sat += ws->word_freq_log_sat;
+          word_freq_log_head_sat += ws->word_freq_log_head_sat;
+          word_freq_log_noun_corr += ws->word_freq_log_head;
+          word_freq_log_corr += ws->word_freq_log_head;
         }
         else {
           charCntNonComp += ws->charCnt;
           charCntNounCorr += ws->charCnt;
           charCntCorr += ws->charCnt;
+
+          word_freq_log_non_comp += ws->word_freq_log;
+          word_freq_log_noun_corr += ws->word_freq_log;
+          word_freq_log_corr += ws->word_freq_log;
         }
       }
       else {
         charCntCorr += ws->charCnt;
+
+        if (ws->isContent) {
+          word_freq_log_corr += ws->word_freq_log;
+        }
       }
 
       sv.push_back( ws );
