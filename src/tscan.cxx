@@ -1067,6 +1067,8 @@ struct basicStats {
   virtual void CSVheader( ostream&, const string& ="" ) const = 0;
   virtual void wordDifficultiesHeader( ostream& ) const = 0;
   virtual void wordDifficultiesToCSV( ostream& ) const = 0;
+  virtual void compoundHeader( ostream& ) const = 0;
+  virtual void compoundToCSV( ostream& ) const = 0;
   virtual void sentDifficultiesHeader( ostream& ) const = 0;
   virtual void sentDifficultiesToCSV( ostream& ) const = 0;
   virtual void infoHeader( ostream& ) const = 0;
@@ -2869,12 +2871,23 @@ struct structStats: public basicStats {
     ruimte_sit_mtld(0),
     cause_sit_mtld(0),
     emotion_sit_mtld(0),
-    nerCnt(0)
+    nerCnt(0),
+    compoundCnt(0),
+    compound3Cnt(0),
+    charCntNoun(0),
+    charCntNonComp(0),
+    charCntComp(0),
+    charCntHead(0),
+    charCntSat(0),
+    charCntNounCorr(0),
+    charCntCorr(0)
  {};
   ~structStats();
   void addMetrics( ) const;
   void wordDifficultiesHeader( ostream& ) const;
   void wordDifficultiesToCSV( ostream& ) const;
+  void compoundHeader( ostream& ) const;
+  void compoundToCSV( ostream& ) const;
   void sentDifficultiesHeader( ostream& ) const;
   void sentDifficultiesToCSV( ostream& ) const;
   void infoHeader( ostream& ) const;
@@ -3119,6 +3132,15 @@ struct structStats: public basicStats {
   int nerCnt;
   map<AfkType, int> afks;
   multimap<DD_type,int> distances;
+  int compoundCnt;
+  int compound3Cnt;
+  int charCntNoun;
+  int charCntNonComp;
+  int charCntComp;
+  int charCntHead;
+  int charCntSat;
+  int charCntNounCorr;
+  int charCntCorr;
 };
 
 structStats::~structStats(){
@@ -3345,6 +3367,15 @@ void structStats::merge( structStats *ss ){
   impCnt += ss->impCnt;
   questCnt += ss->questCnt;
   nerCnt += ss->nerCnt;
+  compoundCnt += ss->compoundCnt;
+  compound3Cnt += ss->compound3Cnt;
+  charCntNoun += ss->charCntNoun;
+  charCntNonComp += ss->charCntNonComp;
+  charCntComp += ss->charCntComp;
+  charCntHead += ss->charCntHead;
+  charCntSat += ss->charCntSat;
+  charCntNounCorr += ss->charCntNounCorr;
+  charCntCorr += ss->charCntCorr;
   sv.push_back( ss );
   aggregate( heads, ss->heads );
   aggregate( unique_names, ss->unique_names );
@@ -3697,6 +3728,7 @@ void structStats::addMetrics( ) const {
 void structStats::CSVheader( ostream& os, const string& intro ) const {
   os << intro << ",Alpino_status,";
   wordDifficultiesHeader( os );
+  compoundHeader( os );
   sentDifficultiesHeader( os );
   infoHeader( os );
   coherenceHeader( os );
@@ -3718,6 +3750,7 @@ void structStats::toCSV( ostream& os ) const {
   } 
   os << parseFailCnt << ","; 
   wordDifficultiesToCSV( os );
+  compoundToCSV( os );
   sentDifficultiesToCSV( os );
   informationDensityToCSV( os );
   coherenceToCSV( os );
@@ -3743,9 +3776,6 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
      << "Freq5000,Freq10000,Freq20000,"
      << "Freq1000_inhwrd,Freq2000_inhwrd,Freq3000_inhwrd,"
      << "Freq5000_inhwrd,Freq10000_inhwrd,Freq20000_inhwrd,";
-     // << "so_word_suc,so_word_net,"
-     // << "so_sent_suc,so_sent_net,so_sent_ctx,"
-     // << "so_par_suc,so_par_net,so_par_ctx,";
 }
 
 void structStats::wordDifficultiesToCSV( ostream& os ) const {
@@ -3785,11 +3815,38 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
   os << proportion( top5000ContentCnt, contentCnt ) << ",";
   os << proportion( top10000ContentCnt, contentCnt ) << ",";
   os << proportion( top20000ContentCnt, contentCnt ) << ",";
-  // os << toMString(lsa_word_suc) << "," << toMString(lsa_word_net) << ",";
-  // os << toMString(lsa_sent_suc) << "," << toMString(lsa_sent_net) << ","
-  //    << toMString(lsa_sent_ctx) << ",";
-  // os << toMString(lsa_par_suc) << "," << toMString(lsa_par_net) << ","
-  //    << toMString(lsa_par_ctx) << ",";
+}
+
+void structStats::compoundHeader( ostream& os ) const {
+  os << "Samenst_d,Samenst_p,Samenst3_d,Samenst3_p,";
+  os << "Let_per_wrd_nw,Let_per_wrd_nsam,Let_per_wrd_sam,";
+  os << "Let_per_wrd_hfdwrd,Let_per_wrd_satwrd,";
+  os << "Let_per_wrd_nw_corr,Let_per_wrd_corr,";
+  /*os << "Wrd_freq_log_nw,Wrd_freq_log_ong_nw,Wrd_freq_log_sam_nw,";
+  os << "Wrd_freq_log_hfdwrd,Wrd_freq_log_satwrd,Wrd_freq_log_(hfd_sat),";
+  os << "Wrd_freq_log_nw_corr,Wrd_freq_log_corr,";
+  os << "Freq1000_nw,Freq5000_nw,Freq20000_nw,";
+  os << "Freq1000_nsam_nw,Freq5000_nsam_nw,Freq20000_nsam_nw,";
+  os << "Freq1000_sam_nw,Freq5000_sam_nw,Freq20000_sam_nw,";
+  os << "Freq1000_hfdwrd_nw,Freq5000_hfdwrd_nw,Freq20000_hfdwrd_nw,";
+  os << "Freq1000_satwrd_nw,Freq5000_satwrd_nw,Freq20000_satwrd_nw,";
+  os << "Freq1000_nw_corr,Freq5000_nw_corr,Freq20000_nw_corr,";
+  os << "Freq1000_corr,Freq5000_corr,Freq20000_corr,";*/
+}
+
+void structStats::compoundToCSV( ostream& os ) const {
+  int nonCompoundCnt = nounCnt - compoundCnt;
+  os << density(compoundCnt, wordCnt) << ",";
+  os << proportion(compoundCnt, nounCnt) << ",";
+  os << density(compound3Cnt, wordCnt) << ",";
+  os << proportion(compound3Cnt, nounCnt) << ",";
+  os << proportion(charCntNoun, nounCnt) << ",";
+  os << proportion(charCntNonComp, nonCompoundCnt) << ",";
+  os << proportion(charCntComp, compoundCnt) << ",";
+  os << proportion(charCntHead, compoundCnt) << ",";
+  os << proportion(charCntSat, compoundCnt) << ",";
+  os << proportion(charCntNounCorr, nounCnt) << ",";
+  os << proportion(charCntCorr, wordCnt) << ",";
 }
 
 void structStats::sentDifficultiesHeader( ostream& os ) const {
@@ -5922,6 +5979,7 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
           default:
               break;
       }
+      // Counts for general nouns
       if (ws->general_noun_type != GeneralNoun::NO_GENERAL_NOUN) generalCnt++;
       if (GeneralNoun::isSeparate(ws->general_noun_type)) generalSepCnt++;
       if (GeneralNoun::isRelated(ws->general_noun_type)) generalRelCnt++;
@@ -5929,6 +5987,31 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
       if (GeneralNoun::isKnowledge(ws->general_noun_type)) generalKnowCnt++;
       if (GeneralNoun::isDiscussion(ws->general_noun_type)) generalDiscCnt++;
       if (GeneralNoun::isDevelopment(ws->general_noun_type)) generalDeveCnt++;
+
+      // Counts for compounds
+      if (ws->tag == CGN::N) {
+        charCntNoun += ws->charCnt;
+        if (ws->is_compound) {
+          compoundCnt++;
+          if (ws->compound_parts == 3) {
+            compound3Cnt++;
+          }
+
+          charCntComp += ws->charCnt;
+          charCntHead += ws->charCntHead;
+          charCntSat += ws->charCntSat;
+          charCntNounCorr += ws->charCntHead;
+          charCntCorr += ws->charCntHead;
+        }
+        else {
+          charCntNonComp += ws->charCnt;
+          charCntNounCorr += ws->charCnt;
+          charCntCorr += ws->charCnt;
+        }
+      }
+      else {
+        charCntCorr += ws->charCnt;
+      }
 
       sv.push_back( ws );
     }
