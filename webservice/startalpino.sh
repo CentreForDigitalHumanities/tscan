@@ -6,7 +6,7 @@ export TMPDIR=/tmp
 
 ## this one is for parsing
 
-PROLOGMAXSIZE=${MEMLIMIT} /nethome/3020371/tscan/Alpino/bin/Alpino -notk -fast user_max=${TIMEOUT}\
+PROLOGMAXSIZE=${MEMLIMIT} Alpino -notk -fast user_max=${TIMEOUT}\
  server_kind=parse\
  server_port=${PORT}\
  assume_input_is_tokenized=on\

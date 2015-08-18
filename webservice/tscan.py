@@ -59,12 +59,12 @@ if hostname == 'applejack': #final server in Nijmegen
         'password': D(open(environ['CLAMOPENER_KEYFILE']).read().strip()),
         'database': 'clamopener',
         'table': 'clamusers_clamusers',
-        #'accesslist': environ['accesslist'].split(' ')
+	    #'accesslist': environ['accesslist'].split(' ')
     }
     REALM = "WEBSERVICES-LST"
     ADMINS = ['proycon','antalb','wstoop']
 else: #local
-    TSCANDIR = '/nethome/3020371/tscan/tscan-svn'
+    TSCANDIR = os.path.dirname(sys.argv[0])
     ROOT = "/tmp/tscan.clam/"
     PORT= 8080
     USERS = None
@@ -274,7 +274,7 @@ PARAMETERS =  [
         FloatParameter(id='frequencyClip',name='Frequency Clipping',description='Frequency Clipping',default=99),
         FloatParameter(id='mtldThreshold',name='MTLD factor size',description='MTLD factor size',default=0.720),
         ChoiceParameter(id='useAlpino',name='Use Alpino parser',description='Use Alpino parser?', choices=['yes','no'],default='yes'),
-        ChoiceParameter(id='useWopr',name='Use Wopr',description='Use Wopr?', choices=['yes','no'],default='no'),
+        ChoiceParameter(id='useWopr',name='Use Wopr',description='Use Wopr?', choices=['yes','no'],default='yes'),
 #        ChoiceParameter(id='useLsa',name='Use LSA analyzer',description='Use LSA?', choices=['yes','no'],default='no'),
         ChoiceParameter(id='word_freq_lex', name='Word Frequency List', description="Word frequency list", choices=wordfreqlist, default="SoNaR500.wordfreqlist_words.freq"),
         ChoiceParameter(id='lemma_freq_lex', name='Lemma Frequency List', description="Lemma frequency list", choices=lemmafreqlist, default="SoNaR500.wordfreqlist_lemma.freq"),

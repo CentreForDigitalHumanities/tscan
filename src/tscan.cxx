@@ -1705,9 +1705,9 @@ int wordStats::wordFreqLookup(const string& w) const {
   return result;
 }
 
-// Returns the log of the frequency per billion words
+// Returns the log of the frequency
 double freqLog(const long int& freq, const long int& total) {
-  return log10((freq/double(total))*10e9);
+  return log10((freq/double(total))*10e6);
 }
 
 // Find the frequencies of words and lemmata
@@ -2888,28 +2888,7 @@ struct structStats: public basicStats {
     word_freq_log_sat(0),
     word_freq_log_head_sat(0),
     word_freq_log_noun_corr(0),
-    word_freq_log_corr(0),
-    top1000CntNoun(0),
-    top1000CntNonComp(0),
-    top1000CntComp(0),
-    top1000CntHead(0),
-    top1000CntSat(0),
-    top1000CntNounCorr(0),
-    top1000CntCorr(0),
-    top5000CntNoun(0),
-    top5000CntNonComp(0),
-    top5000CntComp(0),
-    top5000CntHead(0),
-    top5000CntSat(0),
-    top5000CntNounCorr(0),
-    top5000CntCorr(0),
-    top20000CntNoun(0),
-    top20000CntNonComp(0),
-    top20000CntComp(0),
-    top20000CntHead(0),
-    top20000CntSat(0),
-    top20000CntNounCorr(0),
-    top20000CntCorr(0)
+    word_freq_log_corr(0)
  {};
   ~structStats();
   void addMetrics( ) const;
@@ -3178,27 +3157,6 @@ struct structStats: public basicStats {
   double word_freq_log_head_sat;
   double word_freq_log_noun_corr;
   double word_freq_log_corr;
-  int top1000CntNoun;
-  int top1000CntNonComp;
-  int top1000CntComp;
-  int top1000CntHead;
-  int top1000CntSat;
-  int top1000CntNounCorr;
-  int top1000CntCorr;
-  int top5000CntNoun;
-  int top5000CntNonComp;
-  int top5000CntComp;
-  int top5000CntHead;
-  int top5000CntSat;
-  int top5000CntNounCorr;
-  int top5000CntCorr;
-  int top20000CntNoun;
-  int top20000CntNonComp;
-  int top20000CntComp;
-  int top20000CntHead;
-  int top20000CntSat;
-  int top20000CntNounCorr;
-  int top20000CntCorr;
 };
 
 structStats::~structStats(){
@@ -3442,27 +3400,6 @@ void structStats::merge( structStats *ss ){
   word_freq_log_head_sat += ss->word_freq_log_head_sat;
   word_freq_log_noun_corr += ss->word_freq_log_noun_corr;
   word_freq_log_corr += ss->word_freq_log_corr;
-  top1000CntNoun += ss->top1000CntNoun;
-  top1000CntNonComp += ss->top1000CntNonComp;
-  top1000CntComp += ss->top1000CntComp;
-  top1000CntHead += ss->top1000CntHead;
-  top1000CntSat += ss->top1000CntSat;
-  top1000CntNounCorr += ss->top1000CntNounCorr;
-  top1000CntCorr += ss->top1000CntCorr;
-  top5000CntNoun += ss->top5000CntNoun;
-  top5000CntNonComp += ss->top5000CntNonComp;
-  top5000CntComp += ss->top5000CntComp;
-  top5000CntHead += ss->top5000CntHead;
-  top5000CntSat += ss->top5000CntSat;
-  top5000CntNounCorr += ss->top5000CntNounCorr;
-  top5000CntCorr += ss->top5000CntCorr;
-  top20000CntNoun += ss->top20000CntNoun;
-  top20000CntNonComp += ss->top20000CntNonComp;
-  top20000CntComp += ss->top20000CntComp;
-  top20000CntHead += ss->top20000CntHead;
-  top20000CntSat += ss->top20000CntSat;
-  top20000CntNounCorr += ss->top20000CntNounCorr;
-  top20000CntCorr += ss->top20000CntCorr;
   sv.push_back( ss );
   aggregate( heads, ss->heads );
   aggregate( unique_names, ss->unique_names );
@@ -3912,13 +3849,13 @@ void structStats::compoundHeader( ostream& os ) const {
   os << "Wrd_freq_log_nw,Wrd_freq_log_ong_nw,Wrd_freq_log_sam_nw,";
   os << "Wrd_freq_log_hfdwrd,Wrd_freq_log_satwrd,Wrd_freq_log_(hfd_sat),";
   os << "Wrd_freq_log_nw_corr,Wrd_freq_log_corr,";
-  os << "Freq1000_nw,Freq5000_nw,Freq20000_nw,";
+  /*os << "Freq1000_nw,Freq5000_nw,Freq20000_nw,";
   os << "Freq1000_nsam_nw,Freq5000_nsam_nw,Freq20000_nsam_nw,";
   os << "Freq1000_sam_nw,Freq5000_sam_nw,Freq20000_sam_nw,";
   os << "Freq1000_hfdwrd_nw,Freq5000_hfdwrd_nw,Freq20000_hfdwrd_nw,";
   os << "Freq1000_satwrd_nw,Freq5000_satwrd_nw,Freq20000_satwrd_nw,";
   os << "Freq1000_nw_corr,Freq5000_nw_corr,Freq20000_nw_corr,";
-  os << "Freq1000_corr,Freq5000_corr,Freq20000_corr,";
+  os << "Freq1000_corr,Freq5000_corr,Freq20000_corr,";*/
 }
 
 void structStats::compoundToCSV( ostream& os ) const {
@@ -3942,27 +3879,6 @@ void structStats::compoundToCSV( ostream& os ) const {
   os << proportion(word_freq_log_head_sat, compoundCnt) << ",";
   os << proportion(word_freq_log_noun_corr, nounCnt) << ",";
   os << proportion(word_freq_log_corr, contentCnt) << ",";
-  os << proportion(top1000CntNoun, nounCnt) << ",";
-  os << proportion(top5000CntNoun, nounCnt) << ",";
-  os << proportion(top20000CntNoun, nounCnt) << ",";
-  os << proportion(top1000CntNonComp, nonCompoundCnt) << ",";
-  os << proportion(top5000CntNonComp, nonCompoundCnt) << ",";
-  os << proportion(top20000CntNonComp, nonCompoundCnt) << ",";
-  os << proportion(top1000CntComp, compoundCnt) << ",";
-  os << proportion(top5000CntComp, compoundCnt) << ",";
-  os << proportion(top20000CntComp, compoundCnt) << ",";
-  os << proportion(top1000CntHead, compoundCnt) << ",";
-  os << proportion(top5000CntHead, compoundCnt) << ",";
-  os << proportion(top20000CntHead, compoundCnt) << ",";
-  os << proportion(top1000CntSat, compoundCnt) << ",";
-  os << proportion(top5000CntSat, compoundCnt) << ",";
-  os << proportion(top20000CntSat, compoundCnt) << ",";
-  os << proportion(top1000CntNounCorr, nounCnt) << ",";
-  os << proportion(top5000CntNounCorr, nounCnt) << ",";
-  os << proportion(top20000CntNounCorr, nounCnt) << ",";
-  os << proportion(top1000CntCorr, wordCnt) << ",";
-  os << proportion(top5000CntCorr, wordCnt) << ",";
-  os << proportion(top20000CntCorr, wordCnt) << ",";
 }
 
 void structStats::sentDifficultiesHeader( ostream& os ) const {
@@ -6108,19 +6024,6 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
       if (ws->tag == CGN::N) {
         charCntNoun += ws->charCnt;
         word_freq_log_noun += ws->word_freq_log;
-        switch (ws->top_freq) {
-          case top1000:
-            top1000CntNoun++;
-          case top2000:
-          case top3000:
-          case top5000:
-            top5000CntNoun++;
-          case top10000:
-          case top20000:
-            top20000CntNoun++;
-          default: 
-            break;
-        }
 
         if (ws->is_compound) {
           compoundCnt++;
@@ -6140,46 +6043,6 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
           word_freq_log_head_sat += ws->word_freq_log_head_sat;
           word_freq_log_noun_corr += ws->word_freq_log_head;
           word_freq_log_corr += ws->word_freq_log_head;
-
-          switch (ws->top_freq) {
-            case top1000:
-              top1000CntComp++;
-            case top2000:
-            case top3000:
-            case top5000:
-              top5000CntComp++;
-            case top10000:
-            case top20000:
-              top20000CntComp++;
-            default: 
-              break;
-          }
-          switch (ws->top_freq_head) {
-            case top1000:
-              top1000CntHead++; top1000CntNounCorr++; top1000CntCorr++;
-            case top2000:
-            case top3000:
-            case top5000:
-              top5000CntHead++; top5000CntNounCorr++; top5000CntCorr++;
-            case top10000:
-            case top20000:
-              top20000CntHead++; top20000CntNounCorr++; top20000CntCorr++;
-            default: 
-              break;
-          }
-          switch (ws->top_freq_sat) {
-            case top1000:
-              top1000CntSat++;
-            case top2000:
-            case top3000:
-            case top5000:
-              top5000CntSat++;
-            case top10000:
-            case top20000:
-              top20000CntSat++;
-            default: 
-              break;
-          }
         }
         else {
           charCntNonComp += ws->charCnt;
@@ -6189,20 +6052,6 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
           word_freq_log_non_comp += ws->word_freq_log;
           word_freq_log_noun_corr += ws->word_freq_log;
           word_freq_log_corr += ws->word_freq_log;
-
-          switch (ws->top_freq) {
-            case top1000:
-              top1000CntNonComp++; top1000CntNounCorr++; top1000CntCorr++;
-            case top2000:
-            case top3000:
-            case top5000:
-              top5000CntNonComp++; top5000CntNounCorr++; top5000CntCorr++;
-            case top10000:
-            case top20000:
-              top20000CntNonComp++; top20000CntNounCorr++; top20000CntCorr++;
-            default: 
-              break;
-          }
         }
       }
       else {
@@ -6210,13 +6059,6 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 
         if (ws->isContent) {
           word_freq_log_corr += ws->word_freq_log;
-        }
-
-        switch (ws->top_freq) {
-          case top1000: top1000CntCorr++;
-          case top5000: top5000CntCorr++;
-          case top20000: top20000CntCorr++;
-          default: break;
         }
       }
 
