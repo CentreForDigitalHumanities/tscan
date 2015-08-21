@@ -1,10 +1,10 @@
 #include <string>
 #include <iostream>
-#include "tscan/generalnoun.h"
+#include "tscan/general.h"
 
 using namespace std;
 
-namespace GeneralNoun {
+namespace General {
     string toString(Type t) {
         switch (t) {
             case ADDITION_ALTERNATIVE:
@@ -82,11 +82,11 @@ namespace GeneralNoun {
             case DESIRABILITY:
                 return "wenselijkheid";
                 break;
-            case NO_GENERAL_NOUN:
-                return "geen-algemeen-nomen";
+            case NO_GENERAL:
+                return "niet-algemeen";
                 break;
             default:
-                return "invalid general noun value";
+                return "invalid general value";
         }
     }
     
@@ -142,7 +142,7 @@ namespace GeneralNoun {
         else if (s == "wenselijkheid")
             return DESIRABILITY;
         else
-            return NO_GENERAL_NOUN;
+            return NO_GENERAL;
     }
 
     // Returns true for general nouns about separate situations

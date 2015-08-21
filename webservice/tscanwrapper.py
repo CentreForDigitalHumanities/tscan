@@ -113,6 +113,7 @@ f.write("mtldThreshold=" + str(mtldthreshold) + "\n")
 f.write("configDir=" + TSCANDIR + "/data\n")
 f.write("verb_semtypes=\"verbs_semtype.data\"\n")
 f.write("general_nouns=\"general_nouns.data\"\n")
+f.write("general_verbs=\"general_verbs.data\"\n")
 
 # 20150316: This allows custom adjective classification.
 load_custom_wordlist(f, inputdir, "adj_semtypes", "adjclassification", "/data/adjs_semtype.data")

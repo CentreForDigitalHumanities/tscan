@@ -1,7 +1,7 @@
-#ifndef GENERALNOUN_H
-#define	GENERALNOUN_H
+#ifndef GENERAL_H
+#define	GENERAL_H
 
-namespace GeneralNoun {
+namespace General {
 
     enum Type {
         ADDITION_ALTERNATIVE,
@@ -29,7 +29,7 @@ namespace GeneralNoun {
         STATE,
         STRUCTURE,
         DESIRABILITY,
-        NO_GENERAL_NOUN
+        NO_GENERAL
     };
     
     std::string toString(Type);
@@ -43,4 +43,4 @@ namespace GeneralNoun {
     std::ostream& operator<<( std::ostream&, const Type&);
 }
 
-#endif /* GENERALNOUN_H */
+#endif /* GENERAL_H */
