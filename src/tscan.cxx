@@ -51,6 +51,7 @@
 #include "tscan/conn.h"
 #include "tscan/general.h"
 #include "tscan/situation.h"
+#include "tscan/afk.h"
 
 using namespace std;
 using namespace TiCC;
@@ -121,62 +122,6 @@ ostream& operator<<( ostream& os, const NerProp& n ){
   return os;
 }
 
-enum AfkType { NO_A, OVERHEID_A, ZORG_A, ONDERWIJS_A,
-	       JURIDISCH_A, OVERIGE_A,
-	       INTERNATIONAAL_A, MEDIA_A, GENERIEK_A };
-
-AfkType stringTo( const string& s ){
-  if ( s == "none" )
-    return NO_A;
-  if ( s == "Overheid_Politiek" )
-    return OVERHEID_A;
-  if ( s == "Zorg" )
-    return ZORG_A;
-  if ( s == "Onderwijs" )
-    return ONDERWIJS_A;
-  if ( s == "Juridisch" )
-    return JURIDISCH_A;
-  if ( s == "Overig" )
-    return OVERIGE_A;
-  if ( s == "Internationaal" )
-    return INTERNATIONAAL_A;
-  if ( s == "Media" )
-    return MEDIA_A;
-  if (s == "Generiek" )
-    return GENERIEK_A;
-  return NO_A;
-}
-
-string toString( const AfkType& afk ){
-  switch ( afk ){
-  case NO_A:
-    return "none";
-  case OVERHEID_A:
-    return "Overheid_Politiek";
-  case ZORG_A:
-    return "Zorg";
-  case INTERNATIONAAL_A:
-    return "Internationaal";
-  case MEDIA_A:
-    return "Media";
-  case ONDERWIJS_A:
-    return "Onderwijs";
-  case JURIDISCH_A:
-    return "Juridisch";
-  case OVERIGE_A:
-    return "Overig";
-  case GENERIEK_A:
-    return "Generiek";
-  default:
-    return "UnknownAfkType";
-  };
-}
-
-ostream& operator<<( ostream& os, const AfkType& afk ){
-  os << toString( afk );
-  return os;
-}
-
 
 struct settingData {
   void init( const Configuration& );
@@ -230,7 +175,7 @@ struct settingData {
   set<string> vzexpr2;
   set<string> vzexpr3;
   set<string> vzexpr4;
-  map<string,AfkType> afkos;
+  map<string,Afk::Type> afkos;
 };
 
 settingData settings;
@@ -659,7 +604,7 @@ bool fill_vzexpr( set<string>& vz2, set<string>& vz3, set<string>& vz4,
   return false;
 }
 
-bool fill( map<string,AfkType>& afkos, istream& is ){
+bool fill( map<string,Afk::Type>& afkos, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
     // a line is supposed to be :
@@ -677,20 +622,20 @@ bool fill( map<string,AfkType>& afkos, istream& is ){
       continue;
     }
     if ( n == 2 ){
-      AfkType at = stringTo( vec[1] );
-      if ( at != NO_A )
+      Afk::Type at = Afk::classify( vec[1] );
+      if ( at != Afk::NO_A )
 	afkos[vec[0]] = at;
     }
     else if ( n == 3 ){
-      AfkType at = stringTo( vec[2] );
-      if ( at != NO_A ){
+      Afk::Type at = Afk::classify( vec[2] );
+      if ( at != Afk::NO_A ){
 	string s = vec[0] + " " + vec[1];
 	afkos[s] = at;
       }
     }
     else if ( n == 4 ){
-      AfkType at = stringTo( vec[3] );
-      if ( at != NO_A ){
+      Afk::Type at = Afk::classify( vec[3] );
+      if ( at != Afk::NO_A ){
 	string s = vec[0] + " " + vec[1] + " " + vec[2];
 	afkos[s] = at;
       }
@@ -704,7 +649,7 @@ bool fill( map<string,AfkType>& afkos, istream& is ){
   return true;
 }
 
-bool fill( map<string,AfkType>& afks, const string& filename ){
+bool fill( map<string,Afk::Type>& afks, const string& filename ){
   ifstream is( filename.c_str() );
   if ( is ){
     return fill( afks , is );
@@ -1160,7 +1105,7 @@ struct wordStats : public basicStats {
   Intensify::Type checkIntensify(const xmlNode*) const;
   General::Type checkGeneralNoun() const;
   General::Type checkGeneralVerb() const;
-  AfkType checkAfk( ) const;
+  Afk::Type checkAfk( ) const;
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
   void staphFreqLookup();
@@ -1214,7 +1159,7 @@ struct wordStats : public basicStats {
   General::Type general_verb_type;
   vector<string> morphemes;
   multimap<DD_type,int> distances;
-  AfkType afkType;
+  Afk::Type afkType;
   bool is_compound;
   int compound_parts;
   string compound_head;
@@ -1665,14 +1610,14 @@ General::Type wordStats::checkGeneralVerb() const {
   return General::NO_GENERAL;
 }
 
-AfkType wordStats::checkAfk() const {
+Afk::Type wordStats::checkAfk() const {
   if ( tag == CGN::N || tag == CGN::SPEC) {
-    map<string,AfkType>::const_iterator sit = settings.afkos.find( word );
+    map<string,Afk::Type>::const_iterator sit = settings.afkos.find( word );
     if ( sit != settings.afkos.end() ){
       return sit->second;
     }
   }
-  return NO_A;
+  return Afk::NO_A;
 }
 
 // Returns the position of a word in the top-20000 lexicon
@@ -2147,7 +2092,7 @@ wordStats::wordStats( int index,
   logprob10(NA), prop(CGN::JUSTAWORD), position(CGN::NOPOS), 
   sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY), 
   general_noun_type(General::NO_GENERAL), general_verb_type(General::NO_GENERAL),
-  afkType(NO_A), is_compound(false), compound_parts(0),
+  afkType(Afk::NO_A), is_compound(false), compound_parts(0),
   word_freq_log_head(NA), word_freq_log_sat(NA), word_freq_log_head_sat(NA)
 {
   UnicodeString us = w->text();
@@ -2426,7 +2371,7 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "generalnountype", General::toString(general_noun_type) );
   if ( general_verb_type != General::NO_GENERAL )
     addOneMetric( doc, el, "generalverbtype", General::toString(general_verb_type) );
-  if ( afkType != NO_A )
+  if ( afkType != Afk::NO_A )
     addOneMetric( doc, el, "afktype", toString(afkType) );
 }
 
@@ -2467,7 +2412,7 @@ void wordStats::wordSortToCSV( ostream& os ) const {
   }
   os << "\",";
   os << tag << ",";
-  if ( afkType == NO_A ) {
+  if ( afkType == Afk::NO_A ) {
     os << "0,";
   }
   else {
@@ -3170,7 +3115,7 @@ struct structStats: public basicStats {
   double emotion_sit_mtld;
   map<NerProp, int> ners;
   int nerCnt;
-  map<AfkType, int> afks;
+  map<Afk::Type, int> afks;
   multimap<DD_type,int> distances;
   int compoundCnt;
   int compound3Cnt;
@@ -3579,35 +3524,35 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "product_name_count", toString(val) );
   val = at( ners, EVE_B );
   addOneMetric( doc, el, "event_name_count", toString(val) );
-  val = at( afks, OVERHEID_A );
+  val = at( afks, Afk::OVERHEID_A );
   if ( val > 0 ){
     addOneMetric( doc, el, "overheid_afk_count", toString(val) );
   }
-  val = at( afks, JURIDISCH_A );
+  val = at( afks, Afk::JURIDISCH_A );
   if ( val > 0 ){
     addOneMetric( doc, el, "juridisch_afk_count", toString(val) );
   }
-  val = at( afks, ONDERWIJS_A );
+  val = at( afks, Afk::ONDERWIJS_A );
   if ( val > 0 ){
     addOneMetric( doc, el, "onderwijs_afk_count", toString(val) );
   }
-  val = at( afks, MEDIA_A );
+  val = at( afks, Afk::MEDIA_A );
   if ( val > 0 ){
     addOneMetric( doc, el, "media_afk_count", toString(val) );
   }
-  val = at( afks, GENERIEK_A );
+  val = at( afks, Afk::GENERIEK_A );
   if ( val > 0 ){
     addOneMetric( doc, el, "generiek_afk_count", toString(val) );
   }
-  val = at( afks, OVERIGE_A );
+  val = at( afks, Afk::OVERIGE_A );
   if ( val > 0 ){
     addOneMetric( doc, el, "overige_afk_count", toString(val) );
   }
-  val = at( afks, INTERNATIONAAL_A );
+  val = at( afks, Afk::INTERNATIONAAL_A );
   if ( val > 0 ){
     addOneMetric( doc, el, "internationaal_afk_count", toString(val) );
   }
-  val = at( afks, ZORG_A );
+  val = at( afks, Afk::ZORG_A );
   if ( val > 0 ){
     addOneMetric( doc, el, "zorg_afk_count", toString(val) );
   }
@@ -4516,14 +4461,14 @@ void structStats::wordSortToCSV( ostream& os ) const {
      << density(tswCnt, wordCnt ) << ","
      << density(specCnt, wordCnt ) << ","
      << density(letCnt, wordCnt ) << ",";
-  int pola = at( afks, OVERHEID_A );
-  int jura = at( afks, JURIDISCH_A );
-  int onda = at( afks, ONDERWIJS_A );
-  int meda = at( afks, MEDIA_A );
-  int gena = at( afks, GENERIEK_A );
-  int ova = at( afks, OVERIGE_A );
-  int zorga = at( afks, ZORG_A );
-  int inta = at( afks, INTERNATIONAAL_A );
+  int pola = at( afks, Afk::OVERHEID_A );
+  int jura = at( afks, Afk::JURIDISCH_A );
+  int onda = at( afks, Afk::ONDERWIJS_A );
+  int meda = at( afks, Afk::MEDIA_A );
+  int gena = at( afks, Afk::GENERIEK_A );
+  int ova = at( afks, Afk::OVERIGE_A );
+  int zorga = at( afks, Afk::ZORG_A );
+  int inta = at( afks, Afk::INTERNATIONAAL_A );
   os << density( gena+inta+jura+meda+onda+pola+ova+zorga, wordCnt ) << ","
      << density( gena, wordCnt ) << ","
      << density( inta, wordCnt ) << ","
@@ -5431,8 +5376,8 @@ void sentStats::resolveMultiWordAfks(){
       string word = sv[i]->text();
       string multiword2 = word + " " + sv[i+1]->text();
       string multiword3 = multiword2 + " " + sv[i+2]->text();
-      AfkType at = NO_A;
-      map<string,AfkType>::const_iterator sit
+      Afk::Type at = Afk::NO_A;
+      map<string,Afk::Type>::const_iterator sit
 	= settings.afkos.find( multiword3 );
       if ( sit == settings.afkos.end() ){
 	sit = settings.afkos.find( multiword2 );
@@ -5444,17 +5389,17 @@ void sentStats::resolveMultiWordAfks(){
 	cerr << "FOUND a 2-word AFK: '" << multiword2 << "'" << endl;
 	at = sit->second;
       }
-      if ( at != NO_A ){
+      if ( at != Afk::NO_A ){
 	++afks[at];
       }
     }
     // don't forget the last 2 words
     string multiword2 = sv[sv.size()-2]->text() + " " + sv[sv.size()-1]->text();
-    map<string,AfkType>::const_iterator sit
+    map<string,Afk::Type>::const_iterator sit
       = settings.afkos.find( multiword2 );
     if ( sit != settings.afkos.end() ){
       cerr << "FOUND a 2-word AFK: '" << multiword2 << "'" << endl;
-      AfkType at = sit->second;
+      Afk::Type at = sit->second;
       ++afks[at];
     }
   }
@@ -5711,7 +5656,7 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
       ws->setPersRef(); // need NER Info for this
       wordCnt++;
       heads[ws->tag]++;
-      if ( ws->afkType != NO_A ){
+      if ( ws->afkType != Afk::NO_A ){
 	++afks[ws->afkType];
       }
       wordOverlapCnt += ws->wordOverlapCnt;
