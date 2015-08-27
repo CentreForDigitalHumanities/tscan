@@ -18,6 +18,8 @@
 #  GNU autoconf, from e.g. ftp.gnu.org:/pub/gnu/autoconf/
 #  GNU automake, from e.g. http://ftp.gnu.org/gnu/automake/
 
+./downloaddata.sh
+
 automake=automake
 aclocal=aclocal
 
