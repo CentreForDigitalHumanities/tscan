@@ -7,21 +7,25 @@ Language Machines, Centre for Language Studies, Nijmegen
 T-scan is distributed under the GNU Affero Public Licence (see the file COPYING).
 
 T-scan is an analysis tool for dutch texts to assess the complexity of the
-text, and is based on original work by Rogier Kraf (Utrect University) [See:
+text, and is based on original work by Rogier Kraf (Utrecht University) [See:
 Kraf et al., 2009]. The code has been reimplemented and extended by Ko van der
 Sloot (Tilburg University), and is currently maintained and continued by
 Martijn van der Klis (Utrecht University).
 
-Extensive documentation (in dutch) can be obtained here:  http://lst.science.ru.nl/~proycon/tscanhandleiding.pdf (Pander Maat et al., 2014)
+Extensive documentation (in dutch) is in docs/tscanhandleiding.pdf .
 
 T-scan heavily depends upon other sofware, such as Frog, Wopr and Alpino.
 
 Installation is not trivial, to be able to succesfully build tscan from the tarball, you need the following packages:
 - autotools
 - autoconf-archive
-and all necessary dependencies.
+- ticcutils
+- libfolia
+- Alpino
+- frog
+- wopr
 
-t-scan is included in LaMachine (https://proycon.github.io/LaMachine), which simplifies installation.
+To facilitate installation, t-scan is included as an extra option in LaMachine (https://proycon.github.io/LaMachine)
 
 References
 -----------
