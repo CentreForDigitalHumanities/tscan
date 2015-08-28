@@ -33,7 +33,13 @@ Installation
 
 We strongly recommend to use LaMachine (https://proycon.github.io/LaMachine) to
 install tscan. In addition, t-scan also uses Alpino, which has to be obtained separately from
-http://www.let.rug.nl/vannoord/alp/Alpino/ .
+http://www.let.rug.nl/vannoord/alp/Alpino/.
+
+To install LaMachine with t-scan you need to pass the ``tscan`` argument, as it is **not** included by default:
+
+   $ git clone https://github.com/proycon/LaMachine
+   $ ./LaMachine/virtualenv-bootstrap.sh tscan
+   $ rm -Rf LaMachine    #repository is not needed anymore
 
 If you do not want to use LaMachine, first make sure you have **all** necessary dependencies and then compile/install as follows:
 
