@@ -20,7 +20,7 @@ from clam.common.viewers import *
 from clam.common.data import *
 from clam.common.digestauth import pwhash
 import sys
-from os import uname, environ
+import os
 from base64 import b64decode as D
 import glob
 
@@ -44,25 +44,42 @@ SYSTEM_DESCRIPTION = ""
 
 # ======== LOCATION ===========
 
-hostname = uname()[1]
 
-if hostname == 'applejack': #final server in Nijmegen
-    CLAMDIR = "/scratch2/www/webservices-lst/live/repo/clam"
-    TSCANDIR = "/scratch2/www/webservices-lst/live/repo/tscan"
-    ROOT = "/scratch2/www/webservices-lst/live/writable/tscan/"
-    HOST = "webservices-lst.science.ru.nl"
-    PORT = 80
-    URLPREFIX = "tscan"
-    USERS_MYSQL = {
-        'host': 'mysql-clamopener.science.ru.nl',
-        'user': 'clamopener',
-        'password': D(open(environ['CLAMOPENER_KEYFILE']).read().strip()),
-        'database': 'clamopener',
-        'table': 'clamusers_clamusers',
-	    #'accesslist': environ['accesslist'].split(' ')
-    }
-    REALM = "WEBSERVICES-LST"
-    ADMINS = ['proycon','antalb','wstoop']
+# ================ Server specific configuration for CLAM ===============
+hostname = os.uname()[1]
+if 'VIRTUAL_ENV' in os.environ and os.path.exists(os.environ['VIRTUAL_ENV'] +'/bin/tscan'):
+    # Virtual Environment (LaMachine)
+    ROOT = os.environ['VIRTUAL_ENV'] + "/tscan.clam/"
+    PORT = 8809
+    BINDIR = os.environ['VIRTUAL_ENV'] + '/bin/'
+    TSCANDIR = os.environ['VIRTUAL_ENV'] + '/src/tscan/webservice/'
+
+    if hostname == 'applejack': #server in Nijmegen
+        HOST = "webservices-lst.science.ru.nl"
+        URLPREFIX = 'tscan'
+
+        if not 'CLAMTEST' in os.environ:
+            ROOT = "/scratch2/www/webservices-lst/live/writable/tscan/"
+            if 'CLAMSSL' in os.environ:
+                PORT = 443
+            else:
+                PORT = 80
+        else:
+            ROOT = "/scratch2/www/webservices-lst/test/writable/tscan/"
+            PORT = 81
+
+        USERS_MYSQL = {
+            'host': 'mysql-clamopener.science.ru.nl',
+            'user': 'clamopener',
+            'password': D(open(os.environ['CLAMOPENER_KEYFILE']).read().strip()),
+            'database': 'clamopener',
+            'table': 'clamusers_clamusers'
+        }
+        DEBUG = False
+        REALM = "WEBSERVICES-LST"
+        DIGESTOPAQUE = open(os.environ['CLAM_DIGESTOPAQUEFILE']).read().strip()
+        SECRET_KEY = open(os.environ['CLAM_SECRETKEYFILE']).read().strip()
+        ADMINS = ['proycon','antalb','wstoop']
 else: #local
     TSCANDIR = os.path.dirname(sys.argv[0])
     ROOT = "/tmp/tscan.clam/"
