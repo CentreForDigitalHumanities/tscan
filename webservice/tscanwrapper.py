@@ -34,6 +34,7 @@ statusfile = sys.argv[2]
 inputdir = sys.argv[3]
 outputdir = sys.argv[4]
 TSCANDIR = sys.argv[5]
+ALPINOHOME = sys.argv[6]
 
 #Obtain all data from the CLAM system (passed in $DATAFILE (clam.xml))
 clamdata = clam.common.data.getclamdata(datafile)
@@ -209,7 +210,7 @@ shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
 
 #pass all input files at once
 clam.common.status.write(statusfile, "Processing " + str(len(inputfiles)) + " files, this may take a while...", 10)  # status update
-ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg ' + ' '.join(['"' + x + '"' for x in inputfiles]))
+ref = os.system('ALPINO_HOME="' + ALPINOHOME + '" tscan --config=' + outputdir + '/tscan.cfg ' + ' '.join(['"' + x + '"' for x in inputfiles]))
 
 #collect output
 clam.common.status.write(statusfile, "Postprocessing", 90)  # status update

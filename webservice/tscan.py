@@ -88,7 +88,10 @@ else: #local
     PORT= 8080
     USERS = None
 
-
+if 'ALPINO_HOME' in os.environ:
+    ALPINOHOME = os.environ['ALPINO_HOME']
+else:
+    ALPINOHOME = ""
 
 
 #The hostname of the system. Will be automatically determined if not set. (If you start clam with the built-in webserver, you can override this with -H)
@@ -262,7 +265,7 @@ PROFILES = [
 #                        (set to "anonymous" if there is none)
 #     $PARAMETERS      - List of chosen parameters, using the specified flags
 #
-COMMAND = TSCANDIR + "/webservice/tscanwrapper.py $DATAFILE $STATUSFILE $INPUTDIRECTORY $OUTPUTDIRECTORY " + TSCANDIR
+COMMAND = TSCANDIR + "/webservice/tscanwrapper.py $DATAFILE $STATUSFILE $INPUTDIRECTORY $OUTPUTDIRECTORY " + TSCANDIR + " " + ALPINOHOME
 
 # ======== PARAMETER DEFINITIONS ===========
 
