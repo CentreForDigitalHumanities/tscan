@@ -165,7 +165,8 @@ f.write("host=localhost\n")
 
 f.close()
 
-os.system('svn info ' + TSCANDIR + ' >&2')
+print("on git commit: ",file=sys.stderr)
+os.system('git rev-parse HEAD >&2')
 
 
 #collect all input files
