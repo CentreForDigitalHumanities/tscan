@@ -54,7 +54,7 @@ if 'VIRTUAL_ENV' in os.environ and os.path.exists(os.environ['VIRTUAL_ENV'] +'/b
     ROOT = os.environ['VIRTUAL_ENV'] + "/tscan.clam/"
     PORT = 8809
     BINDIR = os.environ['VIRTUAL_ENV'] + '/bin/'
-    TSCANDIR = os.environ['VIRTUAL_ENV'] + '/src/tscan/webservice/'
+    TSCANDIR = os.environ['VIRTUAL_ENV'] + '/src/tscan/'
 
     if hostname == 'applejack': #server in Nijmegen
         HOST = "webservices-lst.science.ru.nl"
@@ -262,7 +262,7 @@ PROFILES = [
 #                        (set to "anonymous" if there is none)
 #     $PARAMETERS      - List of chosen parameters, using the specified flags
 #
-COMMAND = TSCANDIR + "/tscanwrapper.py $DATAFILE $STATUSFILE $INPUTDIRECTORY $OUTPUTDIRECTORY " + TSCANDIR
+COMMAND = TSCANDIR + "/webservice/tscanwrapper.py $DATAFILE $STATUSFILE $INPUTDIRECTORY $OUTPUTDIRECTORY " + TSCANDIR
 
 # ======== PARAMETER DEFINITIONS ===========
 
