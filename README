@@ -21,11 +21,59 @@ Installation is not trivial, to be able to succesfully build tscan from the tarb
 - autoconf-archive
 - ticcutils
 - libfolia
-- Alpino
+- Alpino 
 - frog
 - wopr
+- CLAM
 
 To facilitate installation, t-scan is included as an extra option in LaMachine (https://proycon.github.io/LaMachine)
+
+Installation 
+----------------
+
+We strongly recommend to use LaMachine (https://proycon.github.io/LaMachine) to
+install tscan. In addition, t-scan also uses Alpino, which has to be obtained separately from
+http://www.let.rug.nl/vannoord/alp/Alpino/ .
+
+If you do not want to use LaMachine, first make sure you have **all** necessary dependencies and then compile/install as follows:
+
+    $ bash bootstrap.sh
+    $ ./configure
+    $ make
+    $ sudo make install
+
+Usage
+-------
+
+If you use LaMachine as recommend, always activate the virtual environment first.
+    
+    $ . /path/to/lamachine/bin/activate
+
+Before you can use t-scan you need to Start the background servers (you may need to edit the scripts to set ports and paths):
+
+    $ cd tscan/webservices
+    $ ./startfrog.sh
+    $ ./startwopr.sh
+    $ ./startalpino.sh
+
+Then either run tscan from the command-line, which will produce a FoLiA XML file,
+
+    $ cd tscan
+    $ cp tscan.cfg.example tscan.cfg
+    (edit tscan.cfg if necessary)
+    $ tscan -c tscan.cfg input.txt 
+
+.. or use the webapplication/webservice:
+
+    $ cd tscan/webservices
+    $ clamservice tscan   #this starts the CLAM service for TSCAN
+
+And then navigate to the host and port specified. 
+
+Data
+-------
+
+Parts of T-scan uses data from Referentiebestand Nederlands, which we can not distribute due to restrictive licensing issues, so this functionality will not be available.
 
 References
 -----------
