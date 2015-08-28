@@ -214,7 +214,10 @@ ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdi
 #collect output
 clam.common.status.write(statusfile, "Postprocessing", 90)  # status update
 for inputfile in inputfiles:
-    os.rename(inputfile + '.tscan.xml', outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan', '').replace('.txt', '') + '.xml')
+    try:
+        os.rename(inputfile + '.tscan.xml', outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan', '').replace('.txt', '') + '.xml')
+    except FileNotFoundError:
+        print("Expected output file " + inputfile + ".tscan.xml not created, something went wrong earlier?",file=sys.stderr)
 
 if ref != 0:
     clam.common.status.write(statusfile, "Failed", 90)  # status update
