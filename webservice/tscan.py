@@ -26,7 +26,8 @@ import glob
 
 #DEBUG = True
 
-REQUIRE_VERSION = 0.8
+REQUIRE_VERSION = 0.99
+CLAMDIR = clam.__path__[0]
 
 # ======== GENERAL INFORMATION ===========
 
@@ -44,6 +45,7 @@ SYSTEM_DESCRIPTION = ""
 
 # ======== LOCATION ===========
 
+USERS = None
 
 # ================ Server specific configuration for CLAM ===============
 hostname = os.uname()[1]
@@ -87,10 +89,6 @@ else: #local
     USERS = None
 
 
-    #Directory to the tscan root (svn checkout)
-
-
-    #The URL of the system (If you start clam with the built-in webserver, you can override this with -P)
 
 
 #The hostname of the system. Will be automatically determined if not set. (If you start clam with the built-in webserver, you can override this with -H)
