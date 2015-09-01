@@ -144,23 +144,23 @@ f.write("emotion_situation=\"emoties.txt\"\n")
 
 f.write("[[frog]]\n")  # Frog server should already be runnning, start manually
 f.write("port=7001\n")
-f.write("host=localhost\n\n")
+f.write("host=127.0.0.1\n\n")
 
 f.write("[[wopr]]\n")
 f.write("port=7002\n")
-f.write("host=localhost\n\n")
+f.write("host=127.0.0.1\n\n")
 
 f.write("[[alpino]]\n")
 f.write("port=7003\n")
-f.write("host=localhost\n")
+f.write("host=127.0.0.1\n")
 
 f.write("[[lsa_words]]\n")
 f.write("port=7004\n")
-f.write("host=localhost\n")
+f.write("host=127.0.0.1\n")
 
 f.write("[[lsa_docs]]\n")
 f.write("port=7005\n")
-f.write("host=localhost\n")
+f.write("host=127.0.0.1\n")
 
 
 f.close()
