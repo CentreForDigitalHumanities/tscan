@@ -34,6 +34,7 @@ statusfile = sys.argv[2]
 inputdir = sys.argv[3]
 outputdir = sys.argv[4]
 TSCANDIR = sys.argv[5]
+ALPINOHOME = sys.argv[6]
 
 #Obtain all data from the CLAM system (passed in $DATAFILE (clam.xml))
 clamdata = clam.common.data.getclamdata(datafile)
@@ -165,7 +166,8 @@ f.write("host=127.0.0.1\n")
 
 f.close()
 
-os.system('svn info ' + TSCANDIR + ' >&2')
+print("on git commit: ",file=sys.stderr)
+os.system('git rev-parse HEAD >&2')
 
 
 #collect all input files
@@ -208,12 +210,15 @@ shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
 
 #pass all input files at once
 clam.common.status.write(statusfile, "Processing " + str(len(inputfiles)) + " files, this may take a while...", 10)  # status update
-ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg ' + ' '.join(['"' + x + '"' for x in inputfiles]))
+ref = os.system('ALPINO_HOME="' + ALPINOHOME + '" tscan --config=' + outputdir + '/tscan.cfg ' + ' '.join(['"' + x + '"' for x in inputfiles]))
 
 #collect output
 clam.common.status.write(statusfile, "Postprocessing", 90)  # status update
 for inputfile in inputfiles:
-    os.rename(inputfile + '.tscan.xml', outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan', '').replace('.txt', '') + '.xml')
+    try:
+        os.rename(inputfile + '.tscan.xml', outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan', '').replace('.txt', '') + '.xml')
+    except FileNotFoundError:
+        print("Expected output file " + inputfile + ".tscan.xml not created, something went wrong earlier?",file=sys.stderr)
 
 if ref != 0:
     clam.common.status.write(statusfile, "Failed", 90)  # status update

@@ -14,9 +14,9 @@ if [ "$PREDOWNLOAD" != "$POSTDOWNLOAD" ]; then
 fi
 
 #Dummies for RBN-derived data, not redistributable due to overly restrictive license (http://tst.inl.nl/producten/rbn/toonlicentie.php)
-RESTRICTEDDATA="adjs_semtype.data  general_nouns.data  general_verbs.data  intensiveringen.data  nouns_semtype.data  verbs_semtype.data"
+RESTRICTEDDATA="adjs_semtype.data general_nouns.data general_verbs.data intensiveringen.data nouns_semtype.data verbs_semtype.data"
 for file in $RESTRICTEDDATA; do
-    if [ -f $file ]; then
+    if [ ! -f $file ]; then
         touch $file
     fi
 done
