@@ -1637,7 +1637,7 @@ int wordStats::wordFreqLookup(const string& w) const {
 
 // Returns the log of the frequency per billion words
 double freqLog(const long int& freq, const long int& total) {
-  return log10((freq/double(total))*10e9);
+  return log10((freq/double(total))*1e9);
 }
 
 // Find the frequencies of words and lemmata
