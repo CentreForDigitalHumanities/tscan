@@ -1627,7 +1627,7 @@ top_val wordStats::topFreqLookup(const string& w) const {
 
 // Returns the frequency of a word in the word lexicon
 int wordStats::wordFreqLookup(const string& w) const {
-  int result = 1;
+  int result = 0;
   map<string,cf_data>::const_iterator it = settings.word_freq_lex.find( w );
   if ( it != settings.word_freq_lex.end() ){
     result = it->second.count;
@@ -1635,24 +1635,18 @@ int wordStats::wordFreqLookup(const string& w) const {
   return result;
 }
 
-// Returns the log of the frequency per billion words
+// Returns the log of the frequency per billion words (with Laplace transformation)
+// See http://crr.ugent.be/papers/van_Heuven_et_al_SUBTLEX-UK.pdf
 double freqLog(const long int& freq, const long int& total) {
-  return log10((freq/double(total))*1e9);
+  return log10(((freq + 1) / double(total)) * 1e9);
 }
 
 // Find the frequencies of words and lemmata
-// TODO: refactor this to use wordFreqLookup and freqLog above
 void wordStats::freqLookup(){
-  map<string,cf_data>::const_iterator it = settings.word_freq_lex.find( l_word );
-  if ( it != settings.word_freq_lex.end() ){
-    word_freq = it->second.count;
-    word_freq_log = freqLog(word_freq, settings.word_total);
-  }
-  else {
-    word_freq = 1;
-    word_freq_log = 0;
-  }
-  it = settings.lemma_freq_lex.end();
+  word_freq = wordFreqLookup(l_word);
+  word_freq_log = freqLog(word_freq, settings.word_total);
+
+  map<string,cf_data>::const_iterator it = settings.lemma_freq_lex.end();
   if ( !full_lemma.empty() ){
     // scheidbaar ww
     it = settings.lemma_freq_lex.find( full_lemma );
@@ -1665,8 +1659,8 @@ void wordStats::freqLookup(){
     lemma_freq_log = freqLog(lemma_freq, settings.lemma_total);
   }
   else {
-    lemma_freq = 1;
-    lemma_freq_log = 0;
+    lemma_freq = 0;
+    lemma_freq_log = freqLog(lemma_freq, settings.lemma_total);
   }
 }
 
