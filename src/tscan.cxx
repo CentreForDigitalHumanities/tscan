@@ -4326,8 +4326,10 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << density( generalVerbDeveCnt, wordCnt ) << ",";
   os << proportion( generalVerbDeveCnt, coveredVerbs ) << ",";
 
-  os << proportion( concreteWwCnt + strictAdjCnt + strictNounCnt, wordCnt ) << ",";
-  os << density( concreteWwCnt + strictAdjCnt + strictNounCnt, wordCnt ) << ",";
+  int totalCovered = coveredNouns + coveredAdj + coveredVerbs;
+  int totalCnt = strictNounCnt + strictAdjCnt + concreteWwCnt;
+  os << proportion( totalCnt, totalCovered ) << ",";
+  os << density( totalCnt, wordCnt ) << ",";
 }
 
 void structStats::persoonlijkheidHeader( ostream& os ) const {
