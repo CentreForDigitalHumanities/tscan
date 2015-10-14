@@ -49,17 +49,6 @@ AX_ICU_CHECK( [3.6],
 	       LIBS="$ICU_LIBPATH $ICU_LIBS $ICU_IOLIBS $LIBS"],
 	      [AC_MSG_FAILURE( "No ICU development environment found. Please check if libicu-dev or the like is installed" )] )
 
-AC_ARG_WITH(timblserver,
-       [  --with-timblserver=DIR       use timblserver installed in <DIR>;
-               note that you can install timbl in a non-default directory with
-               ./configure --prefix=<DIR> in the timbl installation directory],
-       [PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$withval/lib/pkgconfig"],
-       [PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$prefix/lib/pkgconfig"])
-PKG_CHECK_MODULES([timblserver], [timblserver >= 1.7] )
-CXXFLAGS="$CXXFLAGS $timblserver_CFLAGS"
-LIBS="$timblserver_LIBS $LIBS"
-
-
 AC_ARG_WITH(ticcutils,
        [  --with-ticcutils=DIR       use ticcutils installed in <DIR>;
                note that you can install ticcutils in a non-default directory w
