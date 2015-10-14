@@ -31,8 +31,8 @@
 #include "omp.h"
 #endif
 
-#include "timblserver/FdStream.h"
-#include "timblserver/ServerBase.h"
+#include "ticcutils/FdStream.h"
+#include "ticcutils/ServerBase.h"
 #include "libfolia/document.h"
 #include "ticcutils/StringOps.h"
 #include "ticcutils/Configuration.h"
@@ -72,7 +72,7 @@ struct cf_data {
 };
 
 struct noun {
-  SEM::Type type; 
+  SEM::Type type;
   bool is_compound;
   string head;
   string satellite;
@@ -1575,8 +1575,8 @@ Intensify::Type wordStats::checkIntensify(const xmlNode *alpWord) const {
   map<string,Intensify::Type>::const_iterator sit = settings.intensify.find(lemma);
   Intensify::Type res = Intensify::NO_INTENSIFY;
   if (sit != settings.intensify.end()) {
-    res = sit->second;  
-    if (res == Intensify::BVBW) 
+    res = sit->second;
+    if (res == Intensify::BVBW)
     {
       // cerr << lemma << " => " << tag << endl;
       if (!checkModifier(alpWord)) res = Intensify::NO_INTENSIFY;
@@ -2078,8 +2078,8 @@ wordStats::wordStats( int index,
   top_freq(notFound), word_freq(0), lemma_freq(0),
   wordOverlapCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NA), lemma_freq_log(NA),
-  logprob10(NA), prop(CGN::JUSTAWORD), position(CGN::NOPOS), 
-  sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY), 
+  logprob10(NA), prop(CGN::JUSTAWORD), position(CGN::NOPOS),
+  sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY),
   general_noun_type(General::NO_GENERAL), general_verb_type(General::NO_GENERAL),
   afkType(Afk::NO_A), is_compound(false), compound_parts(0),
   word_freq_log_head(NA), word_freq_log_sat(NA), word_freq_log_head_sat(NA)
@@ -2564,7 +2564,7 @@ void wordStats::compoundToCSV( ostream& os ) const {
   }
   else {
     // For non-compounds, just print not applicable for each attribute
-    for (int i = 0; i < 12; i++) { 
+    for (int i = 0; i < 12; i++) {
       os << "NA,";
     }
   }
@@ -3280,7 +3280,7 @@ void structStats::merge( structStats *ss ){
     else
       perplexity += ss->perplexity;
   }
- 
+
   intensCnt += ss->intensCnt;
   intensBvnwCnt += ss->intensBvnwCnt;
   intensBvbwCnt += ss->intensBvbwCnt;
@@ -3671,7 +3671,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "undefined_adj_count", toString(undefinedAdjCnt) );
   addOneMetric( doc, el, "covered_adj_count", toString(adjCnt-uncoveredAdjCnt) );
   addOneMetric( doc, el, "uncovered_adj_count", toString(uncoveredAdjCnt) );
-  
+
   addOneMetric( doc, el, "intens_count", toString(intensCnt) );
   addOneMetric( doc, el, "intens_bvnw_count", toString(intensBvnwCnt) );
   addOneMetric( doc, el, "intens_bvbw_count", toString(intensBvbwCnt) );
@@ -3794,8 +3794,8 @@ void structStats::toCSV( ostream& os ) const {
   if (!isSentence())
   {
     os << wordCnt << ","; // 20141003: New feature: word count per document/paragraph
-  } 
-  os << parseFailCnt << ","; 
+  }
+  os << parseFailCnt << ",";
   wordDifficultiesToCSV( os );
   compoundToCSV( os );
   sentDifficultiesToCSV( os );
@@ -3950,7 +3950,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   double clauseCnt = pastCnt + presentCnt;
   if ( parseFailCnt > 0 ) {
     os << "NA" << ",";
-  } 
+  }
   else {
     os << proportion( wordCnt, sentCnt ) << ",";
   }
@@ -3965,7 +3965,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
      << density( clauseCnt, wordCnt ) << ",";
   if ( parseFailCnt > 0 ) {
     os << "NA" << ",";
-  } 
+  }
   else {
     os << proportion( clauseCnt, sentCnt ) << ",";
   }
@@ -4214,7 +4214,7 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << density( foodcareCnt, wordCnt ) << ",";
   os << proportion( concrotherCnt, coveredNouns ) << ",";
   os << density( concrotherCnt, wordCnt ) << ",";
-  os << proportion( dynamicConcCnt, coveredNouns ) << ","; 
+  os << proportion( dynamicConcCnt, coveredNouns ) << ",";
   os << density( dynamicConcCnt, wordCnt ) << ",";
   os << proportion( placeCnt, coveredNouns ) << ",";
   os << density( placeCnt, wordCnt ) << ",";
@@ -4222,9 +4222,9 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << density( timeCnt, wordCnt ) << ",";
   os << proportion( measureCnt, coveredNouns ) << ",";
   os << density( measureCnt, wordCnt ) << ",";
-  os << proportion( substanceAbstrCnt, coveredNouns ) << ","; 
+  os << proportion( substanceAbstrCnt, coveredNouns ) << ",";
   os << density( substanceAbstrCnt, wordCnt ) << ",";
-  os << proportion( dynamicAbstrCnt, coveredNouns ) << ","; 
+  os << proportion( dynamicAbstrCnt, coveredNouns ) << ",";
   os << density( dynamicAbstrCnt, wordCnt ) << ",";
   os << proportion( institutCnt, coveredNouns ) << ",";
   os << density( institutCnt, wordCnt ) << ",";
@@ -5354,8 +5354,8 @@ void sentStats::resolveMultiWordIntensify(){
         intensCombiCnt += j + 1;
         intensCnt += j + 1;
         // Break and skip to the first word after this expression
-        i += j; 
-        break; 
+        i += j;
+        break;
       }
     }
   }
@@ -6112,7 +6112,7 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
           case top10000:
           case top20000:
             top20000CntNoun++;
-          default: 
+          default:
             break;
         }
 
@@ -6145,7 +6145,7 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
             case top10000:
             case top20000:
               top20000CntComp++;
-            default: 
+            default:
               break;
           }
           switch (ws->top_freq_head) {
@@ -6158,7 +6158,7 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
             case top10000:
             case top20000:
               top20000CntHead++; top20000CntNounCorr++; top20000CntCorr++;
-            default: 
+            default:
               break;
           }
           switch (ws->top_freq_sat) {
@@ -6171,7 +6171,7 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
             case top10000:
             case top20000:
               top20000CntSat++;
-            default: 
+            default:
               break;
           }
         }
@@ -6194,7 +6194,7 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
             case top10000:
             case top20000:
               top20000CntNonComp++; top20000CntNounCorr++; top20000CntCorr++;
-            default: 
+            default:
               break;
           }
         }
@@ -6792,8 +6792,8 @@ void docStats::toCSV( const string& name,
     ofstream out( fname.c_str() );
     if ( out ){
       // 20141003: New features: paragraphs/sentences/words per document
-      CSVheader( out, "Inputfile,Par_per_doc,Zin_per_doc,Word_per_doc" ); 
-      out << name << "," << sv.size() << "," << sentCnt << ","; 
+      CSVheader( out, "Inputfile,Par_per_doc,Zin_per_doc,Word_per_doc" );
+      out << name << "," << sv.size() << "," << sentCnt << ",";
       structStats::toCSV( out );
       cerr << "stored document statistics in " << fname << endl;
     }
@@ -6809,7 +6809,7 @@ void docStats::toCSV( const string& name,
 	if ( par == 0 )
     // 20141003: New features: sentences/words per paragraph
 	  sv[0]->CSVheader( out, "Inputfile,Segment,Zin_per_par,Wrd_per_par" );
-	out << name << "," << sv[par]->id << "," << sv[par]->sv.size() << ","; 
+	out << name << "," << sv[par]->id << "," << sv[par]->sv.size() << ",";
 	sv[par]->toCSV( out );
     }
       cerr << "stored paragraph statistics in " << fname << endl;
