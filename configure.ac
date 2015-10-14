@@ -16,6 +16,15 @@ AC_PROG_CXX
 AC_PROG_LIBTOOL
 LT_INIT
 
+# Check for OpenMP support
+AC_OPENMP
+if test "x$ac_cv_prog_cxx_openmp" != "xunsupported"; then
+   CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
+   AC_DEFINE(HAVE_OPENMP, 1 , Define to 1 if you have OpenMP )
+else
+   AC_MSG_NOTICE(We don't have OpenMP. Multithreaded operation is disabled)
+fi
+
 # Checks for libraries.
 
 # Checks for header files.
@@ -28,12 +37,6 @@ AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AC_CHECK_FUNCS([mkdir])
-
-OPENMP_CHECK( [CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
-	       AC_DEFINE(HAVE_OPENMP, 1 , Define to 1 if you have OpenMP )],
-	      [AC_MSG_NOTICE(We don't have OpenMP. Multithreaded testing is disabled)] )
-
-AC_SUBST([OPENMPFLAGS],[$OPENMP_CXXFLAGS])
 
 # ugly hack when PKG_CONFIG_PATH isn't defined.
 # couldn't get it to work otherwise
