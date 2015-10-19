@@ -3836,7 +3836,7 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
      << proportion( morphCntExNames, (wordCnt-nameCnt) ) << ","
      << proportion( (wordCnt-nameCnt), morphCntExNames ) << ","
 
-     << proportion( nameCnt, nounCnt ) << ","
+     << proportion( nameCnt, (nameCnt+nounCnt) ) << ","
      << density( nameCnt, wordCnt ) << ","
 
      << proportion( compPartCnt, wordCnt ) << ","
