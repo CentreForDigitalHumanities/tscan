@@ -10,7 +10,10 @@ AC_CONFIG_SRCDIR([src/tscan.cxx])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
-AC_PROG_CXX
+AC_PROG_CXX( [g++ c++] )
+
+#force to C++ when running tests
+AC_LANG([C++])
 
 # libtool stuff
 AC_PROG_LIBTOOL
