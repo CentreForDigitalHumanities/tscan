@@ -4172,7 +4172,7 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Alg_ev_zr_bvnw_p,Alg_ev_zr_bvnw_d,"; // 20150316: Features added
   os << "Ep_positief_bvnw_p,Ep_positief_bvnw_d,";
   os << "Ep_negatief_bvnw_p,Ep_negatief_bvnw_d,";
-  os << "Abstract_ov_bvnw_p,Abstract_ov_bvnw_d,"; // 20141125: Features renamed
+  os << "Ov_abstr_bvnw_p,Ov_abstr_bvnw_d,"; // 20151020: Features renamed
   os << "Spec_ev_bvnw_p,Spec_ev_bvnw_d,"; // 20150316: Features renamed
   os << "Alg_ev_bvnw_p,Alg_ev_bvnw_d,"; // 20150316: Features renamed
   os << "Ep_ev_bvnw_p,Ep_ev_bvnw_d,"; // 20150316: Features renamed
