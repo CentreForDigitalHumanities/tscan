@@ -22,21 +22,24 @@
 
 #include <cstdio> // for remove()
 #include <cstring> // for strerror()
-#include <sys/types.h> 
-#include <sys/stat.h> 
-#include <unistd.h> 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <iostream>
 #include <fstream>
 #include "config.h"
-#include "libfolia/document.h"
 #include "ticcutils/PrettyPrint.h"
+#include "ticcutils/StringOps.h"
+#include "libfolia/foliautils.h"
+#include "libfolia/folia.h"
+#include "libfolia/document.h"
 #include "tscan/decomp.h"
 
 using namespace std;
 using namespace folia;
 using namespace TiCC;
 
-int runDecompoundWord( const string& word, 
+int runDecompoundWord( const string& word,
 		       const string& dirname,
 		       const string& path ){
   string infile = dirname + "decomp.in";
@@ -67,4 +70,3 @@ int runDecompoundWord( const string& word,
   }
   return 0;
 }
-

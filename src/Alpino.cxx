@@ -23,10 +23,16 @@
 #include <cstdio> // for remove()
 #include <unistd.h>
 #include <iostream>
+#include <vector>
+#include <set>
 #include <fstream>
 #include "config.h"
-#include "libfolia/document.h"
 #include "ticcutils/PrettyPrint.h"
+#include "ticcutils/StringOps.h"
+#include "ticcutils/XMLtools.h"
+#include "libfolia/foliautils.h"
+#include "libfolia/folia.h"
+#include "libfolia/document.h"
 #include "tscan/Alpino.h"
 
 using namespace std;
@@ -962,11 +968,11 @@ bool checkModifier( const xmlNode *alp_node ){
   // check if this node is directly below:
   // - a form AP, PPART, PPRES or INF (adjective or non-conjugated verb)
   // - a type SMAIN or SSUB (conjugated verb), and the node itself is a MOD
-  bool modifies = false; 
+  bool modifies = false;
   string rel = getAttribute(alp_node, "rel");
   string p_cat = getAttribute(alp_node->parent, "cat");
-  
-  if (p_cat == "ap" || p_cat == "ppart" || 
+
+  if (p_cat == "ap" || p_cat == "ppart" ||
       p_cat == "ppres" || p_cat == "inf") {
     modifies = true;
   }
