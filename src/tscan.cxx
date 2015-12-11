@@ -4010,8 +4010,9 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 
 void structStats::infoHeader( ostream& os ) const {
   os << "Bijw_bep_d,Bijw_bep_dz,"
-     << "Attr_bijv_nw_d,Attr_bijv_nw_dz,Bijv_bep_d,Bijv_bep_dz,"
-     << "Ov_bijv_bep_d,Ov_bijv_bep_dz," // 20141003: Nwg_d and Nwg_dz deleted
+     << "Bijv_bep_d,Bijv_bep_dz,"
+     << "Attr_bijv_nw_d,Attr_bijv_nw_dz,"
+     << "Ov_bijv_bep_d,Ov_bijv_bep_dz,"
      << "TTR_wrd,MTLD_wrd,TTR_lem,MTLD_lem,"
      << "TTR_namen,MTLD_namen,TTR_inhwrd,MTLD_inhwrd,"
      << "Inhwrd_d,Inhwrd_dz,"
@@ -4026,14 +4027,12 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   double clauseCnt = pastCnt + presentCnt;
   os << density( vcModCnt, wordCnt ) << ",";
   os << proportion( vcModCnt, clauseCnt ) << ",";
-  os << density( adjNpModCnt, wordCnt ) << ",";
-  os << proportion( adjNpModCnt, clauseCnt ) << ",";
   os << density( npModCnt, wordCnt ) << ",";
   os << proportion( npModCnt, clauseCnt ) << ",";
+  os << density( adjNpModCnt, wordCnt ) << ",";
+  os << proportion( adjNpModCnt, clauseCnt ) << ",";
   os << density( (npModCnt-adjNpModCnt), wordCnt ) << ",";
   os << proportion( (npModCnt-adjNpModCnt), clauseCnt ) << ",";
-  // os << density( npCnt, wordCnt ) << ","; // 20141003: Nwg_d deleted
-  // os << proportion( npCnt, clauseCnt ) << ","; // 20141003: Nwg_dz deleted
 
   os << proportion( unique_words.size(), wordCnt ) << ",";
   os << word_mtld << ",";
