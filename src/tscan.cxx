@@ -3940,8 +3940,8 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
     os  << "D_level,D_level_gt4_p,";
   }
   os << "Nom_d,Lijdv_d,Lijdv_dz,Ontk_zin_d,Ontk_zin_dz,"
-     << "Ontk_morf_d,Ont_morf_dz,Ontk_tot_d,Ontk_tot_dz,"
-     << "Meerv_ont_d,Meerv_ont_dz,"
+     << "Ontk_morf_d,Ontk_morf_dz,Ontk_tot_d,Ontk_tot_dz,"
+     << "Meerv_ontk_d,Meerv_ontk_dz,"
      << "AL_sub_ww,AL_ob_ww,AL_indirob_ww,AL_ww_vzg,"
      << "AL_lidw_znw,AL_vz_znw,AL_ww_wwobzin,"
      << "AL_vg_wwbijzin,AL_vg_conj,AL_vg_wwhoofdzin,AL_znw_bijzin,AL_ww_schdw,"
