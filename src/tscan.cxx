@@ -2659,8 +2659,12 @@ struct structStats: public basicStats {
     tswCnt(0),
     specCnt(0),
     letCnt(0),
-    onderCnt(0),
     betrCnt(0),
+    bijwCnt(0),
+    complCnt(0),
+    mvFinInbedCnt(0),
+    infinComplCnt(0),
+    mvInbedCnt(0),
     tempConnCnt(0),
     opsomWgConnCnt(0),
     opsomZinConnCnt(0),
@@ -2937,8 +2941,12 @@ struct structStats: public basicStats {
   int tswCnt;
   int specCnt;
   int letCnt;
-  int onderCnt;
   int betrCnt;
+  int bijwCnt;
+  int complCnt;
+  int mvFinInbedCnt;
+  int infinComplCnt;
+  int mvInbedCnt;
   int tempConnCnt;
   int opsomWgConnCnt;
   int opsomZinConnCnt;
@@ -3225,8 +3233,12 @@ void structStats::merge( structStats *ss ){
   tswCnt += ss->tswCnt;
   specCnt += ss->specCnt;
   letCnt += ss->letCnt;
-  onderCnt += ss->onderCnt;
   betrCnt += ss->betrCnt;
+  bijwCnt += ss->bijwCnt;
+  complCnt += ss->complCnt;
+  mvFinInbedCnt += ss->mvFinInbedCnt;
+  infinComplCnt += ss->infinComplCnt;
+  mvInbedCnt += ss->mvInbedCnt;
   tempConnCnt += ss->tempConnCnt;
   opsomWgConnCnt += ss->opsomWgConnCnt;
   opsomZinConnCnt += ss->opsomZinConnCnt;
@@ -3573,7 +3585,6 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "tsw_count", toString(tswCnt) );
   addOneMetric( doc, el, "spec_count", toString(specCnt) );
   addOneMetric( doc, el, "let_count", toString(letCnt) );
-  addOneMetric( doc, el, "subord_count", toString(onderCnt) );
   addOneMetric( doc, el, "rel_count", toString(betrCnt) );
   addOneMetric( doc, el, "temporal_connector_count", toString(tempConnCnt) );
   addOneMetric( doc, el, "reeks_wg_connector_count", toString(opsomWgConnCnt) );
@@ -3930,8 +3941,11 @@ void structStats::compoundToCSV( ostream& os ) const {
 
 void structStats::sentDifficultiesHeader( ostream& os ) const {
   os << "Wrd_per_zin,Wrd_per_dz,Zin_per_wrd,Dzin_per_wrd,"
-     << "Wrd_per_nwg,Ov_bijzin_d,Ov_bijzin_per_zin,"
-     << "Betr_bijzin_d,Betr_bijzin_dz,"
+     << "Wrd_per_nwg,"
+     << "Betr_bijzin_per_zin,Bijw_bijzin_per_zin,"
+     << "Compl_bijzin_per_zin,Fin_bijzin_per_zin,"
+     << "Mv_fin_inbed_per_zin,Infin_compl_per_zin,"
+     << "Bijzin_per_zin,Mv_inbed_per_zin,"
      << "Pv_d,Pv_per_zin,";
   if ( isSentence() ){
     os << "D_level,";
@@ -3961,11 +3975,20 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
      << proportion( sentCnt, wordCnt )  << ","
      << proportion( clauseCnt, wordCnt )  << ",";
   os << proportion( wordCnt, npCnt ) << ",";
-  os << density( onderCnt, wordCnt ) << ","
-     << proportion( onderCnt, sentCnt ) << ","
-     << density( betrCnt, wordCnt ) << ","
-     << proportion( betrCnt, clauseCnt ) << ","
-     << density( clauseCnt, wordCnt ) << ",";
+  if ( parseFailCnt > 0 ) {
+    os << "NA,NA,NA,NA,NA,NA,NA,NA,";
+  }
+  else {
+    os << proportion( betrCnt, sentCnt ) << ",";
+    os << proportion( bijwCnt, sentCnt ) << ",";
+    os << proportion( complCnt, sentCnt ) << ",";
+    os << proportion( betrCnt + bijwCnt + complCnt, sentCnt ) << ",";
+    os << proportion( mvFinInbedCnt, sentCnt ) << ",";
+    os << proportion( infinComplCnt, sentCnt ) << ",";
+    os << proportion( betrCnt + bijwCnt + complCnt + infinComplCnt, sentCnt ) << ",";
+    os << proportion( mvInbedCnt, sentCnt ) << ",";
+  }
+  os << density( clauseCnt, wordCnt ) << ",";
   if ( parseFailCnt > 0 ) {
     os << "NA" << ",";
   }
@@ -4674,6 +4697,7 @@ struct sentStats : public structStats {
   Conn::Type checkMultiConnectives( const string& );
   Situation::Type checkMultiSituations( const string& );
   void resolvePrepExpr();
+  void resolveRelativeClauses( xmlDoc* );
 };
 
 //#define DEBUG_MTLD
@@ -5428,6 +5452,54 @@ void sentStats::resolvePrepExpr(){
   }
 }
 
+// Finds nodes of relative clauses and reports counts
+void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
+  // Betrekkelijke/bijvoeglijke bijzinnen
+  list<xmlNode*> relNodes = getNodesByRelCat(alpDoc, "mod", "rel");
+  relNodes.merge(getNodesByRelCat(alpDoc, "mod", "whrel"));
+  // Bijwoordelijke bijzinnen
+  list<xmlNode*> cpNodes = getNodesByRelCat(alpDoc, "mod", "cp");
+  // Finiete complementszinnen
+  list<xmlNode*> complNodes = getNodesByRelCat(alpDoc, "!mod", "whsub");
+  complNodes.merge(getNodesByRelCat(alpDoc, "!mod", "whrel"));
+  complNodes.merge(getNodesByRelCat(alpDoc, "!mod", "cp"));
+  // Infinietcomplementen
+  list<xmlNode*> tiNodes = getNodesByCat(alpDoc, "ti");
+  tiNodes.merge(getNodesByCat(alpDoc, "oti"));
+  
+  list<xmlNode*> allRelNodes (relNodes);
+  allRelNodes.merge(cpNodes);
+  allRelNodes.merge(complNodes);
+
+  betrCnt = relNodes.size();
+  bijwCnt = cpNodes.size();
+  complCnt = complNodes.size();
+  infinComplCnt = tiNodes.size();
+
+  // Checks for embedded finite clauses
+  for (auto& node : allRelNodes) {
+    if (!getNodesByRelCat(node, "mod", "rel").empty()) mvFinInbedCnt++;
+    if (!getNodesByRelCat(node, "mod", "whrel").empty()) mvFinInbedCnt++;
+    if (!getNodesByRelCat(node, "mod", "cp").empty()) mvFinInbedCnt++;
+    if (!getNodesByRelCat(node, "!mod", "whsub").empty()) mvFinInbedCnt++;
+    if (!getNodesByRelCat(node, "!mod", "whrel").empty()) mvFinInbedCnt++;
+    if (!getNodesByRelCat(node, "!mod", "cp").empty()) mvFinInbedCnt++;
+  }
+
+  // Checks for all embedded clauses
+  allRelNodes.merge(tiNodes);
+  for (auto& node : allRelNodes) {
+    if (!getNodesByRelCat(node, "mod", "rel").empty()) mvInbedCnt++;
+    if (!getNodesByRelCat(node, "mod", "whrel").empty()) mvInbedCnt++;
+    if (!getNodesByRelCat(node, "mod", "cp").empty()) mvInbedCnt++;
+    if (!getNodesByRelCat(node, "!mod", "whsub").empty()) mvInbedCnt++;
+    if (!getNodesByRelCat(node, "!mod", "whrel").empty()) mvInbedCnt++;
+    if (!getNodesByRelCat(node, "!mod", "cp").empty()) mvInbedCnt++;
+    if (!getNodesByCat(node, "ti").empty()) mvInbedCnt++;
+    if (!getNodesByCat(node, "oti").empty()) mvInbedCnt++;
+  }
+}
+
 //#define DEBUG_WOPR
 void orderWopr( const string& txt, vector<double>& wordProbsV,
 		double& sentProb, double& entropy, double& perplexity ){
@@ -5568,8 +5640,8 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 	  dLevel = get_d_level( s, alpDoc );
 	  if ( dLevel > 4 )
 	    dLevel_gt4 = 1;
-	  mod_stats( alpDoc, vcModCnt,
-		     adjNpModCnt, npModCnt );
+	  mod_stats( alpDoc, vcModCnt, adjNpModCnt, npModCnt );
+    resolveRelativeClauses(alpDoc);
 	}
 	else {
 	  parseFailCnt = 1; // failed
@@ -5803,12 +5875,8 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
       default:
 	break;
       }
-      if ( ws->isOnder )
-	onderCnt++;
       if ( ws->isImperative )
 	impCnt++;
-      if ( ws->isBetr )
-	betrCnt++;
       if ( ws->isPropNeg )
 	propNegCnt++;
       if ( ws->isMorphNeg )

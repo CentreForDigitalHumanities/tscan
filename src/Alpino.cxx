@@ -1042,6 +1042,25 @@ bool isSmallCnj( const xmlNode *eNode ){
   return false;
 }
 
+list<xmlNode*> getNodesByCat( xmlDoc *doc, const string& cat) {
+  return getNodesByCat(xmlDocGetRootElement(doc), cat);
+}
+
+list<xmlNode*> getNodesByRelCat( xmlDoc *doc, const string& rel, const string& cat) {
+  return getNodesByRelCat(xmlDocGetRootElement(doc), rel, cat);
+}
+
+list<xmlNode*> getNodesByCat( xmlNode *node, const string& cat) {
+  string catAttr = cat.at(0) == '!' ? ("@cat!='" + cat.substr(1) + "'") : ("@cat='" + cat + "'");
+  return TiCC::FindNodes( node, ".//node[" + catAttr + "]" );
+}
+
+list<xmlNode*> getNodesByRelCat( xmlNode *node, const string& rel, const string& cat) {
+  string relAttr = rel.at(0) == '!' ? ("@rel!='" + rel.substr(1) + "'") : ("@rel='" + rel + "'");
+  string catAttr = cat.at(0) == '!' ? ("@cat!='" + cat.substr(1) + "'") : ("@cat='" + cat + "'");
+  return TiCC::FindNodes( node, ".//node[" + relAttr + " and " + catAttr + "]" );
+}
+
 xmlDoc *AlpinoParse( const folia::Sentence *s, const string& dirname ){
   //  parse a FoLiA Sentence into an Alpino tree.
   string txt = folia::UnicodeToUTF8(s->toktext());
