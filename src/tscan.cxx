@@ -5465,7 +5465,6 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
   complNodes.merge(getNodesByRelCat(alpDoc, "!mod", "cp"));
   // Infinietcomplementen
   list<xmlNode*> tiNodes = getNodesByCat(alpDoc, "ti");
-  tiNodes.merge(getNodesByCat(alpDoc, "oti"));
   
   list<xmlNode*> allRelNodes (relNodes);
   allRelNodes.merge(cpNodes);
@@ -5496,7 +5495,6 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
     if (!getNodesByRelCat(node, "!mod", "whrel").empty()) mvInbedCnt++;
     if (!getNodesByRelCat(node, "!mod", "cp").empty()) mvInbedCnt++;
     if (!getNodesByCat(node, "ti").empty()) mvInbedCnt++;
-    if (!getNodesByCat(node, "oti").empty()) mvInbedCnt++;
   }
 }
 
