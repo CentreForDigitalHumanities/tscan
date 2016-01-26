@@ -5473,32 +5473,37 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
   bijwCnt = cpNodes.size();
   complCnt = complNodes.size();
   infinComplCnt = tiNodes.size();
-  
+
+  // Checks for embedded finite clauses
   list<xmlNode*> allRelNodes (relNodes);
   allRelNodes.merge(cpNodes);
   allRelNodes.merge(complNodes);
-
-  // Checks for embedded finite clauses
+  list<string> ids;
   for (auto& node : allRelNodes) {
-    if (!getNodesByRelCat(node, "mod", "rel").empty()) mvFinInbedCnt++;
-    if (!getNodesByRelCat(node, "mod", "whrel").empty()) mvFinInbedCnt++;
-    if (!getNodesByRelCat(node, "mod", "cp").empty()) mvFinInbedCnt++;
-    if (!getNodesByRelCat(node, "!mod", "whsub").empty()) mvFinInbedCnt++;
-    if (!getNodesByRelCat(node, "!mod", "whrel").empty()) mvFinInbedCnt++;
-    if (!getNodesByRelCat(node, "!mod", "cp").empty()) mvFinInbedCnt++;
+    ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "rel")));
+    ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "whrel")));
+    ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "cp")));
+    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "whsub")));
+    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "whrel")));
+    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "cp")));
   }
+  set<string> mvFinEmbedIds(ids.begin(), ids.end());
+  mvFinInbedCnt = mvFinEmbedIds.size();
 
   // Checks for all embedded clauses
   allRelNodes.merge(tiNodes);
+  ids.clear();
   for (auto& node : allRelNodes) {
-    if (!getNodesByRelCat(node, "mod", "rel").empty()) mvInbedCnt++;
-    if (!getNodesByRelCat(node, "mod", "whrel").empty()) mvInbedCnt++;
-    if (!getNodesByRelCat(node, "mod", "cp").empty()) mvInbedCnt++;
-    if (!getNodesByRelCat(node, "!mod", "whsub").empty()) mvInbedCnt++;
-    if (!getNodesByRelCat(node, "!mod", "whrel").empty()) mvInbedCnt++;
-    if (!getNodesByRelCat(node, "!mod", "cp").empty()) mvInbedCnt++;
-    if (!getNodesByCat(node, "ti").empty()) mvInbedCnt++;
+    ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "rel")));
+    ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "whrel")));
+    ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "cp")));
+    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "whsub")));
+    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "whrel")));
+    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "cp")));
+    ids.merge(getNodeIds(getNodesByCat(node, "ti")));
   }
+  set<string> mvInbedIds(ids.begin(), ids.end());
+  mvInbedCnt = mvInbedIds.size();
 }
 
 //#define DEBUG_WOPR
