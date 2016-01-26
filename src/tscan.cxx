@@ -50,6 +50,7 @@
 #include "tscan/general.h"
 #include "tscan/situation.h"
 #include "tscan/afk.h"
+#include "tscan/adverb.h"
 
 using namespace std;
 using namespace TiCC;
@@ -142,6 +143,7 @@ struct settingData {
   map<string, Intensify::Type> intensify;
   map<string, General::Type> general_nouns;
   map<string, General::Type> general_verbs;
+  map<string, Adverb::Type> adverbs;
   map<string, double> pol_lex;
   map<string, cf_data> staph_word_freq_lex;
   long int staph_total;
@@ -388,6 +390,43 @@ bool fill_general(map<string,General::Type>& m, const string& filename) {
   ifstream is( filename.c_str() );
   if (is) {
     return fill_general(m, is);
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
+bool fill_adverbs(map<string,Adverb::Type>& m, istream& is){
+  string line;
+  while( safe_getline( is, line ) ){
+    line = TiCC::trim( line );
+    if ( line.empty() )
+      continue;
+    vector<string> parts;
+    int n = TiCC::split_at( line, parts, "\t" ); // split at tab
+    if ( n < 2 || n > 2 ){
+      cerr << "skip line: " << line << " (expected 2 values, got "
+       << n << ")" << endl;
+      continue;
+    }
+    string low = TiCC::trim(lowercase(parts[0]));
+    Adverb::Type res = Adverb::classify(TiCC::lowercase(parts[1]));
+    if ( m.find(low) != m.end() ){
+      cerr << "Information: multiple entry '" << low << "' in adverbs lex" << endl;
+    }
+    if ( res != Adverb::NO_ADVERB ){
+      // no use to store undefined values
+      m[low] = res;
+    }
+  }
+  return true;
+}
+
+bool fill_adverbs(map<string,Adverb::Type>& m, const string& filename) {
+  ifstream is( filename.c_str() );
+  if (is) {
+    return fill_adverbs(m, is);
   }
   else {
     cerr << "couldn't open file: " << filename << endl;
@@ -779,6 +818,11 @@ void settingData::init( const Configuration& cf ){
     if ( !fill_general( general_verbs, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
+  val = cf.lookUp( "adverbs" );
+  if ( !val.empty() ){
+    if ( !fill_adverbs( adverbs, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
   staph_total = 0;
   val = cf.lookUp( "staph_word_freq_lex" );
   if ( !val.empty() ){
@@ -1103,6 +1147,7 @@ struct wordStats : public basicStats {
   Intensify::Type checkIntensify(const xmlNode*) const;
   General::Type checkGeneralNoun() const;
   General::Type checkGeneralVerb() const;
+  Adverb::Type checkAdverbType() const;
   Afk::Type checkAfk( ) const;
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
@@ -1155,6 +1200,7 @@ struct wordStats : public basicStats {
   Intensify::Type intensify_type;
   General::Type general_noun_type;
   General::Type general_verb_type;
+  Adverb::Type adverb_type;
   vector<string> morphemes;
   multimap<DD_type,int> distances;
   Afk::Type afkType;
@@ -1606,6 +1652,16 @@ General::Type wordStats::checkGeneralVerb() const {
     }
   }
   return General::NO_GENERAL;
+}
+
+Adverb::Type wordStats::checkAdverbType() const {
+  if (tag == CGN::BW) {
+    map<string,Adverb::Type>::const_iterator sit = settings.adverbs.find(word);
+    if (sit != settings.adverbs.end()) {
+      return sit->second;
+    }
+  }
+  return Adverb::NO_ADVERB;
 }
 
 Afk::Type wordStats::checkAfk() const {
@@ -2084,7 +2140,7 @@ wordStats::wordStats( int index,
   logprob10(NA), prop(CGN::JUSTAWORD), position(CGN::NOPOS),
   sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY),
   general_noun_type(General::NO_GENERAL), general_verb_type(General::NO_GENERAL),
-  afkType(Afk::NO_A), is_compound(false), compound_parts(0),
+  adverb_type(Adverb::NO_ADVERB), afkType(Afk::NO_A), is_compound(false), compound_parts(0),
   word_freq_log_head(NA), word_freq_log_sat(NA), word_freq_log_head_sat(NA)
 {
   UnicodeString us = w->text();
@@ -2174,6 +2230,7 @@ wordStats::wordStats( int index,
     intensify_type = checkIntensify(alpWord);
     general_noun_type = checkGeneralNoun();
     general_verb_type = checkGeneralVerb();
+    adverb_type = checkAdverbType();
     afkType = checkAfk();
     if ( alpWord )
       isNominal = checkNominal( alpWord );
@@ -2363,6 +2420,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "generalnountype", General::toString(general_noun_type) );
   if ( general_verb_type != General::NO_GENERAL )
     addOneMetric( doc, el, "generalverbtype", General::toString(general_verb_type) );
+  if ( adverb_type != Adverb::NO_ADVERB )
+    addOneMetric( doc, el, "adverbtype", Adverb::toString(adverb_type) );
   if ( afkType != Afk::NO_A )
     addOneMetric( doc, el, "afktype", toString(afkType) );
 }
@@ -2741,6 +2800,8 @@ struct structStats: public basicStats {
     generalVerbKnowCnt(0),
     generalVerbDiscCnt(0),
     generalVerbDeveCnt(0),
+    generalAdverbCnt(0),
+    specificAdverbCnt(0),
     broadNounCnt(0),
     strictNounCnt(0),
     broadAdjCnt(0),
@@ -3023,6 +3084,8 @@ struct structStats: public basicStats {
   int generalVerbKnowCnt;
   int generalVerbDiscCnt;
   int generalVerbDeveCnt;
+  int generalAdverbCnt;
+  int specificAdverbCnt;
   int broadNounCnt;
   int strictNounCnt;
   int broadAdjCnt;
@@ -3318,6 +3381,8 @@ void structStats::merge( structStats *ss ){
   generalVerbKnowCnt += ss->generalVerbKnowCnt;
   generalVerbDiscCnt += ss->generalVerbDiscCnt;
   generalVerbDeveCnt += ss->generalVerbDeveCnt;
+  generalAdverbCnt += ss->generalAdverbCnt;
+  specificAdverbCnt += ss->specificAdverbCnt;
   presentCnt += ss->presentCnt;
   pastCnt += ss->pastCnt;
   subjonctCnt += ss->subjonctCnt;
@@ -3710,6 +3775,9 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "general_verb_know_count", toString(generalVerbKnowCnt) );
   addOneMetric( doc, el, "general_verb_disc_count", toString(generalVerbDiscCnt) );
   addOneMetric( doc, el, "general_verb_deve_count", toString(generalVerbDeveCnt) );
+
+  addOneMetric( doc, el, "general_adverb_count", toString(generalAdverbCnt) );
+  addOneMetric( doc, el, "specific_adverb_count", toString(specificAdverbCnt) );
 
   addOneMetric( doc, el, "broad_noun", toString(broadNounCnt) );
   addOneMetric( doc, el, "strict_noun", toString(strictNounCnt) );
@@ -4223,6 +4291,8 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Alg_ww_disc_caus_d,Alg_ww_disc_caus_p,";
   os << "Alg_ww_ontw_d,Alg_ww_ontw_p,";
   os << "Conc_tot_p,Conc_tot_d,";
+  os << "Alg_bijw_d,Alg_bijw_p,";
+  os << "Spec_bijw_d,Alg_bijw_p,";
 }
 
 void structStats::concreetToCSV( ostream& os ) const {
@@ -4359,6 +4429,12 @@ void structStats::concreetToCSV( ostream& os ) const {
   int totalCnt = strictNounCnt + strictAdjCnt + concreteWwCnt;
   os << proportion( totalCnt, totalCovered ) << ",";
   os << density( totalCnt, wordCnt ) << ",";
+
+  int adverbCnt = generalAdverbCnt + specificAdverbCnt;
+  os << density( generalAdverbCnt, wordCnt ) << ",";
+  os << proportion( generalAdverbCnt, adverbCnt ) << ",";
+  os << density( specificAdverbCnt, wordCnt ) << ",";
+  os << proportion( specificAdverbCnt, adverbCnt ) << ",";
 }
 
 void structStats::persoonlijkheidHeader( ostream& os ) const {
@@ -6173,6 +6249,10 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
       if (General::isKnowledge(ws->general_verb_type)) generalVerbKnowCnt++;
       if (General::isDiscussion(ws->general_verb_type)) generalVerbDiscCnt++;
       if (General::isDevelopment(ws->general_verb_type)) generalVerbDeveCnt++;
+
+      // Counts for adverbs
+      if (ws->adverb_type == Adverb::GENERAL) generalAdverbCnt++;
+      if (ws->adverb_type == Adverb::SPECIFIC) specificAdverbCnt++;
 
       // Counts for compounds
       if (ws->tag == CGN::N) {

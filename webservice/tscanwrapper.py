@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
 ###############################################################
@@ -45,13 +45,13 @@ clamdata = clam.common.data.getclamdata(datafile)
 clam.common.status.write(statusfile, "Starting...")
 
 if not 'word_freq_lex' in clamdata:
-    print("Missing parameter: word_freq_lex",file=sys.stderr)
+    print("Missing parameter: word_freq_lex", file=sys.stderr)
     sys.exit(2)
 if not 'lemma_freq_lex' in clamdata:
-    print("Missing parameter: lemma_freq_lex",file=sys.stderr)
+    print("Missing parameter: lemma_freq_lex", file=sys.stderr)
     sys.exit(2)
 if not 'top_freq_lex' in clamdata:
-    print("Missing parameter: top_freq_lex",file=sys.stderr)
+    print("Missing parameter: top_freq_lex", file=sys.stderr)
     sys.exit(2)
 
 
@@ -116,6 +116,7 @@ f.write("configDir=" + TSCANDIR + "/data\n")
 f.write("verb_semtypes=\"verbs_semtype.data\"\n")
 f.write("general_nouns=\"general_nouns.data\"\n")
 f.write("general_verbs=\"general_verbs.data\"\n")
+f.write("adverbs=\"adverbs.data\"\n")
 
 # 20150316: This allows custom adjective classification.
 load_custom_wordlist(f, inputdir, "adj_semtypes", "adjclassification", "/data/adjs_semtype.data")
@@ -166,7 +167,7 @@ f.write("host=127.0.0.1\n")
 
 f.close()
 
-print("on git commit: ",file=sys.stderr)
+print("on git commit: ", file=sys.stderr)
 os.system('git rev-parse HEAD >&2')
 
 
@@ -218,7 +219,7 @@ for inputfile in inputfiles:
     try:
         os.rename(inputfile + '.tscan.xml', outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan', '').replace('.txt', '') + '.xml')
     except FileNotFoundError:
-        print("Expected output file " + inputfile + ".tscan.xml not created, something went wrong earlier?",file=sys.stderr)
+        print("Expected output file " + inputfile + ".tscan.xml not created, something went wrong earlier?", file=sys.stderr)
 
 if ref != 0:
     clam.common.status.write(statusfile, "Failed", 90)  # status update
