@@ -5468,15 +5468,15 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
   complNodes.merge(getNodesByRelCat(alpDoc, "!mod", "cp"));
   // Infinietcomplementen
   list<xmlNode*> tiNodes = getNodesByCat(alpDoc, "ti");
-  
-  list<xmlNode*> allRelNodes (relNodes);
-  allRelNodes.merge(cpNodes);
-  allRelNodes.merge(complNodes);
 
   betrCnt = relNodes.size();
   bijwCnt = cpNodes.size();
   complCnt = complNodes.size();
   infinComplCnt = tiNodes.size();
+  
+  list<xmlNode*> allRelNodes (relNodes);
+  allRelNodes.merge(cpNodes);
+  allRelNodes.merge(complNodes);
 
   // Checks for embedded finite clauses
   for (auto& node : allRelNodes) {
