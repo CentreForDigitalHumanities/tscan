@@ -988,20 +988,15 @@ void mod_stats( xmlDoc *doc, int& vcMod,
   vcMod = 0;
   adjNpMod = 0;
   npMod = 0;
-  // first search all head verbs
-  list<xmlNode*> hdnodes = TiCC::FindNodes( doc, "//node[@rel='hd' and @pos='verb']" );
-  list<xmlNode*>::const_iterator it = hdnodes.begin();
-  while ( it != hdnodes.end() ){
-    vector< xmlNode *> siblings = getSibblings( *it );
-    for ( size_t j=0; j < siblings.size(); ++j ){
-      if ( getAttribute( siblings[j], "rel" ) == "mod" )
-	++vcMod;
-    }
-    ++it;
-  }
+
+  // Count adverbials as "mod" or "predm" directly below a verb (or sentence) instance.
+  string verbs = "|smain|ssub|sv1|inf|ti|ppart|ppresent|";
+  list<xmlNode*> nodes = TiCC::FindNodes( doc, "//node[contains('" + verbs + "', concat('|', @cat, '|'))]/node[@rel='mod' or @rel='predm']" );
+  vcMod = nodes.size();
+
   // and the 'np' nodes
   list<xmlNode*> npnodes = TiCC::FindNodes( doc, "//node[@cat='np']" );
-  it = npnodes.begin();
+  list<xmlNode*>::const_iterator it = npnodes.begin();
   set< xmlNode* > nnodes;
   while ( it != npnodes.end() ){
     list<xmlNode*> adnodes = TiCC::FindNodes( *it, "./node[@pos='adv' or @pos='adj']" );
