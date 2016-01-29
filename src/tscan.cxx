@@ -4439,9 +4439,9 @@ void structStats::concreetToCSV( ostream& os ) const {
 
   int coveredAdverbs = generalAdverbCnt + specificAdverbCnt;
   os << density( generalAdverbCnt, wordCnt ) << ",";
-  os << proportion( generalAdverbCnt, bwCnt ) << ",";
+  os << proportion( generalAdverbCnt, coveredAdverbs ) << ",";
   os << density( specificAdverbCnt, wordCnt ) << ",";
-  os << proportion( specificAdverbCnt, bwCnt ) << ",";
+  os << proportion( specificAdverbCnt, coveredAdverbs ) << ",";
   os << proportion( coveredAdverbs, bwCnt ) << ",";
 }
 
