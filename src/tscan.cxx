@@ -1147,7 +1147,6 @@ struct wordStats : public basicStats {
   Intensify::Type checkIntensify(const xmlNode*) const;
   General::Type checkGeneralNoun() const;
   General::Type checkGeneralVerb() const;
-  Adverb::Type checkAdverbType() const;
   Afk::Type checkAfk( ) const;
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
@@ -1654,7 +1653,7 @@ General::Type wordStats::checkGeneralVerb() const {
   return General::NO_GENERAL;
 }
 
-Adverb::Type wordStats::checkAdverbType() const {
+Adverb::Type checkAdverbType(string word, CGN::Type tag) {
   if (tag == CGN::BW) {
     map<string,Adverb::Type>::const_iterator sit = settings.adverbs.find(word);
     if (sit != settings.adverbs.end()) {
@@ -2230,7 +2229,7 @@ wordStats::wordStats( int index,
     intensify_type = checkIntensify(alpWord);
     general_noun_type = checkGeneralNoun();
     general_verb_type = checkGeneralVerb();
-    adverb_type = checkAdverbType();
+    adverb_type = checkAdverbType(word, tag);
     afkType = checkAfk();
     if ( alpWord )
       isNominal = checkNominal( alpWord );
@@ -2856,6 +2855,7 @@ struct structStats: public basicStats {
     indefNpCnt(0),
     npSize(0),
     vcModCnt(0),
+    vcModSingleCnt(0),
     adjNpModCnt(0),
     npModCnt(0),
     dLevel(-1),
@@ -3140,6 +3140,7 @@ struct structStats: public basicStats {
   int indefNpCnt;
   int npSize;
   int vcModCnt;
+  int vcModSingleCnt;
   int adjNpModCnt;
   int npModCnt;
   int dLevel;
@@ -3445,6 +3446,7 @@ void structStats::merge( structStats *ss ){
   indefNpCnt += ss->indefNpCnt;
   npSize += ss->npSize;
   vcModCnt += ss->vcModCnt;
+  vcModSingleCnt += ss->vcModSingleCnt;
   adjNpModCnt += ss->adjNpModCnt;
   npModCnt += ss->npModCnt;
   if ( ss->dLevel >= 0 ){
@@ -3812,6 +3814,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "np_count", toString(npCnt) );
   addOneMetric( doc, el, "np_size", toString(npSize) );
   addOneMetric( doc, el, "vc_modifier_count", toString(vcModCnt) );
+  addOneMetric( doc, el, "vc_modifier_single_count", toString(vcModSingleCnt) );
   addOneMetric( doc, el, "adj_np_modifier_count", toString(adjNpModCnt) );
   addOneMetric( doc, el, "np_modifier_count", toString(npModCnt) );
 
@@ -4099,6 +4102,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 
 void structStats::infoHeader( ostream& os ) const {
   os << "Bijw_bep_d,Bijw_bep_dz,"
+     << "Bijw_bep_alg_d,Bijw_bep_alg_dz,"
      << "Bijv_bep_d,Bijv_bep_dz,"
      << "Attr_bijv_nw_d,Attr_bijv_nw_dz,"
      << "Ov_bijv_bep_d,Ov_bijv_bep_dz,"
@@ -4119,6 +4123,8 @@ void structStats::informationDensityToCSV( ostream& os ) const {
 
   os << density( vcModCnt, wordCnt ) << ",";
   os << correct_clause_count( vcModCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << density( vcModSingleCnt, wordCnt ) << ",";
+  os << correct_clause_count( vcModSingleCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
   os << density( npModCnt, wordCnt ) << ",";
   os << correct_clause_count( npModCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
   os << density( adjNpModCnt, wordCnt ) << ",";
@@ -4776,6 +4782,7 @@ struct sentStats : public structStats {
   Conn::Type checkMultiConnectives( const string& );
   Situation::Type checkMultiSituations( const string& );
   void resolvePrepExpr();
+  void resolveAdverbials( xmlDoc* );
   void resolveRelativeClauses( xmlDoc* );
 };
 
@@ -5531,6 +5538,25 @@ void sentStats::resolvePrepExpr(){
   }
 }
 
+// Finds nodes of adverbials and reports counts
+void sentStats::resolveAdverbials(xmlDoc *alpDoc) {
+  list<xmlNode*> nodes = getAdverbialNodes(alpDoc);
+  vcModCnt = nodes.size();
+
+  // Check for adverbials consisting of a single node that has the 'GENERAL' type.
+  for (auto& node : nodes) {
+    string word = getAttribute(node, "word");
+    if (word != "") 
+    {
+      word = TiCC::lowercase(word);
+      if (checkAdverbType(word, CGN::BW) == Adverb::GENERAL)
+      {
+        vcModSingleCnt++;
+      }
+    }
+  }
+}
+
 // Finds nodes of relative clauses and reports counts
 void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
   // Betrekkelijke/bijvoeglijke bijzinnen
@@ -5722,7 +5748,8 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 	  dLevel = get_d_level( s, alpDoc );
 	  if ( dLevel > 4 )
 	    dLevel_gt4 = 1;
-	  mod_stats( alpDoc, vcModCnt, adjNpModCnt, npModCnt );
+	  mod_stats( alpDoc, adjNpModCnt, npModCnt );
+    resolveAdverbials(alpDoc);
     resolveRelativeClauses(alpDoc);
 	}
 	else {

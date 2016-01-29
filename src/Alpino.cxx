@@ -982,17 +982,10 @@ bool checkModifier( const xmlNode *alp_node ){
   return modifies;
 }
 
-void mod_stats( xmlDoc *doc, int& vcMod,
-		int& adjNpMod, int& npMod ){
+void mod_stats( xmlDoc *doc, int& adjNpMod, int& npMod ){
   // collect some statistics about Modals
-  vcMod = 0;
   adjNpMod = 0;
   npMod = 0;
-
-  // Count adverbials as "mod" or "predm" directly below a verb (or sentence) instance.
-  string verbs = "|smain|ssub|sv1|inf|ti|ppart|ppresent|";
-  list<xmlNode*> nodes = TiCC::FindNodes( doc, "//node[contains('" + verbs + "', concat('|', @cat, '|'))]/node[@rel='mod' or @rel='predm']" );
-  vcMod = nodes.size();
 
   // and the 'np' nodes
   list<xmlNode*> npnodes = TiCC::FindNodes( doc, "//node[@cat='np']" );
@@ -1037,26 +1030,32 @@ bool isSmallCnj( const xmlNode *eNode ){
   return false;
 }
 
+// Returns adverbial nodes: "mod" or "predm" directly below a verb (or sentence) instance.
+list<xmlNode*> getAdverbialNodes( xmlDoc *doc ) {
+  string verbs = "|smain|ssub|sv1|inf|ti|ppart|ppresent|";
+  return TiCC::FindNodes(doc, "//node[contains('" + verbs + "', concat('|', @cat, '|'))]/node[@rel='mod' or @rel='predm']");
+}
+
 // Returns nodes that have the given cat as attribute in the complete xmlDoc.
-list<xmlNode*> getNodesByCat( xmlDoc *doc, const string& cat) {
+list<xmlNode*> getNodesByCat( xmlDoc *doc, const string& cat ) {
   return getNodesByCat(xmlDocGetRootElement(doc), cat);
 }
 
 // Returns nodes that have the given rel/cat as attribute in the complete xmlDoc.
-list<xmlNode*> getNodesByRelCat( xmlDoc *doc, const string& rel, const string& cat) {
+list<xmlNode*> getNodesByRelCat( xmlDoc *doc, const string& rel, const string& cat ) {
   return getNodesByRelCat(xmlDocGetRootElement(doc), rel, cat);
 }
 
 // Returns nodes that have the given cat as attribute, starting from the given xmlNode.
 // The cat parameter can start with a "!" to signal that the attribute should NOT be the given cat/rel.
-list<xmlNode*> getNodesByCat( xmlNode *node, const string& cat) {
+list<xmlNode*> getNodesByCat( xmlNode *node, const string& cat ) {
   string catAttr = cat.at(0) == '!' ? ("@cat!='" + cat.substr(1) + "'") : ("@cat='" + cat + "'");
   return TiCC::FindNodes( node, ".//node[" + catAttr + "]" );
 }
 
 // Returns nodes that have the given rel/cat as attribute, starting from the given xmlNode.
 // The cat/rel parameters can start with a "!" to signal that the attribute should NOT be the given cat/rel.
-list<xmlNode*> getNodesByRelCat( xmlNode *node, const string& rel, const string& cat) {
+list<xmlNode*> getNodesByRelCat( xmlNode *node, const string& rel, const string& cat ) {
   string relAttr = rel.at(0) == '!' ? ("@rel!='" + rel.substr(1) + "'") : ("@rel='" + rel + "'");
   string catAttr = cat.at(0) == '!' ? ("@cat!='" + cat.substr(1) + "'") : ("@cat='" + cat + "'");
   return TiCC::FindNodes( node, ".//node[" + relAttr + " and " + catAttr + "]" );
