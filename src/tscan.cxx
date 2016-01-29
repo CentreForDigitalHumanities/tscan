@@ -4298,7 +4298,8 @@ void structStats::concreetHeader( ostream& os ) const {
   os << "Alg_ww_ontw_d,Alg_ww_ontw_p,";
   os << "Conc_tot_p,Conc_tot_d,";
   os << "Alg_bijw_d,Alg_bijw_p,";
-  os << "Spec_bijw_d,Alg_bijw_p,";
+  os << "Spec_bijw_d,Spec_bijw_p,";
+  os << "Gedekte_bw_p,";
 }
 
 void structStats::concreetToCSV( ostream& os ) const {
@@ -4436,11 +4437,12 @@ void structStats::concreetToCSV( ostream& os ) const {
   os << proportion( totalCnt, totalCovered ) << ",";
   os << density( totalCnt, wordCnt ) << ",";
 
-  int adverbCnt = generalAdverbCnt + specificAdverbCnt;
+  int coveredAdverbs = generalAdverbCnt + specificAdverbCnt;
   os << density( generalAdverbCnt, wordCnt ) << ",";
-  os << proportion( generalAdverbCnt, adverbCnt ) << ",";
+  os << proportion( generalAdverbCnt, bwCnt ) << ",";
   os << density( specificAdverbCnt, wordCnt ) << ",";
-  os << proportion( specificAdverbCnt, adverbCnt ) << ",";
+  os << proportion( specificAdverbCnt, bwCnt ) << ",";
+  os << proportion( coveredAdverbs, bwCnt ) << ",";
 }
 
 void structStats::persoonlijkheidHeader( ostream& os ) const {
