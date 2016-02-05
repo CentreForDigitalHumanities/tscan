@@ -2557,6 +2557,7 @@ void wordStats::concreetHeader( ostream& os ) const {
   os << "Conc_bvnw_ruim,";
   os << "Semtype_ww,";
   os << "Alg_ww,"; // 20150821: Feature added
+  os << "Semtype_bw,"; // 20150821: Feature added
 }
 
 void wordStats::concreetToCSV( ostream& os ) const {
@@ -2586,6 +2587,12 @@ void wordStats::concreetToCSV( ostream& os ) const {
   }
   else {
     os << "0,";
+    os << "0,";
+  }
+  if ( tag == CGN::BW ) {
+    os << adverb_type << ",";
+  }
+  else {
     os << "0,";
   }
 }

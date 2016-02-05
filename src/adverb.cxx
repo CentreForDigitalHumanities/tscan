@@ -12,7 +12,7 @@ namespace Adverb {
       case SPECIFIC:
         return "specifiek";
       default:
-        return "onbekend bijwoord";
+        return "niet-gevonden";
     };
   }
 
