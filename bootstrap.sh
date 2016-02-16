@@ -20,6 +20,8 @@
 
 ./downloaddata.sh
 
+ln -s README.md README
+
 automake=automake
 aclocal=aclocal
 
