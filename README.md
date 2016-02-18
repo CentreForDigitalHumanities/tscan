@@ -18,12 +18,18 @@ Kraf et al., 2009]. The code has been reimplemented and extended by Ko van der
 Sloot (Tilburg University), and is currently maintained and continued by
 Martijn van der Klis (Utrecht University).
 
+------------------------------
+Web application / Webservice
+------------------------------
+
+This repository contains the T-Scan source code, allowing you to run it
+yourself on your own system. In addition, T-Scan is available as a web application and webservice through https://webservices-lst.science.ru.nl , register for a (free) account there first, and then access T-Scan through https://webservices-lst.science.ru.nl/tscan/ .
+
 ----------------
 Documentation
 ----------------
 
-Extensive documentation (in Dutch) can be found in docs/tscanhandleiding.pdf 
-(downloadable via https://github.com/proycon/tscan/raw/master/docs/tscanhandleiding.pdf).
+Extensive documentation (in Dutch) can be found in [``docs/tscanhandleiding.pdf``](https://github.com/proycon/tscan/raw/master/docs/tscanhandleiding.pdf).
 
 ----------------
 Installation 
@@ -41,9 +47,9 @@ Installation is not trivial, to be able to succesfully build tscan from the tarb
 - wopr
 - CLAM
 
-To facilitate installation, t-scan is included as an extra option in LaMachine (https://proycon.github.io/LaMachine)
+To facilitate installation, t-scan is included as an extra option in [LaMachine](https://proycon.github.io/LaMachine)
 
-We strongly recommend to use LaMachine (https://proycon.github.io/LaMachine) to
+We strongly recommend to use [LaMachine](https://proycon.github.io/LaMachine) to
 install tscan. In addition, t-scan also uses Alpino, which has to be obtained separately from
 http://www.let.rug.nl/vannoord/alp/Alpino/.
 
