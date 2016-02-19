@@ -83,7 +83,6 @@ else:
 #    f.write("useLsa=1\n")
 #else:
     f.write("useLsa=0\n")
-f.write("decompounderPath=\"" + TSCANDIR + "\"\n")
 f.write("surprisalPath=\"" + TSCANDIR + "\"\n")
 f.write("styleSheet=\"tscanview.xsl\"\n")
 

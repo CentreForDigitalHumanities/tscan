@@ -42,7 +42,6 @@
 #include "libfolia/folia.h"
 #include "libfolia/document.h"
 #include "tscan/Alpino.h"
-#include "tscan/decomp.h"
 #include "tscan/cgn.h"
 #include "tscan/sem.h"
 #include "tscan/intensify.h"
@@ -126,12 +125,10 @@ struct settingData {
   void init( const Configuration& );
   bool doAlpino;
   bool doAlpinoServer;
-  bool doDecompound;
   bool doWopr;
   bool doLsa;
   bool doXfiles;
   bool showProblems;
-  string decompounderPath;
   string style;
   int rarityLevel;
   unsigned int overlapSize;
@@ -744,12 +741,6 @@ void settingData::init( const Configuration& cf ){
       exit( EXIT_FAILURE );
     }
   }
-  doDecompound = false;
-  val = cf.lookUp( "decompounderPath" );
-  if( !val.empty() ){
-    decompounderPath = val + "/";
-    doDecompound = true;
-  }
   val = cf.lookUp( "styleSheet" );
   if( !val.empty() ){
     style = val;
@@ -919,7 +910,7 @@ inline void usage(){
   cerr << "\t-o <file> store XML in 'file' " << endl;
   cerr << "\t--config=<file> read configuration from 'file' " << endl;
   cerr << "\t-V or --version show version " << endl;
-  cerr << "\t--skip=[acdlw]    Skip Alpino (a), CSV output (c), Decompounder (d), Lsa (l) or Wopr (w).\n";
+  cerr << "\t--skip=[aclw]    Skip Alpino (a), CSV output (c), Lsa (l) or Wopr (w).\n";
   cerr << "\t-t <file> process the 'file'. (deprecated)" << endl;
   cerr << endl;
 }
@@ -1184,7 +1175,6 @@ struct wordStats : public basicStats {
   bool f65;
   bool f77;
   bool f80;
-  int compPartCnt;
   top_val top_freq;
   int word_freq;
   int lemma_freq;
@@ -2132,7 +2122,7 @@ wordStats::wordStats( int index,
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false),
   nerProp(NONER), connType(Conn::NOCONN), isMultiConn(false), sitType(Situation::NO_SIT),
-  f50(false), f65(false), f77(false), f80(false),  compPartCnt(0),
+  f50(false), f65(false), f77(false), f80(false),
   top_freq(notFound), word_freq(0), lemma_freq(0),
   wordOverlapCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NA), lemma_freq_log(NA),
@@ -2246,14 +2236,6 @@ wordStats::wordStats( int index,
       word_freq_log_head_sat = (word_freq_log_head + word_freq_log_sat) / double(2);
       top_freq_head = topFreqLookup(compound_head);
       top_freq_sat = topFreqLookup(compound_sat);
-    }
-    if ( settings.doDecompound ){
-      compPartCnt = runDecompoundWord( word, workdir_name,
-				       settings.decompounderPath );
-      // if ( compPartCnt > 0 || comp != NOCOMP ){
-      //  	cerr << morphemes << " is a " << comp << "(" << compLen << ") - "
-      //  	     << compPartCnt << endl;
-      // }
     }
   }
 }
@@ -2395,8 +2377,6 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "top10000", "true" );
   else if ( top_freq == top20000 )
     addOneMetric( doc, el, "top20000", "true" );
-  if ( compPartCnt > 0 )
-    addOneMetric( doc, el, "compound_length", toString(compPartCnt) );
   addOneMetric( doc, el, "word_freq", toString(word_freq) );
   if ( word_freq_log != NA )
     addOneMetric( doc, el, "log_word_freq", toString(word_freq_log) );
@@ -2473,7 +2453,6 @@ void wordStats::wordSortToCSV( ostream& os ) const {
 void wordStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
-     << "Sam_delen_per_wrd,Sam_d,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,";
 }
@@ -2508,8 +2487,6 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
 	 << 1.0/double(morphCnt) << ",";
     }
   }
-  os << double(compPartCnt) << ",";
-  os << (compPartCnt?1:0) << ",";
   if ( word_freq_log == NA )
     os << "NA,";
   else
@@ -2749,8 +2726,6 @@ struct structStats: public basicStats {
     f65Cnt(0),
     f77Cnt(0),
     f80Cnt(0),
-    compCnt(0),
-    compPartCnt(0),
     top1000Cnt(0),
     top2000Cnt(0),
     top3000Cnt(0),
@@ -3034,8 +3009,6 @@ struct structStats: public basicStats {
   int f65Cnt;
   int f77Cnt;
   int f80Cnt;
-  int compCnt;
-  int compPartCnt;
   int top1000Cnt;
   int top2000Cnt;
   int top3000Cnt;
@@ -3331,8 +3304,6 @@ void structStats::merge( structStats *ss ){
   f65Cnt += ss->f65Cnt;
   f77Cnt += ss->f77Cnt;
   f80Cnt += ss->f80Cnt;
-  compCnt += ss->compCnt;
-  compPartCnt += ss->compPartCnt;
   top1000Cnt += ss->top1000Cnt;
   top2000Cnt += ss->top2000Cnt;
   top3000Cnt += ss->top3000Cnt;
@@ -3703,8 +3674,6 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "freq65", toString(f65Cnt) );
   addOneMetric( doc, el, "freq77", toString(f77Cnt) );
   addOneMetric( doc, el, "freq80", toString(f80Cnt) );
-  addOneMetric( doc, el, "compound_count", toString(compCnt) );
-  addOneMetric( doc, el, "compound_length", toString(compPartCnt) );
   addOneMetric( doc, el, "top1000", toString(top1000Cnt) );
   addOneMetric( doc, el, "top2000", toString(top2000Cnt) );
   addOneMetric( doc, el, "top3000", toString(top3000Cnt) );
@@ -3910,7 +3879,6 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
      << "Namen_p,Namen_d,"
-     << "Sam_delen_per_wrd,Sam_d,"
      << "Freq50_staph,Freq65_Staph,Freq77_Staph,Freq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,"
@@ -3931,10 +3899,7 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
      << proportion( (wordCnt-nameCnt), morphCntExNames ) << ","
 
      << proportion( nameCnt, (nameCnt+nounCnt) ) << ","
-     << density( nameCnt, wordCnt ) << ","
-
-     << proportion( compPartCnt, wordCnt ) << ","
-     << density( compCnt, wordCnt ) << ",";
+     << density( nameCnt, wordCnt ) << ",";
 
   os << proportion( f50Cnt, wordCnt ) << ",";
   os << proportion( f65Cnt, wordCnt ) << ",";
@@ -5853,9 +5818,6 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
       unique_words[ws->l_word] += 1;
       unique_lemmas[ws->lemma] += 1;
       aggregate( distances, ws->distances );
-      if ( ws->compPartCnt > 0 )
-	++compCnt;
-      compPartCnt += ws->compPartCnt;
       if ( ws->isContent ) {
         word_freq += ws->word_freq_log;
         lemma_freq += ws->lemma_freq_log;
@@ -7260,9 +7222,6 @@ int main(int argc, char *argv[]) {
     if ( skip.find_first_of("aA") != string::npos ){
       settings.doAlpino = false;
       settings.doAlpinoServer = false;
-    }
-    if ( skip.find_first_of("dD") != string::npos ){
-      settings.doDecompound = false;
     }
     if ( skip.find_first_of("cC") != string::npos ){
       settings.doXfiles = false;
