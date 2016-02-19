@@ -3270,7 +3270,8 @@ void structStats::merge( structStats *ss ){
   else
     parseFailCnt += ss->parseFailCnt;
   wordCnt += ss->wordCnt;
-  sentCnt += ss->sentCnt;
+  if ( ss->wordCnt != 0 ) // don't count sentences without words
+    sentCnt += ss->sentCnt;
   charCnt += ss->charCnt;
   charCntExNames += ss->charCntExNames;
   morphCnt += ss->morphCnt;
@@ -3885,7 +3886,8 @@ void structStats::CSVheader( ostream& os, const string& intro ) const {
 void structStats::toCSV( ostream& os ) const {
   if (!isSentence())
   {
-    os << wordCnt << ","; // 20141003: New feature: word count per document/paragraph
+    os << sentCnt << ",";
+    os << wordCnt << ",";
   }
   os << parseFailCnt << ",";
   wordDifficultiesToCSV( os );
@@ -6985,7 +6987,7 @@ void docStats::toCSV( const string& name,
     if ( out ){
       // 20141003: New features: paragraphs/sentences/words per document
       CSVheader( out, "Inputfile,Par_per_doc,Zin_per_doc,Word_per_doc" );
-      out << name << "," << sv.size() << "," << sentCnt << ",";
+      out << name << "," << sv.size() << ",";
       structStats::toCSV( out );
       cerr << "stored document statistics in " << fname << endl;
     }
@@ -7001,7 +7003,7 @@ void docStats::toCSV( const string& name,
 	if ( par == 0 )
     // 20141003: New features: sentences/words per paragraph
 	  sv[0]->CSVheader( out, "Inputfile,Segment,Zin_per_par,Wrd_per_par" );
-	out << name << "," << sv[par]->id << "," << sv[par]->sv.size() << ",";
+	out << name << "," << sv[par]->id << ",";
 	sv[par]->toCSV( out );
     }
       cerr << "stored paragraph statistics in " << fname << endl;
