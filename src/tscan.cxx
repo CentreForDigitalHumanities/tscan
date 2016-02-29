@@ -2242,9 +2242,9 @@ wordStats::wordStats( int index,
 
 void addOneMetric( Document *doc, FoliaElement *parent,
 		   const string& cls, const string& val ){
-  MetricAnnotation *m = new MetricAnnotation( doc,
-					      "class='" + cls + "', value='"
-					      + val + "'" );
+  MetricAnnotation *m
+    = new MetricAnnotation( doc,
+			    getArgs( "class='" + cls + "', value='" + val + "'" ) );
   parent->append( m );
 }
 
@@ -4017,7 +4017,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   double clauseCnt = pastCnt + presentCnt;
   double clausesPerSentence = parseFailCnt > 0 ? NA : proportion( clauseCnt, sentCnt ).p;
   double wordsPerSentence = parseFailCnt > 0 ? NA : proportion( wordCnt, sentCnt ).p;
-  
+
   os << wordsPerSentence << ",";
   os << (clausesPerSentence == 0 ? wordsPerSentence : proportion( wordCnt, clauseCnt ).p) << ",";
   os << proportion( sentCnt, wordCnt )  << ",";
@@ -5522,7 +5522,7 @@ void sentStats::resolveAdverbials(xmlDoc *alpDoc) {
   // Check for adverbials consisting of a single node that has the 'GENERAL' type.
   for (auto& node : nodes) {
     string word = getAttribute(node, "word");
-    if (word != "") 
+    if (word != "")
     {
       word = TiCC::lowercase(word);
       if (checkAdverbType(word, CGN::BW) == Adverb::GENERAL)
