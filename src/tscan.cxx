@@ -3852,11 +3852,34 @@ void structStats::CSVheader( ostream& os, const string& intro ) const {
   os << endl;
 }
 
+// Escapes quotes from a string. Found on http://stackoverflow.com/a/1162786
+string escape_quotes(const string &before)
+{
+  string after;
+
+  for (string::size_type i = 0; i < before.length(); ++i) {
+    switch (before[i]) {
+      case '"':
+        after += '"'; // duplicate quotes
+      default:
+        after += before[i];
+    }
+  }
+
+  return after;
+}
+
 void structStats::toCSV( ostream& os ) const {
   if (!isSentence())
   {
+    // For paragraphs and documents, add a sentence and word count.
     os << sentCnt << ",";
     os << wordCnt << ",";
+  }
+  else 
+  {
+    // For sentences, add the original sentence (quoted)
+    os << "\"" << escape_quotes(text) << "\",";
   }
   os << parseFailCnt << ",";
   wordDifficultiesToCSV( os );
@@ -6981,7 +7004,7 @@ void docStats::toCSV( const string& name,
       for ( size_t par=0; par < sv.size(); ++par ){
 	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
 	  if ( par == 0 && sent == 0 )
-	    sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment" );
+	    sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment,Getokeniseerde_zin" );
 	  out << name << "," << sv[par]->sv[sent]->id << ",";
 	  sv[par]->sv[sent]->toCSV( out );
 	}
