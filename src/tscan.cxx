@@ -4002,7 +4002,7 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
      << "Ontk_morf_d,Ontk_morf_dz,Ontk_tot_d,Ontk_tot_dz,"
      << "Meerv_ontk_d,Meerv_ontk_dz,"
      << "AL_sub_ww,AL_ob_ww,AL_indirob_ww,AL_ww_vzg,"
-     << "AL_lidw_znw,AL_vz_znw,AL_ww_wwobzin,"
+     << "AL_lidw_znw,AL_vz_znw,AL_ww_wwvc,"
      << "AL_vg_wwbijzin,AL_vg_conj,AL_vg_wwhoofdzin,AL_znw_bijzin,AL_ww_schdw,"
      << "AL_ww_znwpred,AL_ww_bnwpred,AL_ww_bnwbwp,AL_ww_bwbwp,AL_ww_znwbwp,"
      << "AL_gem,AL_max,";
