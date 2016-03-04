@@ -2707,6 +2707,8 @@ struct structStats: public basicStats {
     mvFinInbedCnt(0),
     infinComplCnt(0),
     mvInbedCnt(0),
+    losBetrCnt(0),
+    losBijwCnt(0),
     tempConnCnt(0),
     opsomWgConnCnt(0),
     opsomZinConnCnt(0),
@@ -2990,6 +2992,8 @@ struct structStats: public basicStats {
   int mvFinInbedCnt;
   int infinComplCnt;
   int mvInbedCnt;
+  int losBijwCnt;
+  int losBetrCnt;
   int tempConnCnt;
   int opsomWgConnCnt;
   int opsomZinConnCnt;
@@ -3284,6 +3288,8 @@ void structStats::merge( structStats *ss ){
   mvFinInbedCnt += ss->mvFinInbedCnt;
   infinComplCnt += ss->infinComplCnt;
   mvInbedCnt += ss->mvInbedCnt;
+  losBetrCnt += ss->losBetrCnt;
+  losBijwCnt += ss->losBijwCnt;
   tempConnCnt += ss->tempConnCnt;
   opsomWgConnCnt += ss->opsomWgConnCnt;
   opsomZinConnCnt += ss->opsomZinConnCnt;
@@ -4014,6 +4020,7 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
      << "Compl_bijzin_per_zin,Fin_bijzin_per_zin,"
      << "Mv_fin_inbed_per_zin,Infin_compl_per_zin,"
      << "Bijzin_per_zin,Mv_inbed_per_zin,"
+     << "Betr_bijzin_los,Bijw_compl_bijzin_los,"
      << "Pv_d,Pv_per_zin,";
   if ( isSentence() ){
     os << "D_level,";
@@ -4047,7 +4054,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   os << proportion( clauseCnt, wordCnt )  << ",";
   os << proportion( wordCnt, npCnt ) << ",";
   if ( parseFailCnt > 0 ) {
-    os << "NA,NA,NA,NA,NA,NA,NA,NA,";
+    os << "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,";
   }
   else {
     os << proportion( betrCnt, sentCnt ) << ",";
@@ -4058,6 +4065,8 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
     os << proportion( infinComplCnt, sentCnt ) << ",";
     os << proportion( betrCnt + bijwCnt + complCnt + infinComplCnt, sentCnt ) << ",";
     os << proportion( mvInbedCnt, sentCnt ) << ",";
+    os << proportion( losBetrCnt, sentCnt ) << ",";
+    os << proportion( losBijwCnt, sentCnt ) << ",";
   }
   os << density( clauseCnt, wordCnt ) << ",";
   os << clausesPerSentence << ",";
@@ -5605,6 +5614,10 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
   }
   set<string> mvInbedIds(ids.begin(), ids.end());
   mvInbedCnt = mvInbedIds.size();
+
+  // Count 'loose' (directly under top node) relative clauses
+  losBetrCnt = TiCC::FindNodes(alpDoc, "//node[@cat='top']/node[@cat='rel' or @cat='whrel']").size();
+  losBijwCnt = TiCC::FindNodes(alpDoc, "//node[@cat='top']/node[@cat='cp']").size();
 }
 
 //#define DEBUG_WOPR
