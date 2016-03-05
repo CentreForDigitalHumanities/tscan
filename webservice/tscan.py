@@ -82,6 +82,9 @@ if 'VIRTUAL_ENV' in os.environ and os.path.exists(os.environ['VIRTUAL_ENV'] +'/b
         DIGESTOPAQUE = open(os.environ['CLAM_DIGESTOPAQUEFILE']).read().strip()
         SECRET_KEY = open(os.environ['CLAM_SECRETKEYFILE']).read().strip()
         ADMINS = ['proycon','antalb','wstoop']
+
+        #The amount of diskspace a user may use (in MB), this is a soft quota which can be exceeded, but creation of new projects is blocked until usage drops below the quota again
+        USERQUOTA = 6144
 else: #local
     TSCANDIR = os.path.dirname(sys.argv[0])
     ROOT = "/tmp/tscan.clam/"
@@ -128,6 +131,7 @@ else:
 #Minimum amount of free diskspace in MB. Set to 0 to disable this check (not recommended)
 #DISK = '/dev/sda1' #set this to the disk where ROOT is on
 #MINDISKSPACE = 10
+
 
 
 # ======== WEB-APPLICATION STYLING =============
