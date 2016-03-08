@@ -30,9 +30,7 @@
 #include "ticcutils/PrettyPrint.h"
 #include "ticcutils/StringOps.h"
 #include "ticcutils/XMLtools.h"
-#include "libfolia/foliautils.h"
 #include "libfolia/folia.h"
-#include "libfolia/document.h"
 #include "tscan/Alpino.h"
 
 using namespace std;
