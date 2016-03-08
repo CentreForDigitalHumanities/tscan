@@ -2243,8 +2243,8 @@ wordStats::wordStats( int index,
 void addOneMetric( Document *doc, FoliaElement *parent,
 		   const string& cls, const string& val ){
   MetricAnnotation *m
-    = new MetricAnnotation( doc,
-			    getArgs( "class='" + cls + "', value='" + val + "'" ) );
+    = new MetricAnnotation( getArgs( "class='" + cls + "', value='" + val + "'" ),
+			    doc );
   parent->append( m );
 }
 
