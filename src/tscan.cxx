@@ -2240,8 +2240,7 @@ wordStats::wordStats( int index,
 
 void addOneMetric( Document *doc, FoliaElement *parent,
 		   const string& cls, const string& val ){
-  MetricAnnotation *m
-    = new MetricAnnotation( getArgs( "class='" + cls + "', value='" + val + "'" ),
+  Metric *m = new Metric( getArgs( "class='" + cls + "', value='" + val + "'" ),
 			    doc );
   parent->append( m );
 }
@@ -3880,7 +3879,7 @@ void structStats::toCSV( ostream& os ) const {
     os << sentCnt << ",";
     os << wordCnt << ",";
   }
-  else 
+  else
   {
     // For sentences, add the original sentence (quoted)
     os << "\"" << escape_quotes(text) << "\",";
@@ -5653,7 +5652,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 	return;
       }
       for ( size_t i=0; i < wv.size(); ++i ){
-	vector<MetricAnnotation*> mv = wv[i]->select<MetricAnnotation>();
+	vector<Metric*> mv = wv[i]->select<Metric>();
 	if ( mv.size() > 0 ){
 	  for ( size_t j=0; j < mv.size(); ++j ){
 	    if ( mv[j]->cls() == "lprob10" ){
@@ -5667,7 +5666,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 	throw logic_error( "The document returned by WOPR contains > 1 Sentence" );
 	return;
       }
-      vector<MetricAnnotation*> mv = sv[0]->select<MetricAnnotation>();
+      vector<Metric*> mv = sv[0]->select<Metric>();
       if ( mv.size() > 0 ){
 	for ( size_t j=0; j < mv.size(); ++j ){
 	  if ( mv[j]->cls() == "avg_prob10" ){
