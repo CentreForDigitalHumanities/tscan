@@ -38,9 +38,7 @@
 #include "ticcutils/FileUtils.h"
 #include "ticcutils/CommandLine.h"
 #include "ticcutils/XMLtools.h"
-#include "libfolia/foliautils.h"
 #include "libfolia/folia.h"
-#include "libfolia/document.h"
 #include "tscan/Alpino.h"
 #include "tscan/cgn.h"
 #include "tscan/sem.h"
@@ -2243,8 +2241,8 @@ wordStats::wordStats( int index,
 void addOneMetric( Document *doc, FoliaElement *parent,
 		   const string& cls, const string& val ){
   MetricAnnotation *m
-    = new MetricAnnotation( doc,
-			    getArgs( "class='" + cls + "', value='" + val + "'" ) );
+    = new MetricAnnotation( getArgs( "class='" + cls + "', value='" + val + "'" ),
+			    doc );
   parent->append( m );
 }
 
