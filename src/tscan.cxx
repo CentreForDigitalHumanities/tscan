@@ -5573,9 +5573,9 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
   // Bijwoordelijke bijzinnen
   list<xmlNode*> cpNodes = getNodesByRelCat(alpDoc, "mod", "cp");
   // Finiete complementszinnen
-  list<xmlNode*> complNodes = getNodesByRelCat(alpDoc, "!mod", "whsub");
-  complNodes.merge(getNodesByRelCat(alpDoc, "!mod", "whrel"));
-  complNodes.merge(getNodesByRelCat(alpDoc, "!mod", "cp"));
+  // Check whether the previous node is not the top node to prevent clashes with loose clauses below
+  string complPath = ".//node[@cat!='top']/node[@rel!='mod' and (@cat='whsub' or @cat='whrel' or @cat='cp')]";
+  list<xmlNode*> complNodes = TiCC::FindNodes(alpDoc, complPath);
   // Infinietcomplementen
   list<xmlNode*> tiNodes = getNodesByCat(alpDoc, "ti");
 
@@ -5593,9 +5593,7 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
     ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "rel")));
     ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "whrel")));
     ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "cp")));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "whsub")));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "whrel")));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "cp")));
+    ids.merge(getNodeIds(TiCC::FindNodes(node, complPath)));
   }
   set<string> mvFinEmbedIds(ids.begin(), ids.end());
   mvFinInbedCnt = mvFinEmbedIds.size();
@@ -5607,9 +5605,7 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
     ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "rel")));
     ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "whrel")));
     ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "cp")));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "whsub")));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "whrel")));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "cp")));
+    ids.merge(getNodeIds(TiCC::FindNodes(node, complPath)));
     ids.merge(getNodeIds(getNodesByCat(node, "ti")));
   }
   set<string> mvInbedIds(ids.begin(), ids.end());
