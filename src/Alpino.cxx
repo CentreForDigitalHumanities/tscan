@@ -30,9 +30,7 @@
 #include "ticcutils/PrettyPrint.h"
 #include "ticcutils/StringOps.h"
 #include "ticcutils/XMLtools.h"
-#include "libfolia/foliautils.h"
 #include "libfolia/folia.h"
-#include "libfolia/document.h"
 #include "tscan/Alpino.h"
 
 using namespace std;
@@ -701,29 +699,6 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma,
   }
 }
 
-
-void getRelNodesValue( xmlNode *pnt, set<xmlNode*>& result,
-		       const string& val ){
-  // collect all nodes witl attribute 'rel' of value 'val'
-  while ( pnt ){
-    if ( pnt->type == XML_ELEMENT_NODE && Name(pnt) == "node" ){
-      if ( getAttribute( pnt, "rel" ) == val )
-	result.insert( pnt );
-      if ( getAttribute( pnt->children, "root" ) == "" )
-	getRelNodesValue( pnt->children, result, val );
-    }
-    pnt = pnt->next;
-  }
-}
-
-int cntRelNodesValue( xmlNode *pnt ){
-  set<xmlNode*> result;
-  getRelNodesValue( pnt, result, "mod" );
-  getRelNodesValue( pnt, result, "app" );
-  getRelNodesValue( pnt, result, "vc" );
-  return result.size();
-}
-
 int get_d_level( const Sentence *s, xmlDoc *alp ){
   // determine de d-level of a sentence
   vector<PosAnnotation*> poslist;
@@ -982,25 +957,15 @@ bool checkModifier( const xmlNode *alp_node ){
   return modifies;
 }
 
-void mod_stats( xmlDoc *doc, int& adjNpMod, int& npMod ){
-  // collect some statistics about Modals
+// Retrieves counts for adjectives and other noun modifiers
+void mod_stats( xmlDoc *doc, int& adjNpMod, int& npMod ) {
   adjNpMod = 0;
   npMod = 0;
 
-  // and the 'np' nodes
-  list<xmlNode*> npnodes = TiCC::FindNodes( doc, "//node[@cat='np']" );
-  list<xmlNode*>::const_iterator it = npnodes.begin();
-  set< xmlNode* > nnodes;
-  while ( it != npnodes.end() ){
-    list<xmlNode*> adnodes = TiCC::FindNodes( *it, "./node[@pos='adv' or @pos='adj']" );
-    adjNpMod += adnodes.size();
-    // I would like an xPath. But there isn't a way to say:
-    //  recursively search all node with these properties but don't recurse
-    //  deeper when you are at a 'root' node
-    // or?
-    int cnt = cntRelNodesValue( (*it)->children );
-    npMod += cnt;
-    ++it;
+  list<xmlNode*> npnodes = TiCC::FindNodes(doc, "//node[@cat='np']");
+  for (auto& node : npnodes) {
+    adjNpMod += TiCC::FindNodes(node, "./node[@rel='mod' and @pos='adj']").size();
+    npMod += TiCC::FindNodes(node, "./node[@rel='mod' or @rel='app' or @rel='vc']").size();
   }
 }
 

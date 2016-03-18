@@ -38,11 +38,8 @@
 #include "ticcutils/FileUtils.h"
 #include "ticcutils/CommandLine.h"
 #include "ticcutils/XMLtools.h"
-#include "libfolia/foliautils.h"
 #include "libfolia/folia.h"
-#include "libfolia/document.h"
 #include "tscan/Alpino.h"
-#include "tscan/decomp.h"
 #include "tscan/cgn.h"
 #include "tscan/sem.h"
 #include "tscan/intensify.h"
@@ -126,12 +123,10 @@ struct settingData {
   void init( const Configuration& );
   bool doAlpino;
   bool doAlpinoServer;
-  bool doDecompound;
   bool doWopr;
   bool doLsa;
   bool doXfiles;
   bool showProblems;
-  string decompounderPath;
   string style;
   int rarityLevel;
   unsigned int overlapSize;
@@ -744,12 +739,6 @@ void settingData::init( const Configuration& cf ){
       exit( EXIT_FAILURE );
     }
   }
-  doDecompound = false;
-  val = cf.lookUp( "decompounderPath" );
-  if( !val.empty() ){
-    decompounderPath = val + "/";
-    doDecompound = true;
-  }
   val = cf.lookUp( "styleSheet" );
   if( !val.empty() ){
     style = val;
@@ -919,7 +908,7 @@ inline void usage(){
   cerr << "\t-o <file> store XML in 'file' " << endl;
   cerr << "\t--config=<file> read configuration from 'file' " << endl;
   cerr << "\t-V or --version show version " << endl;
-  cerr << "\t--skip=[acdlw]    Skip Alpino (a), CSV output (c), Decompounder (d), Lsa (l) or Wopr (w).\n";
+  cerr << "\t--skip=[aclw]    Skip Alpino (a), CSV output (c), Lsa (l) or Wopr (w).\n";
   cerr << "\t-t <file> process the 'file'. (deprecated)" << endl;
   cerr << endl;
 }
@@ -1184,7 +1173,6 @@ struct wordStats : public basicStats {
   bool f65;
   bool f77;
   bool f80;
-  int compPartCnt;
   top_val top_freq;
   int word_freq;
   int lemma_freq;
@@ -2132,7 +2120,7 @@ wordStats::wordStats( int index,
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false),
   nerProp(NONER), connType(Conn::NOCONN), isMultiConn(false), sitType(Situation::NO_SIT),
-  f50(false), f65(false), f77(false), f80(false),  compPartCnt(0),
+  f50(false), f65(false), f77(false), f80(false),
   top_freq(notFound), word_freq(0), lemma_freq(0),
   wordOverlapCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NA), lemma_freq_log(NA),
@@ -2247,22 +2235,13 @@ wordStats::wordStats( int index,
       top_freq_head = topFreqLookup(compound_head);
       top_freq_sat = topFreqLookup(compound_sat);
     }
-    if ( settings.doDecompound ){
-      compPartCnt = runDecompoundWord( word, workdir_name,
-				       settings.decompounderPath );
-      // if ( compPartCnt > 0 || comp != NOCOMP ){
-      //  	cerr << morphemes << " is a " << comp << "(" << compLen << ") - "
-      //  	     << compPartCnt << endl;
-      // }
-    }
   }
 }
 
 void addOneMetric( Document *doc, FoliaElement *parent,
 		   const string& cls, const string& val ){
-  MetricAnnotation *m = new MetricAnnotation( doc,
-					      "class='" + cls + "', value='"
-					      + val + "'" );
+  Metric *m = new Metric( getArgs( "class='" + cls + "', value='" + val + "'" ),
+			    doc );
   parent->append( m );
 }
 
@@ -2395,8 +2374,6 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "top10000", "true" );
   else if ( top_freq == top20000 )
     addOneMetric( doc, el, "top20000", "true" );
-  if ( compPartCnt > 0 )
-    addOneMetric( doc, el, "compound_length", toString(compPartCnt) );
   addOneMetric( doc, el, "word_freq", toString(word_freq) );
   if ( word_freq_log != NA )
     addOneMetric( doc, el, "log_word_freq", toString(word_freq_log) );
@@ -2473,7 +2450,6 @@ void wordStats::wordSortToCSV( ostream& os ) const {
 void wordStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
-     << "Sam_delen_per_wrd,Sam_d,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,";
 }
@@ -2508,8 +2484,6 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
 	 << 1.0/double(morphCnt) << ",";
     }
   }
-  os << double(compPartCnt) << ",";
-  os << (compPartCnt?1:0) << ",";
   if ( word_freq_log == NA )
     os << "NA,";
   else
@@ -2730,6 +2704,8 @@ struct structStats: public basicStats {
     mvFinInbedCnt(0),
     infinComplCnt(0),
     mvInbedCnt(0),
+    losBetrCnt(0),
+    losBijwCnt(0),
     tempConnCnt(0),
     opsomWgConnCnt(0),
     opsomZinConnCnt(0),
@@ -2749,8 +2725,6 @@ struct structStats: public basicStats {
     f65Cnt(0),
     f77Cnt(0),
     f80Cnt(0),
-    compCnt(0),
-    compPartCnt(0),
     top1000Cnt(0),
     top2000Cnt(0),
     top3000Cnt(0),
@@ -3015,6 +2989,8 @@ struct structStats: public basicStats {
   int mvFinInbedCnt;
   int infinComplCnt;
   int mvInbedCnt;
+  int losBijwCnt;
+  int losBetrCnt;
   int tempConnCnt;
   int opsomWgConnCnt;
   int opsomZinConnCnt;
@@ -3034,8 +3010,6 @@ struct structStats: public basicStats {
   int f65Cnt;
   int f77Cnt;
   int f80Cnt;
-  int compCnt;
-  int compPartCnt;
   int top1000Cnt;
   int top2000Cnt;
   int top3000Cnt;
@@ -3270,7 +3244,8 @@ void structStats::merge( structStats *ss ){
   else
     parseFailCnt += ss->parseFailCnt;
   wordCnt += ss->wordCnt;
-  sentCnt += ss->sentCnt;
+  if ( ss->wordCnt != 0 ) // don't count sentences without words
+    sentCnt += ss->sentCnt;
   charCnt += ss->charCnt;
   charCntExNames += ss->charCntExNames;
   morphCnt += ss->morphCnt;
@@ -3310,6 +3285,8 @@ void structStats::merge( structStats *ss ){
   mvFinInbedCnt += ss->mvFinInbedCnt;
   infinComplCnt += ss->infinComplCnt;
   mvInbedCnt += ss->mvInbedCnt;
+  losBetrCnt += ss->losBetrCnt;
+  losBijwCnt += ss->losBijwCnt;
   tempConnCnt += ss->tempConnCnt;
   opsomWgConnCnt += ss->opsomWgConnCnt;
   opsomZinConnCnt += ss->opsomZinConnCnt;
@@ -3330,8 +3307,6 @@ void structStats::merge( structStats *ss ){
   f65Cnt += ss->f65Cnt;
   f77Cnt += ss->f77Cnt;
   f80Cnt += ss->f80Cnt;
-  compCnt += ss->compCnt;
-  compPartCnt += ss->compPartCnt;
   top1000Cnt += ss->top1000Cnt;
   top2000Cnt += ss->top2000Cnt;
   top3000Cnt += ss->top3000Cnt;
@@ -3702,8 +3677,6 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "freq65", toString(f65Cnt) );
   addOneMetric( doc, el, "freq77", toString(f77Cnt) );
   addOneMetric( doc, el, "freq80", toString(f80Cnt) );
-  addOneMetric( doc, el, "compound_count", toString(compCnt) );
-  addOneMetric( doc, el, "compound_length", toString(compPartCnt) );
   addOneMetric( doc, el, "top1000", toString(top1000Cnt) );
   addOneMetric( doc, el, "top2000", toString(top2000Cnt) );
   addOneMetric( doc, el, "top3000", toString(top3000Cnt) );
@@ -3882,10 +3855,34 @@ void structStats::CSVheader( ostream& os, const string& intro ) const {
   os << endl;
 }
 
+// Escapes quotes from a string. Found on http://stackoverflow.com/a/1162786
+string escape_quotes(const string &before)
+{
+  string after;
+
+  for (string::size_type i = 0; i < before.length(); ++i) {
+    switch (before[i]) {
+      case '"':
+        after += '"'; // duplicate quotes
+      default:
+        after += before[i];
+    }
+  }
+
+  return after;
+}
+
 void structStats::toCSV( ostream& os ) const {
   if (!isSentence())
   {
-    os << wordCnt << ","; // 20141003: New feature: word count per document/paragraph
+    // For paragraphs and documents, add a sentence and word count.
+    os << sentCnt << ",";
+    os << wordCnt << ",";
+  }
+  else
+  {
+    // For sentences, add the original sentence (quoted)
+    os << "\"" << escape_quotes(text) << "\",";
   }
   os << parseFailCnt << ",";
   wordDifficultiesToCSV( os );
@@ -3908,7 +3905,6 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
      << "Namen_p,Namen_d,"
-     << "Sam_delen_per_wrd,Sam_d,"
      << "Freq50_staph,Freq65_Staph,Freq77_Staph,Freq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,"
@@ -3929,10 +3925,7 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
      << proportion( (wordCnt-nameCnt), morphCntExNames ) << ","
 
      << proportion( nameCnt, (nameCnt+nounCnt) ) << ","
-     << density( nameCnt, wordCnt ) << ","
-
-     << proportion( compPartCnt, wordCnt ) << ","
-     << density( compCnt, wordCnt ) << ",";
+     << density( nameCnt, wordCnt ) << ",";
 
   os << proportion( f50Cnt, wordCnt ) << ",";
   os << proportion( f65Cnt, wordCnt ) << ",";
@@ -4024,6 +4017,7 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
      << "Compl_bijzin_per_zin,Fin_bijzin_per_zin,"
      << "Mv_fin_inbed_per_zin,Infin_compl_per_zin,"
      << "Bijzin_per_zin,Mv_inbed_per_zin,"
+     << "Betr_bijzin_los,Bijw_compl_bijzin_los,"
      << "Pv_d,Pv_per_zin,";
   if ( isSentence() ){
     os << "D_level,";
@@ -4035,7 +4029,7 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
      << "Ontk_morf_d,Ontk_morf_dz,Ontk_tot_d,Ontk_tot_dz,"
      << "Meerv_ontk_d,Meerv_ontk_dz,"
      << "AL_sub_ww,AL_ob_ww,AL_indirob_ww,AL_ww_vzg,"
-     << "AL_lidw_znw,AL_vz_znw,AL_ww_wwobzin,"
+     << "AL_lidw_znw,AL_vz_znw,AL_ww_wwvc,"
      << "AL_vg_wwbijzin,AL_vg_conj,AL_vg_wwhoofdzin,AL_znw_bijzin,AL_ww_schdw,"
      << "AL_ww_znwpred,AL_ww_bnwpred,AL_ww_bnwbwp,AL_ww_bwbwp,AL_ww_znwbwp,"
      << "AL_gem,AL_max,";
@@ -4050,14 +4044,14 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   double clauseCnt = pastCnt + presentCnt;
   double clausesPerSentence = parseFailCnt > 0 ? NA : proportion( clauseCnt, sentCnt ).p;
   double wordsPerSentence = parseFailCnt > 0 ? NA : proportion( wordCnt, sentCnt ).p;
-  
+
   os << wordsPerSentence << ",";
   os << (clausesPerSentence == 0 ? wordsPerSentence : proportion( wordCnt, clauseCnt ).p) << ",";
   os << proportion( sentCnt, wordCnt )  << ",";
   os << proportion( clauseCnt, wordCnt )  << ",";
   os << proportion( wordCnt, npCnt ) << ",";
   if ( parseFailCnt > 0 ) {
-    os << "NA,NA,NA,NA,NA,NA,NA,NA,";
+    os << "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,";
   }
   else {
     os << proportion( betrCnt, sentCnt ) << ",";
@@ -4068,6 +4062,8 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
     os << proportion( infinComplCnt, sentCnt ) << ",";
     os << proportion( betrCnt + bijwCnt + complCnt + infinComplCnt, sentCnt ) << ",";
     os << proportion( mvInbedCnt, sentCnt ) << ",";
+    os << proportion( losBetrCnt, sentCnt ) << ",";
+    os << proportion( losBijwCnt, sentCnt ) << ",";
   }
   os << density( clauseCnt, wordCnt ) << ",";
   os << clausesPerSentence << ",";
@@ -5555,7 +5551,7 @@ void sentStats::resolveAdverbials(xmlDoc *alpDoc) {
   // Check for adverbials consisting of a single node that has the 'GENERAL' type.
   for (auto& node : nodes) {
     string word = getAttribute(node, "word");
-    if (word != "") 
+    if (word != "")
     {
       word = TiCC::lowercase(word);
       if (checkAdverbType(word, CGN::BW) == Adverb::GENERAL)
@@ -5574,9 +5570,9 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
   // Bijwoordelijke bijzinnen
   list<xmlNode*> cpNodes = getNodesByRelCat(alpDoc, "mod", "cp");
   // Finiete complementszinnen
-  list<xmlNode*> complNodes = getNodesByRelCat(alpDoc, "!mod", "whsub");
-  complNodes.merge(getNodesByRelCat(alpDoc, "!mod", "whrel"));
-  complNodes.merge(getNodesByRelCat(alpDoc, "!mod", "cp"));
+  // Check whether the previous node is not the top node to prevent clashes with loose clauses below
+  string complPath = ".//node[@cat!='top']/node[@rel!='mod' and (@cat='whsub' or @cat='whrel' or @cat='cp')]";
+  list<xmlNode*> complNodes = TiCC::FindNodes(alpDoc, complPath);
   // Infinietcomplementen
   list<xmlNode*> tiNodes = getNodesByCat(alpDoc, "ti");
 
@@ -5594,9 +5590,7 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
     ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "rel")));
     ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "whrel")));
     ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "cp")));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "whsub")));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "whrel")));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "cp")));
+    ids.merge(getNodeIds(TiCC::FindNodes(node, complPath)));
   }
   set<string> mvFinEmbedIds(ids.begin(), ids.end());
   mvFinInbedCnt = mvFinEmbedIds.size();
@@ -5608,13 +5602,15 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
     ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "rel")));
     ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "whrel")));
     ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "cp")));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "whsub")));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "whrel")));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "!mod", "cp")));
+    ids.merge(getNodeIds(TiCC::FindNodes(node, complPath)));
     ids.merge(getNodeIds(getNodesByCat(node, "ti")));
   }
   set<string> mvInbedIds(ids.begin(), ids.end());
   mvInbedCnt = mvInbedIds.size();
+
+  // Count 'loose' (directly under top node) relative clauses
+  losBetrCnt = TiCC::FindNodes(alpDoc, "//node[@cat='top']/node[@cat='rel' or @cat='whrel']").size();
+  losBijwCnt = TiCC::FindNodes(alpDoc, "//node[@cat='top']/node[@cat='cp']").size();
 }
 
 //#define DEBUG_WOPR
@@ -5656,7 +5652,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 	return;
       }
       for ( size_t i=0; i < wv.size(); ++i ){
-	vector<MetricAnnotation*> mv = wv[i]->select<MetricAnnotation>();
+	vector<Metric*> mv = wv[i]->select<Metric>();
 	if ( mv.size() > 0 ){
 	  for ( size_t j=0; j < mv.size(); ++j ){
 	    if ( mv[j]->cls() == "lprob10" ){
@@ -5670,7 +5666,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 	throw logic_error( "The document returned by WOPR contains > 1 Sentence" );
 	return;
       }
-      vector<MetricAnnotation*> mv = sv[0]->select<MetricAnnotation>();
+      vector<Metric*> mv = sv[0]->select<Metric>();
       if ( mv.size() > 0 ){
 	for ( size_t j=0; j < mv.size(); ++j ){
 	  if ( mv[j]->cls() == "avg_prob10" ){
@@ -5851,9 +5847,6 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
       unique_words[ws->l_word] += 1;
       unique_lemmas[ws->lemma] += 1;
       aggregate( distances, ws->distances );
-      if ( ws->compPartCnt > 0 )
-	++compCnt;
-      compPartCnt += ws->compPartCnt;
       if ( ws->isContent ) {
         word_freq += ws->word_freq_log;
         lemma_freq += ws->lemma_freq_log;
@@ -6985,7 +6978,7 @@ void docStats::toCSV( const string& name,
     if ( out ){
       // 20141003: New features: paragraphs/sentences/words per document
       CSVheader( out, "Inputfile,Par_per_doc,Zin_per_doc,Word_per_doc" );
-      out << name << "," << sv.size() << "," << sentCnt << ",";
+      out << name << "," << sv.size() << ",";
       structStats::toCSV( out );
       cerr << "stored document statistics in " << fname << endl;
     }
@@ -7001,7 +6994,7 @@ void docStats::toCSV( const string& name,
 	if ( par == 0 )
     // 20141003: New features: sentences/words per paragraph
 	  sv[0]->CSVheader( out, "Inputfile,Segment,Zin_per_par,Wrd_per_par" );
-	out << name << "," << sv[par]->id << "," << sv[par]->sv.size() << ",";
+	out << name << "," << sv[par]->id << ",";
 	sv[par]->toCSV( out );
     }
       cerr << "stored paragraph statistics in " << fname << endl;
@@ -7017,7 +7010,7 @@ void docStats::toCSV( const string& name,
       for ( size_t par=0; par < sv.size(); ++par ){
 	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
 	  if ( par == 0 && sent == 0 )
-	    sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment" );
+	    sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment,Getokeniseerde_zin" );
 	  out << name << "," << sv[par]->sv[sent]->id << ",";
 	  sv[par]->sv[sent]->toCSV( out );
 	}
@@ -7258,9 +7251,6 @@ int main(int argc, char *argv[]) {
     if ( skip.find_first_of("aA") != string::npos ){
       settings.doAlpino = false;
       settings.doAlpinoServer = false;
-    }
-    if ( skip.find_first_of("dD") != string::npos ){
-      settings.doDecompound = false;
     }
     if ( skip.find_first_of("cC") != string::npos ){
       settings.doXfiles = false;
