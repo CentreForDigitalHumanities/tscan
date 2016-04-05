@@ -4030,6 +4030,7 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
      << "Betr_bijzin_los,Bijw_compl_bijzin_los,"
      << "Pv_hzin_per_zin,Pv_bijzin_per_zin,"
      << "Pv_ww1_per_zin,Pv_Alpino_per_zin,"
+     << "Nevens_dz_per_zin,"
      << "Pv_Frog_d,Pv_Frog_per_zin,";
   if ( isSentence() ){
     os << "D_level,";
@@ -4062,6 +4063,8 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   os << proportion( sentCnt, wordCnt )  << ",";
   os << proportion( clauseCnt, wordCnt )  << ",";
   os << proportion( wordCnt, npCnt ) << ",";
+
+  double bijzinCnt = betrCnt + bijwCnt + complCnt;
   if ( parseFailCnt > 0 ) {
     os << "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,";
   }
@@ -4069,10 +4072,10 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
     os << proportion( betrCnt, sentCnt ) << ",";
     os << proportion( bijwCnt, sentCnt ) << ",";
     os << proportion( complCnt, sentCnt ) << ",";
-    os << proportion( betrCnt + bijwCnt + complCnt, sentCnt ) << ",";
+    os << proportion( bijzinCnt, sentCnt ) << ",";
     os << proportion( mvFinInbedCnt, sentCnt ) << ",";
     os << proportion( infinComplCnt, sentCnt ) << ",";
-    os << proportion( betrCnt + bijwCnt + complCnt + infinComplCnt, sentCnt ) << ",";
+    os << proportion( bijzinCnt + infinComplCnt, sentCnt ) << ",";
     os << proportion( mvInbedCnt, sentCnt ) << ",";
     os << proportion( losBetrCnt, sentCnt ) << ",";
     os << proportion( losBijwCnt, sentCnt ) << ",";
@@ -4080,13 +4083,14 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 
   double totalSCnt = smainCnt + ssubCnt + sv1Cnt;
   if ( parseFailCnt > 0 ) {
-    os << "NA,NA,NA,NA,";
+    os << "NA,NA,NA,NA,NA,";
   }
   else {
     os << proportion( smainCnt, sentCnt ) << ",";
     os << proportion( ssubCnt, sentCnt ) << ",";
     os << proportion( sv1Cnt, sentCnt ) << ",";
     os << proportion( totalSCnt, sentCnt ) << ",";
+    os << proportion( totalSCnt - bijzinCnt - 1, sentCnt ) << ",";
   }
 
   os << density( clauseCnt, wordCnt ) << ",";
