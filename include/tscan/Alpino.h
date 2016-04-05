@@ -61,10 +61,10 @@ std::multimap<DD_type,int> getDependencyDist( const xmlNode *,
 bool isSmallCnj( const xmlNode *);
 
 std::list<xmlNode*> getAdverbialNodes( xmlDoc* );
-std::list<xmlNode*> getNodesByCat( xmlDoc*, const std::string& );
-std::list<xmlNode*> getNodesByRelCat( xmlDoc*, const std::string&, const std::string& );
-std::list<xmlNode*> getNodesByCat( xmlNode*, const std::string& );
-std::list<xmlNode*> getNodesByRelCat( xmlNode*, const std::string&, const std::string& );
+std::list<xmlNode*> getNodesByCat( xmlDoc*, const std::string&, const std::string& = "" );
+std::list<xmlNode*> getNodesByRelCat( xmlDoc*, const std::string&, const std::string&, const std::string& = "" );
+std::list<xmlNode*> getNodesByCat( xmlNode*, const std::string&, const std::string& = "" );
+std::list<xmlNode*> getNodesByRelCat( xmlNode*, const std::string&, const std::string&, const std::string& = "" );
 std::list<std::string> getNodeIds( std::list<xmlNode*> );
 
 #endif // ALPINO_H
