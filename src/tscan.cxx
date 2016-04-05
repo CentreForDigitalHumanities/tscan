@@ -5640,8 +5640,10 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
   mvInbedCnt = mvInbedIds.size();
 
   // Count 'loose' (directly under top node) relative clauses
-  losBetrCnt = TiCC::FindNodes(alpDoc, "//node[@cat='top']/node[@cat='rel' or @cat='whrel']").size();
-  losBijwCnt = TiCC::FindNodes(alpDoc, "//node[@cat='top']/node[@cat='cp']").size();
+  string losBetr = "//node[@cat='top']/node[@cat='rel' or @cat='whrel']" + hasFiniteVerb;
+  losBetrCnt = TiCC::FindNodes(alpDoc, losBetr).size();
+  string losBijw = "//node[@cat='top']/node[@cat='cp']" + hasFiniteVerb;
+  losBijwCnt = TiCC::FindNodes(alpDoc, losBijw).size();
 }
 
 // Finds nodes of finite verbs and reports counts
