@@ -2679,6 +2679,7 @@ struct structStats: public basicStats {
     odBvCnt(0), odNwCnt(0), odVrijCnt(0),
     infBvCnt(0), infNwCnt(0), infVrijCnt(0),
     smainCnt(0), ssubCnt(0), sv1Cnt(0),
+    smainCnjCnt(0), ssubCnjCnt(0), sv1CnjCnt(0),
     presentCnt(0), pastCnt(0), subjonctCnt(0),
     nameCnt(0),
     pron1Cnt(0), pron2Cnt(0), pron3Cnt(0),
@@ -2959,6 +2960,9 @@ struct structStats: public basicStats {
   int smainCnt;
   int ssubCnt;
   int sv1Cnt;
+  int smainCnjCnt;
+  int ssubCnjCnt;
+  int sv1CnjCnt;
   int presentCnt;
   int pastCnt;
   int subjonctCnt;
@@ -3373,6 +3377,9 @@ void structStats::merge( structStats *ss ){
   smainCnt += ss->smainCnt;
   ssubCnt += ss->ssubCnt;
   sv1Cnt += ss->sv1Cnt;
+  smainCnjCnt += ss->smainCnjCnt;
+  ssubCnjCnt += ss->ssubCnjCnt;
+  sv1CnjCnt += ss->sv1CnjCnt;
   presentCnt += ss->presentCnt;
   pastCnt += ss->pastCnt;
   subjonctCnt += ss->subjonctCnt;
@@ -3573,6 +3580,9 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "smain_count", toString(smainCnt) );
   addOneMetric( doc, el, "ssub_count", toString(ssubCnt) );
   addOneMetric( doc, el, "sv1_count", toString(sv1Cnt) );
+  addOneMetric( doc, el, "smain_cnj_count", toString(smainCnjCnt) );
+  addOneMetric( doc, el, "ssub_cnj_count", toString(ssubCnjCnt) );
+  addOneMetric( doc, el, "sv1_cnj_count", toString(sv1CnjCnt) );
   addOneMetric( doc, el, "present_verb_count", toString(presentCnt) );
   addOneMetric( doc, el, "past_verb_count", toString(pastCnt) );
   addOneMetric( doc, el, "subjonct_count", toString(subjonctCnt) );
@@ -4028,9 +4038,9 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
      << "Mv_fin_inbed_per_zin,Infin_compl_per_zin,"
      << "Bijzin_per_zin,Mv_inbed_per_zin,"
      << "Betr_bijzin_los,Bijw_compl_bijzin_los,"
-     << "Pv_hzin_per_zin,Pv_bijzin_per_zin,"
-     << "Pv_ww1_per_zin,Pv_Alpino_per_zin,"
-     << "Nevens_dz_per_zin,"
+     << "Pv_hzin_per_zin,Pv_bijzin_per_zin,Pv_ww1_per_zin,"
+     << "Hzin_conj,Bijzin_conj,Ww1_conj,"
+     << "Pv_Alpino_per_zin,"
      << "Pv_Frog_d,Pv_Frog_per_zin,";
   if ( isSentence() ){
     os << "D_level,";
@@ -4083,14 +4093,16 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 
   double totalSCnt = smainCnt + ssubCnt + sv1Cnt;
   if ( parseFailCnt > 0 ) {
-    os << "NA,NA,NA,NA,NA,";
+    os << "NA,NA,NA,NA,NA,NA,NA,";
   }
   else {
     os << proportion( smainCnt, sentCnt ) << ",";
     os << proportion( ssubCnt, sentCnt ) << ",";
     os << proportion( sv1Cnt, sentCnt ) << ",";
+    os << proportion( smainCnjCnt, sentCnt ) << ",";
+    os << proportion( ssubCnjCnt, sentCnt ) << ",";
+    os << proportion( sv1CnjCnt, sentCnt ) << ",";
     os << proportion( totalSCnt, sentCnt ) << ",";
-    os << proportion( totalSCnt - bijzinCnt - 1, sentCnt ) << ",";
   }
 
   os << density( clauseCnt, wordCnt ) << ",";
@@ -4819,6 +4831,7 @@ struct sentStats : public structStats {
   void resolveAdverbials( xmlDoc* );
   void resolveRelativeClauses( xmlDoc* );
   void resolveFiniteVerbs( xmlDoc* );
+  void resolveConjunctions( xmlDoc* );
 };
 
 //#define DEBUG_MTLD
@@ -5653,6 +5666,13 @@ void sentStats::resolveFiniteVerbs(xmlDoc *alpDoc) {
   sv1Cnt = getNodesByCat(alpDoc, "sv1").size();
 }
 
+// Finds nodes of coordinating conjunctions and reports counts
+void sentStats::resolveConjunctions(xmlDoc *alpDoc) {
+  smainCnjCnt = getNodesByRelCat(alpDoc, "cnj", "smain").size();
+  ssubCnjCnt = getNodesByRelCat(alpDoc, "cnj", "ssub").size();
+  sv1CnjCnt = getNodesByRelCat(alpDoc, "cnj", "sv1").size();
+}
+
 //#define DEBUG_WOPR
 void orderWopr( const string& txt, vector<double>& wordProbsV,
 		double& sentProb, double& entropy, double& perplexity ){
@@ -5797,6 +5817,7 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
     resolveAdverbials(alpDoc);
     resolveRelativeClauses(alpDoc);
     resolveFiniteVerbs(alpDoc);
+    resolveConjunctions(alpDoc);
 	}
 	else {
 	  parseFailCnt = 1; // failed
