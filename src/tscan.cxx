@@ -4064,7 +4064,7 @@ double correct_clause_count(int cnt, double clauseCnt, double clausesPerSentence
 }
 
 void structStats::sentDifficultiesToCSV( ostream& os ) const {
-  double clauseCnt = pastCnt + presentCnt;
+  double clauseCnt = smainCnt + ssubCnt + sv1Cnt;
   double clausesPerSentence = parseFailCnt > 0 ? NA : proportion( clauseCnt, sentCnt ).p;
   double wordsPerSentence = parseFailCnt > 0 ? NA : proportion( wordCnt, sentCnt ).p;
 
@@ -4091,7 +4091,6 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
     os << proportion( losBijwCnt, sentCnt ) << ",";
   }
 
-  double totalSCnt = smainCnt + ssubCnt + sv1Cnt;
   if ( parseFailCnt > 0 ) {
     os << "NA,NA,NA,NA,NA,NA,NA,";
   }
@@ -4102,11 +4101,12 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
     os << proportion( smainCnjCnt, sentCnt ) << ",";
     os << proportion( ssubCnjCnt, sentCnt ) << ",";
     os << proportion( sv1CnjCnt, sentCnt ) << ",";
-    os << proportion( totalSCnt, sentCnt ) << ",";
+    os << proportion( clauseCnt, sentCnt ) << ",";
   }
 
-  os << density( clauseCnt, wordCnt ) << ",";
-  os << clausesPerSentence << ",";
+  double frogClauseCnt = pastCnt + presentCnt;
+  os << density( frogClauseCnt, wordCnt ) << ",";
+  os << proportion( frogClauseCnt, sentCnt ) << ",";
 
   os << proportion( dLevel, sentCnt ) << ",";
   if ( !isSentence() ){
@@ -4161,7 +4161,7 @@ void structStats::infoHeader( ostream& os ) const {
 }
 
 void structStats::informationDensityToCSV( ostream& os ) const {
-  double clauseCnt = pastCnt + presentCnt;
+  double clauseCnt = smainCnt + ssubCnt + sv1Cnt;
   double clausesPerSentence = parseFailCnt > 0 ? NA : proportion( clauseCnt, sentCnt ).p;
   double wordsPerSentence = parseFailCnt > 0 ? NA : proportion( wordCnt, sentCnt ).p;
 
@@ -4233,7 +4233,7 @@ void structStats::coherenceHeader( ostream& os ) const {
 }
 
 void structStats::coherenceToCSV( ostream& os ) const {
-  double clauseCnt = pastCnt + presentCnt;
+  double clauseCnt = smainCnt + ssubCnt + sv1Cnt;
   double clausesPerSentence = parseFailCnt > 0 ? NA : proportion( clauseCnt, sentCnt ).p;
   double wordsPerSentence = parseFailCnt > 0 ? NA : proportion( wordCnt, sentCnt ).p;
 
@@ -4533,7 +4533,7 @@ void structStats::verbHeader( ostream& os ) const {
 }
 
 void structStats::verbToCSV( ostream& os ) const {
-  double clauseCnt = pastCnt + presentCnt;
+  double clauseCnt = smainCnt + ssubCnt + sv1Cnt;
 
   os << proportion( actionCnt, verbCnt ) << ",";
   os << density( actionCnt, wordCnt) << ",";
@@ -4580,7 +4580,7 @@ void structStats::imperativeHeader( ostream& os ) const {
 }
 
 void structStats::imperativeToCSV( ostream& os ) const {
-  double clauseCnt = pastCnt + presentCnt;
+  double clauseCnt = smainCnt + ssubCnt + sv1Cnt;
 
   os << proportion( impCnt, clauseCnt ) << ",";
   os << density( impCnt, wordCnt ) << ",";
