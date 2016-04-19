@@ -2679,6 +2679,7 @@ struct structStats: public basicStats {
     odBvCnt(0), odNwCnt(0), odVrijCnt(0),
     infBvCnt(0), infNwCnt(0), infVrijCnt(0),
     smainCnt(0), ssubCnt(0), sv1Cnt(0),
+    clauseCnt(0), correctedClauseCnt(0),
     smainCnjCnt(0), ssubCnjCnt(0), sv1CnjCnt(0),
     presentCnt(0), pastCnt(0), subjonctCnt(0),
     nameCnt(0),
@@ -2960,6 +2961,8 @@ struct structStats: public basicStats {
   int smainCnt;
   int ssubCnt;
   int sv1Cnt;
+  int clauseCnt;
+  int correctedClauseCnt;
   int smainCnjCnt;
   int ssubCnjCnt;
   int sv1CnjCnt;
@@ -3377,6 +3380,8 @@ void structStats::merge( structStats *ss ){
   smainCnt += ss->smainCnt;
   ssubCnt += ss->ssubCnt;
   sv1Cnt += ss->sv1Cnt;
+  clauseCnt += ss->clauseCnt;
+  correctedClauseCnt += ss->correctedClauseCnt;
   smainCnjCnt += ss->smainCnjCnt;
   ssubCnjCnt += ss->ssubCnjCnt;
   sv1CnjCnt += ss->sv1CnjCnt;
@@ -4058,20 +4063,11 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
      << "AL_gem,AL_max,";
 }
 
-// Corrects the clause counts when there are no verbs in the sentence.
-double correct_clause_count(int cnt, double clauseCnt, double clausesPerSentence, int wordCnt, double wordsPerSentence) {
-  return clausesPerSentence == 0 ? (density(cnt, wordCnt).d * wordsPerSentence) / 1000 : proportion(cnt, clauseCnt).p;
-}
-
 void structStats::sentDifficultiesToCSV( ostream& os ) const {
-  double clauseCnt = smainCnt + ssubCnt + sv1Cnt;
-  double clausesPerSentence = parseFailCnt > 0 ? NA : proportion( clauseCnt, sentCnt ).p;
-  double wordsPerSentence = parseFailCnt > 0 ? NA : proportion( wordCnt, sentCnt ).p;
-
-  os << wordsPerSentence << ",";
-  os << (clausesPerSentence == 0 ? wordsPerSentence : proportion( wordCnt, clauseCnt ).p) << ",";
+  os << (parseFailCnt > 0 ? NA : proportion( wordCnt, sentCnt ).p) << ",";
+  os << proportion( wordCnt, correctedClauseCnt ) << ",";
   os << proportion( sentCnt, wordCnt )  << ",";
-  os << proportion( clauseCnt, wordCnt )  << ",";
+  os << proportion( correctedClauseCnt, wordCnt )  << ",";
   os << proportion( wordCnt, npCnt ) << ",";
 
   double bijzinCnt = betrCnt + bijwCnt + complCnt;
@@ -4114,15 +4110,15 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   }
   os << density( nominalCnt, wordCnt ) << ",";
   os << density( passiveCnt, wordCnt ) << ",";
-  os << (clausesPerSentence == 0 ? 0 : proportion( passiveCnt, clauseCnt ).p) << ",";
+  os << proportion( passiveCnt, correctedClauseCnt ) << ",";
   os << density( propNegCnt, wordCnt ) << ",";
-  os << correct_clause_count( propNegCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( propNegCnt, correctedClauseCnt ) << ",";
   os << density( morphNegCnt, wordCnt ) << ",";
-  os << correct_clause_count( morphNegCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( morphNegCnt, correctedClauseCnt ) << ",";
   os << density( propNegCnt+morphNegCnt, wordCnt ) << ",";
-  os << correct_clause_count( propNegCnt+morphNegCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( propNegCnt+morphNegCnt, correctedClauseCnt ) << ",";
   os << density( multiNegCnt, wordCnt ) << ",";
-  os << correct_clause_count( multiNegCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( multiNegCnt, correctedClauseCnt ) << ",";
   os << MMtoString( distances, SUB_VERB ) << ",";
   os << MMtoString( distances, OBJ1_VERB ) << ",";
   os << MMtoString( distances, OBJ2_VERB ) << ",";
@@ -4161,20 +4157,16 @@ void structStats::infoHeader( ostream& os ) const {
 }
 
 void structStats::informationDensityToCSV( ostream& os ) const {
-  double clauseCnt = smainCnt + ssubCnt + sv1Cnt;
-  double clausesPerSentence = parseFailCnt > 0 ? NA : proportion( clauseCnt, sentCnt ).p;
-  double wordsPerSentence = parseFailCnt > 0 ? NA : proportion( wordCnt, sentCnt ).p;
-
   os << density( vcModCnt, wordCnt ) << ",";
-  os << correct_clause_count( vcModCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( vcModCnt, correctedClauseCnt ) << ",";
   os << density( vcModSingleCnt, wordCnt ) << ",";
-  os << correct_clause_count( vcModSingleCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( vcModSingleCnt, correctedClauseCnt ) << ",";
   os << density( npModCnt, wordCnt ) << ",";
-  os << correct_clause_count( npModCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( npModCnt, correctedClauseCnt ) << ",";
   os << density( adjNpModCnt, wordCnt ) << ",";
-  os << correct_clause_count( adjNpModCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( adjNpModCnt, correctedClauseCnt ) << ",";
   os << density( npModCnt-adjNpModCnt, wordCnt ) << ",";
-  os << correct_clause_count( npModCnt-adjNpModCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( npModCnt-adjNpModCnt, correctedClauseCnt ) << ",";
 
   os << proportion( unique_words.size(), wordCnt ) << ",";
   os << word_mtld << ",";
@@ -4185,10 +4177,10 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   os << proportion( unique_contents.size(), contentCnt ) << ",";
   os << content_mtld << ",";
   os << density( contentCnt, wordCnt ) << ",";
-  os << correct_clause_count( contentCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( contentCnt, correctedClauseCnt ) << ",";
   os << rarity( settings.rarityLevel ) << ",";
   os << density( pronRefCnt, wordCnt ) << ",";
-  os << correct_clause_count( pronRefCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( pronRefCnt, correctedClauseCnt ) << ",";
   if ( isSentence() ){
     if ( index == 0 ){
       os << "NA,NA,"
@@ -4201,21 +4193,21 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   }
   else {
     os << density( wordOverlapCnt, wordCnt ) << ",";
-    os << correct_clause_count( wordOverlapCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+    os << proportion( wordOverlapCnt, correctedClauseCnt ) << ",";
     os << density( lemmaOverlapCnt, wordCnt ) << ",";
-    os << correct_clause_count( lemmaOverlapCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+    os << proportion( lemmaOverlapCnt, correctedClauseCnt ) << ",";
   }
   if ( !isDocument() ){
     os << "NA,NA,NA,NA,";
   }
   else {
     os << density( word_overlapCnt(), wordCnt - settings.overlapSize ) << ",";
-    os << correct_clause_count( word_overlapCnt(), clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+    os << proportion( word_overlapCnt(), correctedClauseCnt ) << ",";
     os << density( lemma_overlapCnt(), wordCnt  - settings.overlapSize ) << ",";
-    os << correct_clause_count( lemma_overlapCnt(), clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+    os << proportion( lemma_overlapCnt(), correctedClauseCnt ) << ",";
   }
   os << proportion( indefNpCnt, npCnt ) << ",";
-  os << density( indefNpCnt, wordCnt ) << ",";
+  os << proportion( indefNpCnt, correctedClauseCnt ) << ",";
 }
 
 void structStats::coherenceHeader( ostream& os ) const {
@@ -4233,32 +4225,28 @@ void structStats::coherenceHeader( ostream& os ) const {
 }
 
 void structStats::coherenceToCSV( ostream& os ) const {
-  double clauseCnt = smainCnt + ssubCnt + sv1Cnt;
-  double clausesPerSentence = parseFailCnt > 0 ? NA : proportion( clauseCnt, sentCnt ).p;
-  double wordsPerSentence = parseFailCnt > 0 ? NA : proportion( wordCnt, sentCnt ).p;
-
   os << density( tempConnCnt, wordCnt ) << ",";
-  os << correct_clause_count( tempConnCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( tempConnCnt, correctedClauseCnt ) << ",";
   os << proportion( unique_temp_conn.size(), tempConnCnt ) << ",";
   os << temp_conn_mtld << ",";
   os << density( opsomWgConnCnt, wordCnt ) << ",";
-  os << correct_clause_count( opsomWgConnCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( opsomWgConnCnt, correctedClauseCnt ) << ",";
   os << proportion( unique_reeks_wg_conn.size(), opsomWgConnCnt ) << ",";
   os << reeks_zin_conn_mtld << ",";
   os << density( opsomZinConnCnt, wordCnt ) << ",";
-  os << correct_clause_count( opsomZinConnCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( opsomZinConnCnt, correctedClauseCnt ) << ",";
   os << proportion( unique_reeks_wg_conn.size(), opsomZinConnCnt ) << ",";
   os << reeks_zin_conn_mtld << ",";
   os << density( contrastConnCnt, wordCnt ) << ",";
-  os << correct_clause_count( contrastConnCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( contrastConnCnt, correctedClauseCnt ) << ",";
   os << proportion( unique_contr_conn.size(), contrastConnCnt ) << ",";
   os << contr_conn_mtld << ",";
   os << density( compConnCnt, wordCnt ) << ",";
-  os << correct_clause_count( compConnCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( compConnCnt, correctedClauseCnt ) << ",";
   os << proportion( unique_comp_conn.size(), compConnCnt ) << ",";
   os << comp_conn_mtld << ",";
   os << density( causeConnCnt, wordCnt ) << ",";
-  os << correct_clause_count( causeConnCnt, clauseCnt, clausesPerSentence, wordCnt, wordsPerSentence ) << ",";
+  os << proportion( causeConnCnt, correctedClauseCnt ) << ",";
   os << proportion( unique_cause_conn.size(), causeConnCnt ) << ",";
   os << cause_conn_mtld << ",";
   os << density( causeSitCnt, wordCnt ) << ",";
@@ -4533,8 +4521,6 @@ void structStats::verbHeader( ostream& os ) const {
 }
 
 void structStats::verbToCSV( ostream& os ) const {
-  double clauseCnt = smainCnt + ssubCnt + sv1Cnt;
-
   os << proportion( actionCnt, verbCnt ) << ",";
   os << density( actionCnt, wordCnt) << ",";
   os << proportion( stateCnt, verbCnt ) << ",";
@@ -4543,35 +4529,35 @@ void structStats::verbToCSV( ostream& os ) const {
   os << density( processCnt, wordCnt ) << ",";
   os << proportion( undefinedATPCnt, verbCnt - uncoveredVerbCnt ) << ",";
 
-  os << proportion( presentCnt, clauseCnt ) << ",";
   os << density( presentCnt, wordCnt ) << ",";
+  os << proportion( presentCnt, correctedClauseCnt ) << ",";
   os << density( modalCnt, wordCnt ) << ",";
-  os << proportion( modalCnt, clauseCnt ) << ",";
+  os << proportion( modalCnt, correctedClauseCnt ) << ",";
   os << density( timeVCnt, wordCnt ) << ",";
-  os << proportion( timeVCnt, clauseCnt ) << ",";
+  os << proportion( timeVCnt, correctedClauseCnt ) << ",";
   os << density( koppelCnt, wordCnt ) << ",";
-  os << proportion( koppelCnt, clauseCnt ) << ",";
+  os << proportion( koppelCnt, correctedClauseCnt ) << ",";
 
   os << density( infBvCnt, wordCnt ) << ",";
-  os << proportion( infBvCnt, clauseCnt ) << ",";
+  os << proportion( infBvCnt, correctedClauseCnt ) << ",";
   os << density( infNwCnt, wordCnt ) << ",";
-  os << proportion( infNwCnt, clauseCnt ) << ",";
+  os << proportion( infNwCnt, correctedClauseCnt ) << ",";
   os << density( infVrijCnt, wordCnt ) << ",";
-  os << proportion( infVrijCnt, clauseCnt ) << ",";
+  os << proportion( infVrijCnt, correctedClauseCnt ) << ",";
 
   os << density( vdBvCnt, wordCnt ) << ",";
-  os << proportion( vdBvCnt, clauseCnt ) << ",";
+  os << proportion( vdBvCnt, correctedClauseCnt ) << ",";
   os << density( vdNwCnt, wordCnt ) << ",";
-  os << proportion( vdNwCnt, clauseCnt ) << ",";
+  os << proportion( vdNwCnt, correctedClauseCnt ) << ",";
   os << density( vdVrijCnt, wordCnt ) << ",";
-  os << proportion( vdVrijCnt, clauseCnt ) << ",";
+  os << proportion( vdVrijCnt, correctedClauseCnt ) << ",";
 
   os << density( odBvCnt, wordCnt ) << ",";
-  os << proportion( odBvCnt, clauseCnt ) << ",";
+  os << proportion( odBvCnt, correctedClauseCnt ) << ",";
   os << density( odNwCnt, wordCnt ) << ",";
-  os << proportion( odNwCnt, clauseCnt ) << ",";
+  os << proportion( odNwCnt, correctedClauseCnt ) << ",";
   os << density( odVrijCnt, wordCnt ) << ",";
-  os << proportion( odVrijCnt, clauseCnt ) << ",";
+  os << proportion( odVrijCnt, correctedClauseCnt ) << ",";
 }
 
 void structStats::imperativeHeader( ostream& os ) const {
@@ -4580,9 +4566,7 @@ void structStats::imperativeHeader( ostream& os ) const {
 }
 
 void structStats::imperativeToCSV( ostream& os ) const {
-  double clauseCnt = smainCnt + ssubCnt + sv1Cnt;
-
-  os << proportion( impCnt, clauseCnt ) << ",";
+  os << proportion( impCnt, sentCnt ) << ",";
   os << density( impCnt, wordCnt ) << ",";
   os << proportion( questCnt, sentCnt ) << ",";
   os << density( questCnt, wordCnt ) << ",";
@@ -4633,7 +4617,7 @@ void structStats::prepPhraseHeader( ostream& os ) const {
 
 void structStats::prepPhraseToCSV( ostream& os ) const {
   os << density( prepExprCnt, wordCnt ) << ",";
-  os << proportion( prepExprCnt, sentCnt ) << ",";
+  os << proportion( prepExprCnt, correctedClauseCnt ) << ",";
   os << density( archaicsCnt, wordCnt ) << ",";
 }
 
@@ -5664,6 +5648,9 @@ void sentStats::resolveFiniteVerbs(xmlDoc *alpDoc) {
   smainCnt = getNodesByCat(alpDoc, "smain").size();
   ssubCnt = getNodesByCat(alpDoc, "ssub").size();
   sv1Cnt = getNodesByCat(alpDoc, "sv1").size();
+
+  clauseCnt = smainCnt + ssubCnt + sv1Cnt;
+  correctedClauseCnt = clauseCnt > 0 ? clauseCnt : 1; // Correct clause count to 1 if there are no verbs in the sentence
 }
 
 // Finds nodes of coordinating conjunctions and reports counts
