@@ -5591,7 +5591,7 @@ void sentStats::resolveAdverbials(xmlDoc *alpDoc) {
 
 // Finds nodes of relative clauses and reports counts
 void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
-  string hasFiniteVerb = "[./node[@cat='ssub']]";
+  string hasFiniteVerb = "[.//node[@cat='ssub']]";
   // Betrekkelijke/bijvoeglijke bijzinnen
   list<xmlNode*> relNodes = getNodesByRelCat(alpDoc, "mod", "rel", hasFiniteVerb);
   relNodes.merge(getNodesByRelCat(alpDoc, "mod", "whrel", hasFiniteVerb));
