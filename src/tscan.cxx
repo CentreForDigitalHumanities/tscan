@@ -5656,7 +5656,8 @@ void sentStats::resolveFiniteVerbs(xmlDoc *alpDoc) {
 // Finds nodes of coordinating conjunctions and reports counts
 void sentStats::resolveConjunctions(xmlDoc *alpDoc) {
   smainCnjCnt = getNodesByRelCat(alpDoc, "cnj", "smain").size();
-  ssubCnjCnt = getNodesByRelCat(alpDoc, "cnj", "ssub").size();
+  // For cnj-ssub, also allow that the cnj node dominates the ssub node
+  ssubCnjCnt = TiCC::FindNodes(alpDoc, ".//node[@rel='cnj'][descendant-or-self::node[@cat='ssub']]").size();
   sv1CnjCnt = getNodesByRelCat(alpDoc, "cnj", "sv1").size();
 }
 
