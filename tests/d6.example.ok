@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="tscanview.xsl"?>
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.1" version="1.0.0">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.2" version="1.2.0">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2016-04-12T17:00:42" set="tscan-tokconfig-nl"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2016-04-12T17:00:42" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
-      <pos-annotation annotator="tscan" set="tscan-set"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2016-04-12T17:00:42" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2016-04-12T17:00:42" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2016-04-12T17:00:42" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-04-12T17:00:42" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2016-06-09T15:55:35" set="tscan-tokconfig-nl"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2016-06-09T15:55:35" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2016-06-09T15:55:35" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-06-09T15:55:35" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2016-06-09T15:55:35" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2016-06-09T15:55:35" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
+      <pos-annotation annotator="tscan" set="tscan-set"/>
     </annotations>
   </metadata>
   <text xml:id="tscan.text">
@@ -295,12 +295,12 @@
           <pos class="VZ(init)" confidence="0.99935" head="VZ" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="init" subset="vztype"/>
           </pos>
+          <lemma class="in"/>
           <morphology>
             <morpheme>
               <t>in</t>
             </morpheme>
           </morphology>
-          <lemma class="in"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -424,6 +424,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="1"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="2"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -1264,12 +1267,12 @@
             <feat class="stan" subset="naamval"/>
             <feat class="rest" subset="npagr"/>
           </pos>
+          <lemma class="de"/>
           <morphology>
             <morpheme>
               <t>de</t>
             </morpheme>
           </morphology>
-          <lemma class="de"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -1570,6 +1573,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="1"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="2"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -1789,12 +1795,12 @@
             <feat class="zonder" subset="buiging"/>
             <feat class="rest" subset="npagr"/>
           </pos>
-          <lemma class="die"/>
           <morphology>
             <morpheme>
               <t>die</t>
             </morpheme>
           </morphology>
+          <lemma class="die"/>
           <metric class="pron_ref" value="true"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
@@ -1969,12 +1975,12 @@
             <feat class="persoon" subset="persoon"/>
             <feat class="getal" subset="getal"/>
           </pos>
-          <lemma class="die"/>
           <morphology>
             <morpheme>
               <t>die</t>
             </morpheme>
           </morphology>
+          <lemma class="die"/>
           <metric class="betrekkelijk" value="true"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
@@ -2019,12 +2025,12 @@
             <feat class="zonder" subset="buiging"/>
             <feat class="agr" subset="npagr"/>
           </pos>
+          <lemma class="hun"/>
           <morphology>
             <morpheme>
               <t>hun</t>
             </morpheme>
           </morphology>
-          <lemma class="hun"/>
           <metric class="pers_ref" value="true"/>
           <metric class="pron_ref" value="true"/>
           <metric class="f50" value="true"/>
@@ -2249,6 +2255,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="1"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="1"/>
         <metric class="subjonct_count" value="0"/>
@@ -2964,12 +2973,12 @@
             <feat class="tgw" subset="pvtijd"/>
             <feat class="ev" subset="pvagr"/>
           </pos>
-          <lemma class="zijn"/>
           <morphology>
             <morpheme>
               <t>zijn</t>
             </morpheme>
           </morphology>
+          <lemma class="zijn"/>
           <pos class="wwform(koppelww)" set="tscan-set"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
@@ -3218,6 +3227,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="2"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="2"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -3417,6 +3429,9 @@
       <metric class="smain_count" value="4"/>
       <metric class="ssub_count" value="5"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="7"/>
       <metric class="past_verb_count" value="1"/>
       <metric class="subjonct_count" value="0"/>
@@ -3617,6 +3632,9 @@
     <metric class="smain_count" value="4"/>
     <metric class="ssub_count" value="5"/>
     <metric class="sv1_count" value="0"/>
+    <metric class="smain_cnj_count" value="0"/>
+    <metric class="ssub_cnj_count" value="0"/>
+    <metric class="sv1_cnj_count" value="0"/>
     <metric class="present_verb_count" value="7"/>
     <metric class="past_verb_count" value="1"/>
     <metric class="subjonct_count" value="0"/>

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="tscanview.xsl"?>
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.1" version="1.0.0">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.2" version="1.2.0">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2016-04-12T17:02:59" set="tscan-tokconfig-nl"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2016-04-12T17:02:59" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
-      <pos-annotation annotator="tscan" set="tscan-set"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2016-04-12T17:02:59" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2016-04-12T17:02:59" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2016-04-12T17:02:59" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-04-12T17:02:59" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2016-06-09T15:58:00" set="tscan-tokconfig-nl"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2016-06-09T15:58:00" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2016-06-09T15:58:00" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-06-09T15:58:00" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2016-06-09T15:58:00" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2016-06-09T15:58:00" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
+      <pos-annotation annotator="tscan" set="tscan-set"/>
     </annotations>
   </metadata>
   <text xml:id="tscan.text">
@@ -149,12 +149,12 @@
             <feat class="stan" subset="naamval"/>
             <feat class="rest" subset="npagr"/>
           </pos>
-          <lemma class="de"/>
           <morphology>
             <morpheme>
               <t>de</t>
             </morpheme>
           </morphology>
+          <lemma class="de"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -289,6 +289,11 @@
           <metric class="lprob10" value="-0.625487"/>
           <metric class="property" value="punctuatie"/>
         </w>
+        <entities xml:id="tscan.p.1.s.1.entities.1">
+          <entity xml:id="tscan.p.1.s.1.entities.1.entity.1" class="per" confidence="0">
+            <wref id="tscan.p.1.s.1.w.1" t="Jan"/>
+          </entity>
+        </entities>
         <chunking xml:id="tscan.p.1.s.1.chunking.1">
           <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.1" class="NP" confidence="0.909091">
             <wref id="tscan.p.1.s.1.w.1" t="Jan"/>
@@ -317,11 +322,6 @@
             <wref id="tscan.p.1.s.1.w.10" t="huis"/>
           </chunk>
         </chunking>
-        <entities xml:id="tscan.p.1.s.1.entities.1">
-          <entity xml:id="tscan.p.1.s.1.entities.1.entity.1" class="per" confidence="0">
-            <wref id="tscan.p.1.s.1.w.1" t="Jan"/>
-          </entity>
-        </entities>
         <metric class="word_count" value="10"/>
         <metric class="bv_vd_count" value="0"/>
         <metric class="nw_vd_count" value="0"/>
@@ -335,6 +335,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="0"/>
         <metric class="past_verb_count" value="1"/>
         <metric class="subjonct_count" value="0"/>
@@ -533,6 +536,9 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="0"/>
       <metric class="past_verb_count" value="1"/>
       <metric class="subjonct_count" value="0"/>
@@ -732,6 +738,9 @@
     <metric class="smain_count" value="1"/>
     <metric class="ssub_count" value="0"/>
     <metric class="sv1_count" value="0"/>
+    <metric class="smain_cnj_count" value="0"/>
+    <metric class="ssub_cnj_count" value="0"/>
+    <metric class="sv1_cnj_count" value="0"/>
     <metric class="present_verb_count" value="0"/>
     <metric class="past_verb_count" value="1"/>
     <metric class="subjonct_count" value="0"/>

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="tscanview.xsl"?>
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.1" version="1.0.0">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.2" version="1.2.0">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2016-04-12T16:54:25" set="tscan-tokconfig-nl"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2016-04-12T16:54:25" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
-      <pos-annotation annotator="tscan" set="tscan-set"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2016-04-12T16:54:25" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2016-04-12T16:54:25" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2016-04-12T16:54:25" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-04-12T16:54:25" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2016-06-09T16:11:07" set="tscan-tokconfig-nl"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2016-06-09T16:11:07" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2016-06-09T16:11:07" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-06-09T16:11:07" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2016-06-09T16:11:07" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2016-06-09T16:11:07" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
+      <pos-annotation annotator="tscan" set="tscan-set"/>
     </annotations>
   </metadata>
   <text xml:id="tscan.text">
@@ -75,6 +75,9 @@
         <metric class="smain_count" value="0"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="0"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -271,6 +274,9 @@
       <metric class="smain_count" value="0"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="0"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -729,6 +735,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="1"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="2"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -928,6 +937,9 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="1"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="2"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -1211,12 +1223,12 @@
             <feat class="stan" subset="naamval"/>
             <feat class="rest" subset="npagr"/>
           </pos>
+          <lemma class="de"/>
           <morphology>
             <morpheme>
               <t>de</t>
             </morpheme>
           </morphology>
-          <lemma class="de"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -1519,12 +1531,12 @@
             <feat class="ev" subset="getal"/>
             <feat class="fem" subset="genus"/>
           </pos>
-          <lemma class="ze"/>
           <morphology>
             <morpheme>
               <t>ze</t>
             </morpheme>
           </morphology>
+          <lemma class="ze"/>
           <metric class="pers_ref" value="true"/>
           <metric class="pron_ref" value="true"/>
           <metric class="f50" value="true"/>
@@ -1701,6 +1713,9 @@
         <metric class="smain_count" value="2"/>
         <metric class="ssub_count" value="1"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="2"/>
+        <metric class="ssub_cnj_count" value="1"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="3"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -1900,6 +1915,9 @@
       <metric class="smain_count" value="2"/>
       <metric class="ssub_count" value="1"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="2"/>
+      <metric class="ssub_cnj_count" value="1"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="3"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -2242,6 +2260,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -2440,6 +2461,9 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="1"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -2920,6 +2944,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -3118,6 +3145,9 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="1"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -3490,12 +3520,12 @@
             <feat class="3" subset="persoon"/>
             <feat class="mv" subset="getal"/>
           </pos>
-          <lemma class="ze"/>
           <morphology>
             <morpheme>
               <t>ze</t>
             </morpheme>
           </morphology>
+          <lemma class="ze"/>
           <metric class="pers_ref" value="true"/>
           <metric class="pron_ref" value="true"/>
           <metric class="f50" value="true"/>
@@ -3676,6 +3706,9 @@
         <metric class="smain_count" value="2"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="2"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="2"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -3874,6 +3907,9 @@
       <metric class="smain_count" value="2"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="2"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="2"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -4941,6 +4977,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="4"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="5"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -4974,7 +5013,7 @@
         <metric class="tsw_count" value="0"/>
         <metric class="spec_count" value="0"/>
         <metric class="let_count" value="2"/>
-        <metric class="rel_count" value="1"/>
+        <metric class="rel_count" value="2"/>
         <metric class="temporal_connector_count" value="0"/>
         <metric class="reeks_wg_connector_count" value="0"/>
         <metric class="reeks_zin_connector_count" value="0"/>
@@ -5140,6 +5179,9 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="4"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="5"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -5173,7 +5215,7 @@
       <metric class="tsw_count" value="0"/>
       <metric class="spec_count" value="0"/>
       <metric class="let_count" value="2"/>
-      <metric class="rel_count" value="1"/>
+      <metric class="rel_count" value="2"/>
       <metric class="temporal_connector_count" value="0"/>
       <metric class="reeks_wg_connector_count" value="0"/>
       <metric class="reeks_zin_connector_count" value="0"/>
@@ -5739,6 +5781,9 @@
         <metric class="smain_count" value="2"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="2"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="3"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -5937,6 +5982,9 @@
       <metric class="smain_count" value="2"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="2"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="3"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -6177,12 +6225,12 @@
             <feat class="tgw" subset="pvtijd"/>
             <feat class="ev" subset="pvagr"/>
           </pos>
-          <lemma class="zijn"/>
           <morphology>
             <morpheme>
               <t>zijn</t>
             </morpheme>
           </morphology>
+          <lemma class="zijn"/>
           <pos class="wwform(koppelww)" set="tscan-set"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
@@ -6207,12 +6255,12 @@
             <feat class="3" subset="persoon"/>
             <feat class="getal" subset="getal"/>
           </pos>
-          <lemma class="er"/>
           <morphology>
             <morpheme>
               <t>er</t>
             </morpheme>
           </morphology>
+          <lemma class="er"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -6312,6 +6360,9 @@
         <metric class="smain_count" value="0"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="1"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -6510,6 +6561,9 @@
       <metric class="smain_count" value="0"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="1"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="1"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -6966,6 +7020,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="1"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="2"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -7164,6 +7221,9 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="1"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="2"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -7841,6 +7901,9 @@
         <metric class="smain_count" value="2"/>
         <metric class="ssub_count" value="1"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="3"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -8042,6 +8105,9 @@
       <metric class="smain_count" value="2"/>
       <metric class="ssub_count" value="1"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="3"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -8465,6 +8531,9 @@
         <metric class="smain_count" value="0"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="0"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -8663,6 +8732,9 @@
       <metric class="smain_count" value="0"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="0"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -9302,6 +9374,9 @@
         <metric class="smain_count" value="0"/>
         <metric class="ssub_count" value="1"/>
         <metric class="sv1_count" value="1"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="2"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -9501,6 +9576,9 @@
       <metric class="smain_count" value="0"/>
       <metric class="ssub_count" value="1"/>
       <metric class="sv1_count" value="1"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="2"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -9719,12 +9797,12 @@
             <feat class="ev" subset="getal"/>
             <feat class="fem" subset="genus"/>
           </pos>
-          <lemma class="ze"/>
           <morphology>
             <morpheme>
               <t>ze</t>
             </morpheme>
           </morphology>
+          <lemma class="ze"/>
           <metric class="pers_ref" value="true"/>
           <metric class="pron_ref" value="true"/>
           <metric class="f50" value="true"/>
@@ -9866,6 +9944,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -10064,6 +10145,9 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="1"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -10327,12 +10411,12 @@
             <feat class="ev" subset="getal"/>
             <feat class="fem" subset="genus"/>
           </pos>
-          <lemma class="ze"/>
           <morphology>
             <morpheme>
               <t>ze</t>
             </morpheme>
           </morphology>
+          <lemma class="ze"/>
           <metric class="pers_ref" value="true"/>
           <metric class="pron_ref" value="true"/>
           <metric class="f50" value="true"/>
@@ -10569,6 +10653,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="1"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -10768,6 +10855,9 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="1"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="1"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -11177,6 +11267,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -11375,6 +11468,9 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="1"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -11651,12 +11747,12 @@
             <feat class="ev" subset="getal"/>
             <feat class="fem" subset="genus"/>
           </pos>
-          <lemma class="ze"/>
           <morphology>
             <morpheme>
               <t>ze</t>
             </morpheme>
           </morphology>
+          <lemma class="ze"/>
           <metric class="pers_ref" value="true"/>
           <metric class="pron_ref" value="true"/>
           <metric class="f50" value="true"/>
@@ -11799,6 +11895,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -11997,6 +12096,9 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="1"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -12580,6 +12682,9 @@
         <metric class="smain_count" value="2"/>
         <metric class="ssub_count" value="1"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="2"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -12779,6 +12884,9 @@
       <metric class="smain_count" value="2"/>
       <metric class="ssub_count" value="1"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="2"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -13177,12 +13285,12 @@
           <pos class="VG(neven)" confidence="0.999456" head="VG" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="neven" subset="conjtype"/>
           </pos>
+          <lemma class="en"/>
           <morphology>
             <morpheme>
               <t>en</t>
             </morpheme>
           </morphology>
-          <lemma class="en"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -13533,6 +13641,9 @@
         <metric class="smain_count" value="2"/>
         <metric class="ssub_count" value="1"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="2"/>
+        <metric class="ssub_cnj_count" value="1"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="3"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -13731,6 +13842,9 @@
       <metric class="smain_count" value="2"/>
       <metric class="ssub_count" value="1"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="2"/>
+      <metric class="ssub_cnj_count" value="1"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="3"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -13972,12 +14086,12 @@
             <feat class="tgw" subset="pvtijd"/>
             <feat class="ev" subset="pvagr"/>
           </pos>
-          <lemma class="zijn"/>
           <morphology>
             <morpheme>
               <t>zijn</t>
             </morpheme>
           </morphology>
+          <lemma class="zijn"/>
           <pos class="wwform(koppelww)" set="tscan-set"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
@@ -14045,12 +14159,12 @@
             <feat class="stan" subset="naamval"/>
             <feat class="evon" subset="npagr"/>
           </pos>
+          <lemma class="het"/>
           <morphology>
             <morpheme>
               <t>het</t>
             </morpheme>
           </morphology>
-          <lemma class="het"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -14240,12 +14354,12 @@
             <feat class="stan" subset="naamval"/>
             <feat class="evon" subset="npagr"/>
           </pos>
-          <lemma class="het"/>
           <morphology>
             <morpheme>
               <t>het</t>
             </morpheme>
           </morphology>
+          <lemma class="het"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -14460,6 +14574,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="1"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="2"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -14658,6 +14775,9 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="1"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="2"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -15171,6 +15291,9 @@
         <metric class="smain_count" value="0"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="1"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -15369,6 +15492,9 @@
       <metric class="smain_count" value="0"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="1"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="1"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -15647,12 +15773,12 @@
             <feat class="2v" subset="persoon"/>
             <feat class="ev" subset="getal"/>
           </pos>
-          <lemma class="je"/>
           <morphology>
             <morpheme>
               <t>je</t>
             </morpheme>
           </morphology>
+          <lemma class="je"/>
           <metric class="pers_ref" value="true"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
@@ -15803,6 +15929,9 @@
         <metric class="smain_count" value="0"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="1"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -16001,6 +16130,9 @@
       <metric class="smain_count" value="0"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="1"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="1"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -16302,12 +16434,12 @@
             <feat class="stan" subset="naamval"/>
             <feat class="evon" subset="npagr"/>
           </pos>
-          <lemma class="het"/>
           <morphology>
             <morpheme>
               <t>het</t>
             </morpheme>
           </morphology>
+          <lemma class="het"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -16645,12 +16777,12 @@
           <pos class="VG(neven)" confidence="0.911504" head="VG" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="neven" subset="conjtype"/>
           </pos>
+          <lemma class="en"/>
           <morphology>
             <morpheme>
               <t>en</t>
             </morpheme>
           </morphology>
-          <lemma class="en"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -16758,6 +16890,9 @@
         <metric class="smain_count" value="0"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="0"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -16956,6 +17091,9 @@
       <metric class="smain_count" value="0"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="0"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -17175,12 +17313,12 @@
             <feat class="tgw" subset="pvtijd"/>
             <feat class="ev" subset="pvagr"/>
           </pos>
-          <lemma class="zijn"/>
           <morphology>
             <morpheme>
               <t>zijn</t>
             </morpheme>
           </morphology>
+          <lemma class="zijn"/>
           <pos class="wwform(koppelww)" set="tscan-set"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
@@ -17206,12 +17344,12 @@
             <feat class="ev" subset="getal"/>
             <feat class="fem" subset="genus"/>
           </pos>
+          <lemma class="ze"/>
           <morphology>
             <morpheme>
               <t>ze</t>
             </morpheme>
           </morphology>
-          <lemma class="ze"/>
           <metric class="pers_ref" value="true"/>
           <metric class="pron_ref" value="true"/>
           <metric class="f50" value="true"/>
@@ -17526,6 +17664,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="1"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="2"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -17725,6 +17866,9 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="1"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="2"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -18530,6 +18674,9 @@
         <metric class="smain_count" value="2"/>
         <metric class="ssub_count" value="1"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="2"/>
+        <metric class="ssub_cnj_count" value="1"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="3"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -18728,6 +18875,9 @@
       <metric class="smain_count" value="2"/>
       <metric class="ssub_count" value="1"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="2"/>
+      <metric class="ssub_cnj_count" value="1"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="3"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -19188,6 +19338,9 @@
         <metric class="smain_count" value="0"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="1"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -19388,6 +19541,9 @@
       <metric class="smain_count" value="0"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="1"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="1"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -19755,6 +19911,9 @@
         <metric class="smain_count" value="0"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="1"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -19955,6 +20114,9 @@
       <metric class="smain_count" value="0"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="1"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="1"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -20276,12 +20438,12 @@
           <pos class="VG(neven)" confidence="0.999194" head="VG" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="neven" subset="conjtype"/>
           </pos>
-          <lemma class="en"/>
           <morphology>
             <morpheme>
               <t>en</t>
             </morpheme>
           </morphology>
+          <lemma class="en"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -20507,6 +20669,14 @@
           <metric class="lprob10" value="-1.78169"/>
           <metric class="property" value="punctuatie"/>
         </w>
+        <entities xml:id="tscan.p.28.s.1.entities.1">
+          <entity xml:id="tscan.p.28.s.1.entities.1.entity.1" class="per" confidence="0">
+            <wref id="tscan.p.28.s.1.w.3" t="Agnes"/>
+          </entity>
+          <entity xml:id="tscan.p.28.s.1.entities.1.entity.2" class="per" confidence="1">
+            <wref id="tscan.p.28.s.1.w.5" t="Leen"/>
+          </entity>
+        </entities>
         <chunking xml:id="tscan.p.28.s.1.chunking.1">
           <chunk xml:id="tscan.p.28.s.1.chunking.1.chunk.1" class="NP" confidence="0.999113">
             <wref id="tscan.p.28.s.1.w.1" t="Het"/>
@@ -20544,14 +20714,6 @@
             <wref id="tscan.p.28.s.1.w.13" t="handje"/>
           </chunk>
         </chunking>
-        <entities xml:id="tscan.p.28.s.1.entities.1">
-          <entity xml:id="tscan.p.28.s.1.entities.1.entity.1" class="per" confidence="0">
-            <wref id="tscan.p.28.s.1.w.3" t="Agnes"/>
-          </entity>
-          <entity xml:id="tscan.p.28.s.1.entities.1.entity.2" class="per" confidence="1">
-            <wref id="tscan.p.28.s.1.w.5" t="Leen"/>
-          </entity>
-        </entities>
         <metric class="word_count" value="13"/>
         <metric class="bv_vd_count" value="0"/>
         <metric class="nw_vd_count" value="0"/>
@@ -20565,6 +20727,9 @@
         <metric class="smain_count" value="2"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="2"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="2"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -20763,6 +20928,9 @@
       <metric class="smain_count" value="2"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="2"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="2"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -21188,6 +21356,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -21388,6 +21559,9 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="1"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
@@ -21588,6 +21762,9 @@
     <metric class="smain_count" value="28"/>
     <metric class="ssub_count" value="13"/>
     <metric class="sv1_count" value="8"/>
+    <metric class="smain_cnj_count" value="12"/>
+    <metric class="ssub_cnj_count" value="3"/>
+    <metric class="sv1_cnj_count" value="0"/>
     <metric class="present_verb_count" value="48"/>
     <metric class="past_verb_count" value="0"/>
     <metric class="subjonct_count" value="0"/>
@@ -21621,7 +21798,7 @@
     <metric class="tsw_count" value="0"/>
     <metric class="spec_count" value="15"/>
     <metric class="let_count" value="60"/>
-    <metric class="rel_count" value="1"/>
+    <metric class="rel_count" value="2"/>
     <metric class="temporal_connector_count" value="2"/>
     <metric class="reeks_wg_connector_count" value="0"/>
     <metric class="reeks_zin_connector_count" value="0"/>

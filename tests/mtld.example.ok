@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="tscanview.xsl"?>
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.1" version="1.0.0">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.2" version="1.2.0">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2016-04-12T17:12:22" set="tscan-tokconfig-nl"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2016-04-12T17:12:22" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
-      <pos-annotation annotator="tscan" set="tscan-set"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2016-04-12T17:12:22" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2016-04-12T17:12:22" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2016-04-12T17:12:22" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-04-12T17:12:22" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2016-06-09T16:28:25" set="tscan-tokconfig-nl"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2016-06-09T16:28:25" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2016-06-09T16:28:25" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-06-09T16:28:25" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2016-06-09T16:28:25" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2016-06-09T16:28:25" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
+      <pos-annotation annotator="tscan" set="tscan-set"/>
     </annotations>
   </metadata>
   <text xml:id="tscan.text">
@@ -379,6 +379,9 @@
         <metric class="smain_count" value="0"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="0"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -808,12 +811,12 @@
           <pos class="SPEC(vreemd)" confidence="1" head="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="vreemd" subset="spectype"/>
           </pos>
-          <lemma class="i"/>
           <morphology>
             <morpheme>
               <t>I</t>
             </morpheme>
           </morphology>
+          <lemma class="i"/>
           <metric class="top2000" value="true"/>
           <metric class="word_freq" value="0"/>
           <metric class="lemma_freq" value="0"/>
@@ -962,6 +965,9 @@
         <metric class="smain_count" value="1"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="0"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -1344,7 +1350,7 @@
           </chunk>
         </chunking>
         <entities xml:id="tscan.p.1.s.3.entities.1">
-          <entity xml:id="tscan.p.1.s.3.entities.1.entity.1" class="loc" confidence="0.399656">
+          <entity xml:id="tscan.p.1.s.3.entities.1.entity.1" class="misc" confidence="0.632152">
             <wref id="tscan.p.1.s.3.w.8" t="Taro’s"/>
           </entity>
         </entities>
@@ -1361,12 +1367,15 @@
         <metric class="smain_count" value="0"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="0"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
         <metric class="name_count" value="0"/>
         <metric class="personal_name_count" value="0"/>
-        <metric class="location_name_count" value="1"/>
+        <metric class="location_name_count" value="0"/>
         <metric class="organization_name_count" value="0"/>
         <metric class="product_name_count" value="0"/>
         <metric class="event_name_count" value="0"/>
@@ -1694,7 +1703,7 @@
           <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.2" class="VP" confidence="0.993895">
             <wref id="tscan.p.1.s.4.w.2" t="is"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.3" class="NP" confidence="0.59964">
+          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.3" class="NP" confidence="0.596003">
             <wref id="tscan.p.1.s.4.w.3" t="Taro’s"/>
           </chunk>
           <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.4" class="ADVP" confidence="0.640449">
@@ -1707,7 +1716,7 @@
           </chunk>
         </chunking>
         <entities xml:id="tscan.p.1.s.4.entities.1">
-          <entity xml:id="tscan.p.1.s.4.entities.1.entity.1" class="pro" confidence="0.419742">
+          <entity xml:id="tscan.p.1.s.4.entities.1.entity.1" class="pro" confidence="0.266138">
             <wref id="tscan.p.1.s.4.w.3" t="Taro’s"/>
           </entity>
         </entities>
@@ -1724,6 +1733,9 @@
         <metric class="smain_count" value="0"/>
         <metric class="ssub_count" value="0"/>
         <metric class="sv1_count" value="0"/>
+        <metric class="smain_cnj_count" value="0"/>
+        <metric class="ssub_cnj_count" value="0"/>
+        <metric class="sv1_cnj_count" value="0"/>
         <metric class="present_verb_count" value="1"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
@@ -1924,12 +1936,15 @@
       <metric class="smain_count" value="1"/>
       <metric class="ssub_count" value="0"/>
       <metric class="sv1_count" value="0"/>
+      <metric class="smain_cnj_count" value="0"/>
+      <metric class="ssub_cnj_count" value="0"/>
+      <metric class="sv1_cnj_count" value="0"/>
       <metric class="present_verb_count" value="1"/>
       <metric class="past_verb_count" value="0"/>
       <metric class="subjonct_count" value="0"/>
       <metric class="name_count" value="1"/>
       <metric class="personal_name_count" value="0"/>
-      <metric class="location_name_count" value="2"/>
+      <metric class="location_name_count" value="1"/>
       <metric class="organization_name_count" value="0"/>
       <metric class="product_name_count" value="1"/>
       <metric class="event_name_count" value="0"/>
@@ -2124,12 +2139,15 @@
     <metric class="smain_count" value="1"/>
     <metric class="ssub_count" value="0"/>
     <metric class="sv1_count" value="0"/>
+    <metric class="smain_cnj_count" value="0"/>
+    <metric class="ssub_cnj_count" value="0"/>
+    <metric class="sv1_cnj_count" value="0"/>
     <metric class="present_verb_count" value="1"/>
     <metric class="past_verb_count" value="0"/>
     <metric class="subjonct_count" value="0"/>
     <metric class="name_count" value="1"/>
     <metric class="personal_name_count" value="0"/>
-    <metric class="location_name_count" value="2"/>
+    <metric class="location_name_count" value="1"/>
     <metric class="organization_name_count" value="0"/>
     <metric class="product_name_count" value="1"/>
     <metric class="event_name_count" value="0"/>
