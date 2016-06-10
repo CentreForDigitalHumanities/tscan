@@ -4,8 +4,6 @@ export TIMEOUT=60000
 export MEMLIMIT=1500M
 export TMPDIR=/tmp
 
-export ALPINO_HOME=/home/sloot/Alpino
-
 ## this one is for parsing
 
 PROLOGMAXSIZE=${MEMLIMIT} ${ALPINO_HOME}/bin/Alpino -notk -fast user_max=${TIMEOUT}\
