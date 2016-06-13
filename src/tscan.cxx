@@ -39,6 +39,7 @@
 #include "ticcutils/CommandLine.h"
 #include "ticcutils/XMLtools.h"
 #include "libfolia/folia.h"
+#include "frog/FrogAPI.h"
 #include "tscan/Alpino.h"
 #include "tscan/cgn.h"
 #include "tscan/sem.h"
@@ -1856,260 +1857,6 @@ void argument_overlap( const string w_or_l,
   }
 }
 
-//#define DEBUG_COMPOUNDS
-
-enum CompoundType { NOCOMP, NN, PN, VN, PV, AB, AV, BB, BN, BV, CN,
-		    CV, AA, VA };
-
-ostream& operator<<( ostream&os, const CompoundType& cc ){
-  switch( cc ){
-  case NN:
-    os << "NN-compound";
-    break;
-  case PN:
-    os << "PN-compound";
-    break;
-  case VN:
-    os << "VN-compound";
-    break;
-  case VA:
-    os << "VA-compound";
-    break;
-  case PV:
-    os << "PV-compound";
-    break;
-  case BB:
-    os << "BB-compound";
-    break;
-  case AV:
-    os << "AV-compound";
-    break;
-  case AB:
-    os << "AB-compound";
-    break;
-  case AA:
-    os << "AA-compound";
-    break;
-  case BV:
-    os << "BV-compound";
-    break;
-  case CV:
-    os << "complexV-compound";
-    break;
-  case CN:
-    os << "complexN-compound";
-    break;
-  case BN:
-    os << "BN-compound";
-    break;
-  case NOCOMP:
-    os << "no-compound";
-    break;
-  }
-  return os;
-}
-
-CompoundType detect_compound( const Morpheme *m, int& len, int depth=0 ){
-  CompoundType result = NOCOMP;
-  len = 0;
-#ifdef DEBUG_COMPOUNDS
-  cerr << "top morph: " << m << " " << m->text() << endl;
-#endif
-  vector<PosAnnotation*> posV1 = m->select<PosAnnotation>(false);
-  if ( posV1.size() == 1 ){
-#ifdef DEBUG_COMPOUNDS
-    cerr << "pos " << posV1[0] << endl;
-#endif
-    string topPos = posV1[0]->cls();
-    if ( depth > 1 ){
-      if ( topPos == "N" )
-	return CN;
-      else if ( topPos == "V" )
-	return CV;
-    }
-    map<string,int> counts;
-    if ( topPos == "N"
-	 || topPos == "A"
-	 || topPos == "B"
-	 || topPos == "V" ){
-#ifdef DEBUG_COMPOUNDS
-      cerr << "top-pos: " << topPos << endl;
-#endif
-      vector<Morpheme*> mV = m->select<Morpheme>( frog_morph_set, false );
-      for( size_t i=0; i < mV.size(); ++i ){
-	if ( mV[i]->cls() == "stem" ){
-#ifdef DEBUG_COMPOUNDS
-	  cerr << "bekijk stem kind morph: " << mV[i] << " " << mV[i]->text() << endl;
-#endif
-	  vector<PosAnnotation*> posV2 = mV[i]->select<PosAnnotation>(false);
-	  for( size_t j=0; j < posV2.size(); ++j ){
-	    string childPos = posV2[j]->cls();
-	    if ( childPos == "N"
-		 || childPos == "P"
-		 || childPos == "V"
-		 || childPos == "A"
-		 || childPos == "B" ){
-#ifdef DEBUG_COMPOUNDS
-	      cerr << "kind pos = " << childPos << endl;
-#endif
-	      ++counts[childPos];
-	    }
-	    else {
-#ifdef DEBUG_COMPOUNDS
-	      cerr << "onbekend kind pos = " << childPos << endl;
-#endif
-	      counts.clear();
-	      break;
-	    }
-	  }
-	}
-	else if ( mV[i]->cls() == "complex" ) {
-#ifdef DEBUG_COMPOUNDS
-	  cerr << "recurse: " << endl;
-#endif
-	  int len = 0;
-	  CompoundType cmp = detect_compound( mV[i], len, depth+1 );
-	  if ( cmp == PN
-	       || cmp == VN
-	       || cmp == NN ){
-	    counts["N"] += len;
-	  }
-	  else if ( cmp == PV
-		    || cmp == BV ){
-	    if ( counts["V"] == 0 ){
-	      counts["V"] = 2;
-	    }
-	    else {
-	      ++counts["V"];
-	    }
-	  }
-	  else if ( cmp == CV ){
-	    ++counts["V"];
-	  }
-	  else if ( cmp == CN ){
-	    ++counts["N"];
-	  }
-	  else if ( cmp == BB ){
-	    if ( counts["B"] == 0 ){
-	      counts["B"] = 2;
-	    }
-	    else {
-	      ++counts["B"];
-	    }
-	  }
-	  else {
-#ifdef DEBUG_COMPOUNDS
-	    cerr << "clear counts vanwege cmp=" << cmp << endl;
-#endif
-	    counts.clear();
-	    break;
-	  }
-	  }
-	else if ( mV[i]->cls() == "derivational" ) {
-#ifdef DEBUG_COMPOUNDS
-	  cerr << "bekijk derivational kind morph: " << mV[i] << endl;
-#endif
-	  vector<PosAnnotation*> posV2 = mV[i]->select<PosAnnotation>(false);
-	  string childPos = posV2[0]->cls();
-	  if ( childPos[0] == 'N'
-	      || childPos[0] == 'V' ){
-	    string pos;
-	    pos = childPos[0];
-	    pos += "*";
-#ifdef DEBUG_COMPOUNDS
-	    cerr << "kind result pos = " << pos << endl;
-#endif
-	    ++counts[pos];
-	  }
-	}
-	else {
-#ifdef DEBUG_COMPOUNDS
-	  cerr << "skip a " << mV[i]->cls() << " morpheme" << endl;
-#endif
-	}
-#ifdef DEBUG_COMPOUNDS
-	cerr << "Tussenstand " << counts << endl;
-#endif
-
-       }
-      if ( topPos == "N" ){
-#ifdef DEBUG_COMPOUNDS
-	cerr << "TOP=N" << endl;
-	cerr << counts << endl;
-#endif
-	if ( counts["N"] == 1 && counts["N*"] == 1 ){
-	  result = CV;
-	  len = 1;
-	}
-	if ( (counts["V"] > 0 || counts["V*"] > 0 )
-	     && (counts["N"] > 0 || counts["N*"] > 0) ){
-	  result = VN;
-	  len = counts["V"] + counts["N"];
-	}
-	else if ( counts["P"] > 0 && (counts["N"] > 0 || counts["N*"] > 0) ){
-	  result = PN;
-	  len = counts["P"] + counts["N"];
-	}
-	else if ( counts["B"] > 0 && (counts["N"] > 0 || counts["N*"] > 0) ){
-	  result = BN;
-	  len = counts["B"] + counts["N"];
-	}
-	else if ( counts["N"] > 1 || (counts["N"] > 0 && counts["N*"] > 0 ) ){
-	  result = NN;
-	  len = counts["N"];
-	}
-      }
-      else if ( topPos == "V" ){
-	if ( counts["V"] == 1 && counts["V*"] == 1 ){
-	  result = CV;
-	  len = 1;
-	}
-	else if ( counts["P"] > 0 && counts["V"] > 0 ){
-	  result = PV;
-	  len = counts["P"] + counts["V"];
-	}
-	else if ( counts["B"] > 0 && counts["V"] > 0 ){
-	  result = BV;
-	  len = counts["B"] + counts["V"];
-	}
-	else if ( counts["A"] > 0 && counts["V"] > 0 ){
-	  result = AV;
-	  len = counts["A"] + counts["V"];
-	}
-      }
-      else if ( topPos == "B" ){
-	if ( counts["B"] > 1 ){
-	  result = BB;
-	  len = counts["B"];
-	}
-	else if ( counts["A"] > 0 && counts["B"] > 0 ){
-	  result = AB;
-	  len = counts["A"] + counts["B"];
-	}
-      }
-      else if ( topPos == "A" ){
-	if ( counts["A"] > 1 ){
-	  result = AA;
-	  len = counts["A"];
-	}
-	else if ( counts["A"] > 0 && counts["V"] > 0 ){
-	  result = VA;
-	  len = counts["A"] + counts["V"];
-	}
-      }
-    }
-  }
-  if ( len == 1 && depth == 0 ){
-     result = NOCOMP;
-     len = 0;
-  }
-#ifdef DEBUG_COMPOUNDS
-  cerr << "detected " << result << " (" << len << ")" << endl;
-#endif
-  return result;
-}
-
-
 wordStats::wordStats( int index,
 		      Word *w,
 		      const xmlNode *alpWord,
@@ -2165,44 +1912,35 @@ wordStats::wordStats( int index,
   }
   isContent = checkContent();
   if ( prop != CGN::ISLET ){
-    // int compLen = 0;
-    // CompoundType comp = NOCOMP;
-    vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
+    vector<string> mv = get_full_morph_analysis( w, true );
+    // get_full_morph_amalysis returns 1 or more morpheme sequences
+    // like [appel][taart] of [veilig][heid]
+    // there may be more readings/morpheme lists:
+    // [ge][naken][t] versus [genaak][t]
     size_t max = 0;
-    vector<Morpheme*> morphemeV;
-    for ( size_t q=0; q < ml.size(); ++q ){
-      vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set, false );
-      if ( m.size() == 1  && m[0]->cls() == "complex" ){
-	//	comp = detect_compound( m[0], compLen );
-	// nested morphemes
-	string desc = m[0]->description();
-	vector<string> parts;
-	TiCC::split_at_first_of( desc, parts, "[]" );
-	if ( parts.size() > max ){
-	  // a hack: we assume the longest morpheme list to
-	  // be the best choice.
-	  morphemes = parts;
-	  max = parts.size();
-	}
+    size_t pos = 0;
+    size_t match_pos = 0;
+    for ( auto const s : mv ){
+      vector<string> parts;
+      TiCC::split_at_first_of( s, parts, "[]" );
+      if ( parts.size() > max ){
+	// a hack: we assume the longest morpheme list to
+	// be the best choice.
+	morphemes = parts;
+	max = parts.size();
+	match_pos = pos;
       }
-      else {
-	// flat morphemes
-	m = ml[q]->select<Morpheme>( frog_morph_set );
-	if ( m.size() > max ){
-	  // a hack: we assume the longest morpheme list to
-	  // be the best choice.
-	  morphemes.clear();
-	  for ( size_t i=0; i <m.size(); ++i ){
-	    morphemes.push_back( m[i]->str() );
-	  }
-	  max = m.size();
-	}
-      }
+      ++pos;
     }
     if ( morphemes.size() == 0 ){
       cerr << "unable to retrieve morphemes from folia." << endl;
     }
     //    cerr << "Morphemes " << word << "= " << morphemes << endl;
+    vector<string> cv = get_compound_analysis( w );
+    string compstr = cv[match_pos];
+    if ( !compstr.empty() ){
+      cerr << compstr << "-compound, word is: " << w->str() << endl;
+    }
     isPropNeg = checkPropNeg();
     isMorphNeg = checkMorphNeg();
     connType = checkConnective();
