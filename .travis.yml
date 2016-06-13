@@ -19,6 +19,20 @@ before_install:
     - make
     - sudo make install
     - cd ..
+    - git clone https://github.com/proycon/ucto
+    - cd ucto
+    - bash bootstrap.sh
+    - ./configure
+    - make
+    - sudo make install
+    - cd ..
+    - git clone https://github.com/proycon/timbl
+    - cd timbl
+    - bash bootstrap.sh
+    - ./configure
+    - make
+    - sudo make install
+    - cd ..
 install:
     - bash bootstrap.sh
     - ./configure
