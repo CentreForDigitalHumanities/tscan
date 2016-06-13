@@ -3,12 +3,13 @@
 <FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.2" version="1.2.0">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2016-06-09T15:54:09" set="tscan-tokconfig-nl"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2016-06-09T15:54:09" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2016-06-09T15:54:09" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-06-09T15:54:09" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2016-06-09T15:54:09" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2016-06-09T15:54:09" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2016-06-13T16:11:12" set="tscan-tokconfig-nl"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2016-06-13T16:11:12" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2016-06-13T16:11:12" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-06-13T16:11:12" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <pos-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-06-13T16:11:12" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2016-06-13T16:11:12" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2016-06-13T16:11:12" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
       <pos-annotation annotator="tscan" set="tscan-set"/>
     </annotations>
@@ -30,8 +31,14 @@
           </pos>
           <lemma class="zij"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>zij</t>
+              <feat class="[zij]pronoun" subset="structure"/>
+              <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>zij</t>
+                <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="pers_ref" value="true"/>
@@ -56,11 +63,19 @@
           </pos>
           <lemma class="wonen"/>
           <morphology>
-            <morpheme>
-              <t>woon</t>
-            </morpheme>
-            <morpheme>
-              <t>den</t>
+            <morpheme class="complex">
+              <t>woonden</t>
+              <feat class="[[woon]verb[den]/past-tense/plural]verb" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>woon</t>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>den</t>
+                <feat class="past-tense" subset="inflection"/>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
@@ -85,8 +100,14 @@
           </pos>
           <lemma class="in"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>in</t>
+              <feat class="[in]preposition" subset="structure"/>
+              <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>in</t>
+                <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -109,11 +130,26 @@
           </pos>
           <lemma class="lemen"/>
           <morphology>
-            <morpheme>
-              <t>leem</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>lemen</t>
+              <feat class="[[leem]noun[en]]adjective/positive" subset="structure"/>
+              <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="complex">
+                <feat class="[[leem]noun[en]]adjective" subset="structure"/>
+                <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                <morpheme class="stem">
+                  <t>leem</t>
+                  <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="derivational">
+                  <t>en</t>
+                  <feat class="[en]" subset="structure"/>
+                  <pos class="A_N*" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+              </morpheme>
+              <morpheme class="inflection">
+                <feat class="positive" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -135,14 +171,27 @@
           </pos>
           <lemma class="boerderij"/>
           <morphology>
-            <morpheme>
-              <t>boer</t>
-            </morpheme>
-            <morpheme>
-              <t>derij</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>boerderijen</t>
+              <feat class="[[[boer]verb[derij]]noun[en]/plural]noun" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="complex">
+                <feat class="[[boer]verb[derij]]noun" subset="structure"/>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                <morpheme class="stem">
+                  <t>boer</t>
+                  <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="derivational">
+                  <t>derij</t>
+                  <feat class="[derij]" subset="structure"/>
+                  <pos class="N_V*" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -160,8 +209,10 @@
           <t>,</t>
           <pos class="LET()" confidence="0.999925" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>,</t>
+              <feat class="[,]" subset="structure"/>
+              <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <lemma class=","/>
@@ -181,11 +232,19 @@
           </pos>
           <lemma class="gebruiken"/>
           <morphology>
-            <morpheme>
-              <t>gebruik</t>
-            </morpheme>
-            <morpheme>
-              <t>ten</t>
+            <morpheme class="complex">
+              <t>gebruikten</t>
+              <feat class="[[gebruik]verb[ten]/past-tense/plural]verb" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>gebruik</t>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>ten</t>
+                <feat class="past-tense" subset="inflection"/>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
@@ -213,11 +272,26 @@
             <lemma class="houten"/>
           </alt>
           <morphology>
-            <morpheme>
-              <t>hout</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>houten</t>
+              <feat class="[[hout]noun[en]]adjective/positive" subset="structure"/>
+              <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="complex">
+                <feat class="[[hout]noun[en]]adjective" subset="structure"/>
+                <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                <morpheme class="stem">
+                  <t>hout</t>
+                  <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="derivational">
+                  <t>en</t>
+                  <feat class="[en]" subset="structure"/>
+                  <pos class="A_N*" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+              </morpheme>
+              <morpheme class="inflection">
+                <feat class="positive" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -240,8 +314,14 @@
           </pos>
           <lemma class="en"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>en</t>
+              <feat class="[en]conjunction" subset="structure"/>
+              <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>en</t>
+                <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -264,11 +344,18 @@
           </pos>
           <lemma class="steen"/>
           <morphology>
-            <morpheme>
-              <t>steen</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>stenen</t>
+              <feat class="[[steen]noun[en]/plural]noun" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>steen</t>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -293,14 +380,24 @@
           </pos>
           <lemma class="werktuig"/>
           <morphology>
-            <morpheme>
-              <t>werk</t>
-            </morpheme>
-            <morpheme>
-              <t>tuig</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>werktuigen</t>
+              <feat class="[[werk]verb[tuig]noun[en]/plural]noun" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex">
+                <feat class="VN" subset="compound"/>
+              </pos>
+              <morpheme class="stem">
+                <t>werk</t>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="stem">
+                <t>tuig</t>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -318,12 +415,18 @@
           <pos class="VG(neven)" confidence="0.999194" head="VG" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="neven" subset="conjtype"/>
           </pos>
+          <lemma class="en"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>en</t>
+              <feat class="[en]conjunction" subset="structure"/>
+              <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>en</t>
+                <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="en"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -344,11 +447,19 @@
           </pos>
           <lemma class="maken"/>
           <morphology>
-            <morpheme>
-              <t>maak</t>
-            </morpheme>
-            <morpheme>
-              <t>ten</t>
+            <morpheme class="complex">
+              <t>maakten</t>
+              <feat class="[[maak]verb[ten]/past-tense/plural]verb" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>maak</t>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>ten</t>
+                <feat class="past-tense" subset="inflection"/>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
@@ -371,8 +482,14 @@
           <pos class="BW()" confidence="0.99992" head="BW" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
           <lemma class="dus"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>dus</t>
+              <feat class="[dus]adverb" subset="structure"/>
+              <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>dus</t>
+                <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -398,11 +515,18 @@
           </pos>
           <lemma class="pot"/>
           <morphology>
-            <morpheme>
-              <t>pot</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>potten</t>
+              <feat class="[[pot]noun[en]/plural]noun" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>pot</t>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -424,8 +548,14 @@
           </pos>
           <lemma class="om"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>om</t>
+              <feat class="[om]preposition" subset="structure"/>
+              <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>om</t>
+                <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -448,11 +578,18 @@
           </pos>
           <lemma class="voorraad"/>
           <morphology>
-            <morpheme>
-              <t>voorraad</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>voorraden</t>
+              <feat class="[[voorraad]noun[en]/plural]noun" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>voorraad</t>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -473,8 +610,14 @@
           </pos>
           <lemma class="in"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>in</t>
+              <feat class="[in]preposition" subset="structure"/>
+              <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>in</t>
+                <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -495,8 +638,14 @@
           </pos>
           <lemma class="te"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>te</t>
+              <feat class="[te]preposition" subset="structure"/>
+              <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>te</t>
+                <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -519,14 +668,27 @@
           </pos>
           <lemma class="bewaren"/>
           <morphology>
-            <morpheme>
-              <t>be</t>
-            </morpheme>
-            <morpheme>
-              <t>waar</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>bewaren</t>
+              <feat class="[[[be][waar]verb]verb[en]/infinitive]verb" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="complex">
+                <feat class="[[be][waar]verb]verb" subset="structure"/>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                <morpheme class="derivational">
+                  <t>be</t>
+                  <feat class="[be]" subset="structure"/>
+                  <pos class="V_*V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="stem">
+                  <t>waar</t>
+                  <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="infinitive" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
@@ -547,8 +709,10 @@
           <t>.</t>
           <pos class="LET()" confidence="0.999956" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>.</t>
+              <feat class="[.]" subset="structure"/>
+              <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <lemma class="."/>
@@ -816,8 +980,10 @@
           </pos>
           <lemma class="maar"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>maar</t>
+              <feat class="[maar]conjunction" subset="structure"/>
+              <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <metric class="connective" value="contrastief"/>
@@ -839,8 +1005,14 @@
           </pos>
           <lemma class="in"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>in</t>
+              <feat class="[in]preposition" subset="structure"/>
+              <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>in</t>
+                <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -861,12 +1033,18 @@
             <feat class="stan" subset="naamval"/>
             <feat class="rest" subset="npagr"/>
           </pos>
+          <lemma class="de"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>de</t>
+              <feat class="[de]article" subset="structure"/>
+              <pos class="D" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>de</t>
+                <pos class="D" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="de"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -889,8 +1067,17 @@
           </pos>
           <lemma class="provincie"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>provincie</t>
+              <feat class="[provincie]noun/singular" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>provincie</t>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="inflection">
+                <feat class="singular" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -910,8 +1097,10 @@
             <feat class="deeleigen" subset="spectype"/>
           </pos>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>Drenthe</t>
+              <feat class="[Drenthe]" subset="structure"/>
+              <pos class="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <lemma class="drenthe"/>
@@ -936,11 +1125,19 @@
           </pos>
           <lemma class="liggen"/>
           <morphology>
-            <morpheme>
-              <t>lig</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>liggen</t>
+              <feat class="[[lig]verb[en]/present-tense/plural]verb" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>lig</t>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="present-tense" subset="inflection"/>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
@@ -974,8 +1171,14 @@
           </pos>
           <lemma class="hun"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>hun</t>
+              <feat class="[hun]pronoun" subset="structure"/>
+              <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>hun</t>
+                <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="pers_ref" value="true"/>
@@ -1001,11 +1204,18 @@
           </pos>
           <lemma class="rest"/>
           <morphology>
-            <morpheme>
-              <t>rest</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>resten</t>
+              <feat class="[[rest]noun[en]/plural]noun" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>rest</t>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -1028,8 +1238,17 @@
           </pos>
           <lemma class="gewoon"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>gewoon</t>
+              <feat class="[gewoon]adjective/positive" subset="structure"/>
+              <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>gewoon</t>
+                <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="inflection">
+                <feat class="positive" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -1052,8 +1271,14 @@
           </pos>
           <lemma class="boven"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>boven</t>
+              <feat class="[boven]preposition" subset="structure"/>
+              <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>boven</t>
+                <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="situation" value="ruimte"/>
@@ -1076,8 +1301,14 @@
           </pos>
           <lemma class="de"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>de</t>
+              <feat class="[de]article" subset="structure"/>
+              <pos class="D" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>de</t>
+                <pos class="D" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -1102,8 +1333,17 @@
           </pos>
           <lemma class="grond"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>grond</t>
+              <feat class="[grond]noun/singular" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>grond</t>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="inflection">
+                <feat class="singular" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -1124,8 +1364,10 @@
           <t>.</t>
           <pos class="LET()" confidence="0.999956" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>.</t>
+              <feat class="[.]" subset="structure"/>
+              <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <lemma class="."/>
@@ -1389,8 +1631,14 @@
           </pos>
           <lemma class="het"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>het</t>
+              <feat class="[het]pronoun" subset="structure"/>
+              <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>het</t>
+                <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -1413,17 +1661,98 @@
           </pos>
           <lemma class="gaan"/>
           <morphology>
-            <morpheme>
-              <t>ga</t>
-            </morpheme>
-            <morpheme>
-              <t>t</t>
+            <morpheme class="complex">
+              <t>gaat</t>
+              <feat class="[[ga]verb[t]/present-tense/singular/3rd-person-verb/present-tense/singular/2nd-person-verb/inversed]verb" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>ga</t>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>t</t>
+                <feat class="present-tense" subset="inflection"/>
+                <feat class="singular" subset="inflection"/>
+                <feat class="3rd-person-verb" subset="inflection"/>
+              </morpheme>
+              <morpheme class="inflection">
+                <feat class="present-tense" subset="inflection"/>
+                <feat class="singular" subset="inflection"/>
+                <feat class="2nd-person-verb" subset="inflection"/>
+                <feat class="inversed" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <alt xml:id="tscan.p.1.s.3.w.2.alt-mor.1" auth="no">
             <morphology>
-              <morpheme>
+              <morpheme class="complex">
                 <t>gaat</t>
+                <feat class="[[ga]verb[t]/present-tense/singular/2nd-person-verb/present-tense/singular/2nd-person-verb]verb" subset="structure"/>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                <morpheme class="stem">
+                  <t>ga</t>
+                  <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="affix">
+                  <t>t</t>
+                  <feat class="present-tense" subset="inflection"/>
+                  <feat class="singular" subset="inflection"/>
+                  <feat class="2nd-person-verb" subset="inflection"/>
+                </morpheme>
+                <morpheme class="inflection">
+                  <feat class="present-tense" subset="inflection"/>
+                  <feat class="singular" subset="inflection"/>
+                  <feat class="2nd-person-verb" subset="inflection"/>
+                </morpheme>
+              </morpheme>
+            </morphology>
+          </alt>
+          <alt xml:id="tscan.p.1.s.3.w.2.alt-mor.2" auth="no">
+            <morphology>
+              <morpheme class="complex">
+                <t>gaat</t>
+                <feat class="[gaat]verb/present-tense/singular/1st-person-verb" subset="structure"/>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                <morpheme class="stem">
+                  <t>gaat</t>
+                  <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="inflection">
+                  <feat class="present-tense" subset="inflection"/>
+                  <feat class="singular" subset="inflection"/>
+                  <feat class="1st-person-verb" subset="inflection"/>
+                </morpheme>
+              </morpheme>
+            </morphology>
+          </alt>
+          <alt xml:id="tscan.p.1.s.3.w.2.alt-mor.3" auth="no">
+            <morphology>
+              <morpheme class="complex">
+                <t>gaat</t>
+                <feat class="[gaat]verb/present-tense/singular/3rd-person-verb" subset="structure"/>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                <morpheme class="stem">
+                  <t>gaat</t>
+                  <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="inflection">
+                  <feat class="present-tense" subset="inflection"/>
+                  <feat class="singular" subset="inflection"/>
+                  <feat class="3rd-person-verb" subset="inflection"/>
+                </morpheme>
+              </morpheme>
+            </morphology>
+          </alt>
+          <alt xml:id="tscan.p.1.s.3.w.2.alt-mor.4" auth="no">
+            <morphology>
+              <morpheme class="complex">
+                <t>gaat</t>
+                <feat class="[gaat]verb" subset="structure"/>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                <morpheme class="stem">
+                  <t>gaat</t>
+                  <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
               </morpheme>
             </morphology>
           </alt>
@@ -1450,8 +1779,14 @@
           </pos>
           <lemma class="om"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>om</t>
+              <feat class="[om]preposition" subset="structure"/>
+              <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>om</t>
+                <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -1474,17 +1809,35 @@
           </pos>
           <lemma class="hunebed"/>
           <morphology>
-            <morpheme>
-              <t>Hun</t>
-            </morpheme>
-            <morpheme>
-              <t>e</t>
-            </morpheme>
-            <morpheme>
-              <t>bed</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>hunebedden</t>
+              <feat class="[[[Hun]noun[e][bed]noun]noun[en]/plural]noun" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex">
+                <feat class="NN" subset="compound"/>
+              </pos>
+              <morpheme class="complex">
+                <feat class="[[Hun]noun[e][bed]noun]noun" subset="structure"/>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex">
+                  <feat class="NN" subset="compound"/>
+                </pos>
+                <morpheme class="stem">
+                  <t>Hun</t>
+                  <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="derivational">
+                  <t>e</t>
+                  <feat class="[e]" subset="structure"/>
+                  <pos class="N_N*N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="stem">
+                  <t>bed</t>
+                  <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -1501,8 +1854,10 @@
           <t>,</t>
           <pos class="LET()" confidence="0.999925" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>,</t>
+              <feat class="[,]" subset="structure"/>
+              <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <lemma class=","/>
@@ -1523,11 +1878,19 @@
           </pos>
           <lemma class="groot"/>
           <morphology>
-            <morpheme>
-              <t>groot</t>
-            </morpheme>
-            <morpheme>
-              <t>e</t>
+            <morpheme class="complex">
+              <t>grote</t>
+              <feat class="[[groot]adjective[e]/suffix-e/positive]adjective" subset="structure"/>
+              <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>groot</t>
+                <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>e</t>
+                <feat class="suffix-e" subset="inflection"/>
+                <feat class="positive" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -1554,17 +1917,33 @@
           </pos>
           <lemma class="steenformatie"/>
           <morphology>
-            <morpheme>
-              <t>steen</t>
-            </morpheme>
-            <morpheme>
-              <t>formeer</t>
-            </morpheme>
-            <morpheme>
-              <t>atie</t>
-            </morpheme>
-            <morpheme>
-              <t>s</t>
+            <morpheme class="complex">
+              <t>steenformaties</t>
+              <feat class="[[steen]noun[[formeer]verb[atie]]noun[s]/plural]noun" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex">
+                <feat class="NN" subset="compound"/>
+              </pos>
+              <morpheme class="stem">
+                <t>steen</t>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="complex">
+                <feat class="[[formeer]verb[atie]]noun" subset="structure"/>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                <morpheme class="stem">
+                  <t>formeer</t>
+                  <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="derivational">
+                  <t>atie</t>
+                  <feat class="[atie]" subset="structure"/>
+                  <pos class="N_V*" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+              </morpheme>
+              <morpheme class="affix">
+                <t>s</t>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -1590,8 +1969,14 @@
           </pos>
           <lemma class="die"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>die</t>
+              <feat class="[die]pronoun" subset="structure"/>
+              <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>die</t>
+                <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="betrekkelijk" value="true"/>
@@ -1613,8 +1998,14 @@
           </pos>
           <lemma class="door"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>door</t>
+              <feat class="[door]preposition" subset="structure"/>
+              <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>door</t>
+                <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -1637,17 +2028,35 @@
           </pos>
           <lemma class="mensenhand"/>
           <morphology>
-            <morpheme>
-              <t>mens</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
-            </morpheme>
-            <morpheme>
-              <t>hand</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>mensenhanden</t>
+              <feat class="[[[mens]noun[en][hand]noun]noun[en]/plural]noun" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex">
+                <feat class="NN" subset="compound"/>
+              </pos>
+              <morpheme class="complex">
+                <feat class="[[mens]noun[en][hand]noun]noun" subset="structure"/>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex">
+                  <feat class="NN" subset="compound"/>
+                </pos>
+                <morpheme class="stem">
+                  <t>mens</t>
+                  <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="derivational">
+                  <t>en</t>
+                  <feat class="[en]" subset="structure"/>
+                  <pos class="N_N*N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="stem">
+                  <t>hand</t>
+                  <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -1669,8 +2078,10 @@
           </pos>
           <lemma class="ordenen"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>geordend</t>
+              <feat class="[geordend]verb" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
@@ -1692,8 +2103,14 @@
           </pos>
           <lemma class="en"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>en</t>
+              <feat class="[en]conjunction" subset="structure"/>
+              <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>en</t>
+                <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -1714,8 +2131,14 @@
           </pos>
           <lemma class="op"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>op</t>
+              <feat class="[op]preposition" subset="structure"/>
+              <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>op</t>
+                <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -1741,8 +2164,10 @@
           </pos>
           <lemma class="elkaar"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>elkaar</t>
+              <feat class="[elkaar]pronoun" subset="structure"/>
+              <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <metric class="f65" value="true"/>
@@ -1764,14 +2189,24 @@
           </pos>
           <lemma class="stapelen"/>
           <morphology>
-            <morpheme>
-              <t>ge</t>
-            </morpheme>
-            <morpheme>
-              <t>stapel</t>
-            </morpheme>
-            <morpheme>
-              <t>d</t>
+            <morpheme class="complex">
+              <t>gestapeld</t>
+              <feat class="[[ge]/participle/past-tense[stapel]verb[d]/participle/past-tense]verb" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="affix">
+                <t>ge</t>
+                <feat class="participle" subset="inflection"/>
+                <feat class="past-tense" subset="inflection"/>
+              </morpheme>
+              <morpheme class="stem">
+                <t>stapel</t>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>d</t>
+                <feat class="participle" subset="inflection"/>
+                <feat class="past-tense" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
@@ -1795,8 +2230,17 @@
           </pos>
           <lemma class="zijn"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>zijn</t>
+              <feat class="[zijn]verb/infinitive" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>zijn</t>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="inflection">
+                <feat class="infinitive" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <pos class="wwform(koppelww)" set="tscan-set"/>
@@ -1817,8 +2261,10 @@
           <t>.</t>
           <pos class="LET()" confidence="0.999956" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>.</t>
+              <feat class="[.]" subset="structure"/>
+              <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <lemma class="."/>
@@ -2082,8 +2528,10 @@
           </pos>
           <lemma class="maar"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>maar</t>
+              <feat class="[maar]conjunction" subset="structure"/>
+              <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <metric class="connective" value="contrastief"/>
@@ -2107,8 +2555,17 @@
           </pos>
           <lemma class="lang"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>lang</t>
+              <feat class="[lang]adjective/positive" subset="structure"/>
+              <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>lang</t>
+                <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="inflection">
+                <feat class="positive" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -2130,8 +2587,14 @@
           <pos class="BW()" confidence="0.999918" head="BW" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
           <lemma class="niet"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>niet</t>
+              <feat class="[niet]adverb" subset="structure"/>
+              <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>niet</t>
+                <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -2161,8 +2624,10 @@
           </pos>
           <lemma class="overal"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>overal</t>
+              <feat class="[overal]pronoun" subset="structure"/>
+              <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <metric class="situation" value="ruimte"/>
@@ -2184,8 +2649,17 @@
           </pos>
           <lemma class="zijn"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>zijn</t>
+              <feat class="[zijn]verb/infinitive" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>zijn</t>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="inflection">
+                <feat class="infinitive" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <pos class="wwform(passiefww)" set="tscan-set"/>
@@ -2214,8 +2688,14 @@
           </pos>
           <lemma class="deze"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>deze</t>
+              <feat class="[deze]pronoun" subset="structure"/>
+              <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>deze</t>
+                <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="pron_ref" value="true"/>
@@ -2240,17 +2720,33 @@
           </pos>
           <lemma class="begraafplaats"/>
           <morphology>
-            <morpheme>
-              <t>be</t>
-            </morpheme>
-            <morpheme>
-              <t>graaf</t>
-            </morpheme>
-            <morpheme>
-              <t>plaats</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>begraafplaatsen</t>
+              <feat class="[[[be][graaf]verb]verb[plaats]noun[en]/plural]noun" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex">
+                <feat class="VN" subset="compound"/>
+              </pos>
+              <morpheme class="complex">
+                <feat class="[[be][graaf]verb]verb" subset="structure"/>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                <morpheme class="derivational">
+                  <t>be</t>
+                  <feat class="[be]" subset="structure"/>
+                  <pos class="V_*V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="stem">
+                  <t>graaf</t>
+                  <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+              </morpheme>
+              <morpheme class="stem">
+                <t>plaats</t>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -2273,8 +2769,10 @@
           </pos>
           <lemma class="bouwen"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>gebouwd</t>
+              <feat class="[gebouwd]verb" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
@@ -2299,8 +2797,14 @@
           </pos>
           <lemma class="met"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>met</t>
+              <feat class="[met]preposition" subset="structure"/>
+              <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>met</t>
+                <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -2329,8 +2833,10 @@
             <lemma class="zulke"/>
           </alt>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>zulke</t>
+              <feat class="[zulke]pronoun" subset="structure"/>
+              <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <metric class="pron_ref" value="true"/>
@@ -2354,11 +2860,19 @@
           </pos>
           <lemma class="groot"/>
           <morphology>
-            <morpheme>
-              <t>groot</t>
-            </morpheme>
-            <morpheme>
-              <t>e</t>
+            <morpheme class="complex">
+              <t>grote</t>
+              <feat class="[[groot]adjective[e]/suffix-e/positive]adjective" subset="structure"/>
+              <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>groot</t>
+                <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>e</t>
+                <feat class="suffix-e" subset="inflection"/>
+                <feat class="positive" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -2385,14 +2899,24 @@
           </pos>
           <lemma class="zwerfkei"/>
           <morphology>
-            <morpheme>
-              <t>zwerf</t>
-            </morpheme>
-            <morpheme>
-              <t>kei</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>zwerfkeien</t>
+              <feat class="[[zwerf]verb[kei]noun[en]/plural]noun" subset="structure"/>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex">
+                <feat class="VN" subset="compound"/>
+              </pos>
+              <morpheme class="stem">
+                <t>zwerf</t>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="stem">
+                <t>kei</t>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="plural" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -2409,8 +2933,10 @@
           <t>.</t>
           <pos class="LET()" confidence="0.999956" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>.</t>
+              <feat class="[.]" subset="structure"/>
+              <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <lemma class="."/>
@@ -2667,8 +3193,14 @@
           </pos>
           <lemma class="die"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>die</t>
+              <feat class="[die]pronoun" subset="structure"/>
+              <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>die</t>
+                <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="pron_ref" value="true"/>
@@ -2693,11 +3225,18 @@
           </pos>
           <lemma class="zijn"/>
           <morphology>
-            <morpheme>
-              <t>zijn</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>waren</t>
+              <feat class="[[zijn]verb[en]/infinitive]verb" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>zijn</t>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="infinitive" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <pos class="wwform(tijdww)" set="tscan-set"/>
@@ -2719,8 +3258,17 @@
           <pos class="BW()" confidence="0.998732" head="BW" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
           <lemma class="alleen"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>alleen</t>
+              <feat class="[alleen]adjective/positive" subset="structure"/>
+              <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>alleen</t>
+                <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="inflection">
+                <feat class="positive" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="content_word" value="true"/>
@@ -2742,12 +3290,18 @@
           <pos class="VZ(init)" confidence="0.999976" head="VZ" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="init" subset="vztype"/>
           </pos>
+          <lemma class="te"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>te</t>
+              <feat class="[te]preposition" subset="structure"/>
+              <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>te</t>
+                <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="te"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -2768,11 +3322,18 @@
           </pos>
           <lemma class="vinden"/>
           <morphology>
-            <morpheme>
-              <t>vind</t>
-            </morpheme>
-            <morpheme>
-              <t>en</t>
+            <morpheme class="complex">
+              <t>vinden</t>
+              <feat class="[[vind]verb[en]/infinitive]verb" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>vind</t>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="affix">
+                <t>en</t>
+                <feat class="infinitive" subset="inflection"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
@@ -2798,8 +3359,14 @@
           </pos>
           <lemma class="in"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>in</t>
+              <feat class="[in]preposition" subset="structure"/>
+              <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>in</t>
+                <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -2819,8 +3386,10 @@
             <feat class="deeleigen" subset="spectype"/>
           </pos>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>Drenthe</t>
+              <feat class="[Drenthe]" subset="structure"/>
+              <pos class="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <lemma class="drenthe"/>
@@ -2840,8 +3409,10 @@
           <t>,</t>
           <pos class="LET()" confidence="0.999709" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>,</t>
+              <feat class="[,]" subset="structure"/>
+              <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <lemma class=","/>
@@ -2858,8 +3429,10 @@
             <feat class="deeleigen" subset="spectype"/>
           </pos>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>Denemarken</t>
+              <feat class="[Denemarken]" subset="structure"/>
+              <pos class="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <lemma class="denemarken"/>
@@ -2882,8 +3455,14 @@
           </pos>
           <lemma class="en"/>
           <morphology>
-            <morpheme>
+            <morpheme class="complex">
               <t>en</t>
+              <feat class="[en]conjunction" subset="structure"/>
+              <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>en</t>
+                <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
             </morpheme>
           </morphology>
           <metric class="f50" value="true"/>
@@ -2903,8 +3482,10 @@
             <feat class="deeleigen" subset="spectype"/>
           </pos>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>Noord-Duitsland</t>
+              <feat class="[Noord-Duitsland]" subset="structure"/>
+              <pos class="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <lemma class="noord-duitsland"/>
@@ -2923,8 +3504,10 @@
           <t>.</t>
           <pos class="LET()" confidence="0.999956" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
           <morphology>
-            <morpheme>
+            <morpheme class="stem">
               <t>.</t>
+              <feat class="[.]" subset="structure"/>
+              <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
           <lemma class="."/>
