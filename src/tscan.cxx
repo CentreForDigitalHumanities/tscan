@@ -1203,6 +1203,7 @@ struct wordStats : public basicStats {
   double word_freq_log_head_sat;
   top_val top_freq_head;
   top_val top_freq_sat;
+  string compstr;
 };
 
 vector<const wordStats*> wordStats::collectWords() const {
@@ -1936,11 +1937,7 @@ wordStats::wordStats( int index,
       cerr << "unable to retrieve morphemes from folia." << endl;
     }
     //    cerr << "Morphemes " << word << "= " << morphemes << endl;
-    vector<string> cv = get_compound_analysis( w );
-    string compstr = cv[match_pos];
-    if ( !compstr.empty() ){
-      cerr << compstr << "-compound, word is: " << w->str() << endl;
-    }
+    compstr = get_compound_analysis(w)[match_pos];
     isPropNeg = checkPropNeg();
     isMorphNeg = checkMorphNeg();
     connType = checkConnective();
@@ -2152,7 +2149,7 @@ void wordStats::CSVheader( ostream& os, const string& ) const {
 }
 
 void wordStats::wordSortHeader( ostream& os ) const {
-  os << "InputFile,Segment,Woord,lemma,Voll_lemma,morfemen,Wrdsoort,Afk,";
+  os << "InputFile,Segment,Woord,lemma,Voll_lemma,morfemen,Samenst_delen_Frog,Wrdsoort,Afk,";
 }
 
 void na( ostream& os, int cnt ){
@@ -2171,11 +2168,16 @@ void wordStats::wordSortToCSV( ostream& os ) const {
   }
   os << '"' << lemma << "\",";
   os << '"' << full_lemma << "\",";
+
+  // Morphemes
   os << '"';
   for( size_t i=0; i < morphemes.size(); ++i ){
     os << "[" << morphemes[i] << "]";
   }
   os << "\",";
+
+  os << (!compstr.empty() ? compstr : "-") << ",";
+
   os << tag << ",";
   if ( afkType == Afk::NO_A ) {
     os << "0,";
@@ -2315,6 +2317,7 @@ void wordStats::compoundHeader( ostream& os ) const {
   os << "Wrd_freq_log_hfdwrd,Wrd_freq_log_satwrd,Wrd_freq_log_(hfd_sat),";
   os << "Freq1000_hfdwrd,Freq5000_hfdwrd,Freq20000_hfdwrd,";
   os << "Freq1000_satwrd,Freq5000_satwrd,Freq20000_satwrd,";
+  os << "Samenst_Frog,";
 }
 
 void wordStats::compoundToCSV( ostream& os ) const {
@@ -2348,6 +2351,8 @@ void wordStats::compoundToCSV( ostream& os ) const {
       os << "NA,";
     }
   }
+
+  os << (!compstr.empty() ? 1 : 0) << ",";
 }
 
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
