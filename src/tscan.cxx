@@ -1937,7 +1937,13 @@ wordStats::wordStats( int index,
       cerr << "unable to retrieve morphemes from folia." << endl;
     }
     //    cerr << "Morphemes " << word << "= " << morphemes << endl;
-    compstr = get_compound_analysis(w)[match_pos];
+    vector<string> cmps = get_compound_analysis(w);
+    //    cerr << "Comps " << word << "= " << cmps << endl;
+    if ( cmps.size() > match_pos ) {
+      // this might not be the case e.g. when frog isn't started
+      // with the --deep-morph option!
+      compstr = cmps[match_pos];
+    }
     isPropNeg = checkPropNeg();
     isMorphNeg = checkMorphNeg();
     connType = checkConnective();
