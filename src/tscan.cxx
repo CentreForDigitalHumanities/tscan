@@ -128,6 +128,7 @@ struct settingData {
   bool doLsa;
   bool doXfiles;
   bool showProblems;
+  bool sentencePerLine;
   string style;
   int rarityLevel;
   unsigned int overlapSize;
@@ -740,6 +741,14 @@ void settingData::init( const Configuration& cf ){
       exit( EXIT_FAILURE );
     }
   }
+  sentencePerLine = false;
+  val = cf.lookUp( "sentencePerLine" );
+  if ( !val.empty() ){
+    if ( !TiCC::stringTo( val, sentencePerLine ) ){
+      cerr << "invalid value for 'sentencePerLine' in config file" << endl;
+      exit( EXIT_FAILURE );
+    }
+  }
   val = cf.lookUp( "styleSheet" );
   if( !val.empty() ){
     style = val;
@@ -909,6 +918,7 @@ inline void usage(){
   cerr << "\t-o <file> store XML in 'file' " << endl;
   cerr << "\t--config=<file> read configuration from 'file' " << endl;
   cerr << "\t-V or --version show version " << endl;
+  cerr << "\t-n assume input file to hold one sentence per line" << endl;
   cerr << "\t--skip=[aclw]    Skip Alpino (a), CSV output (c), Lsa (l) or Wopr (w).\n";
   cerr << "\t-t <file> process the 'file'. (deprecated)" << endl;
   cerr << endl;
@@ -6876,7 +6886,12 @@ Document *getFrogResult( istream& is ){
     }
     if ( incomment )
       continue;
-    client.write( line + "\n" );
+    if ( settings.sentencePerLine ) {
+      client.write( line + "\n\n" );
+    }
+    else {
+      client.write( line + "\n" );
+    }
   }
   client.write( "\nEOT\n" );
   string result;
@@ -6955,7 +6970,7 @@ int main(int argc, char *argv[]) {
   }
   cerr << "TScan " << VERSION << endl;
   cerr << "working dir " << workdir_name << endl;
-  string shortOpt = "ht:o:V";
+  string shortOpt = "ht:o:Vn";
   string longOpt = "threads:,config:,skip:,version";
   TiCC::CL_Options opts( shortOpt, longOpt );
   try {
@@ -6966,16 +6981,18 @@ int main(int argc, char *argv[]) {
     usage();
     exit( EXIT_SUCCESS );
   }
-  string val;
+
   if ( opts.extract( 'h' ) ||
        opts.extract( "help" ) ){
     usage();
     exit( EXIT_SUCCESS );
   }
+
   if ( opts.extract( 'V' ) ||
        opts.extract( "version" ) ){
     exit( EXIT_SUCCESS );
   }
+
   string t_option;
   opts.extract( 't', t_option );
   vector<string> inputnames;
@@ -6998,6 +7015,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  string val;
   if ( opts.extract( "threads", val ) ){
 #ifdef HAVE_OPENMP
     int num = TiCC::stringTo<int>( val );
@@ -7026,6 +7044,9 @@ int main(int argc, char *argv[]) {
   if ( settings.showProblems ){
     problemFile.open( "problems.log" );
     problemFile << "missing,word,lemma,voll_lemma" << endl;
+  }
+  if ( opts.extract( 'n' ) ) {
+    settings.sentencePerLine = true;
   }
   if ( opts.extract( "skip", val ) ) {
     string skip = val;
