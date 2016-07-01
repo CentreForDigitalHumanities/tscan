@@ -940,8 +940,7 @@ void aggregate( multimap<DD_type,int>& out,
 
 struct proportion {
   proportion( double d1, double d2 ){
-    if ( d1 < 0 || d2 == 0 ||
-	 d1 == NA || d2 == NA )
+    if ( d2 == 0 || d1 == NA || d2 == NA )
       p = NA;
     else
       p = d1/d2;
@@ -959,7 +958,7 @@ ostream& operator<<( ostream& os, const proportion& p ){
 
 struct density {
   density( double d1, double d2 ){
-    if ( d1 < 0 || d2 == 0 || d1 == NA || d2 == NA )
+    if ( d2 == 0 || d1 == NA || d2 == NA )
       d = NA;
     else
       d = (d1/d2) * 1000;
@@ -972,25 +971,6 @@ ostream& operator<<( ostream& os, const density& d ){
     os << "NA";
   else
     os << d.d;
-  return os;
-}
-
-struct ratio {
-  ratio( double d1, double d2 ){
-    if ( d1 < 0 || d2 == 0 ||
-	 d1 == NA || d2 == NA || d1 == d2 )
-      r = NA;
-    else
-      r = d1/(d2-d1);
-  };
-  double r;
-};
-
-ostream& operator<<( ostream& os, const ratio& r ){
-  if ( r.r == NA )
-    os << "NA";
-  else
-    os << r.r;
   return os;
 }
 
