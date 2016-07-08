@@ -3974,7 +3974,7 @@ void structStats::coherenceToCSV( ostream& os ) const {
   os << reeks_zin_conn_mtld << ",";
   os << density( opsomZinConnCnt, wordCnt ) << ",";
   os << proportion( opsomZinConnCnt, correctedClauseCnt ) << ",";
-  os << proportion( unique_reeks_wg_conn.size(), opsomZinConnCnt ) << ",";
+  os << proportion( unique_reeks_zin_conn.size(), opsomZinConnCnt ) << ",";
   os << reeks_zin_conn_mtld << ",";
   os << density( contrastConnCnt, wordCnt ) << ",";
   os << proportion( contrastConnCnt, correctedClauseCnt ) << ",";
