@@ -84,6 +84,25 @@ CXXFLAGS="$folia_CFLAGS $CXXFLAGS"
 LIBS="$folia_LIBS $LIBS"
 
 
+AC_ARG_WITH(frog,
+       [  --with-frog=DIR       use libfrog installed in <DIR>;
+               note that you can install frog in a non-default directory with
+               ./configure --prefix=<DIR> in the frog installation directory],
+       [PKG_CONFIG_PATH="$withval/lib/pkgconfig:$PKG_CONFIG_PATH"],
+       [PKG_CONFIG_PATH="$prefix/lib/pkgconfig:$PKG_CONFIG_PATH"])
+AC_MSG_NOTICE( [pkg-config search path: $PKG_CONFIG_PATH] )
+PKG_CHECK_MODULES([frog], [frog >= 0.13.4] )
+CXXFLAGS="$frog_CFLAGS $CXXFLAGS"
+LIBS="$frog_LIBS $LIBS"
+
+AC_ARG_WITH(timbl,
+       [  --with-timbl=DIR       use timbl installed in <DIR>],
+       [PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$withval/lib/pkgconfig"],
+       [PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$prefix/lib/pkgconfig"])
+PKG_CHECK_MODULES([timbl], [timbl >= 6.4.4] )
+CXXFLAGS="$CXXFLAGS $timbl_CFLAGS"
+LIBS="$timbl_LIBS $LIBS"
+
 
 AC_CONFIG_FILES([Makefile
                  include/Makefile

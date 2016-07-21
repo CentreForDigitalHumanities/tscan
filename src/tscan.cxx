@@ -39,6 +39,7 @@
 #include "ticcutils/CommandLine.h"
 #include "ticcutils/XMLtools.h"
 #include "libfolia/folia.h"
+#include "frog/FrogAPI.h"
 #include "tscan/Alpino.h"
 #include "tscan/cgn.h"
 #include "tscan/sem.h"
@@ -127,6 +128,7 @@ struct settingData {
   bool doLsa;
   bool doXfiles;
   bool showProblems;
+  bool sentencePerLine;
   string style;
   int rarityLevel;
   unsigned int overlapSize;
@@ -739,6 +741,14 @@ void settingData::init( const Configuration& cf ){
       exit( EXIT_FAILURE );
     }
   }
+  sentencePerLine = false;
+  val = cf.lookUp( "sentencePerLine" );
+  if ( !val.empty() ){
+    if ( !TiCC::stringTo( val, sentencePerLine ) ){
+      cerr << "invalid value for 'sentencePerLine' in config file" << endl;
+      exit( EXIT_FAILURE );
+    }
+  }
   val = cf.lookUp( "styleSheet" );
   if( !val.empty() ){
     style = val;
@@ -908,6 +918,7 @@ inline void usage(){
   cerr << "\t-o <file> store XML in 'file' " << endl;
   cerr << "\t--config=<file> read configuration from 'file' " << endl;
   cerr << "\t-V or --version show version " << endl;
+  cerr << "\t-n assume input file to hold one sentence per line" << endl;
   cerr << "\t--skip=[aclw]    Skip Alpino (a), CSV output (c), Lsa (l) or Wopr (w).\n";
   cerr << "\t-t <file> process the 'file'. (deprecated)" << endl;
   cerr << endl;
@@ -939,8 +950,7 @@ void aggregate( multimap<DD_type,int>& out,
 
 struct proportion {
   proportion( double d1, double d2 ){
-    if ( d1 < 0 || d2 == 0 ||
-	 d1 == NA || d2 == NA )
+    if ( d2 == 0 || d1 == NA || d2 == NA )
       p = NA;
     else
       p = d1/d2;
@@ -958,7 +968,7 @@ ostream& operator<<( ostream& os, const proportion& p ){
 
 struct density {
   density( double d1, double d2 ){
-    if ( d1 < 0 || d2 == 0 || d1 == NA || d2 == NA )
+    if ( d2 == 0 || d1 == NA || d2 == NA )
       d = NA;
     else
       d = (d1/d2) * 1000;
@@ -971,25 +981,6 @@ ostream& operator<<( ostream& os, const density& d ){
     os << "NA";
   else
     os << d.d;
-  return os;
-}
-
-struct ratio {
-  ratio( double d1, double d2 ){
-    if ( d1 < 0 || d2 == 0 ||
-	 d1 == NA || d2 == NA || d1 == d2 )
-      r = NA;
-    else
-      r = d1/(d2-d1);
-  };
-  double r;
-};
-
-ostream& operator<<( ostream& os, const ratio& r ){
-  if ( r.r == NA )
-    os << "NA";
-  else
-    os << r.r;
   return os;
 }
 
@@ -1202,6 +1193,7 @@ struct wordStats : public basicStats {
   double word_freq_log_head_sat;
   top_val top_freq_head;
   top_val top_freq_sat;
+  string compstr;
 };
 
 vector<const wordStats*> wordStats::collectWords() const {
@@ -1856,260 +1848,6 @@ void argument_overlap( const string w_or_l,
   }
 }
 
-//#define DEBUG_COMPOUNDS
-
-enum CompoundType { NOCOMP, NN, PN, VN, PV, AB, AV, BB, BN, BV, CN,
-		    CV, AA, VA };
-
-ostream& operator<<( ostream&os, const CompoundType& cc ){
-  switch( cc ){
-  case NN:
-    os << "NN-compound";
-    break;
-  case PN:
-    os << "PN-compound";
-    break;
-  case VN:
-    os << "VN-compound";
-    break;
-  case VA:
-    os << "VA-compound";
-    break;
-  case PV:
-    os << "PV-compound";
-    break;
-  case BB:
-    os << "BB-compound";
-    break;
-  case AV:
-    os << "AV-compound";
-    break;
-  case AB:
-    os << "AB-compound";
-    break;
-  case AA:
-    os << "AA-compound";
-    break;
-  case BV:
-    os << "BV-compound";
-    break;
-  case CV:
-    os << "complexV-compound";
-    break;
-  case CN:
-    os << "complexN-compound";
-    break;
-  case BN:
-    os << "BN-compound";
-    break;
-  case NOCOMP:
-    os << "no-compound";
-    break;
-  }
-  return os;
-}
-
-CompoundType detect_compound( const Morpheme *m, int& len, int depth=0 ){
-  CompoundType result = NOCOMP;
-  len = 0;
-#ifdef DEBUG_COMPOUNDS
-  cerr << "top morph: " << m << " " << m->text() << endl;
-#endif
-  vector<PosAnnotation*> posV1 = m->select<PosAnnotation>(false);
-  if ( posV1.size() == 1 ){
-#ifdef DEBUG_COMPOUNDS
-    cerr << "pos " << posV1[0] << endl;
-#endif
-    string topPos = posV1[0]->cls();
-    if ( depth > 1 ){
-      if ( topPos == "N" )
-	return CN;
-      else if ( topPos == "V" )
-	return CV;
-    }
-    map<string,int> counts;
-    if ( topPos == "N"
-	 || topPos == "A"
-	 || topPos == "B"
-	 || topPos == "V" ){
-#ifdef DEBUG_COMPOUNDS
-      cerr << "top-pos: " << topPos << endl;
-#endif
-      vector<Morpheme*> mV = m->select<Morpheme>( frog_morph_set, false );
-      for( size_t i=0; i < mV.size(); ++i ){
-	if ( mV[i]->cls() == "stem" ){
-#ifdef DEBUG_COMPOUNDS
-	  cerr << "bekijk stem kind morph: " << mV[i] << " " << mV[i]->text() << endl;
-#endif
-	  vector<PosAnnotation*> posV2 = mV[i]->select<PosAnnotation>(false);
-	  for( size_t j=0; j < posV2.size(); ++j ){
-	    string childPos = posV2[j]->cls();
-	    if ( childPos == "N"
-		 || childPos == "P"
-		 || childPos == "V"
-		 || childPos == "A"
-		 || childPos == "B" ){
-#ifdef DEBUG_COMPOUNDS
-	      cerr << "kind pos = " << childPos << endl;
-#endif
-	      ++counts[childPos];
-	    }
-	    else {
-#ifdef DEBUG_COMPOUNDS
-	      cerr << "onbekend kind pos = " << childPos << endl;
-#endif
-	      counts.clear();
-	      break;
-	    }
-	  }
-	}
-	else if ( mV[i]->cls() == "complex" ) {
-#ifdef DEBUG_COMPOUNDS
-	  cerr << "recurse: " << endl;
-#endif
-	  int len = 0;
-	  CompoundType cmp = detect_compound( mV[i], len, depth+1 );
-	  if ( cmp == PN
-	       || cmp == VN
-	       || cmp == NN ){
-	    counts["N"] += len;
-	  }
-	  else if ( cmp == PV
-		    || cmp == BV ){
-	    if ( counts["V"] == 0 ){
-	      counts["V"] = 2;
-	    }
-	    else {
-	      ++counts["V"];
-	    }
-	  }
-	  else if ( cmp == CV ){
-	    ++counts["V"];
-	  }
-	  else if ( cmp == CN ){
-	    ++counts["N"];
-	  }
-	  else if ( cmp == BB ){
-	    if ( counts["B"] == 0 ){
-	      counts["B"] = 2;
-	    }
-	    else {
-	      ++counts["B"];
-	    }
-	  }
-	  else {
-#ifdef DEBUG_COMPOUNDS
-	    cerr << "clear counts vanwege cmp=" << cmp << endl;
-#endif
-	    counts.clear();
-	    break;
-	  }
-	  }
-	else if ( mV[i]->cls() == "derivational" ) {
-#ifdef DEBUG_COMPOUNDS
-	  cerr << "bekijk derivational kind morph: " << mV[i] << endl;
-#endif
-	  vector<PosAnnotation*> posV2 = mV[i]->select<PosAnnotation>(false);
-	  string childPos = posV2[0]->cls();
-	  if ( childPos[0] == 'N'
-	      || childPos[0] == 'V' ){
-	    string pos;
-	    pos = childPos[0];
-	    pos += "*";
-#ifdef DEBUG_COMPOUNDS
-	    cerr << "kind result pos = " << pos << endl;
-#endif
-	    ++counts[pos];
-	  }
-	}
-	else {
-#ifdef DEBUG_COMPOUNDS
-	  cerr << "skip a " << mV[i]->cls() << " morpheme" << endl;
-#endif
-	}
-#ifdef DEBUG_COMPOUNDS
-	cerr << "Tussenstand " << counts << endl;
-#endif
-
-       }
-      if ( topPos == "N" ){
-#ifdef DEBUG_COMPOUNDS
-	cerr << "TOP=N" << endl;
-	cerr << counts << endl;
-#endif
-	if ( counts["N"] == 1 && counts["N*"] == 1 ){
-	  result = CV;
-	  len = 1;
-	}
-	if ( (counts["V"] > 0 || counts["V*"] > 0 )
-	     && (counts["N"] > 0 || counts["N*"] > 0) ){
-	  result = VN;
-	  len = counts["V"] + counts["N"];
-	}
-	else if ( counts["P"] > 0 && (counts["N"] > 0 || counts["N*"] > 0) ){
-	  result = PN;
-	  len = counts["P"] + counts["N"];
-	}
-	else if ( counts["B"] > 0 && (counts["N"] > 0 || counts["N*"] > 0) ){
-	  result = BN;
-	  len = counts["B"] + counts["N"];
-	}
-	else if ( counts["N"] > 1 || (counts["N"] > 0 && counts["N*"] > 0 ) ){
-	  result = NN;
-	  len = counts["N"];
-	}
-      }
-      else if ( topPos == "V" ){
-	if ( counts["V"] == 1 && counts["V*"] == 1 ){
-	  result = CV;
-	  len = 1;
-	}
-	else if ( counts["P"] > 0 && counts["V"] > 0 ){
-	  result = PV;
-	  len = counts["P"] + counts["V"];
-	}
-	else if ( counts["B"] > 0 && counts["V"] > 0 ){
-	  result = BV;
-	  len = counts["B"] + counts["V"];
-	}
-	else if ( counts["A"] > 0 && counts["V"] > 0 ){
-	  result = AV;
-	  len = counts["A"] + counts["V"];
-	}
-      }
-      else if ( topPos == "B" ){
-	if ( counts["B"] > 1 ){
-	  result = BB;
-	  len = counts["B"];
-	}
-	else if ( counts["A"] > 0 && counts["B"] > 0 ){
-	  result = AB;
-	  len = counts["A"] + counts["B"];
-	}
-      }
-      else if ( topPos == "A" ){
-	if ( counts["A"] > 1 ){
-	  result = AA;
-	  len = counts["A"];
-	}
-	else if ( counts["A"] > 0 && counts["V"] > 0 ){
-	  result = VA;
-	  len = counts["A"] + counts["V"];
-	}
-      }
-    }
-  }
-  if ( len == 1 && depth == 0 ){
-     result = NOCOMP;
-     len = 0;
-  }
-#ifdef DEBUG_COMPOUNDS
-  cerr << "detected " << result << " (" << len << ")" << endl;
-#endif
-  return result;
-}
-
-
 wordStats::wordStats( int index,
 		      Word *w,
 		      const xmlNode *alpWord,
@@ -2165,44 +1903,37 @@ wordStats::wordStats( int index,
   }
   isContent = checkContent();
   if ( prop != CGN::ISLET ){
-    // int compLen = 0;
-    // CompoundType comp = NOCOMP;
-    vector<MorphologyLayer*> ml = w->annotations<MorphologyLayer>();
+    vector<string> mv = get_full_morph_analysis( w, true );
+    // get_full_morph_amalysis returns 1 or more morpheme sequences
+    // like [appel][taart] of [veilig][heid]
+    // there may be more readings/morpheme lists:
+    // [ge][naken][t] versus [genaak][t]
     size_t max = 0;
-    vector<Morpheme*> morphemeV;
-    for ( size_t q=0; q < ml.size(); ++q ){
-      vector<Morpheme*> m = ml[q]->select<Morpheme>( frog_morph_set, false );
-      if ( m.size() == 1  && m[0]->cls() == "complex" ){
-	//	comp = detect_compound( m[0], compLen );
-	// nested morphemes
-	string desc = m[0]->description();
-	vector<string> parts;
-	TiCC::split_at_first_of( desc, parts, "[]" );
-	if ( parts.size() > max ){
-	  // a hack: we assume the longest morpheme list to
-	  // be the best choice.
-	  morphemes = parts;
-	  max = parts.size();
-	}
+    size_t pos = 0;
+    size_t match_pos = 0;
+    for ( auto const s : mv ){
+      vector<string> parts;
+      TiCC::split_at_first_of( s, parts, "[]" );
+      if ( parts.size() > max ){
+	// a hack: we assume the longest morpheme list to
+	// be the best choice.
+	morphemes = parts;
+	max = parts.size();
+	match_pos = pos;
       }
-      else {
-	// flat morphemes
-	m = ml[q]->select<Morpheme>( frog_morph_set );
-	if ( m.size() > max ){
-	  // a hack: we assume the longest morpheme list to
-	  // be the best choice.
-	  morphemes.clear();
-	  for ( size_t i=0; i <m.size(); ++i ){
-	    morphemes.push_back( m[i]->str() );
-	  }
-	  max = m.size();
-	}
-      }
+      ++pos;
     }
     if ( morphemes.size() == 0 ){
       cerr << "unable to retrieve morphemes from folia." << endl;
     }
     //    cerr << "Morphemes " << word << "= " << morphemes << endl;
+    vector<string> cmps = get_compound_analysis(w);
+    //    cerr << "Comps " << word << "= " << cmps << endl;
+    if ( cmps.size() > match_pos ) {
+      // this might not be the case e.g. when frog isn't started
+      // with the --deep-morph option!
+      compstr = cmps[match_pos];
+    }
     isPropNeg = checkPropNeg();
     isMorphNeg = checkMorphNeg();
     connType = checkConnective();
@@ -2414,7 +2145,7 @@ void wordStats::CSVheader( ostream& os, const string& ) const {
 }
 
 void wordStats::wordSortHeader( ostream& os ) const {
-  os << "InputFile,Segment,Woord,lemma,Voll_lemma,morfemen,Wrdsoort,Afk,";
+  os << "InputFile,Segment,Woord,lemma,Voll_lemma,morfemen,Samenst_delen_Frog,Wrdsoort,Afk,";
 }
 
 void na( ostream& os, int cnt ){
@@ -2433,11 +2164,16 @@ void wordStats::wordSortToCSV( ostream& os ) const {
   }
   os << '"' << lemma << "\",";
   os << '"' << full_lemma << "\",";
+
+  // Morphemes
   os << '"';
   for( size_t i=0; i < morphemes.size(); ++i ){
     os << "[" << morphemes[i] << "]";
   }
   os << "\",";
+
+  os << (!compstr.empty() ? compstr : "-") << ",";
+
   os << tag << ",";
   if ( afkType == Afk::NO_A ) {
     os << "0,";
@@ -2577,6 +2313,7 @@ void wordStats::compoundHeader( ostream& os ) const {
   os << "Wrd_freq_log_hfdwrd,Wrd_freq_log_satwrd,Wrd_freq_log_(hfd_sat),";
   os << "Freq1000_hfdwrd,Freq5000_hfdwrd,Freq20000_hfdwrd,";
   os << "Freq1000_satwrd,Freq5000_satwrd,Freq20000_satwrd,";
+  os << "Samenst_Frog,";
 }
 
 void wordStats::compoundToCSV( ostream& os ) const {
@@ -2610,6 +2347,8 @@ void wordStats::compoundToCSV( ostream& os ) const {
       os << "NA,";
     }
   }
+
+  os << (!compstr.empty() ? 1 : 0) << ",";
 }
 
 void wordStats::persoonlijkheidHeader( ostream& os ) const {
@@ -4235,7 +3974,7 @@ void structStats::coherenceToCSV( ostream& os ) const {
   os << reeks_zin_conn_mtld << ",";
   os << density( opsomZinConnCnt, wordCnt ) << ",";
   os << proportion( opsomZinConnCnt, correctedClauseCnt ) << ",";
-  os << proportion( unique_reeks_wg_conn.size(), opsomZinConnCnt ) << ",";
+  os << proportion( unique_reeks_zin_conn.size(), opsomZinConnCnt ) << ",";
   os << reeks_zin_conn_mtld << ",";
   os << density( contrastConnCnt, wordCnt ) << ",";
   os << proportion( contrastConnCnt, correctedClauseCnt ) << ",";
@@ -7147,7 +6886,12 @@ Document *getFrogResult( istream& is ){
     }
     if ( incomment )
       continue;
-    client.write( line + "\n" );
+    if ( settings.sentencePerLine ) {
+      client.write( line + "\n\n" );
+    }
+    else {
+      client.write( line + "\n" );
+    }
   }
   client.write( "\nEOT\n" );
   string result;
@@ -7226,7 +6970,7 @@ int main(int argc, char *argv[]) {
   }
   cerr << "TScan " << VERSION << endl;
   cerr << "working dir " << workdir_name << endl;
-  string shortOpt = "ht:o:V";
+  string shortOpt = "ht:o:Vn";
   string longOpt = "threads:,config:,skip:,version";
   TiCC::CL_Options opts( shortOpt, longOpt );
   try {
@@ -7237,16 +6981,18 @@ int main(int argc, char *argv[]) {
     usage();
     exit( EXIT_SUCCESS );
   }
-  string val;
+
   if ( opts.extract( 'h' ) ||
        opts.extract( "help" ) ){
     usage();
     exit( EXIT_SUCCESS );
   }
+
   if ( opts.extract( 'V' ) ||
        opts.extract( "version" ) ){
     exit( EXIT_SUCCESS );
   }
+
   string t_option;
   opts.extract( 't', t_option );
   vector<string> inputnames;
@@ -7269,6 +7015,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  string val;
   if ( opts.extract( "threads", val ) ){
 #ifdef HAVE_OPENMP
     int num = TiCC::stringTo<int>( val );
@@ -7297,6 +7044,9 @@ int main(int argc, char *argv[]) {
   if ( settings.showProblems ){
     problemFile.open( "problems.log" );
     problemFile << "missing,word,lemma,voll_lemma" << endl;
+  }
+  if ( opts.extract( 'n' ) ) {
+    settings.sentencePerLine = true;
   }
   if ( opts.extract( "skip", val ) ) {
     string skip = val;

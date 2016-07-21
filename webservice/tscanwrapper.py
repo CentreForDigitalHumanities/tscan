@@ -78,11 +78,12 @@ if 'useWopr' in clamdata and clamdata['useWopr'] == 'yes':
     f.write("useWopr=1\n")
 else:
     f.write("useWopr=0\n")
-# !!! disable lsa  !!!
-#if 'useLsa' in clamdata and clamdata['useLsa'] == 'yes':
-#    f.write("useLsa=1\n")
-#else:
-    f.write("useLsa=0\n")
+if 'sentencePerLine' in clamdata and clamdata['sentencePerLine'] == 'yes':
+    f.write("sentencePerLine=1\n")
+else:
+    f.write("sentencePerLine=0\n")
+
+f.write("useLsa=0\n")  # LSA is disabled
 f.write("surprisalPath=\"" + TSCANDIR + "\"\n")
 f.write("styleSheet=\"tscanview.xsl\"\n")
 
