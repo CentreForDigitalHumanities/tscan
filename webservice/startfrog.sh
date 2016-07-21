@@ -14,4 +14,4 @@ CONFIG=${FROGPATH}/etc/frog/tscan-frog.cfg
 
 mv $LOGFILE $LOGFILE.sav # poor mans solution
 
-frog -X --id=${ID} -c ${CONFIG} --skip=mp --threads=${THREADS} -S${PORT} --deep-morph 2> $LOGFILE
+frog -X --id=${ID} -c ${CONFIG} --skip=mp -S${PORT} --deep-morph 2> $LOGFILE
