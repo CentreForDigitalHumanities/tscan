@@ -49,6 +49,7 @@
 #include "tscan/situation.h"
 #include "tscan/afk.h"
 #include "tscan/adverb.h"
+#include "tscan/ner.h"
 
 using namespace std;
 using namespace TiCC;
@@ -58,7 +59,6 @@ const double NA = -123456789;
 const string frog_pos_set = "http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn";
 const string frog_lemma_set = "http://ilk.uvt.nl/folia/sets/frog-mblem-nl";
 const string frog_morph_set = "http://ilk.uvt.nl/folia/sets/frog-mbma-nl";
-const string frog_ner_set = "http://ilk.uvt.nl/folia/sets/frog-ner-nl";
 
 enum csvKind { DOC_CSV, PAR_CSV, SENT_CSV, WORD_CSV };
 
@@ -83,42 +83,6 @@ struct noun {
 };
 
 enum top_val { top1000, top2000, top3000, top5000, top10000, top20000, notFound  };
-
-enum NerProp { NONER, LOC_B, LOC_I, EVE_B, EVE_I, ORG_B, ORG_I,
-	       MISC_B, MISC_I, PER_B, PER_I, PRO_B, PRO_I };
-
-ostream& operator<<( ostream& os, const NerProp& n ){
-  switch ( n ){
-  case NONER:
-    break;
-  case LOC_B:
-  case LOC_I:
-    os << "LOC";
-    break;
-  case EVE_B:
-  case EVE_I:
-    os << "EVE";
-    break;
-  case ORG_B:
-  case ORG_I:
-    os << "ORG";
-    break;
-  case MISC_B:
-  case MISC_I:
-    os << "MISC";
-    break;
-  case PER_B:
-  case PER_I:
-    os << "PER";
-    break;
-  case PRO_B:
-  case PRO_I:
-    os << "PRO";
-    break;
-  };
-  return os;
-}
-
 
 struct settingData {
   void init( const Configuration& );
@@ -1151,7 +1115,7 @@ struct wordStats : public basicStats {
   bool isBetr;
   bool isPropNeg;
   bool isMorphNeg;
-  NerProp nerProp;
+  NER::Type nerProp;
   Conn::Type connType;
   bool isMultiConn;
   Situation::Type sitType;
@@ -1852,7 +1816,7 @@ wordStats::wordStats( int index,
   isPersRef(false), isPronRef(false),
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false),
-  nerProp(NONER), connType(Conn::NOCONN), isMultiConn(false), sitType(Situation::NO_SIT),
+  nerProp(NER::NONER), connType(Conn::NOCONN), isMultiConn(false), sitType(Situation::NO_SIT),
   f50(false), f65(false), f77(false), f80(false),
   top_freq(notFound), word_freq(0), lemma_freq(0),
   wordOverlapCnt(0), lemmaOverlapCnt(0),
@@ -1977,7 +1941,7 @@ void fill_word_lemma_buffers( const sentStats*,
 
 void wordStats::setPersRef() {
   if ( sem_type == SEM::CONCRETE_HUMAN_NOUN ||
-       nerProp == PER_B ||
+       nerProp == NER::PER_B ||
        prop == CGN::ISPPRON1 || prop == CGN::ISPPRON2 || prop == CGN::ISPPRON3 ){
     isPersRef = true;
   }
@@ -2359,7 +2323,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << (prop == CGN::ISPPRON3 ) << ","
      << (prop == CGN::ISPPRON1 || prop == CGN::ISPPRON2 || prop == CGN::ISPPRON3) << ",";
   os << (prop == CGN::ISNAME) << ",";
-  if ( nerProp == NONER )
+  if ( nerProp == NER::NONER )
     os << "0,";
   else
     os << nerProp << ",";
@@ -2903,7 +2867,7 @@ struct structStats: public basicStats {
   double ruimte_sit_mtld;
   double cause_sit_mtld;
   double emotion_sit_mtld;
-  map<NerProp, int> ners;
+  map<NER::Type, int> ners;
   int nerCnt;
   map<Afk::Type, int> afks;
   multimap<DD_type,int> distances;
@@ -3326,15 +3290,15 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "past_verb_count", toString(pastCnt) );
   addOneMetric( doc, el, "subjonct_count", toString(subjonctCnt) );
   addOneMetric( doc, el, "name_count", toString(nameCnt) );
-  int val = at( ners, PER_B );
+  int val = at( ners, NER::PER_B );
   addOneMetric( doc, el, "personal_name_count", toString(val) );
-  val = at( ners, LOC_B );
+  val = at( ners, NER::LOC_B );
   addOneMetric( doc, el, "location_name_count", toString(val) );
-  val = at( ners, ORG_B );
+  val = at( ners, NER::ORG_B );
   addOneMetric( doc, el, "organization_name_count", toString(val) );
-  val = at( ners, PRO_B );
+  val = at( ners, NER::PRO_B );
   addOneMetric( doc, el, "product_name_count", toString(val) );
-  val = at( ners, EVE_B );
+  val = at( ners, NER::EVE_B );
   addOneMetric( doc, el, "event_name_count", toString(val) );
   val = at( afks, Afk::OVERHEID_A );
   if ( val > 0 ){
@@ -4224,17 +4188,17 @@ void structStats::persoonlijkheidToCSV( ostream& os ) const {
   os << density( pron3Cnt, wordCnt ) << ",";
   os << density( pron1Cnt+pron2Cnt+pron3Cnt, wordCnt ) << ",";
 
-  int val = at( ners, PER_B );
+  int val = at( ners, NER::PER_B );
   os << proportion( val, nerCnt ) << ",";
   os << proportion( val, nounCnt + nameCnt ) << ",";
   os << density( val, wordCnt ) << ",";
-  val = at( ners, LOC_B );
+  val = at( ners, NER::LOC_B );
   os << density( val, wordCnt ) << ",";
-  val = at( ners, ORG_B );
+  val = at( ners, NER::ORG_B );
   os << density( val, wordCnt ) << ",";
-  val = at( ners, PRO_B );
+  val = at( ners, NER::PRO_B );
   os << density( val, wordCnt ) << ",";
-  val = at( ners, EVE_B );
+  val = at( ners, NER::EVE_B );
   os << density( val, wordCnt ) << ",";
 }
 
@@ -4758,60 +4722,6 @@ void fill_word_lemma_buffers( const sentStats* ss,
       lv.push_back( w->l_lemma );
     }
   }
-}
-
-NerProp lookupNer( const Word *w, const Sentence * s ){
-  NerProp result = NONER;
-  vector<Entity*> v = s->select<Entity>(frog_ner_set);
-  for ( size_t i=0; i < v.size(); ++i ){
-    FoliaElement *e = v[i];
-    for ( size_t j=0; j < e->size(); ++j ){
-      if ( e->index(j) == w ){
-	//	cerr << "hit " << e->index(j) << " in " << v[i] << endl;
-	string cls = v[i]->cls();
-	if ( cls == "org" ){
-	  if ( j == 0 )
-	    result = ORG_B;
-	  else
-	    result = ORG_I;
-	}
-	else if ( cls == "eve" ){
-	  if ( j == 0 )
-	    result = EVE_B;
-	  else
-	    result = EVE_I;
-	}
-	else if ( cls == "loc" ){
-	  if ( j == 0 )
-	    result = LOC_B;
-	  else
-	    result = LOC_I;
-	}
-	else if ( cls == "misc" ){
-	  if ( j == 0 )
-	    result = MISC_B;
-	  else
-	    result = MISC_I;
-	}
-	else if ( cls == "per" ){
-	  if ( j == 0 )
-	    result = PER_B;
-	  else
-	    result = PER_I;
-	}
-	else if ( cls == "pro" ){
-	  if ( j == 0 )
-	    result = PRO_B;
-	  else
-	    result = PRO_I;
-	}
-	else {
-	  throw ValueError( "unknown NER class: " + cls );
-	}
-      }
-    }
-  }
-  return result;
 }
 
 void np_length( Sentence *s, int& npcount, int& indefcount, int& size ) {
@@ -5609,15 +5519,15 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
       continue;
     }
     else {
-      NerProp ner = lookupNer( w[i], s );
+      NER::Type ner = NER::lookupNer( w[i], s );
       ws->nerProp = ner;
       switch( ner ){
-      case LOC_B:
-      case EVE_B:
-      case MISC_B:
-      case ORG_B:
-      case PER_B:
-      case PRO_B:
+      case NER::LOC_B:
+      case NER::EVE_B:
+      case NER::MISC_B:
+      case NER::ORG_B:
+      case NER::PER_B:
+      case NER::PRO_B:
 	ners[ner]++;
 	nerCnt++;
 	break;
