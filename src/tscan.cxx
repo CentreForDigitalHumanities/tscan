@@ -984,11 +984,6 @@ ostream& operator<<( ostream& os, const density& d ){
   return os;
 }
 
-ostream& operator<<( ostream& os, const Conn::Type& s ){
-  os << toString(s);
-  return os;
-}
-
 struct sentStats;
 struct wordStats;
 
