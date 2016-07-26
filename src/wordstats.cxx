@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include "ticcutils/XMLtools.h"
 #include "libfolia/folia.h"
@@ -433,19 +434,19 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
 	 << 1.0/double(morphCnt) << ",";
     }
   }
-  if ( word_freq_log == NA )
+  if ( std::isnan(word_freq_log) )
     os << "NA,";
   else
     os << word_freq_log << ",";
-  if ( prop == CGN::ISNAME || word_freq_log == NA )
+  if ( prop == CGN::ISNAME || std::isnan(word_freq_log) )
     os << "NA" << ",";
   else
     os << word_freq_log << ",";
-  if ( lemma_freq_log == NA )
+  if ( std::isnan(lemma_freq_log) )
     os << "NA,";
   else
     os << lemma_freq_log << ",";
-  if ( prop == CGN::ISNAME || lemma_freq_log == NA )
+  if ( prop == CGN::ISNAME || std::isnan(lemma_freq_log) )
     os << "NA" << ",";
   else
     os << lemma_freq_log << ",";
@@ -535,15 +536,15 @@ void wordStats::compoundToCSV( ostream& os ) const {
     os << double(compound_parts) << ",";
     os << double(charCntHead) << ",";
     os << double(charCntSat) << ",";
-    if ( word_freq_log_head == NA )
+    if ( std::isnan(word_freq_log_head) )
       os << "NA,";
     else
       os << word_freq_log_head << ",";
-    if ( word_freq_log_sat == NA )
+    if ( std::isnan(word_freq_log_sat) )
       os << "NA,";
     else
       os << word_freq_log_sat << ",";
-    if ( word_freq_log_head_sat == NA )
+    if ( std::isnan(word_freq_log_head_sat) )
       os << "NA,";
     else
       os << word_freq_log_head_sat << ",";
@@ -601,7 +602,7 @@ void wordStats::miscToCSV( ostream& os ) const {
      << (prop == CGN::ISOD?toString(position):"0") << ","
      << (prop == CGN::ISINF?toString(position):"0") << ",";
   os << archaic << ",";
-  if ( logprob10 == NA )
+  if ( std::isnan(logprob10) )
     os << "NA,";
   else
     os << logprob10 << ",";

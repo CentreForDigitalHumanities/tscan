@@ -1,8 +1,6 @@
 #ifndef STATS_H
 #define	STATS_H
 
-const double NA = -123456789;
-
 struct sentStats; // Forward declaration
 struct wordStats; // Forward declaration
 
@@ -76,8 +74,8 @@ struct basicStats {
   };
   virtual Situation::Type getSitType() const { return Situation::NO_SIT; };
   virtual std::vector<const wordStats*> collectWords() const = 0;
-  virtual double get_al_gem() const { return NA; };
-  virtual double get_al_max() const { return NA; };
+  virtual double get_al_gem() const { return NAN; };
+  virtual double get_al_max() const { return NAN; };
   void setLSAsuc( double d ){ lsa_opv = d; };
   void setLSAcontext( double d ){ lsa_ctx = d; };
   folia::FoliaElement* folia_node;
@@ -309,25 +307,25 @@ struct structStats: public basicStats {
     top20000ContentCnt(0),
     word_freq(0),
     word_freq_n(0),
-    word_freq_log(NA),
-    word_freq_log_n(NA),
+    word_freq_log(NAN),
+    word_freq_log_n(NAN),
     lemma_freq(0),
     lemma_freq_n(0),
-    lemma_freq_log(NA),
-    lemma_freq_log_n(NA),
-    avg_prob10(NA),
-    entropy(NA),
-    perplexity(NA),
-    lsa_word_suc(NA),
-    lsa_word_net(NA),
-    lsa_sent_suc(NA),
-    lsa_sent_net(NA),
-    lsa_sent_ctx(NA),
-    lsa_par_suc(NA),
-    lsa_par_net(NA),
-    lsa_par_ctx(NA),
-    al_gem(NA),
-    al_max(NA),
+    lemma_freq_log(NAN),
+    lemma_freq_log_n(NAN),
+    avg_prob10(NAN),
+    entropy(NAN),
+    perplexity(NAN),
+    lsa_word_suc(NAN),
+    lsa_word_net(NAN),
+    lsa_sent_suc(NAN),
+    lsa_sent_net(NAN),
+    lsa_sent_ctx(NAN),
+    lsa_par_suc(NAN),
+    lsa_par_net(NAN),
+    lsa_par_ctx(NAN),
+    al_gem(NAN),
+    al_max(NAN),
     intensCnt(0),
     intensBvnwCnt(0),
     intensBvbwCnt(0),

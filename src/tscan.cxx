@@ -50,6 +50,7 @@
 #include "tscan/afk.h"
 #include "tscan/adverb.h"
 #include "tscan/ner.h"
+#include "tscan/utils.h"
 #include "tscan/stats.h"
 
 using namespace std;
@@ -136,39 +137,6 @@ struct settingData {
 };
 
 settingData settings;
-
-istream& safe_getline( istream& is, string& t ){
-  t.clear();
-
-  // The characters in the stream are read one-by-one using a std::streambuf.
-  // That is faster than reading them one-by-one using the std::istream.
-  // Code that uses streambuf this way must be guarded by a sentry object.
-  // The sentry object performs various tasks,
-  // such as thread synchronization and updating the stream state.
-
-  istream::sentry se(is, true);
-  streambuf* sb = is.rdbuf();
-
-  for(;;) {
-    int c = sb->sbumpc();
-    switch (c) {
-    case '\n':
-      return is;
-    case '\r':
-      if(sb->sgetc() == '\n'){
-	sb->sbumpc();
-      }
-      return is;
-    case EOF:
-      // Also handle the case when the last line has no line ending
-      if(t.empty())
-	is.setstate(std::ios::eofbit);
-      return is;
-    default:
-      t += (char)c;
-    }
-  }
-}
 
 bool fillN( map<string,noun>& m, istream& is ){
   string line;
@@ -908,42 +876,6 @@ void aggregate( multimap<DD_type,int>& out,
   }
 }
 
-struct proportion {
-  proportion( double d1, double d2 ){
-    if ( d2 == 0 || d1 == NA || d2 == NA )
-      p = NA;
-    else
-      p = d1/d2;
-  };
-  double p;
-};
-
-ostream& operator<<( ostream& os, const proportion& p ){
-  if ( p.p == NA )
-    os << "NA";
-  else
-    os << p.p;
-  return os;
-}
-
-struct density {
-  density( double d1, double d2 ){
-    if ( d2 == 0 || d1 == NA || d2 == NA )
-      d = NA;
-    else
-      d = (d1/d2) * 1000;
-  };
-  double d;
-};
-
-ostream& operator<<( ostream& os, const density& d ){
-  if ( d.d == NA )
-    os << "NA";
-  else
-    os << d.d;
-  return os;
-}
-
 Conn::Type wordStats::checkConnective() const {
   if ( tag != CGN::VG && tag != CGN::VZ && tag != CGN::BW )
     return Conn::NOCONN;
@@ -1324,12 +1256,12 @@ wordStats::wordStats( int index,
   f50(false), f65(false), f77(false), f80(false),
   top_freq(notFound), word_freq(0), lemma_freq(0),
   wordOverlapCnt(0), lemmaOverlapCnt(0),
-  word_freq_log(NA), lemma_freq_log(NA),
-  logprob10(NA), prop(CGN::JUSTAWORD), position(CGN::NOPOS),
+  word_freq_log(NAN), lemma_freq_log(NAN),
+  logprob10(NAN), prop(CGN::JUSTAWORD), position(CGN::NOPOS),
   sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY),
   general_noun_type(General::NO_GENERAL), general_verb_type(General::NO_GENERAL),
   adverb_type(Adverb::NO_ADVERB), afkType(Afk::NO_A), is_compound(false), compound_parts(0),
-  word_freq_log_head(NA), word_freq_log_sat(NA), word_freq_log_head_sat(NA)
+  word_freq_log_head(NAN), word_freq_log_sat(NAN), word_freq_log_head_sat(NAN)
 {
   UnicodeString us = w->text();
   charCnt = us.length();
@@ -1558,16 +1490,16 @@ void wordStats::addMetrics( ) const {
   else if ( top_freq == top20000 )
     addOneMetric( doc, el, "top20000", "true" );
   addOneMetric( doc, el, "word_freq", toString(word_freq) );
-  if ( word_freq_log != NA )
+  if ( !std::isnan(word_freq_log) )
     addOneMetric( doc, el, "log_word_freq", toString(word_freq_log) );
   addOneMetric( doc, el, "lemma_freq", toString(lemma_freq) );
-  if ( lemma_freq_log != NA )
+  if ( !std::isnan(lemma_freq_log) )
     addOneMetric( doc, el, "log_lemma_freq", toString(lemma_freq_log) );
   addOneMetric( doc, el,
 		"word_overlap_count", toString( wordOverlapCnt ) );
   addOneMetric( doc, el,
 		"lemma_overlap_count", toString( lemmaOverlapCnt ) );
-  if ( logprob10 != NA  )
+  if ( !std::isnan(logprob10)  )
     addOneMetric( doc, el, "lprob10", toString(logprob10) );
   if ( prop != CGN::JUSTAWORD )
     addOneMetric( doc, el, "property", toString(prop) );
@@ -1670,20 +1602,20 @@ void structStats::merge( structStats *ss ){
   word_freq_n += ss->word_freq_n;
   lemma_freq += ss->lemma_freq;
   lemma_freq_n += ss->lemma_freq_n;
-  if ( ss->avg_prob10 != NA ){
-    if ( avg_prob10 == NA )
+  if ( !std::isnan(ss->avg_prob10) ){
+    if ( std::isnan(avg_prob10) )
       avg_prob10 = ss->avg_prob10;
     else
       avg_prob10 += ss->avg_prob10;
   }
-  if ( ss->entropy != NA ){
-    if ( entropy == NA )
+  if ( !std::isnan(ss->entropy) ){
+    if ( std::isnan(entropy) )
       entropy = ss->entropy;
     else
       entropy += ss->entropy;
   }
-  if ( ss->perplexity != NA ){
-    if ( perplexity == NA )
+  if ( !std::isnan(ss->perplexity) ){
+    if ( std::isnan(perplexity) )
       perplexity = ss->perplexity;
     else
       perplexity += ss->perplexity;
@@ -1879,7 +1811,7 @@ string MMtoString( const multimap<DD_type, int>& mm ){
     for( multimap<DD_type, int>::const_iterator pos = mm.begin();
 	 pos != mm.end();
 	 ++pos ){
-      if ( pos->second != NA )
+      if ( !std::isnan(pos->second) )
 	result += pos->second;
     }
     cerr << "MM to string " << result << "/" << len << endl;
@@ -1899,7 +1831,7 @@ int at( const map<T,int>& m, const T key ){
 }
 
 string toMString( double d ){
-  if ( d == NA )
+  if ( std::isnan(d) )
     return "NA";
   else
     return toString( d );
@@ -2018,21 +1950,21 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "lsa_" + category + "_suc", toString(lsa_opv) );
   if ( lsa_ctx )
     addOneMetric( doc, el, "lsa_" + category + "_ctx", toString(lsa_ctx) );
-  if ( lsa_word_suc != NA )
+  if ( !std::isnan(lsa_word_suc) )
     addOneMetric( doc, el, "lsa_word_suc_avg", toString(lsa_word_suc) );
-  if ( lsa_word_net != NA )
+  if ( !std::isnan(lsa_word_net) )
     addOneMetric( doc, el, "lsa_word_net_avg", toString(lsa_word_net) );
-  if ( lsa_sent_suc != NA )
+  if ( !std::isnan(lsa_sent_suc) )
     addOneMetric( doc, el, "lsa_sent_suc_avg", toString(lsa_sent_suc) );
-  if ( lsa_sent_net != NA )
+  if ( !std::isnan(lsa_sent_net) )
     addOneMetric( doc, el, "lsa_sent_net_avg", toString(lsa_sent_net) );
-  if ( lsa_sent_ctx != NA )
+  if ( !std::isnan(lsa_sent_ctx) )
     addOneMetric( doc, el, "lsa_sent_ctx_avg", toString(lsa_sent_ctx) );
-  if ( lsa_par_suc != NA )
+  if ( !std::isnan(lsa_par_suc) )
     addOneMetric( doc, el, "lsa_par_suc_avg", toString(lsa_par_suc) );
-  if ( lsa_par_net != NA )
+  if ( !std::isnan(lsa_par_net) )
     addOneMetric( doc, el, "lsa_par_net_avg", toString(lsa_par_net) );
-  if ( lsa_par_ctx != NA )
+  if ( !std::isnan(lsa_par_ctx) )
     addOneMetric( doc, el, "lsa_par_ctx_avg", toString(lsa_par_ctx) );
   addOneMetric( doc, el, "freq50", toString(f50Cnt) );
   addOneMetric( doc, el, "freq65", toString(f65Cnt) );
@@ -2052,21 +1984,21 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "top20000Content", toString(top20000ContentCnt) );
   addOneMetric( doc, el, "word_freq", toString(word_freq) );
   addOneMetric( doc, el, "word_freq_no_names", toString(word_freq_n) );
-  if ( word_freq_log != NA  )
+  if ( !std::isnan(word_freq_log)  )
     addOneMetric( doc, el, "log_word_freq", toString(word_freq_log) );
-  if ( word_freq_log_n != NA  )
+  if ( !std::isnan(word_freq_log_n)  )
     addOneMetric( doc, el, "log_word_freq_no_names", toString(word_freq_log_n) );
   addOneMetric( doc, el, "lemma_freq", toString(lemma_freq) );
   addOneMetric( doc, el, "lemma_freq_no_names", toString(lemma_freq_n) );
-  if ( lemma_freq_log != NA  )
+  if ( !std::isnan(lemma_freq_log)  )
     addOneMetric( doc, el, "log_lemma_freq", toString(lemma_freq_log) );
-  if ( lemma_freq_log_n != NA  )
+  if ( !std::isnan(lemma_freq_log_n)  )
     addOneMetric( doc, el, "log_lemma_freq_no_names", toString(lemma_freq_log_n) );
-  if ( avg_prob10 != NA )
+  if ( !std::isnan(avg_prob10) )
     addOneMetric( doc, el, "wopr_logprob", toString(avg_prob10) );
-  if ( entropy != NA )
+  if ( !std::isnan(entropy) )
     addOneMetric( doc, el, "wopr_entropy", toString(entropy) );
-  if ( perplexity != NA )
+  if ( !std::isnan(perplexity) )
     addOneMetric( doc, el, "wopr_perplexity", toString(perplexity) );
 
   addOneMetric( doc, el, "broad_adj", toString(broadAdjCnt) );
@@ -2400,7 +2332,13 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
 }
 
 void structStats::sentDifficultiesToCSV( ostream& os ) const {
-  os << (parseFailCnt > 0 ? NA : proportion( wordCnt, sentCnt ).p) << ",";
+  if ( parseFailCnt > 0 ) {
+    os << "NA,";
+  }
+  else {
+    os << proportion( wordCnt, sentCnt ) << ",";
+  }
+
   os << proportion( wordCnt, correctedClauseCnt ) << ",";
   os << proportion( sentCnt, wordCnt )  << ",";
   os << proportion( correctedClauseCnt, wordCnt )  << ",";
@@ -3058,28 +2996,28 @@ void structStats::calculate_LSA_summary(){
   size_t size = sv.size();
   for ( size_t i=0; i != size; ++i ){
     structStats *ps = dynamic_cast<structStats*>(sv[i]);
-    if ( ps->lsa_word_suc != NA ){
+    if ( !std::isnan(ps->lsa_word_suc) ){
       word_suc += ps->lsa_word_suc;
     }
-    if ( ps->lsa_word_net != NA ){
+    if ( !std::isnan(ps->lsa_word_net) ){
       word_net += ps->lsa_word_net;
     }
-    if ( ps->lsa_sent_suc != NA ){
+    if ( !std::isnan(ps->lsa_sent_suc) ){
       sent_suc += ps->lsa_sent_suc;
     }
-    if ( ps->lsa_sent_net != NA ){
+    if ( !std::isnan(ps->lsa_sent_net) ){
       sent_net += ps->lsa_sent_net;
     }
-    if ( ps->lsa_sent_ctx != NA ){
+    if ( !std::isnan(ps->lsa_sent_ctx) ){
       sent_ctx += ps->lsa_sent_ctx;
     }
-    if ( ps->lsa_par_suc != NA ){
+    if ( !std::isnan(ps->lsa_par_suc) ){
       par_suc += ps->lsa_par_suc;
     }
-    if ( ps->lsa_par_net != NA ){
+    if ( !std::isnan(ps->lsa_par_net) ){
       par_net += ps->lsa_par_net;
     }
-    if ( ps->lsa_par_ctx != NA ){
+    if ( !std::isnan(ps->lsa_par_ctx) ){
       par_ctx += ps->lsa_par_ctx;
     }
   }
@@ -3290,7 +3228,7 @@ void sentStats::setLSAvalues( double suc, double net, double ctx ){
 }
 
 double sentStats::getMeanAL() const {
-  double result = NA;
+  double result = NAN;
   size_t len = distances.size();
   if ( len > 0 ){
     result = 0;
@@ -3305,7 +3243,7 @@ double sentStats::getMeanAL() const {
 }
 
 double sentStats::getHighestAL() const {
-  double result = NA;
+  double result = 0;
   for( multimap<DD_type, int>::const_iterator pos = distances.begin();
        pos != distances.end();
        ++pos ){
@@ -4020,10 +3958,10 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
   text = UnicodeToUTF8( s->toktext() );
   cerr << "analyse tokenized sentence=" << text << endl;
   vector<Word*> w = s->words();
-  vector<double> woprProbsV(w.size(),NA);
-  double sentProb = NA;
-  double sentEntropy = NA;
-  double sentPerplexity = NA;
+  vector<double> woprProbsV(w.size(),NAN);
+  double sentProb = NAN;
+  double sentEntropy = NAN;
+  double sentPerplexity = NAN;
   xmlDoc *alpDoc = 0;
   set<size_t> puncts;
   parseFailCnt = -1; // not parsed (yet)
@@ -4734,19 +4672,19 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
   if ( (morphNegCnt + propNegCnt) > 1 )
     multiNegCnt = 1;
   if ( word_freq == 0 || contentCnt == 0 )
-    word_freq_log = NA;
+    word_freq_log = NAN;
   else
     word_freq_log = word_freq / contentCnt;
   if ( lemma_freq == 0 || contentCnt == 0 )
-    lemma_freq_log = NA;
+    lemma_freq_log = NAN;
   else
     lemma_freq_log = lemma_freq / contentCnt;
   if ( contentCnt == nameCnt || word_freq_n == 0 )
-    word_freq_log_n = NA;
+    word_freq_log_n = NAN;
   else
     word_freq_log_n = word_freq_n / (contentCnt-nameCnt);
   if ( contentCnt == nameCnt || lemma_freq_n == 0 )
-    lemma_freq_log_n = NA;
+    lemma_freq_log_n = NAN;
   else
     lemma_freq_log_n = lemma_freq_n / (contentCnt-nameCnt);
   np_length( s, npCnt, indefNpCnt, npSize );
@@ -4783,19 +4721,19 @@ parStats::parStats( int index,
   }
   calculate_MTLDs();
   if ( word_freq == 0 || contentCnt == 0 )
-    word_freq_log = NA;
+    word_freq_log = NAN;
   else
     word_freq_log = word_freq / contentCnt;
   if ( contentCnt == nameCnt || word_freq_n == 0 )
-    word_freq_log_n = NA;
+    word_freq_log_n = NAN;
   else
     word_freq_log_n = word_freq_n / (contentCnt-nameCnt);
   if ( lemma_freq == 0 || contentCnt == 0 )
-    lemma_freq_log = NA;
+    lemma_freq_log = NAN;
   else
     lemma_freq_log = lemma_freq / contentCnt;
   if ( contentCnt == nameCnt || lemma_freq_n == 0 )
-    lemma_freq_log_n = NA;
+    lemma_freq_log_n = NAN;
   else
     lemma_freq_log_n = lemma_freq_n / (contentCnt-nameCnt);
 }
@@ -5116,19 +5054,19 @@ docStats::docStats( Document *doc ):
   }
   calculate_MTLDs();
   if ( word_freq == 0 || contentCnt == 0 )
-    word_freq_log = NA;
+    word_freq_log = NAN;
   else
     word_freq_log = word_freq / contentCnt;
   if ( contentCnt == nameCnt || word_freq_n == 0 )
-    word_freq_log_n = NA;
+    word_freq_log_n = NAN;
   else
     word_freq_log_n = word_freq_n / (contentCnt-nameCnt);
   if ( lemma_freq == 0 || contentCnt == 0 )
-    lemma_freq_log = NA;
+    lemma_freq_log = NAN;
   else
     lemma_freq_log = lemma_freq / contentCnt;
   if ( contentCnt == nameCnt || lemma_freq_n == 0 )
-    lemma_freq_log_n = NA;
+    lemma_freq_log_n = NAN;
   else
     lemma_freq_log_n = lemma_freq_n / (contentCnt-nameCnt);
   calculate_doc_overlap( );

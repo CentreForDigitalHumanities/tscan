@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include "libfolia/folia.h"
 #include "tscan/Alpino.h"
@@ -37,12 +38,12 @@ double structStats::getMeanAL() const {
   double sum = 0;
   for ( size_t i=0; i < sv.size(); ++i ){
     double val = sv[i]->get_al_gem();
-    if ( val != NA ){
+    if ( !std::isnan(val) ){
       sum += val;
     }
   }
   if ( sum == 0 )
-    return NA;
+    return NAN;
   else
     return sum/sv.size();
 }
@@ -51,12 +52,12 @@ double structStats::getHighestAL() const {
   double sum = 0;
   for ( size_t i=0; i < sv.size(); ++i ){
     double val = sv[i]->get_al_max();
-    if ( val != NA ){
+    if ( !std::isnan(val) ){
       sum += val;
     }
   }
   if ( sum == 0 )
-    return NA;
+    return NAN;
   else
     return sum/sv.size();
 }
