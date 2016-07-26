@@ -6,4 +6,4 @@ AM_CXXFLAGS = -std=c++0x
 
 bin_PROGRAMS = tscan
 
-tscan_SOURCES = tscan.cxx Alpino.cxx cgn.cxx sem.cxx intensify.cxx conn.cxx general.cxx situation.cxx afk.cxx adverb.cxx ner.cxx
+tscan_SOURCES = tscan.cxx Alpino.cxx cgn.cxx sem.cxx intensify.cxx conn.cxx general.cxx situation.cxx afk.cxx adverb.cxx ner.cxx wordstats.cxx
