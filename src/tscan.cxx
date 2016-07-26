@@ -5331,19 +5331,29 @@ void sentStats::resolveAdverbials(xmlDoc *alpDoc) {
 // Finds nodes of relative clauses and reports counts
 void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
   string hasFiniteVerb = "//node[@cat='ssub']";
+  string hasDirectFiniteVerb = "/node[@cat='ssub']";
   // Betrekkelijke/bijvoeglijke bijzinnen (zonder/met nevenschikking)
   list<xmlNode*> relNodes = getNodesByRelCat(alpDoc, "mod", "rel", hasFiniteVerb);
   relNodes.merge(getNodesByRelCat(alpDoc, "mod", "whrel", hasFiniteVerb));
-  string relConjPath = ".//node[@rel='mod' and @cat='conj']//node[@rel='cnj' and (@cat='rel' or @cat='whrel')]";
-  relNodes.merge(TiCC::FindNodes(alpDoc, relConjPath + hasFiniteVerb));
-  // Bijwoordelijke bijzinnen (zonder/met nevenschikking)
+  string relConjPath = ".//node[@rel='mod' and @cat='conj']//node[@rel='cnj' and (@cat='rel' or @cat='whrel')]" + hasDirectFiniteVerb;
+  relNodes.merge(TiCC::FindNodes(alpDoc, relConjPath));
+  // Bijwoordelijke bijzinnen (zonder/met nevenschikking + licht afwijkende bijzinnen)
   list<xmlNode*> cpNodes = getNodesByRelCat(alpDoc, "mod", "cp", hasFiniteVerb);
-  string cpConjPath = ".//node[@rel='mod' and @cat='conj']//node[@rel='cnj' and @cat='cp']";
-  cpNodes.merge(TiCC::FindNodes(alpDoc, cpConjPath + hasFiniteVerb));
+  string cpConjPath = ".//node[@rel='mod' and @cat='conj']//node[@rel='cnj' and @cat='cp']" + hasDirectFiniteVerb;
+  cpNodes.merge(TiCC::FindNodes(alpDoc, cpConjPath));
+  string cpSv1Path = ".//node[@rel='nucl']/preceding-sibling::node[@cat='sv1' or @cat='cp']";
+  cpNodes.merge(TiCC::FindNodes(alpDoc, cpSv1Path));
   // Finiete complementszinnen
   // Check whether the previous node is not the top node to prevent clashes with loose clauses below
-  string complPath = ".//node[@cat!='top' and @rel!='mod']/node[@rel!='mod' and (@cat='whsub' or @cat='whrel' or @cat='cp')]";
-  list<xmlNode*> complNodes = TiCC::FindNodes(alpDoc, complPath + hasFiniteVerb);
+  string notTop = ".//node[@cat!='top']";
+  string complWhsubPath = notTop + "/node[@cat='whsub']" + hasFiniteVerb;
+  string complWhrelPath = notTop + "/node[@cat='whrel']" + hasFiniteVerb;
+  string complCpPath = notTop + "/node[@cat='cp']" + hasFiniteVerb;
+  string complPpPath = notTop + "/node[@rel='mod' and @cat='pp']" + hasFiniteVerb;
+  list<xmlNode*> complNodes = TiCC::FindNodes(alpDoc, complWhsubPath);
+  complNodes.merge(complementNodes(TiCC::FindNodes(alpDoc, complWhrelPath), relNodes));
+  complNodes.merge(complementNodes(TiCC::FindNodes(alpDoc, complCpPath), cpNodes));
+  //complNodes.merge(TiCC::FindNodes(alpDoc, complPpPath));
   // Infinietcomplementen
   list<xmlNode*> tiNodes = getNodesByCat(alpDoc, "ti");
 
@@ -5358,12 +5368,20 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
   allRelNodes.merge(complNodes);
   list<string> ids;
   for (auto& node : allRelNodes) {
-    ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "rel", hasFiniteVerb)));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "whrel", hasFiniteVerb)));
-    ids.merge(getNodeIds(TiCC::FindNodes(node, relConjPath + hasFiniteVerb)));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "cp", hasFiniteVerb)));
-    ids.merge(getNodeIds(TiCC::FindNodes(node, cpConjPath + hasFiniteVerb)));
-    ids.merge(getNodeIds(TiCC::FindNodes(node, complPath + hasFiniteVerb)));
+    list<xmlNode*> embedRelNodes = getNodesByRelCat(node, "mod", "rel", hasFiniteVerb);
+    embedRelNodes.merge(getNodesByRelCat(node, "mod", "whrel", hasFiniteVerb));
+    embedRelNodes.merge(TiCC::FindNodes(node, relConjPath));
+    ids.merge(getNodeIds(embedRelNodes));
+
+    list<xmlNode*> embedCpNodes = getNodesByRelCat(node, "mod", "cp", hasFiniteVerb);
+    embedCpNodes.merge(TiCC::FindNodes(node, cpConjPath));
+    embedCpNodes.merge(TiCC::FindNodes(node, cpSv1Path));
+    ids.merge(getNodeIds(embedCpNodes));
+
+    ids.merge(getNodeIds(TiCC::FindNodes(node, complWhsubPath)));
+    ids.merge(getNodeIds(complementNodes(TiCC::FindNodes(node, complWhrelPath), embedRelNodes)));
+    ids.merge(getNodeIds(complementNodes(TiCC::FindNodes(node, complCpPath), embedCpNodes)));
+    //ids.merge(getNodeIds(TiCC::FindNodes(node, complPpPath)));
   }
   set<string> mvFinEmbedIds(ids.begin(), ids.end());
   mvFinInbedCnt = mvFinEmbedIds.size();
@@ -5372,12 +5390,21 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
   allRelNodes.merge(tiNodes);
   ids.clear();
   for (auto& node : allRelNodes) {
-    ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "rel", hasFiniteVerb)));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "whrel", hasFiniteVerb)));
-    ids.merge(getNodeIds(TiCC::FindNodes(node, relConjPath + hasFiniteVerb)));
-    ids.merge(getNodeIds(getNodesByRelCat(node, "mod", "cp", hasFiniteVerb)));
-    ids.merge(getNodeIds(TiCC::FindNodes(node, cpConjPath + hasFiniteVerb)));
-    ids.merge(getNodeIds(TiCC::FindNodes(node, complPath + hasFiniteVerb)));
+    list<xmlNode*> embedRelNodes = getNodesByRelCat(node, "mod", "rel", hasFiniteVerb);
+    embedRelNodes.merge(getNodesByRelCat(node, "mod", "whrel", hasFiniteVerb));
+    embedRelNodes.merge(TiCC::FindNodes(node, relConjPath));
+    ids.merge(getNodeIds(embedRelNodes));
+
+    list<xmlNode*> embedCpNodes = getNodesByRelCat(node, "mod", "cp", hasFiniteVerb);
+    embedCpNodes.merge(TiCC::FindNodes(node, cpConjPath));
+    embedCpNodes.merge(TiCC::FindNodes(node, cpSv1Path));
+    ids.merge(getNodeIds(embedCpNodes));
+
+    ids.merge(getNodeIds(TiCC::FindNodes(node, complWhsubPath)));
+    ids.merge(getNodeIds(complementNodes(TiCC::FindNodes(node, complWhrelPath), embedRelNodes)));
+    ids.merge(getNodeIds(complementNodes(TiCC::FindNodes(node, complCpPath), embedCpNodes)));
+    //ids.merge(getNodeIds(TiCC::FindNodes(node, complPpPath)));
+
     ids.merge(getNodeIds(getNodesByCat(node, "ti")));
   }
   set<string> mvInbedIds(ids.begin(), ids.end());

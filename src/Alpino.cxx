@@ -26,6 +26,7 @@
 #include <vector>
 #include <set>
 #include <fstream>
+#include <algorithm>
 #include "config.h"
 #include "ticcutils/PrettyPrint.h"
 #include "ticcutils/StringOps.h"
@@ -1042,6 +1043,24 @@ list<string> getNodeIds( list<xmlNode*> nodes ) {
     ids.push_back(getAttribute(node, "id"));
   }
   return ids;
+}
+
+// Returns the complement (all nodes in A not in B) of a list of nodes
+list<xmlNode*> complementNodes( list<xmlNode*> nodesA, list<xmlNode*> nodesB) {
+  struct compare
+  {
+    bool operator() (const xmlNode* a, const xmlNode* b) const
+    {
+      return getAttribute(a, "id") < getAttribute(b, "id");
+    }
+  };
+
+  nodesA.sort(compare());
+  nodesB.sort(compare());
+
+  list<xmlNode*> result;
+  set_difference(nodesA.begin(), nodesA.end(), nodesB.begin(), nodesB.end(), back_inserter(result), compare());
+  return result;
 }
 
 xmlDoc *AlpinoParse( const folia::Sentence *s, const string& dirname ){
