@@ -1585,42 +1585,6 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "afktype", toString(afkType) );
 }
 
-structStats::~structStats(){
-  vector<basicStats *>::iterator it = sv.begin();
-  while ( it != sv.end() ){
-    delete( *it );
-    ++it;
-  }
-}
-
-double structStats::getMeanAL() const {
-  double sum = 0;
-  for ( size_t i=0; i < sv.size(); ++i ){
-    double val = sv[i]->get_al_gem();
-    if ( val != NA ){
-      sum += val;
-    }
-  }
-  if ( sum == 0 )
-    return NA;
-  else
-    return sum/sv.size();
-}
-
-double structStats::getHighestAL() const {
-  double sum = 0;
-  for ( size_t i=0; i < sv.size(); ++i ){
-    double val = sv[i]->get_al_max();
-    if ( val != NA ){
-      sum += val;
-    }
-  }
-  if ( sum == 0 )
-    return NA;
-  else
-    return sum/sv.size();
-}
-
 void structStats::merge( structStats *ss ){
   if ( ss->parseFailCnt == -1 ) // not parsed
     parseFailCnt = -1;
@@ -3018,17 +2982,6 @@ void structStats::miscToCSV( ostream& os ) const {
   os << proportion( avg_prob10, sentCnt ) << ",";
   os << proportion( entropy, sentCnt ) << ",";
   os << proportion( perplexity, sentCnt ) << ",";
-}
-
-vector<const wordStats*> structStats::collectWords() const {
-  vector<const wordStats*> result;
-  vector<basicStats *>::const_iterator it = sv.begin();
-  while ( it != sv.end() ){
-    vector<const wordStats*> tmp = (*it)->collectWords();
-    result.insert( result.end(), tmp.begin(), tmp.end() );
-    ++it;
-  }
-  return result;
 }
 
 // #define DEBUG_LSA
@@ -5194,9 +5147,9 @@ string docStats::rarity( int level ) const {
   return toString( result );
 }
 
-void docStats::addMetrics( ) const {
+void docStats::addMetrics() const {
   FoliaElement *el = folia_node;
-  structStats::addMetrics( );
+  structStats::addMetrics();
   addOneMetric( el->doc(), el,
 		"sentence_count", toString( sentCnt ) );
   addOneMetric( el->doc(), el,
