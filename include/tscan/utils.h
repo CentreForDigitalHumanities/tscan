@@ -4,7 +4,9 @@
 #include <string>
 #include <fstream>
 #include <map>
+#include "libfolia/folia.h"
 
+void addOneMetric( folia::Document*, folia::FoliaElement*, const std::string&, const std::string& );
 void argument_overlap( const std::string, const std::vector<std::string>&, int& );
 std::istream& safe_getline( std::istream&, std::string& );
 std::string toMString( double d );

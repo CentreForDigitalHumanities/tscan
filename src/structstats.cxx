@@ -998,6 +998,306 @@ void structStats::miscToCSV( ostream& os ) const {
   os << proportion( perplexity, sentCnt ) << ",";
 }
 
+/**************
+ * FOLIA OUTPUT
+ **************/
+
+/**
+ * Add Metrics to a FoLiA Document.
+ */
+void structStats::addMetrics( ) const {
+  folia::FoliaElement *el = folia_node;
+  folia::Document *doc = el->doc();
+  addOneMetric( doc, el, "word_count", TiCC::toString(wordCnt) );
+  addOneMetric( doc, el, "bv_vd_count", TiCC::toString(vdBvCnt) );
+  addOneMetric( doc, el, "nw_vd_count", TiCC::toString(vdNwCnt) );
+  addOneMetric( doc, el, "vrij_vd_count", TiCC::toString(vdVrijCnt) );
+  addOneMetric( doc, el, "bv_od_count", TiCC::toString(odBvCnt) );
+  addOneMetric( doc, el, "nw_od_count", TiCC::toString(odNwCnt) );
+  addOneMetric( doc, el, "vrij_od_count", TiCC::toString(odVrijCnt) );
+  addOneMetric( doc, el, "bv_inf_count", TiCC::toString(infBvCnt) );
+  addOneMetric( doc, el, "nw_inf_count", TiCC::toString(infNwCnt) );
+  addOneMetric( doc, el, "vrij_inf_count", TiCC::toString(infVrijCnt) );
+  addOneMetric( doc, el, "smain_count", TiCC::toString(smainCnt) );
+  addOneMetric( doc, el, "ssub_count", TiCC::toString(ssubCnt) );
+  addOneMetric( doc, el, "sv1_count", TiCC::toString(sv1Cnt) );
+  addOneMetric( doc, el, "smain_cnj_count", TiCC::toString(smainCnjCnt) );
+  addOneMetric( doc, el, "ssub_cnj_count", TiCC::toString(ssubCnjCnt) );
+  addOneMetric( doc, el, "sv1_cnj_count", TiCC::toString(sv1CnjCnt) );
+  addOneMetric( doc, el, "present_verb_count", TiCC::toString(presentCnt) );
+  addOneMetric( doc, el, "past_verb_count", TiCC::toString(pastCnt) );
+  addOneMetric( doc, el, "subjonct_count", TiCC::toString(subjonctCnt) );
+  addOneMetric( doc, el, "name_count", TiCC::toString(nameCnt) );
+  int val = at( ners, NER::PER_B );
+  addOneMetric( doc, el, "personal_name_count", TiCC::toString(val) );
+  val = at( ners, NER::LOC_B );
+  addOneMetric( doc, el, "location_name_count", TiCC::toString(val) );
+  val = at( ners, NER::ORG_B );
+  addOneMetric( doc, el, "organization_name_count", TiCC::toString(val) );
+  val = at( ners, NER::PRO_B );
+  addOneMetric( doc, el, "product_name_count", TiCC::toString(val) );
+  val = at( ners, NER::EVE_B );
+  addOneMetric( doc, el, "event_name_count", TiCC::toString(val) );
+  val = at( afks, Afk::OVERHEID_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "overheid_afk_count", TiCC::toString(val) );
+  }
+  val = at( afks, Afk::JURIDISCH_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "juridisch_afk_count", TiCC::toString(val) );
+  }
+  val = at( afks, Afk::ONDERWIJS_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "onderwijs_afk_count", TiCC::toString(val) );
+  }
+  val = at( afks, Afk::MEDIA_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "media_afk_count", TiCC::toString(val) );
+  }
+  val = at( afks, Afk::GENERIEK_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "generiek_afk_count", TiCC::toString(val) );
+  }
+  val = at( afks, Afk::OVERIGE_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "overige_afk_count", TiCC::toString(val) );
+  }
+  val = at( afks, Afk::INTERNATIONAAL_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "internationaal_afk_count", TiCC::toString(val) );
+  }
+  val = at( afks, Afk::ZORG_A );
+  if ( val > 0 ){
+    addOneMetric( doc, el, "zorg_afk_count", TiCC::toString(val) );
+  }
+
+  addOneMetric( doc, el, "pers_pron_1_count", TiCC::toString(pron1Cnt) );
+  addOneMetric( doc, el, "pers_pron_2_count", TiCC::toString(pron2Cnt) );
+  addOneMetric( doc, el, "pers_pron_3_count", TiCC::toString(pron3Cnt) );
+  addOneMetric( doc, el, "passive_count", TiCC::toString(passiveCnt) );
+  addOneMetric( doc, el, "modal_count", TiCC::toString(modalCnt) );
+  addOneMetric( doc, el, "time_count", TiCC::toString(timeVCnt) );
+  addOneMetric( doc, el, "koppel_count", TiCC::toString(koppelCnt) );
+  addOneMetric( doc, el, "pers_ref_count", TiCC::toString(persRefCnt) );
+  addOneMetric( doc, el, "pron_ref_count", TiCC::toString(pronRefCnt) );
+  addOneMetric( doc, el, "archaic_count", TiCC::toString(archaicsCnt) );
+  addOneMetric( doc, el, "content_count", TiCC::toString(contentCnt) );
+  addOneMetric( doc, el, "nominal_count", TiCC::toString(nominalCnt) );
+  addOneMetric( doc, el, "adj_count", TiCC::toString(adjCnt) );
+  addOneMetric( doc, el, "vg_count", TiCC::toString(vgCnt) );
+  addOneMetric( doc, el, "vnw_count", TiCC::toString(vnwCnt) );
+  addOneMetric( doc, el, "lid_count", TiCC::toString(lidCnt) );
+  addOneMetric( doc, el, "vz_count", TiCC::toString(vzCnt) );
+  addOneMetric( doc, el, "bw_count", TiCC::toString(bwCnt) );
+  addOneMetric( doc, el, "tw_count", TiCC::toString(twCnt) );
+  addOneMetric( doc, el, "noun_count", TiCC::toString(nounCnt) );
+  addOneMetric( doc, el, "verb_count", TiCC::toString(verbCnt) );
+  addOneMetric( doc, el, "tsw_count", TiCC::toString(tswCnt) );
+  addOneMetric( doc, el, "spec_count", TiCC::toString(specCnt) );
+  addOneMetric( doc, el, "let_count", TiCC::toString(letCnt) );
+  addOneMetric( doc, el, "rel_count", TiCC::toString(betrCnt) );
+  addOneMetric( doc, el, "temporal_connector_count", TiCC::toString(tempConnCnt) );
+  addOneMetric( doc, el, "reeks_wg_connector_count", TiCC::toString(opsomWgConnCnt) );
+  addOneMetric( doc, el, "reeks_zin_connector_count", TiCC::toString(opsomZinConnCnt) );
+  addOneMetric( doc, el, "contrast_connector_count", TiCC::toString(contrastConnCnt) );
+  addOneMetric( doc, el, "comparatief_connector_count", TiCC::toString(compConnCnt) );
+  addOneMetric( doc, el, "causaal_connector_count", TiCC::toString(causeConnCnt) );
+  addOneMetric( doc, el, "time_situation_count", TiCC::toString(timeSitCnt) );
+  addOneMetric( doc, el, "space_situation_count", TiCC::toString(spaceSitCnt) );
+  addOneMetric( doc, el, "cause_situation_count", TiCC::toString(causeSitCnt) );
+  addOneMetric( doc, el, "emotion_situation_count", TiCC::toString(emoSitCnt) );
+  addOneMetric( doc, el, "prop_neg_count", TiCC::toString(propNegCnt) );
+  addOneMetric( doc, el, "morph_neg_count", TiCC::toString(morphNegCnt) );
+  addOneMetric( doc, el, "multiple_neg_count", TiCC::toString(multiNegCnt) );
+  addOneMetric( doc, el, "voorzetsel_expression_count", TiCC::toString(prepExprCnt) );
+  addOneMetric( doc, el,
+    "word_overlap_count", TiCC::toString( wordOverlapCnt ) );
+  addOneMetric( doc, el,
+    "lemma_overlap_count", TiCC::toString( lemmaOverlapCnt ) );
+  if ( lsa_opv )
+    addOneMetric( doc, el, "lsa_" + category + "_suc", TiCC::toString(lsa_opv) );
+  if ( lsa_ctx )
+    addOneMetric( doc, el, "lsa_" + category + "_ctx", TiCC::toString(lsa_ctx) );
+  if ( !std::isnan(lsa_word_suc) )
+    addOneMetric( doc, el, "lsa_word_suc_avg", TiCC::toString(lsa_word_suc) );
+  if ( !std::isnan(lsa_word_net) )
+    addOneMetric( doc, el, "lsa_word_net_avg", TiCC::toString(lsa_word_net) );
+  if ( !std::isnan(lsa_sent_suc) )
+    addOneMetric( doc, el, "lsa_sent_suc_avg", TiCC::toString(lsa_sent_suc) );
+  if ( !std::isnan(lsa_sent_net) )
+    addOneMetric( doc, el, "lsa_sent_net_avg", TiCC::toString(lsa_sent_net) );
+  if ( !std::isnan(lsa_sent_ctx) )
+    addOneMetric( doc, el, "lsa_sent_ctx_avg", TiCC::toString(lsa_sent_ctx) );
+  if ( !std::isnan(lsa_par_suc) )
+    addOneMetric( doc, el, "lsa_par_suc_avg", TiCC::toString(lsa_par_suc) );
+  if ( !std::isnan(lsa_par_net) )
+    addOneMetric( doc, el, "lsa_par_net_avg", TiCC::toString(lsa_par_net) );
+  if ( !std::isnan(lsa_par_ctx) )
+    addOneMetric( doc, el, "lsa_par_ctx_avg", TiCC::toString(lsa_par_ctx) );
+  addOneMetric( doc, el, "freq50", TiCC::toString(f50Cnt) );
+  addOneMetric( doc, el, "freq65", TiCC::toString(f65Cnt) );
+  addOneMetric( doc, el, "freq77", TiCC::toString(f77Cnt) );
+  addOneMetric( doc, el, "freq80", TiCC::toString(f80Cnt) );
+  addOneMetric( doc, el, "top1000", TiCC::toString(top1000Cnt) );
+  addOneMetric( doc, el, "top2000", TiCC::toString(top2000Cnt) );
+  addOneMetric( doc, el, "top3000", TiCC::toString(top3000Cnt) );
+  addOneMetric( doc, el, "top5000", TiCC::toString(top5000Cnt) );
+  addOneMetric( doc, el, "top10000", TiCC::toString(top10000Cnt) );
+  addOneMetric( doc, el, "top20000", TiCC::toString(top20000Cnt) );
+  addOneMetric( doc, el, "top1000Content", TiCC::toString(top1000ContentCnt) );
+  addOneMetric( doc, el, "top2000Content", TiCC::toString(top2000ContentCnt) );
+  addOneMetric( doc, el, "top3000Content", TiCC::toString(top3000ContentCnt) );
+  addOneMetric( doc, el, "top5000Content", TiCC::toString(top5000ContentCnt) );
+  addOneMetric( doc, el, "top10000Content", TiCC::toString(top10000ContentCnt) );
+  addOneMetric( doc, el, "top20000Content", TiCC::toString(top20000ContentCnt) );
+  addOneMetric( doc, el, "word_freq", TiCC::toString(word_freq) );
+  addOneMetric( doc, el, "word_freq_no_names", TiCC::toString(word_freq_n) );
+  if ( !std::isnan(word_freq_log)  )
+    addOneMetric( doc, el, "log_word_freq", TiCC::toString(word_freq_log) );
+  if ( !std::isnan(word_freq_log_n)  )
+    addOneMetric( doc, el, "log_word_freq_no_names", TiCC::toString(word_freq_log_n) );
+  addOneMetric( doc, el, "lemma_freq", TiCC::toString(lemma_freq) );
+  addOneMetric( doc, el, "lemma_freq_no_names", TiCC::toString(lemma_freq_n) );
+  if ( !std::isnan(lemma_freq_log)  )
+    addOneMetric( doc, el, "log_lemma_freq", TiCC::toString(lemma_freq_log) );
+  if ( !std::isnan(lemma_freq_log_n)  )
+    addOneMetric( doc, el, "log_lemma_freq_no_names", TiCC::toString(lemma_freq_log_n) );
+  if ( !std::isnan(avg_prob10) )
+    addOneMetric( doc, el, "wopr_logprob", TiCC::toString(avg_prob10) );
+  if ( !std::isnan(entropy) )
+    addOneMetric( doc, el, "wopr_entropy", TiCC::toString(entropy) );
+  if ( !std::isnan(perplexity) )
+    addOneMetric( doc, el, "wopr_perplexity", TiCC::toString(perplexity) );
+
+  addOneMetric( doc, el, "broad_adj", TiCC::toString(broadAdjCnt) );
+  addOneMetric( doc, el, "strict_adj", TiCC::toString(strictAdjCnt) );
+  addOneMetric( doc, el, "human_adj_count", TiCC::toString(humanAdjCnt) );
+  addOneMetric( doc, el, "emo_adj_count", TiCC::toString(emoAdjCnt) );
+  addOneMetric( doc, el, "nonhuman_adj_count", TiCC::toString(nonhumanAdjCnt) );
+  addOneMetric( doc, el, "shape_adj_count", TiCC::toString(shapeAdjCnt) );
+  addOneMetric( doc, el, "color_adj_count", TiCC::toString(colorAdjCnt) );
+  addOneMetric( doc, el, "matter_adj_count", TiCC::toString(matterAdjCnt) );
+  addOneMetric( doc, el, "sound_adj_count", TiCC::toString(soundAdjCnt) );
+  addOneMetric( doc, el, "other_nonhuman_adj_count", TiCC::toString(nonhumanOtherAdjCnt) );
+  addOneMetric( doc, el, "techn_adj_count", TiCC::toString(techAdjCnt) );
+  addOneMetric( doc, el, "time_adj_count", TiCC::toString(timeAdjCnt) );
+  addOneMetric( doc, el, "place_adj_count", TiCC::toString(placeAdjCnt) );
+  addOneMetric( doc, el, "pos_spec_adj_count", TiCC::toString(specPosAdjCnt) );
+  addOneMetric( doc, el, "neg_spec_adj_count", TiCC::toString(specNegAdjCnt) );
+  addOneMetric( doc, el, "pos_adj_count", TiCC::toString(posAdjCnt) );
+  addOneMetric( doc, el, "neg_adj_count", TiCC::toString(negAdjCnt) );
+  addOneMetric( doc, el, "evaluative_adj_count", TiCC::toString(evaluativeAdjCnt) );
+  addOneMetric( doc, el, "pos_epi_adj_count", TiCC::toString(epiPosAdjCnt) );
+  addOneMetric( doc, el, "neg_epi_adj_count", TiCC::toString(epiNegAdjCnt) );
+  addOneMetric( doc, el, "abstract_adj", TiCC::toString(abstractAdjCnt) );
+  addOneMetric( doc, el, "undefined_adj_count", TiCC::toString(undefinedAdjCnt) );
+  addOneMetric( doc, el, "covered_adj_count", TiCC::toString(adjCnt-uncoveredAdjCnt) );
+  addOneMetric( doc, el, "uncovered_adj_count", TiCC::toString(uncoveredAdjCnt) );
+
+  addOneMetric( doc, el, "intens_count", TiCC::toString(intensCnt) );
+  addOneMetric( doc, el, "intens_bvnw_count", TiCC::toString(intensBvnwCnt) );
+  addOneMetric( doc, el, "intens_bvbw_count", TiCC::toString(intensBvbwCnt) );
+  addOneMetric( doc, el, "intens_bw_count", TiCC::toString(intensBwCnt) );
+  addOneMetric( doc, el, "intens_combi_count", TiCC::toString(intensCombiCnt) );
+  addOneMetric( doc, el, "intens_nw_count", TiCC::toString(intensNwCnt) );
+  addOneMetric( doc, el, "intens_tuss_count", TiCC::toString(intensTussCnt) );
+  addOneMetric( doc, el, "intens_ww_count", TiCC::toString(intensWwCnt) );
+
+  addOneMetric( doc, el, "general_noun_count", TiCC::toString(generalNounCnt) );
+  addOneMetric( doc, el, "general_noun_sep_count", TiCC::toString(generalNounSepCnt) );
+  addOneMetric( doc, el, "general_noun_rel_count", TiCC::toString(generalNounRelCnt) );
+  addOneMetric( doc, el, "general_noun_act_count", TiCC::toString(generalNounActCnt) );
+  addOneMetric( doc, el, "general_noun_know_count", TiCC::toString(generalNounKnowCnt) );
+  addOneMetric( doc, el, "general_noun_disc_count", TiCC::toString(generalNounDiscCnt) );
+  addOneMetric( doc, el, "general_noun_deve_count", TiCC::toString(generalNounDeveCnt) );
+
+  addOneMetric( doc, el, "general_verb_count", TiCC::toString(generalVerbCnt) );
+  addOneMetric( doc, el, "general_verb_sep_count", TiCC::toString(generalVerbSepCnt) );
+  addOneMetric( doc, el, "general_verb_rel_count", TiCC::toString(generalVerbRelCnt) );
+  addOneMetric( doc, el, "general_verb_act_count", TiCC::toString(generalVerbActCnt) );
+  addOneMetric( doc, el, "general_verb_know_count", TiCC::toString(generalVerbKnowCnt) );
+  addOneMetric( doc, el, "general_verb_disc_count", TiCC::toString(generalVerbDiscCnt) );
+  addOneMetric( doc, el, "general_verb_deve_count", TiCC::toString(generalVerbDeveCnt) );
+
+  addOneMetric( doc, el, "general_adverb_count", TiCC::toString(generalAdverbCnt) );
+  addOneMetric( doc, el, "specific_adverb_count", TiCC::toString(specificAdverbCnt) );
+
+  addOneMetric( doc, el, "broad_noun", TiCC::toString(broadNounCnt) );
+  addOneMetric( doc, el, "strict_noun", TiCC::toString(strictNounCnt) );
+  addOneMetric( doc, el, "human_nouns_count", TiCC::toString(humanCnt) );
+  addOneMetric( doc, el, "nonhuman_nouns_count", TiCC::toString(nonHumanCnt) );
+  addOneMetric( doc, el, "artefact_nouns_count", TiCC::toString(artefactCnt) );
+  addOneMetric( doc, el, "concrother_nouns_count", TiCC::toString(concrotherCnt) );
+  addOneMetric( doc, el, "substance_conc_nouns_count", TiCC::toString(substanceConcCnt) );
+  addOneMetric( doc, el, "foodcare_nouns_count", TiCC::toString(foodcareCnt) );
+  addOneMetric( doc, el, "time_nouns_count", TiCC::toString(timeCnt) );
+  addOneMetric( doc, el, "place_nouns_count", TiCC::toString(placeCnt) );
+  addOneMetric( doc, el, "measure_nouns_count", TiCC::toString(measureCnt) );
+  addOneMetric( doc, el, "dynamic_conc_nouns_count", TiCC::toString(dynamicConcCnt) );
+  addOneMetric( doc, el, "substance_abstr_nouns_count", TiCC::toString(substanceAbstrCnt) );
+  addOneMetric( doc, el, "dynamic_abstr_nouns_count", TiCC::toString(dynamicAbstrCnt) );
+  addOneMetric( doc, el, "nondynamic_nouns_count", TiCC::toString(nonDynamicCnt) );
+  addOneMetric( doc, el, "institut_nouns_count", TiCC::toString(institutCnt) );
+  addOneMetric( doc, el, "undefined_nouns_count", TiCC::toString(undefinedNounCnt) );
+  addOneMetric( doc, el, "covered_nouns_count", TiCC::toString(nounCnt+nameCnt-uncoveredNounCnt) );
+  addOneMetric( doc, el, "uncovered_nouns_count", TiCC::toString(uncoveredNounCnt) );
+
+  addOneMetric( doc, el, "abstract_ww", TiCC::toString(abstractWwCnt) );
+  addOneMetric( doc, el, "concrete_ww", TiCC::toString(concreteWwCnt) );
+  addOneMetric( doc, el, "undefined_ww", TiCC::toString(undefinedWwCnt) );
+  addOneMetric( doc, el, "undefined_ATP", TiCC::toString(undefinedATPCnt) );
+  addOneMetric( doc, el, "state_count", TiCC::toString(stateCnt) );
+  addOneMetric( doc, el, "action_count", TiCC::toString(actionCnt) );
+  addOneMetric( doc, el, "process_count", TiCC::toString(processCnt) );
+  addOneMetric( doc, el, "covered_verb_count", TiCC::toString(verbCnt-uncoveredVerbCnt) );
+  addOneMetric( doc, el, "uncovered_verb_count", TiCC::toString(uncoveredVerbCnt) );
+  addOneMetric( doc, el, "indef_np_count", TiCC::toString(indefNpCnt) );
+  addOneMetric( doc, el, "np_count", TiCC::toString(npCnt) );
+  addOneMetric( doc, el, "np_size", TiCC::toString(npSize) );
+  addOneMetric( doc, el, "vc_modifier_count", TiCC::toString(vcModCnt) );
+  addOneMetric( doc, el, "vc_modifier_single_count", TiCC::toString(vcModSingleCnt) );
+  addOneMetric( doc, el, "adj_np_modifier_count", TiCC::toString(adjNpModCnt) );
+  addOneMetric( doc, el, "np_modifier_count", TiCC::toString(npModCnt) );
+
+  addOneMetric( doc, el, "character_count", TiCC::toString(charCnt) );
+  addOneMetric( doc, el, "character_count_min_names", TiCC::toString(charCntExNames) );
+  addOneMetric( doc, el, "morpheme_count", TiCC::toString(morphCnt) );
+  addOneMetric( doc, el, "morpheme_count_min_names", TiCC::toString(morphCntExNames) );
+  if ( dLevel >= 0 )
+    addOneMetric( doc, el, "d_level", TiCC::toString(dLevel) );
+  else
+    addOneMetric( doc, el, "d_level", "missing" );
+  if ( dLevel_gt4 != 0 )
+    addOneMetric( doc, el, "d_level_gt4", TiCC::toString(dLevel_gt4) );
+  if ( questCnt > 0 )
+    addOneMetric( doc, el, "question_count", TiCC::toString(questCnt) );
+  if ( impCnt > 0 )
+    addOneMetric( doc, el, "imperative_count", TiCC::toString(impCnt) );
+  addOneMetric( doc, el, "sub_verb_dist", MMtoString( distances, SUB_VERB ) );
+  addOneMetric( doc, el, "obj_verb_dist", MMtoString( distances, OBJ1_VERB ) );
+  addOneMetric( doc, el, "lijdend_verb_dist", MMtoString( distances, OBJ2_VERB ) );
+  addOneMetric( doc, el, "verb_pp_dist", MMtoString( distances, VERB_PP ) );
+  addOneMetric( doc, el, "noun_det_dist", MMtoString( distances, NOUN_DET ) );
+  addOneMetric( doc, el, "prep_obj_dist", MMtoString( distances, PREP_OBJ1 ) );
+  addOneMetric( doc, el, "verb_vc_dist", MMtoString( distances, VERB_VC ) );
+  addOneMetric( doc, el, "comp_body_dist", MMtoString( distances, COMP_BODY ) );
+  addOneMetric( doc, el, "crd_cnj_dist", MMtoString( distances, CRD_CNJ ) );
+  addOneMetric( doc, el, "verb_comp_dist", MMtoString( distances, VERB_COMP ) );
+  addOneMetric( doc, el, "noun_vc_dist", MMtoString( distances, NOUN_VC ) );
+  addOneMetric( doc, el, "verb_svp_dist", MMtoString( distances, VERB_SVP ) );
+  addOneMetric( doc, el, "verb_cop_dist", MMtoString( distances, VERB_PREDC_N ) );
+  addOneMetric( doc, el, "verb_adj_dist", MMtoString( distances, VERB_PREDC_A ) );
+  addOneMetric( doc, el, "verb_bw_mod_dist", MMtoString( distances, VERB_MOD_BW ) );
+  addOneMetric( doc, el, "verb_adv_mod_dist", MMtoString( distances, VERB_MOD_A ) );
+  addOneMetric( doc, el, "verb_noun_dist", MMtoString( distances, VERB_NOUN ) );
+
+  addOneMetric( doc, el, "deplen", toMString( al_gem ) );
+  addOneMetric( doc, el, "max_deplen", toMString( al_max ) );
+  for ( size_t i=0; i < sv.size(); ++i ){
+    sv[i]->addMetrics();
+  }
+}
+
 /*******
  * MERGE
  *******/

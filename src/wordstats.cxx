@@ -664,3 +664,100 @@ void wordStats::miscToCSV( ostream& os ) const {
     os << logprob10 << ",";
   os << (intensify_type != Intensify::NO_INTENSIFY ? "1," : "0,");
 }
+
+/**************
+ * FOLIA OUTPUT
+ **************/
+
+/**
+ * Add Metrics to a FoLiA Document.
+ */
+void wordStats::addMetrics( ) const {
+  folia::FoliaElement *el = folia_node;
+  folia::Document *doc = el->doc();
+  if ( wwform != ::NO_VERB ){
+    folia::KWargs args;
+    args["set"] = "tscan-set";
+    args["class"] = "wwform(" + toString(wwform) + ")";
+    el->addPosAnnotation( args );
+  }
+  if ( !full_lemma.empty() ){
+    addOneMetric( doc, el, "full-lemma", full_lemma );
+  }
+  if ( isPersRef )
+    addOneMetric( doc, el, "pers_ref", "true" );
+  if ( isPronRef )
+    addOneMetric( doc, el, "pron_ref", "true" );
+  if ( archaic )
+    addOneMetric( doc, el, "archaic", "true" );
+  if ( isContent )
+    addOneMetric( doc, el, "content_word", "true" );
+  if ( isNominal )
+    addOneMetric( doc, el, "nominalization", "true" );
+  if ( isOnder )
+    addOneMetric( doc, el, "subordinate", "true" );
+  if ( isImperative )
+    addOneMetric( doc, el, "imperative", "true" );
+  if ( isBetr )
+    addOneMetric( doc, el, "betrekkelijk", "true" );
+  if ( isPropNeg )
+    addOneMetric( doc, el, "proper_negative", "true" );
+  if ( isMorphNeg )
+    addOneMetric( doc, el, "morph_negative", "true" );
+  if ( connType != Conn::NOCONN )
+    addOneMetric( doc, el, "connective", Conn::toString(connType) );
+  if ( sitType != Situation::NO_SIT )
+    addOneMetric( doc, el, "situation", Situation::toString(sitType) );
+  if ( isMultiConn )
+    addOneMetric( doc, el, "multi_connective", "true" );
+  if ( lsa_opv )
+    addOneMetric( doc, el, "lsa_word_suc", TiCC::toString(lsa_opv) );
+  if ( lsa_ctx )
+    addOneMetric( doc, el, "lsa_word_ctx", TiCC::toString(lsa_ctx) );
+  if ( f50 )
+    addOneMetric( doc, el, "f50", "true" );
+  if ( f65 )
+    addOneMetric( doc, el, "f65", "true" );
+  if ( f77 )
+    addOneMetric( doc, el, "f77", "true" );
+  if ( f80 )
+    addOneMetric( doc, el, "f80", "true" );
+  if ( top_freq == top1000 )
+    addOneMetric( doc, el, "top1000", "true" );
+  else if ( top_freq == top2000 )
+    addOneMetric( doc, el, "top2000", "true" );
+  else if ( top_freq == top3000 )
+    addOneMetric( doc, el, "top3000", "true" );
+  else if ( top_freq == top5000 )
+    addOneMetric( doc, el, "top5000", "true" );
+  else if ( top_freq == top10000 )
+    addOneMetric( doc, el, "top10000", "true" );
+  else if ( top_freq == top20000 )
+    addOneMetric( doc, el, "top20000", "true" );
+  addOneMetric( doc, el, "word_freq", TiCC::toString(word_freq) );
+  if ( !std::isnan(word_freq_log) )
+    addOneMetric( doc, el, "log_word_freq", TiCC::toString(word_freq_log) );
+  addOneMetric( doc, el, "lemma_freq", TiCC::toString(lemma_freq) );
+  if ( !std::isnan(lemma_freq_log) )
+    addOneMetric( doc, el, "log_lemma_freq", TiCC::toString(lemma_freq_log) );
+  addOneMetric( doc, el,
+    "word_overlap_count", TiCC::toString( wordOverlapCnt ) );
+  addOneMetric( doc, el,
+    "lemma_overlap_count", TiCC::toString( lemmaOverlapCnt ) );
+  if ( !std::isnan(logprob10)  )
+    addOneMetric( doc, el, "lprob10", TiCC::toString(logprob10) );
+  if ( prop != CGN::JUSTAWORD )
+    addOneMetric( doc, el, "property", TiCC::toString(prop) );
+  if ( sem_type != SEM::NO_SEMTYPE )
+    addOneMetric( doc, el, "semtype", SEM::toString(sem_type) );
+  if ( intensify_type != Intensify::NO_INTENSIFY )
+    addOneMetric( doc, el, "intensifytype", Intensify::toString(intensify_type) );
+  if ( general_noun_type != General::NO_GENERAL )
+    addOneMetric( doc, el, "generalnountype", General::toString(general_noun_type) );
+  if ( general_verb_type != General::NO_GENERAL )
+    addOneMetric( doc, el, "generalverbtype", General::toString(general_verb_type) );
+  if ( adverb_type != Adverb::NO_ADVERB )
+    addOneMetric( doc, el, "adverbtype", Adverb::toString(adverb_type) );
+  if ( afkType != Afk::NO_A )
+    addOneMetric( doc, el, "afktype", Afk::toString(afkType) );
+}

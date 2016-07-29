@@ -6,6 +6,19 @@
 
 using namespace std;
 
+
+/**
+ * Adds a Metric to a FoliaElement in a FoliaDocument.
+ * @param doc    the current FoliaDocument
+ * @param parent the current FoliaElement
+ * @param cls    the class of the new Metric
+ * @param val    the value of the new Metric
+ */
+void addOneMetric( folia::Document *doc, folia::FoliaElement *parent, const string& cls, const string& val ) {
+  folia::Metric *m = new folia::Metric( folia::getArgs( "class='" + cls + "', value='" + val + "'" ), doc );
+  parent->append( m );
+}
+
 /**
  * Calculates the overlap of the Word or Lemma with the buffer
  * @param w_or_l          word or lemma
