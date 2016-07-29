@@ -20,6 +20,7 @@
 
 */
 
+#include <cmath>
 #include <cstdio> // for remove()
 #include <unistd.h>
 #include <iostream>
@@ -37,6 +38,46 @@ using namespace std;
 using namespace folia;
 using namespace TiCC;
 
+
+string MMtoString( const multimap<DD_type, int>& mm, DD_type t ){
+  size_t len = mm.count(t);
+  if ( len > 0 ){
+    int result = 0;
+    for( multimap<DD_type, int>::const_iterator pos = mm.lower_bound(t);
+   pos != mm.upper_bound(t);
+   ++pos ){
+      result += pos->second;
+    }
+    return toString( result/double(len) );
+  }
+  else
+    return "NA";
+}
+
+string MMtoString( const multimap<DD_type, int>& mm ){
+  size_t len = mm.size();
+  if ( len > 0 ){
+    int result = 0;
+    for( multimap<DD_type, int>::const_iterator pos = mm.begin();
+   pos != mm.end();
+   ++pos ){
+      if ( !std::isnan(pos->second) )
+  result += pos->second;
+    }
+    cerr << "MM to string " << result << "/" << len << endl;
+    return toString( result/double(len) );
+  }
+  else
+    return "NA";
+}
+
+void aggregate( multimap<DD_type,int>& out, const multimap<DD_type,int>& in ) {
+  multimap<DD_type,int>::const_iterator ii = in.begin();
+  while ( ii != in.end() ){
+    out.insert( make_pair(ii->first, ii->second ) );
+    ++ii;
+  }
+}
 
 xmlNode *getAlpNodeWord( xmlDoc *doc, const Word *w ){
   // search the XML node that matches de FoLiA word w

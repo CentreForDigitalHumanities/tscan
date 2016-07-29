@@ -1,6 +1,10 @@
 #ifndef STATS_H
 #define	STATS_H
 
+#include <string>
+#include <fstream>
+#include <map>
+
 struct sentStats; // Forward declaration
 struct wordStats; // Forward declaration
 
@@ -211,7 +215,7 @@ struct wordStats : public basicStats {
   double word_freq_log_head_sat;
   top_val top_freq_head;
   top_val top_freq_sat;
-  std::string compstr;
+  std::string compstr;  
 };
 
 
@@ -464,7 +468,9 @@ struct structStats: public basicStats {
     top20000CntHead(0),
     top20000CntSat(0),
     top20000CntNounCorr(0),
-    top20000CntCorr(0)
+    top20000CntCorr(0),
+    rarityLevel(0),
+    overlapSize(0)
  {};
   ~structStats();
   void addMetrics() const;
@@ -776,6 +782,8 @@ struct structStats: public basicStats {
   int top20000CntSat;
   int top20000CntNounCorr;
   int top20000CntCorr;
+  int rarityLevel;
+  unsigned int overlapSize;
 };
 
 
