@@ -55,7 +55,6 @@
 
 using namespace std;
 using namespace TiCC;
-using namespace folia;
 
 const string frog_pos_set = "http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn";
 const string frog_lemma_set = "http://ilk.uvt.nl/folia/sets/frog-mblem-nl";
@@ -64,7 +63,7 @@ const string frog_morph_set = "http://ilk.uvt.nl/folia/sets/frog-mbma-nl";
 string configFile = "tscan.cfg";
 string probFilename = "problems.log";
 ofstream problemFile;
-Configuration config;
+TiCC::Configuration config;
 string workdir_name;
 
 struct cf_data {
@@ -82,7 +81,7 @@ struct noun {
 };
 
 struct settingData {
-  void init( const Configuration& );
+  void init( const TiCC::Configuration& );
   bool doAlpino;
   bool doAlpinoServer;
   bool doWopr;
@@ -148,7 +147,7 @@ bool fillN( map<string,noun>& m, istream& is ){
 
     // Split at a tab; the line should contain either 3 (non-compounds) or 7 (compounds) values
     vector<string> parts;
-    int i = split_at( line, parts, "\t" );
+    int i = TiCC::split_at( line, parts, "\t" );
     if (i != 3 && i != 7) {
       cerr << "skip line: " << line << " (expected 3 or 7 values, got " << i << ")" << endl;
       continue;
@@ -187,7 +186,7 @@ bool fillWW( map<string,SEM::Type>& m, istream& is ){
     if ( line.empty() )
       continue;
     vector<string> parts;
-    int n = split_at( line, parts, "\t" ); // split at tab
+    int n = TiCC::split_at( line, parts, "\t" ); // split at tab
     if ( n != 3 ){
       cerr << "skip line: " << line << " (expected 3 values, got "
 	   << n << ")" << endl;
@@ -209,7 +208,7 @@ bool fillADJ( map<string,SEM::Type>& m, istream& is ){
     if ( line.empty() )
       continue;
     vector<string> parts;
-    int n = split_at( line, parts, "\t" ); // split at tab
+    int n = TiCC::split_at( line, parts, "\t" ); // split at tab
     if ( n <2 || n > 3 ){
       cerr << "skip line: " << line << " (expected 2 or 3 values, got "
 	   << n << ")" << endl;
@@ -222,7 +221,7 @@ bool fillADJ( map<string,SEM::Type>& m, istream& is ){
     else {
       res = SEM::classifyADJ( parts[1], parts[2] );
     }
-    string low = lowercase( parts[0] );
+    string low = TiCC::lowercase( parts[0] );
     if ( m.find(low) != m.end() ){
       cerr << "Information: multiple entry '" << low << "' in ADJ lex" << endl;
     }
@@ -261,7 +260,7 @@ bool fill_intensify(map<string,Intensify::Type>& m, istream& is){
        << n << ")" << endl;
       continue;
     }
-    string low = TiCC::trim(lowercase( parts[0] ));
+    string low = TiCC::trim(TiCC::lowercase( parts[0] ));
     Intensify::Type res = Intensify::classify(TiCC::lowercase(parts[1]));
     if ( m.find(low) != m.end() ){
       cerr << "Information: multiple entry '" << low << "' in Intensify lex" << endl;
@@ -298,7 +297,7 @@ bool fill_general(map<string,General::Type>& m, istream& is){
        << n << ")" << endl;
       continue;
     }
-    string low = TiCC::trim(lowercase( parts[0] ));
+    string low = TiCC::trim(TiCC::lowercase( parts[0] ));
     General::Type res = General::classify(TiCC::lowercase(parts[1]));
     if ( m.find(low) != m.end() ){
       cerr << "Information: multiple entry '" << low << "' in general lex" << endl;
@@ -335,7 +334,7 @@ bool fill_adverbs(map<string,Adverb::Type>& m, istream& is){
        << n << ")" << endl;
       continue;
     }
-    string low = TiCC::trim(lowercase(parts[0]));
+    string low = TiCC::trim(TiCC::lowercase(parts[0]));
     Adverb::Type res = Adverb::classify(TiCC::lowercase(parts[1]));
     if ( m.find(low) != m.end() ){
       cerr << "Information: multiple entry '" << low << "' in adverbs lex" << endl;
@@ -367,7 +366,7 @@ bool fill_freqlex( map<string,cf_data>& m, long int& total, istream& is ){
     if ( line.empty() )
       continue;
     vector<string> parts;
-    size_t n = split_at( line, parts, "\t" ); // split at tabs
+    size_t n = TiCC::split_at( line, parts, "\t" ); // split at tabs
     if ( n != 4 ){
       cerr << "skip line: " << line << " (expected 4 values, got "
 	   << n << ")" << endl;
@@ -428,7 +427,7 @@ bool fill_topvals( map<string,top_val>& m, istream& is ){
     else
       val = top1000;
     vector<string> parts;
-    size_t n = split_at( line, parts, "\t" ); // split at tabs
+    size_t n = TiCC::split_at( line, parts, "\t" ); // split at tabs
     if ( n != 4 ){
       cerr << "skip line: " << line << " (expected 2 values, got "
 	   << n << ")" << endl;
@@ -467,7 +466,7 @@ bool fill_connectors( map<CGN::Type,set<string> >& c1,
     if ( line.empty() || line[0] == '#' )
       continue;
     vector<string> vec;
-    int n = split_at( line, vec, "\t" );
+    int n = TiCC::split_at( line, vec, "\t" );
     if ( n == 0 || n > 2 ){
       cerr << "skip line: " << line << " (expected 1 or 2 values, got "
 	   << n << ")" << endl;
@@ -478,7 +477,7 @@ bool fill_connectors( map<CGN::Type,set<string> >& c1,
       tag = CGN::toCGN( vec[1] );
     }
     vector<string> dum;
-    n = split_at( vec[0], dum, " " );
+    n = TiCC::split_at( vec[0], dum, " " );
     if ( n < 1 || n > 4 ){
       cerr << "skip line: " << line
 	   << " (expected 1, to 4 values in the first part: " << vec[0]
@@ -525,7 +524,7 @@ bool fill_vzexpr( set<string>& vz2, set<string>& vz3, set<string>& vz4,
     if ( line.empty() || line[0] == '#' )
       continue;
     vector<string> vec;
-    int n = split_at_first_of( line, vec, " \t" );
+    int n = TiCC::split_at_first_of( line, vec, " \t" );
     if ( n == 0 || n > 4 ){
       cerr << "skip line: " << line << " (expected 2, 3 or 4 values, got "
 	   << n << ")" << endl;
@@ -577,7 +576,7 @@ bool fill( map<string,Afk::Type>& afkos, istream& is ){
     if ( line.empty() || line[0] == '#' )
       continue;
     vector<string> vec;
-    int n = split_at_first_of( line, vec, " \t" );
+    int n = TiCC::split_at_first_of( line, vec, " \t" );
     if ( n < 2 ){
       cerr << "skip line: " << line << " (expected at least 2 values, got "
 	   << n << ")" << endl;
@@ -1244,7 +1243,7 @@ void argument_overlap( const string w_or_l,
 }
 
 wordStats::wordStats( int index,
-		      Word *w,
+		      folia::Word *w,
 		      const xmlNode *alpWord,
 		      const set<size_t>& puncts,
 		      bool fail ):
@@ -1265,19 +1264,19 @@ wordStats::wordStats( int index,
 {
   UnicodeString us = w->text();
   charCnt = us.length();
-  word = UnicodeToUTF8( us );
-  l_word = UnicodeToUTF8( us.toLower() );
+  word = folia::UnicodeToUTF8( us );
+  l_word = folia::UnicodeToUTF8( us.toLower() );
   if ( fail )
     return;
-  vector<PosAnnotation*> posV = w->select<PosAnnotation>(frog_pos_set);
+  vector<folia::PosAnnotation*> posV = w->select<folia::PosAnnotation>(frog_pos_set);
   if ( posV.size() != 1 )
-    throw ValueError( "word doesn't have Frog POS tag info" );
-  PosAnnotation *pa = posV[0];
+    throw folia::ValueError( "word doesn't have Frog POS tag info" );
+  folia::PosAnnotation *pa = posV[0];
   pos = pa->cls();
   tag = CGN::toCGN( pa->feat("head") );
   lemma = w->lemma( frog_lemma_set );
-  us = UTF8ToUnicode( lemma );
-  l_lemma = UnicodeToUTF8( us.toLower() );
+  us = folia::UTF8ToUnicode( lemma );
+  l_lemma = folia::UnicodeToUTF8( us.toLower() );
 
   setCGNProps( pa );
   if ( alpWord ){
@@ -1364,9 +1363,9 @@ wordStats::wordStats( int index,
   }
 }
 
-void addOneMetric( Document *doc, FoliaElement *parent,
+void addOneMetric( folia::Document *doc, folia::FoliaElement *parent,
 		   const string& cls, const string& val ){
-  Metric *m = new Metric( getArgs( "class='" + cls + "', value='" + val + "'" ),
+  folia::Metric *m = new folia::Metric( folia::getArgs( "class='" + cls + "', value='" + val + "'" ),
 			    doc );
   parent->append( m );
 }
@@ -1428,10 +1427,10 @@ void wordStats::getSentenceOverlap( const vector<string>& wordbuffer,
 }
 
 void wordStats::addMetrics( ) const {
-  FoliaElement *el = folia_node;
-  Document *doc = el->doc();
+  folia::FoliaElement *el = folia_node;
+  folia::Document *doc = el->doc();
   if ( wwform != ::NO_VERB ){
-    KWargs args;
+    folia::KWargs args;
     args["set"] = "tscan-set";
     args["class"] = "wwform(" + toString(wwform) + ")";
     el->addPosAnnotation( args );
@@ -1838,8 +1837,8 @@ string toMString( double d ){
 }
 
 void structStats::addMetrics( ) const {
-  FoliaElement *el = folia_node;
-  Document *doc = el->doc();
+  folia::FoliaElement *el = folia_node;
+  folia::Document *doc = el->doc();
   addOneMetric( doc, el, "word_count", toString(wordCnt) );
   addOneMetric( doc, el, "bv_vd_count", toString(vdBvCnt) );
   addOneMetric( doc, el, "nw_vd_count", toString(vdNwCnt) );
@@ -3266,18 +3265,18 @@ void fill_word_lemma_buffers( const sentStats* ss,
   }
 }
 
-void np_length( Sentence *s, int& npcount, int& indefcount, int& size ) {
-  vector<Chunk *> cv = s->select<Chunk>();
+void np_length( folia::Sentence *s, int& npcount, int& indefcount, int& size ) {
+  vector<folia::Chunk *> cv = s->select<folia::Chunk>();
   size = 0 ;
   for( size_t i=0; i < cv.size(); ++i ){
     if ( cv[i]->cls() == "NP" ){
       ++npcount;
       size += cv[i]->size();
-      FoliaElement *det = cv[i]->index(0);
+      folia::FoliaElement *det = cv[i]->index(0);
       if ( det ){
-	vector<PosAnnotation*> posV = det->select<PosAnnotation>(frog_pos_set);
+	vector<folia::PosAnnotation*> posV = det->select<folia::PosAnnotation>(frog_pos_set);
 	if ( posV.size() != 1 )
-	  throw ValueError( "word doesn't have Frog POS tag info" );
+	  throw folia::ValueError( "word doesn't have Frog POS tag info" );
 	if ( posV[0]->feat("head") == "LID" ){
 	  if ( det->text() == "een" )
 	    ++indefcount;
@@ -3886,13 +3885,13 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 #ifdef DEBUG_WOPR
     cerr << "start FoLiA parsing" << endl;
 #endif
-    Document *doc = new Document();
+    folia::Document *doc = new folia::Document();
     try {
       doc->readFromString( result );
 #ifdef DEBUG_WOPR
       cerr << "finished parsing" << endl;
 #endif
-      vector<Word*> wv = doc->words();
+      vector<folia::Word*> wv = doc->words();
       if ( wv.size() !=  wordProbsV.size() ){
 	cerr << "unforseen mismatch between de number of words returned by WOPR"
 	    << endl << " and the number of words in the input sentence. "
@@ -3900,7 +3899,7 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 	return;
       }
       for ( size_t i=0; i < wv.size(); ++i ){
-	vector<Metric*> mv = wv[i]->select<Metric>();
+	vector<folia::Metric*> mv = wv[i]->select<folia::Metric>();
 	if ( mv.size() > 0 ){
 	  for ( size_t j=0; j < mv.size(); ++j ){
 	    if ( mv[j]->cls() == "lprob10" ){
@@ -3909,12 +3908,12 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 	  }
 	}
       }
-      vector<Sentence*> sv = doc->sentences();
+      vector<folia::Sentence*> sv = doc->sentences();
       if ( sv.size() != 1 ){
 	throw logic_error( "The document returned by WOPR contains > 1 Sentence" );
 	return;
       }
-      vector<Metric*> mv = sv[0]->select<Metric>();
+      vector<folia::Metric*> mv = sv[0]->select<folia::Metric>();
       if ( mv.size() > 0 ){
 	for ( size_t j=0; j < mv.size(); ++j ){
 	  if ( mv[j]->cls() == "avg_prob10" ){
@@ -3950,14 +3949,14 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
   cerr << "Done with Wopr" << endl;
 }
 
-xmlDoc *AlpinoServerParse( Sentence *);
+xmlDoc *AlpinoServerParse( folia::Sentence *);
 
-sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
+sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
 		      const map<string,double>& LSAword_dists ):
   structStats( index, s, "sent" ){
-  text = UnicodeToUTF8( s->toktext() );
+  text = folia::UnicodeToUTF8( s->toktext() );
   cerr << "analyse tokenized sentence=" << text << endl;
-  vector<Word*> w = s->words();
+  vector<folia::Word*> w = s->words();
   vector<double> woprProbsV(w.size(),NAN);
   double sentProb = NAN;
   double sentEntropy = NAN;
@@ -3989,10 +3988,10 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 	if ( alpDoc ){
 	  parseFailCnt = 0; // OK
 	  for( size_t i=0; i < w.size(); ++i ){
-	    vector<PosAnnotation*> posV = w[i]->select<PosAnnotation>(frog_pos_set);
+	    vector<folia::PosAnnotation*> posV = w[i]->select<folia::PosAnnotation>(frog_pos_set);
 	    if ( posV.size() != 1 )
-	      throw ValueError( "word doesn't have Frog POS tag info" );
-	    PosAnnotation *pa = posV[0];
+	      throw folia::ValueError( "word doesn't have Frog POS tag info" );
+	    folia::PosAnnotation *pa = posV[0];
 	    string posHead = pa->feat("head");
 	    if ( posHead == "LET" ){
 	      puncts.insert( i );
@@ -4692,8 +4691,8 @@ sentStats::sentStats( int index, Sentence *s, const sentStats* pred,
 
 void sentStats::addMetrics( ) const {
   structStats::addMetrics( );
-  FoliaElement *el = folia_node;
-  Document *doc = el->doc();
+  folia::FoliaElement *el = folia_node;
+  folia::Document *doc = el->doc();
   if ( passiveCnt > 0 )
     addOneMetric( doc, el, "isPassive", "true" );
   if ( questCnt > 0 )
@@ -4703,13 +4702,13 @@ void sentStats::addMetrics( ) const {
 }
 
 parStats::parStats( int index,
-		    Paragraph *p,
+		    folia::Paragraph *p,
 		    const map<string,double>& LSA_word_dists,
 		    const map<string,double>& LSA_sent_dists ):
   structStats( index, p, "par" )
 {
   sentCnt = 0;
-  vector<Sentence*> sents = p->sentences();
+  vector<folia::Sentence*> sents = p->sentences();
   sentStats *prev = 0;
   for ( size_t i=0; i < sents.size(); ++i ){
     sentStats *ss = new sentStats( i, sents[i], prev, LSA_word_dists );
@@ -4740,7 +4739,7 @@ parStats::parStats( int index,
 
 
 void parStats::addMetrics( ) const {
-  FoliaElement *el = folia_node;
+  folia::FoliaElement *el = folia_node;
   structStats::addMetrics( );
   addOneMetric( el->doc(), el,
 		"sentence_count", toString(sentCnt) );
@@ -4822,7 +4821,7 @@ void docStats::calculate_doc_overlap( ){
 
 //#define DEBUG_LSA_SERVER
 
-void docStats::gather_LSA_word_info( Document *doc ){
+void docStats::gather_LSA_word_info( folia::Document *doc ){
   string host = config.lookUp( "host", "lsa_words" );
   string port = config.lookUp( "port", "lsa_words" );
   Sockets::ClientSocket client;
@@ -4831,12 +4830,12 @@ void docStats::gather_LSA_word_info( Document *doc ){
     cerr << "Reason: " << client.getMessage() << endl;
     exit( EXIT_FAILURE );
   }
-  vector<Word*> wv = doc->words();
+  vector<folia::Word*> wv = doc->words();
   set<string> bow;
   for ( size_t i=0; i < wv.size(); ++i ){
     UnicodeString us = wv[i]->text();
     us.toLower();
-    string s = UnicodeToUTF8( us );
+    string s = folia::UnicodeToUTF8( us );
     bow.insert(s);
   }
   while ( !bow.empty() ){
@@ -4881,7 +4880,7 @@ void docStats::gather_LSA_word_info( Document *doc ){
   }
 }
 
-void docStats::gather_LSA_doc_info( Document *doc ){
+void docStats::gather_LSA_doc_info( folia::Document *doc ){
   string host = config.lookUp( "host", "lsa_docs" );
   string port = config.lookUp( "port", "lsa_docs" );
   Sockets::ClientSocket client;
@@ -4890,19 +4889,19 @@ void docStats::gather_LSA_doc_info( Document *doc ){
     cerr << "Reason: " << client.getMessage() << endl;
     exit( EXIT_FAILURE );
   }
-  vector<Paragraph*> pv = doc->paragraphs();
+  vector<folia::Paragraph*> pv = doc->paragraphs();
   map<string,string> norm_pv;
   map<string,string> norm_sv;
   for ( size_t p=0; p < pv.size(); ++p ){
-    vector<Sentence*> sv = pv[p]->sentences();
+    vector<folia::Sentence*> sv = pv[p]->sentences();
     string norm_p;
     for ( size_t s=0; s < sv.size(); ++s ){
-      vector<Word*> wv = sv[s]->words();
+      vector<folia::Word*> wv = sv[s]->words();
       set<string> bow;
       for ( size_t i=0; i < wv.size(); ++i ){
 	UnicodeString us = wv[i]->text();
 	us.toLower();
-	string s = UnicodeToUTF8( us );
+	string s = folia::UnicodeToUTF8( us );
 	bow.insert(s);
       }
       string norm_s;
@@ -5024,15 +5023,15 @@ void docStats::gather_LSA_doc_info( Document *doc ){
   }
 }
 
-docStats::docStats( Document *doc ):
+docStats::docStats( folia::Document *doc ):
   structStats( 0, 0, "document" ),
   doc_word_overlapCnt(0), doc_lemma_overlapCnt(0)
 {
   sentCnt = 0;
-  doc->declare( AnnotationType::METRIC,
+  doc->declare( folia::AnnotationType::METRIC,
 		"metricset",
 		"annotator='tscan'" );
-  doc->declare( AnnotationType::POS,
+  doc->declare( folia::AnnotationType::POS,
 		"tscan-set",
 		"annotator='tscan'" );
   if ( !settings.style.empty() ){
@@ -5042,7 +5041,7 @@ docStats::docStats( Document *doc ):
     gather_LSA_word_info( doc );
     gather_LSA_doc_info( doc );
   }
-  vector<Paragraph*> pars = doc->paragraphs();
+  vector<folia::Paragraph*> pars = doc->paragraphs();
   if ( pars.size() > 0 )
     folia_node = pars[0]->parent();
   for ( size_t i=0; i != pars.size(); ++i ){
@@ -5086,7 +5085,7 @@ string docStats::rarity( int level ) const {
 }
 
 void docStats::addMetrics() const {
-  FoliaElement *el = folia_node;
+  folia::FoliaElement *el = folia_node;
   structStats::addMetrics();
   addOneMetric( el->doc(), el,
 		"sentence_count", toString( sentCnt ) );
@@ -5268,7 +5267,7 @@ void docStats::toCSV( const string& name, csvKind what ) const {
 
 //#define DEBUG_FROG
 
-Document *getFrogResult( istream& is ){
+folia::Document *getFrogResult( istream& is ){
   string host = config.lookUp( "host", "frog" );
   string port = config.lookUp( "port", "frog" );
   Sockets::ClientSocket client;
@@ -5330,12 +5329,12 @@ Document *getFrogResult( istream& is ){
 #ifdef DEBUG_FROG
   cerr << "received data [" << result << "]" << endl;
 #endif
-  Document *doc = 0;
+  folia::Document *doc = 0;
   if ( !result.empty() && result.size() > 10 ){
 #ifdef DEBUG_FROG
     cerr << "start FoLiA parsing" << endl;
 #endif
-    doc = new Document();
+    doc = new folia::Document();
     try {
       doc->readFromString( result );
 #ifdef DEBUG_FROG
@@ -5352,7 +5351,7 @@ Document *getFrogResult( istream& is ){
 
 //#define DEBUG_ALPINO
 
-xmlDoc *AlpinoServerParse( Sentence *sent ){
+xmlDoc *AlpinoServerParse( folia::Sentence *sent ){
   string host = config.lookUp( "host", "alpino" );
   string port = config.lookUp( "port", "alpino" );
   Sockets::ClientSocket client;
@@ -5402,7 +5401,7 @@ int main(int argc, char *argv[]) {
   try {
     opts.init( argc, argv );
   }
-  catch( OptionError& e ){
+  catch( TiCC::OptionError& e ){
     cerr << e.what() << endl;
     usage();
     exit( EXIT_SUCCESS );
@@ -5426,7 +5425,7 @@ int main(int argc, char *argv[]) {
     inputnames = opts.getMassOpts();
   }
   else {
-    inputnames = searchFiles( t_option );
+    inputnames = TiCC::searchFiles( t_option );
   }
 
   if ( inputnames.size() == 0 ){
@@ -5515,7 +5514,7 @@ int main(int argc, char *argv[]) {
     }
     else {
       cerr << "opened file " <<  inName << endl;
-      Document *doc = getFrogResult( is );
+      folia::Document *doc = getFrogResult( is );
       if ( !doc ){
 	cerr << "big trouble: no FoLiA document created " << endl;
 	continue;
