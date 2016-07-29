@@ -80,6 +80,11 @@ struct noun {
   int compound_parts;
 };
 
+struct tagged_classification {
+  CGN::Type tag;
+  string classification;
+};
+
 struct settingData {
   void init( const TiCC::Configuration& );
   bool doAlpino;
@@ -133,6 +138,7 @@ struct settingData {
   set<string> vzexpr3;
   set<string> vzexpr4;
   map<string,Afk::Type> afkos;
+  map<string, tagged_classification> my_classification;
 };
 
 settingData settings;
@@ -621,6 +627,53 @@ bool fill( map<string,Afk::Type>& afks, const string& filename ){
   return false;
 }
 
+bool fill( map<string,tagged_classification>& my_classification, istream& is ){
+  string line;
+  while( safe_getline( is, line ) ){
+    // a line is supposed to be :
+    // a comment, starting with '#' 
+    // like: '# comment'
+    // OR: a lemma with an optional pos-tag, followed by a categorization
+    line = TiCC::trim( line );
+    if ( line.empty() || line[0] == '#' )
+      continue;
+    vector<string> vec;
+    int n = TiCC::split_at_first_of( line, vec, " \t" );
+    if ( n < 2 ) {
+      cerr << "skip line: " << line << " (expected at least 2 values, got " << n << ")" << endl;
+      continue;
+    }
+    if ( n == 2 ) {
+      tagged_classification tc;
+      tc.tag = CGN::UNASS;
+      tc.classification = vec[1];
+      my_classification[vec[0]] = tc;
+    }
+    else if ( n == 3 ) {
+      tagged_classification tc;
+      tc.tag = CGN::toCGN( vec[1] );
+      tc.classification = vec[2];
+      my_classification[vec[0]] = tc;
+    }
+    else {
+      cerr << "skip line: " << line << " (expected at most 3 values, got " << n << ")" << endl;
+      continue;
+    }
+  }
+  return true;
+}
+
+bool fill( map<string,tagged_classification>& my_classification, const string& filename ){
+  ifstream is( filename.c_str() );
+  if ( is ){
+    return fill( my_classification , is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
 void settingData::init( const Configuration& cf ){
   doXfiles = true;
   doAlpino = false;
@@ -835,6 +888,12 @@ void settingData::init( const Configuration& cf ){
   val = cf.lookUp( "afkortingen" );
   if ( !val.empty() ){
     if ( !fill( afkos, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+
+  val = cf.lookUp( "my_classification" );
+  if ( !val.empty() ){
+    if ( !fill( my_classification, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
 }
@@ -1081,6 +1140,19 @@ Afk::Type wordStats::checkAfk() const {
   return Afk::NO_A;
 }
 
+// Returns the self-defined classification for a lemma (if its tag is correct)
+string wordStats::checkMyClassification() const {
+  string result;
+  map<string,tagged_classification>::const_iterator sit = settings.my_classification.find( lemma );
+  if ( sit != settings.my_classification.end() ){
+    tagged_classification tc = sit->second;
+    if (tc.tag == CGN::UNASS || tc.tag == tag) {
+      result = tc.classification;
+    }
+  }
+  return result;
+}
+
 // Returns the position of a word in the top-20000 lexicon
 top_val wordStats::topFreqLookup(const string& w) const {
   map<string,top_val>::const_iterator it = settings.top_freq_lex.find( w );
@@ -1263,6 +1335,7 @@ wordStats::wordStats( int index,
       top_freq_head = topFreqLookup(compound_head);
       top_freq_sat = topFreqLookup(compound_sat);
     }
+    my_classification = checkMyClassification();
   }
 }
 
