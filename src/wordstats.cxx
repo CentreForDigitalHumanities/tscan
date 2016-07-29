@@ -13,6 +13,7 @@
 #include "tscan/adverb.h"
 #include "tscan/ner.h"
 #include "tscan/stats.h"
+#include "tscan/utils.h"
 
 using namespace std;
 
@@ -316,6 +317,61 @@ bool wordStats::checkMorphNeg() const {
     }
   }
   return false;
+}
+
+/*********
+ * Overlap
+ *********/
+
+//#define DEBUG_OL
+
+bool wordStats::isOverlapCandidate() const {
+  if ( ( tag == CGN::VNW && prop != CGN::ISAANW ) ||
+       ( tag == CGN::N ) ||
+       ( prop == CGN::ISNAME ) ||
+       ( tag == CGN::WW && wwform == HEAD_VERB ) ){
+    return true;
+  }
+  else {
+#ifdef DEBUG_OL
+    if ( tag == CGN::WW ){
+      cerr << "WW overlapcandidate REJECTED " << toString(wwform) << " " << word << endl;
+    }
+    else if ( tag == CGN::VNW ){
+      cerr << "VNW overlapcandidate REJECTED " << toString(prop) << " " << word << endl;
+    }
+#endif
+    return false;
+  }
+}
+
+void wordStats::getSentenceOverlap( const vector<string>& wordbuffer,
+            const vector<string>& lemmabuffer ){
+  if ( isOverlapCandidate() ){
+    // get the words and lemmas' of the previous sentence
+#ifdef DEBUG_OL
+    cerr << "call word sentenceOverlap, word = " << l_word;
+    int tmp2 = wordOverlapCnt;
+#endif
+    argument_overlap( l_word, wordbuffer, wordOverlapCnt );
+#ifdef DEBUG_OL
+    if ( tmp2 != wordOverlapCnt ){
+      cerr << " OVERLAPPED " << endl;
+    }
+    else
+      cerr << endl;
+    cerr << "call lemma sentenceOverlap, lemma= " << l_lemma;
+    tmp2 = lemmaOverlapCnt;
+#endif
+    argument_overlap( l_lemma, lemmabuffer, lemmaOverlapCnt );
+#ifdef DEBUG_OL
+    if ( tmp2 != lemmaOverlapCnt ){
+      cerr << " OVERLAPPED " << endl;
+    }
+    else
+      cerr << endl;
+#endif
+  }
 }
 
 /************

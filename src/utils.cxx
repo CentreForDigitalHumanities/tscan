@@ -1,9 +1,86 @@
 #include <cmath>
 #include <iostream>
+#include <set>
 #include "ticcutils/StringOps.h"
 #include "tscan/utils.h"
 
 using namespace std;
+
+/**
+ * Calculates the overlap of the Word or Lemma with the buffer
+ * @param w_or_l          word or lemma
+ * @param buffer          current buffer
+ * @param arg_overlap_cnt resulting count
+ */
+void argument_overlap( const string w_or_l, const vector<string>& buffer, int& arg_overlap_cnt ) {
+  if ( buffer.empty() )
+    return;
+  // cerr << "test overlap, lemma/word= " << w_or_l << endl;
+  // cerr << "buffer=" << buffer << endl;
+  static string vnw_1sA[] = {"ik", "mij", "me", "mijn" };
+  static set<string> vnw_1s = set<string>( vnw_1sA,
+             vnw_1sA + sizeof(vnw_1sA)/sizeof(string) );
+  static string vnw_2sA[] = {"jij", "je", "jou", "jouw" };
+  static set<string> vnw_2s = set<string>( vnw_2sA,
+             vnw_2sA + sizeof(vnw_2sA)/sizeof(string) );
+  static string vnw_3smA[] = {"hij", "hem", "zijn" };
+  static set<string> vnw_3sm = set<string>( vnw_3smA,
+              vnw_3smA + sizeof(vnw_3smA)/sizeof(string) );
+  static string vnw_3sfA[] = {"zij", "ze", "haar"};
+  static set<string> vnw_3sf = set<string>( vnw_3sfA,
+              vnw_3sfA + sizeof(vnw_3sfA)/sizeof(string) );
+  static string vnw_1pA[] = {"wij", "we", "ons", "onze"};
+  static set<string> vnw_1p = set<string>( vnw_1pA,
+             vnw_1pA + sizeof(vnw_1pA)/sizeof(string) );
+  static string vnw_2pA[] = {"jullie"};
+  static set<string> vnw_2p = set<string>( vnw_2pA,
+             vnw_2pA + sizeof(vnw_2pA)/sizeof(string) );
+  static string vnw_3pA[] = {"zij", "ze", "hen", "hun"};
+  static set<string> vnw_3p = set<string>( vnw_3pA,
+             vnw_3pA + sizeof(vnw_3pA)/sizeof(string) );
+
+  for( size_t i=0; i < buffer.size(); ++i ){
+    if ( w_or_l == buffer[i] ){
+      ++arg_overlap_cnt;
+      break;
+    }
+    else if ( vnw_1s.find( w_or_l ) != vnw_1s.end() &&
+        vnw_1s.find( buffer[i] ) != vnw_1s.end() ){
+      ++arg_overlap_cnt;
+      break;
+    }
+    else if ( vnw_2s.find( w_or_l ) != vnw_2s.end() &&
+        vnw_2s.find( buffer[i] ) != vnw_2s.end() ){
+      ++arg_overlap_cnt;
+      break;
+    }
+    else if ( vnw_3sm.find( w_or_l ) != vnw_3sm.end() &&
+        vnw_3sm.find( buffer[i] ) != vnw_3sm.end() ){
+      ++arg_overlap_cnt;
+      break;
+    }
+    else if ( vnw_3sf.find( w_or_l ) != vnw_3sf.end() &&
+        vnw_3sf.find( buffer[i] ) != vnw_3sf.end() ){
+      ++arg_overlap_cnt;
+      break;
+    }
+    else if ( vnw_1p.find( w_or_l ) != vnw_1p.end() &&
+        vnw_1p.find( buffer[i] ) != vnw_1p.end() ){
+      ++arg_overlap_cnt;
+       break;
+   }
+    else if ( vnw_2p.find( w_or_l ) != vnw_2p.end() &&
+        vnw_2p.find( buffer[i] ) != vnw_2p.end() ){
+      ++arg_overlap_cnt;
+      break;
+    }
+    else if ( vnw_3p.find( w_or_l ) != vnw_3p.end() &&
+        vnw_3p.find( buffer[i] ) != vnw_3p.end() ){
+      ++arg_overlap_cnt;
+      break;
+    }
+  }
+}
 
 /**
  * Reads a line and deals with all possible line endings (Unix, Windows, Mac)

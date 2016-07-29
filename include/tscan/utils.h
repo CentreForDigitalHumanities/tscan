@@ -5,6 +5,7 @@
 #include <fstream>
 #include <map>
 
+void argument_overlap( const std::string, const std::vector<std::string>&, int& );
 std::istream& safe_getline( std::istream&, std::string& );
 std::string toMString( double d );
 std::string escape_quotes(const std::string &before);
