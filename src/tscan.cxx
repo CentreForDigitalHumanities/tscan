@@ -1746,6 +1746,9 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "adj_np_modifier_count", toString(adjNpModCnt) );
   addOneMetric( doc, el, "np_modifier_count", toString(npModCnt) );
 
+  addOneMetric( doc, el, "small_conj_count", toString(smallCnjCnt) );
+  addOneMetric( doc, el, "small_conj_extra_count", toString(smallCnjExtraCnt) );
+
   addOneMetric( doc, el, "character_count", toString(charCnt) );
   addOneMetric( doc, el, "character_count_min_names", toString(charCntExNames) );
   addOneMetric( doc, el, "morpheme_count", toString(morphCnt) );
@@ -2588,6 +2591,15 @@ void sentStats::resolveConjunctions(xmlDoc *alpDoc) {
   sv1CnjCnt = getNodesByRelCat(alpDoc, "cnj", "sv1").size();
 }
 
+// Finds nodes of small conjunctions and reports counts
+void sentStats::resolveSmallConjunctions(xmlDoc *alpDoc) {
+  string cats = "|smain|ssub|sv1|rel|whrel|cp|oti|ti|whsub|du|";
+  string smallCnjPath = ".//node[@rel='cnj' and not(contains('" + cats + "', concat('|', @cat, '|')))]";
+  smallCnjCnt = TiCC::FindNodes(alpDoc, smallCnjPath).size();
+  string smallCnjExtraPath = ".//node[@cat='conj' and not(descendant::node[contains('" + cats + "', concat('|', @cat, '|'))])]";
+  smallCnjExtraCnt = smallCnjCnt - TiCC::FindNodes(alpDoc, smallCnjExtraPath).size();
+}
+
 //#define DEBUG_WOPR
 void orderWopr( const string& txt, vector<double>& wordProbsV,
 		double& sentProb, double& entropy, double& perplexity ){
@@ -2733,6 +2745,7 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
     resolveRelativeClauses(alpDoc);
     resolveFiniteVerbs(alpDoc);
     resolveConjunctions(alpDoc);
+    resolveSmallConjunctions(alpDoc);
 	}
 	else {
 	  parseFailCnt = 1; // failed
