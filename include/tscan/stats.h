@@ -150,6 +150,7 @@ struct wordStats : public basicStats {
   General::Type checkGeneralNoun() const;
   General::Type checkGeneralVerb() const;
   Afk::Type checkAfk() const;
+  std::string checkMyClassification() const;
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
   void staphFreqLookup();
@@ -215,7 +216,8 @@ struct wordStats : public basicStats {
   double word_freq_log_head_sat;
   top_val top_freq_head;
   top_val top_freq_sat;
-  std::string compstr;  
+  std::string compstr;
+  std::string my_classification;
 };
 
 

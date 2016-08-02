@@ -55,15 +55,21 @@ if not 'top_freq_lex' in clamdata:
     sys.exit(2)
 
 
-def load_custom_wordlist(configfile, inputdir, tscan_name, inputtemplate, default_location):
+def load_custom_wordlist(configfile, inputdir, tscan_name, inputtemplate, default_location=None):
     """This allows custom word lists. Does require to specify the full path to the files."""
+    wordlist = None
+
     for inputfile in clamdata.inputfiles(inputtemplate):
         wordlist = inputdir + inputfile.filename
         break
     else:
-        # When no inputfile is found, revert to the default
-        wordlist = TSCANDIR + default_location
-    configfile.write(tscan_name + "=\"" + wordlist + "\"\n")
+        # When no inputfile is found, revert to the default (if there is one)
+        if default_location:
+            wordlist = TSCANDIR + default_location
+
+    # Write the wordlist to the config file
+    if wordlist:
+        configfile.write(tscan_name + "=\"" + wordlist + "\"\n")
 
 #Write configuration file
 
@@ -118,6 +124,8 @@ f.write("general_nouns=\"general_nouns.data\"\n")
 f.write("general_verbs=\"general_verbs.data\"\n")
 f.write("adverbs=\"adverbs.data\"\n")
 
+# 20150802: This allows a completely dcustom classification.
+load_custom_wordlist(f, inputdir, "my_classification", "myclassification")
 # 20150316: This allows custom adjective classification.
 load_custom_wordlist(f, inputdir, "adj_semtypes", "adjclassification", "/data/adjs_semtype.data")
 # 20141121: This allows a custom noun classification.

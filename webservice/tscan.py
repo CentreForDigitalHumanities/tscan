@@ -18,7 +18,6 @@ from clam.common.formats import *
 from clam.common.converters import *
 from clam.common.viewers import *
 from clam.common.data import *
-import sys
 import os
 from base64 import b64decode as D
 import glob
@@ -166,6 +165,16 @@ PROFILES = [
             #unique=True #set unique=True if the user may only upload a file for this input template once. Set multi=True if you the user may upload multiple of such files
             acceptarchive=True,
             multi=True
+        ),
+        # 20150802: Added possibility to enter your own classification
+        InputTemplate(
+            'myclassification',
+            PlainTextFormat,
+            'Own Classification',
+            StaticParameter(id='encoding', name='Encoding', description='The character encoding of the file', value='utf-8'),
+            extension='.data',
+            optional=True,
+            unique=True,
         ),
         # 20150316: Added possibility to enter custom adjective classification
         InputTemplate(
