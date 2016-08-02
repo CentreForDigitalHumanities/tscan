@@ -1426,699 +1426,6 @@ void structStats::calculate_MTLDs() {
   emotion_sit_mtld = average_mtld( emotion_sits );
 }
 
-void sentStats::setLSAvalues( double suc, double net, double ctx ){
-  if ( suc > 0 )
-    lsa_word_suc = suc;
-  if ( net > 0 )
-    lsa_word_net = net;
-  if ( ctx > 0 )
-    throw logic_error("context cannot be !=0 for sentstats");
-}
-
-double sentStats::getMeanAL() const {
-  double result = NAN;
-  size_t len = distances.size();
-  if ( len > 0 ){
-    result = 0;
-    for( multimap<DD_type, int>::const_iterator pos = distances.begin();
-	 pos != distances.end();
-	 ++pos ){
-      result += pos->second;
-    }
-    result = result/len;
-  }
-  return result;
-}
-
-double sentStats::getHighestAL() const {
-  double result = 0;
-  for( multimap<DD_type, int>::const_iterator pos = distances.begin();
-       pos != distances.end();
-       ++pos ){
-    if ( pos->second > result )
-      result = pos->second;
-  }
-  return result;
-}
-
-void fill_word_lemma_buffers( const sentStats* ss,
-			      vector<string>& wv,
-			      vector<string>& lv ){
-  vector<basicStats*> bv = ss->sv;
-  for ( size_t i=0; i < bv.size(); ++i ){
-    wordStats *w = dynamic_cast<wordStats*>(bv[i]);
-    if ( w->isOverlapCandidate() ){
-      wv.push_back( w->l_word );
-      lv.push_back( w->l_lemma );
-    }
-  }
-}
-
-void np_length( folia::Sentence *s, int& npcount, int& indefcount, int& size ) {
-  vector<folia::Chunk *> cv = s->select<folia::Chunk>();
-  size = 0 ;
-  for( size_t i=0; i < cv.size(); ++i ){
-    if ( cv[i]->cls() == "NP" ){
-      ++npcount;
-      size += cv[i]->size();
-      folia::FoliaElement *det = cv[i]->index(0);
-      if ( det ){
-	vector<folia::PosAnnotation*> posV = det->select<folia::PosAnnotation>(frog_pos_set);
-	if ( posV.size() != 1 )
-	  throw folia::ValueError( "word doesn't have Frog POS tag info" );
-	if ( posV[0]->feat("head") == "LID" ){
-	  if ( det->text() == "een" )
-	    ++indefcount;
-	}
-      }
-    }
-  }
-}
-
-bool sentStats::checkAls( size_t index ){
-  static string compAlsList[] = { "net", "evenmin", "zo", "zomin" };
-  static set<string> compAlsSet( compAlsList,
-				 compAlsList + sizeof(compAlsList)/sizeof(string) );
-  static string opsomAlsList[] = { "zowel" };
-  static set<string> opsomAlsSet( opsomAlsList,
-				  opsomAlsList + sizeof(opsomAlsList)/sizeof(string) );
-
-  string als = sv[index]->ltext();
-  if ( als == "als" ){
-    if ( index == 0 ){
-      // eerste woord, terugkijken kan dus niet
-      sv[0]->setConnType( Conn::CAUSAAL );
-    }
-    else {
-      for ( size_t i = index-1; i+1 != 0; --i ){
-	string word = sv[i]->ltext();
-	if ( compAlsSet.find( word ) != compAlsSet.end() ){
-	  // kijk naar "evenmin ... als" constructies
-	  sv[i]->setConnType( Conn::COMPARATIEF );
-	  sv[index]->setConnType( Conn::COMPARATIEF );
-	  //	cerr << "ALS comparatief:" << word << endl;
-	  return true;
-	}
-	else if ( opsomAlsSet.find( word ) != opsomAlsSet.end() ){
-	  // kijk naar "zowel ... als" constructies
-	  sv[i]->setConnType( Conn::OPSOMMEND_WG );
-	  sv[index]->setConnType( Conn::OPSOMMEND_WG );
-	  //	cerr << "ALS opsommend:" << word << endl;
-	  return true;
-	}
-      }
-      if ( sv[index]->postag() == CGN::VG ){
-	if ( sv[index-1]->postag() == CGN::ADJ ){
-	  // "groter als"
-	  //	cerr << "ALS comparatief: ADJ: " << sv[index-1]->text() << endl;
-	  sv[index]->setConnType( Conn::COMPARATIEF );
-	}
-	else {
-	  //	cerr << "ALS causaal: " << sv[index-1]->text() << endl;
-	  sv[index]->setConnType( Conn::CAUSAAL );
-	}
-	return true;
-      }
-    }
-    if ( index < sv.size() &&
-	 sv[index+1]->postag() == CGN::TW ){
-      // "als eerste" "als dertigste"
-      sv[index]->setConnType( Conn::COMPARATIEF );
-      return true;
-    }
-  }
-  return false;
-}
-
-Conn::Type sentStats::checkMultiConnectives( const string& mword ){
-  Conn::Type conn = Conn::NOCONN;
-  if ( settings.multi_temporals.find( mword ) != settings.multi_temporals.end() ){
-    conn = Conn::TEMPOREEL;
-  }
-  else if ( settings.multi_opsommers_wg.find( mword ) != settings.multi_opsommers_wg.end() ){
-    conn = Conn::OPSOMMEND_WG;
-  }
-  else if ( settings.multi_opsommers_zin.find( mword ) != settings.multi_opsommers_zin.end() ){
-    conn = Conn::OPSOMMEND_ZIN;
-  }
-  else if ( settings.multi_contrast.find( mword ) != settings.multi_contrast.end() ){
-    conn = Conn::CONTRASTIEF;
-  }
-  else if ( settings.multi_compars.find( mword ) != settings.multi_compars.end() ){
-    conn = Conn::COMPARATIEF;
-  }
-  else if ( settings.multi_causals.find( mword ) != settings.multi_causals.end() ){
-    conn = Conn::CAUSAAL;
-  }
-  //  cerr << "multi-conn " << mword << " = " << conn << endl;
-  return conn;
-}
-
-Situation::Type sentStats::checkMultiSituations( const string& mword ){
-  //  cerr << "check multi-sit '" << mword << "'" << endl;
-  Situation::Type sit = Situation::NO_SIT;
-  if ( settings.multi_time_sits.find( mword ) != settings.multi_time_sits.end() ){
-    sit = Situation::TIME_SIT;
-  }
-  else if ( settings.multi_space_sits.find( mword ) != settings.multi_space_sits.end() ){
-    sit = Situation::SPACE_SIT;
-  }
-  else if ( settings.multi_causal_sits.find( mword ) != settings.multi_causal_sits.end() ){
-    sit = Situation::CAUSAL_SIT;
-  }
-  else if ( settings.multi_emotion_sits.find( mword ) != settings.multi_emotion_sits.end() ){
-    sit = Situation::EMO_SIT;
-  }
-  //  cerr << "multi-sit " << mword << " = " << sit << endl;
-  return sit;
-}
-
-void sentStats::incrementConnCnt( Conn::Type t ){
-  switch ( t ){
-  case Conn::TEMPOREEL:
-    tempConnCnt++;
-    break;
-  case Conn::OPSOMMEND_WG:
-    opsomWgConnCnt++;
-    break;
-  case Conn::OPSOMMEND_ZIN:
-    opsomZinConnCnt++;
-    break;
-  case Conn::CONTRASTIEF:
-    contrastConnCnt++;
-    break;
-  case Conn::COMPARATIEF:
-    compConnCnt++;
-    break;
-  case Conn::CAUSAAL:
-    break;
-  default:
-    break;
-  }
-}
-
-const string neg_longA[] = { "afgezien van",
-           "zomin als",
-           "met uitzondering van"};
-static set<string> negatives_long = set<string>( neg_longA,
-             neg_longA + sizeof(neg_longA)/sizeof(string) );
-
-void sentStats::resolveConnectives(){
-  if ( sv.size() > 1 ){
-    for ( size_t i=0; i < sv.size()-2; ++i ){
-      string word = sv[i]->ltext();
-      string multiword2 = word + " " + sv[i+1]->ltext();
-      if ( !checkAls( i ) ){
-	// "als" is speciaal als het matcht met eerdere woorden.
-	// (evenmin ... als) (zowel ... als ) etc.
-	// In dat geval niet meer zoeken naar "als ..."
-	//      cerr << "zoek op " << multiword2 << endl;
-	Conn::Type conn = checkMultiConnectives( multiword2 );
-	if ( conn != Conn::NOCONN ){
-	  sv[i]->setMultiConn();
-	  sv[i+1]->setMultiConn();
-	  sv[i]->setConnType( conn );
-	  sv[i+1]->setConnType( Conn::NOCONN );
-	}
-      }
-      if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
-	propNegCnt++;
-      }
-      string multiword3 = multiword2 + " " + sv[i+2]->ltext();
-      //      cerr << "zoek op " << multiword3 << endl;
-      Conn::Type conn = checkMultiConnectives( multiword3 );
-      if ( conn != Conn::NOCONN ){
-	sv[i]->setMultiConn();
-	sv[i+1]->setMultiConn();
-	sv[i+2]->setMultiConn();
-	sv[i]->setConnType( conn );
-	sv[i+1]->setConnType( Conn::NOCONN );
-	sv[i+2]->setConnType( Conn::NOCONN );
-      }
-      if ( negatives_long.find( multiword3 ) != negatives_long.end() )
-	propNegCnt++;
-    }
-    // don't forget the last 2 words
-    string multiword2 = sv[sv.size()-2]->ltext() + " "
-      + sv[sv.size()-1]->ltext();
-    //    cerr << "zoek op " << multiword2 << endl;
-    Conn::Type conn = checkMultiConnectives( multiword2 );
-    if ( conn != Conn::NOCONN ){
-      sv[sv.size()-2]->setMultiConn();
-      sv[sv.size()-1]->setMultiConn();
-      sv[sv.size()-2]->setConnType( conn );
-      sv[sv.size()-1]->setConnType( Conn::NOCONN );
-    }
-    if ( negatives_long.find( multiword2 ) != negatives_long.end() ){
-      propNegCnt++;
-    }
-  }
-  for ( size_t i=0; i < sv.size(); ++i ){
-    switch( sv[i]->getConnType() ){
-    case Conn::TEMPOREEL:
-      unique_temp_conn[sv[i]->ltext()]++;
-      tempConnCnt++;
-      break;
-    case Conn::OPSOMMEND_WG:
-      unique_reeks_wg_conn[sv[i]->ltext()]++;
-      opsomWgConnCnt++;
-      break;
-    case Conn::OPSOMMEND_ZIN:
-      unique_reeks_zin_conn[sv[i]->ltext()]++;
-      opsomZinConnCnt++;
-      break;
-    case Conn::CONTRASTIEF:
-      unique_contr_conn[sv[i]->ltext()]++;
-      contrastConnCnt++;
-      break;
-    case Conn::COMPARATIEF:
-      unique_comp_conn[sv[i]->ltext()]++;
-      compConnCnt++;
-      break;
-    case Conn::CAUSAAL:
-      unique_cause_conn[sv[i]->ltext()]++;
-      causeConnCnt++;
-      break;
-    default:
-      break;
-    }
-  }
-}
-
-void sentStats::resolveSituations(){
-  if ( sv.size() > 1 ){
-    for ( size_t i=0; (i+3) < sv.size(); ++i ){
-      string word = sv[i]->Lemma();
-      string multiword2 = word + " " + sv[i+1]->Lemma();
-      string multiword3 = multiword2 + " " + sv[i+2]->Lemma();
-      string multiword4 = multiword3 + " " + sv[i+3]->Lemma();
-      //      cerr << "zoek 4 op '" << multiword4 << "'" << endl;
-      Situation::Type sit = checkMultiSituations( multiword4 );
-      if ( sit != Situation::NO_SIT ){
-	//	cerr << "found " << sit << "-situation: " << multiword4 << endl;
-	sv[i]->setSitType( Situation::NO_SIT );
-	sv[i+1]->setSitType( Situation::NO_SIT );
-	sv[i+2]->setSitType( Situation::NO_SIT );
-	sv[i+3]->setSitType( sit );
-	i += 3;
-      }
-      else {
-	//cerr << "zoek 3 op '" << multiword3 << "'" << endl;
-	sit = checkMultiSituations( multiword3 );
-	if ( sit != Situation::NO_SIT ){
-	  // cerr << "found " << sit << "-situation: " << multiword3 << endl;
-	  sv[i]->setSitType( Situation::NO_SIT );
-	  sv[i+1]->setSitType( Situation::NO_SIT );
-	  sv[i+2]->setSitType( sit );
-	  i += 2;
-	}
-	else {
-	  //cerr << "zoek 2 op '" << multiword2 << "'" << endl;
-	  sit = checkMultiSituations( multiword2 );
-	  if ( sit != Situation::NO_SIT ){
-	    //	    cerr << "found " << sit << "-situation: " << multiword2 << endl;
-	    sv[i]->setSitType( Situation::NO_SIT);
-	    sv[i+1]->setSitType( sit );
-	    i += 1;
-	  }
-	}
-      }
-    }
-    // don't forget the last 2 and 3 words
-    Situation::Type sit = Situation::NO_SIT;
-    if ( sv.size() > 2 ){
-      string multiword3 = sv[sv.size()-3]->Lemma() + " "
-	+ sv[sv.size()-2]->Lemma() + " " + sv[sv.size()-1]->Lemma();
-      //cerr << "zoek final 3 op '" << multiword3 << "'" << endl;
-      sit = checkMultiSituations( multiword3 );
-      if ( sit != Situation::NO_SIT ){
-	//	cerr << "found " << sit << "-situation: " << multiword3 << endl;
-	sv[sv.size()-3]->setSitType( Situation::NO_SIT );
-	sv[sv.size()-2]->setSitType( Situation::NO_SIT );
-	sv[sv.size()-1]->setSitType( sit );
-      }
-      else {
-	string multiword2 = sv[sv.size()-3]->Lemma() + " "
-	  + sv[sv.size()-2]->Lemma();
-	//cerr << "zoek first final 2 op '" << multiword2 << "'" << endl;
-	sit = checkMultiSituations( multiword2 );
-	if ( sit != Situation::NO_SIT ){
-	  //	  cerr << "found " << sit << "-situation: " << multiword2 << endl;
-	  sv[sv.size()-3]->setSitType( Situation::NO_SIT);
-	  sv[sv.size()-2]->setSitType( sit );
-	}
-	else {
-	  string multiword2 = sv[sv.size()-2]->Lemma() + " "
-	    + sv[sv.size()-1]->Lemma();
-	  //cerr << "zoek second final 2 op '" << multiword2 << "'" << endl;
-	  sit = checkMultiSituations( multiword2 );
-	  if ( sit != Situation::NO_SIT ){
-	    //	    cerr << "found " << sit << "-situation: " << multiword2 << endl;
-	    sv[sv.size()-2]->setSitType( Situation::NO_SIT);
-	    sv[sv.size()-1]->setSitType( sit );
-	  }
-	}
-      }
-    }
-    else {
-      string multiword2 = sv[sv.size()-2]->Lemma() + " "
-	+ sv[sv.size()-1]->Lemma();
-      // cerr << "zoek second final 2 op '" << multiword2 << "'" << endl;
-      sit = checkMultiSituations( multiword2 );
-      if ( sit != Situation::NO_SIT ){
-	//	cerr << "found " << sit << "-situation: " << multiword2 << endl;
-	sv[sv.size()-2]->setSitType( Situation::NO_SIT);
-	sv[sv.size()-1]->setSitType( sit );
-      }
-    }
-  }
-  for ( size_t i=0; i < sv.size(); ++i ){
-    switch( sv[i]->getSitType() ){
-    case Situation::TIME_SIT:
-      unique_tijd_sits[sv[i]->Lemma()]++;
-      timeSitCnt++;
-      break;
-    case Situation::CAUSAL_SIT:
-      unique_cause_sits[sv[i]->Lemma()]++;
-      causeSitCnt++;
-      break;
-    case Situation::SPACE_SIT:
-      unique_ruimte_sits[sv[i]->Lemma()]++;
-      spaceSitCnt++;
-      break;
-    case Situation::EMO_SIT:
-      unique_emotion_sits[sv[i]->Lemma()]++;
-      emoSitCnt++;
-      break;
-    default:
-      break;
-    }
-  }
-}
-
-void sentStats::resolveLSA( const map<string,double>& LSAword_dists ){
-  if ( sv.size() < 1 )
-    return;
-
-  int lets = 0;
-  double suc = 0;
-  double net = 0;
-  size_t node_count = 0;
-  for ( size_t i=0; i < sv.size(); ++i ){
-    double context = 0.0;
-    for ( size_t j=0; j < sv.size(); ++j ){
-      if ( j == i )
-	continue;
-      string word1 = sv[i]->ltext();
-      string word2 = sv[j]->ltext();
-      string call = word1 + "\t" + word2;
-      map<string,double>::const_iterator it = LSAword_dists.find(call);
-      if ( it != LSAword_dists.end() ){
-	context += it->second;
-      }
-    }
-    sv[i]->setLSAcontext(context/(sv.size()-1));
-    for ( size_t j=i+1; j < sv.size(); ++j ){
-      if ( sv[i]->wordProperty() == CGN::ISLET ){
-	continue;
-      }
-      if ( sv[j]->wordProperty() == CGN::ISLET ){
-	if ( i == 0 )
-	  ++lets;
-	continue;
-      }
-      ++node_count;
-      string word1 = sv[i]->ltext();
-      string word2 = sv[j]->ltext();
-      string call = word1 + "\t" + word2;
-      double result = 0;
-      map<string,double>::const_iterator it = LSAword_dists.find(call);
-      if ( it != LSAword_dists.end() ){
-	result = it->second;
-	if ( j == i+1 ){
-	  sv[i]->setLSAsuc(result);
-	  suc += result;
-	}
-	net += result;
-      }
-#ifdef DEBUG_LSA
-      cerr << "LSA-sent lookup '" << call << "' ==> " << result << endl;
-#endif
-    }
-  }
-#ifdef DEBUG_LSA
-  cerr << "size = " << sv.size() << ", LETS = " << lets << endl;
-  cerr << "LSA-sent-SUC sum = " << suc << endl;
-  cerr << "LSA-sent=NET sum = " << net << ", node count = " << node_count << endl;
-#endif
-  suc = suc/(sv.size()-lets);
-  net = net/node_count;
-#ifdef DEBUG_LSA
-  cerr << "LSA-sent-SUC result = " << suc << endl;
-  cerr << "LSA-sent-NET result = " << net << endl;
-#endif
-  setLSAvalues( suc, net, 0 );
-}
-
-void sentStats::resolveMultiWordIntensify(){
-  size_t max_length_intensify = 5;
-  for ( size_t i = 0; i < sv.size() - 1; ++i ){
-    string startword = sv[i]->text();
-    string multiword = startword;
-
-    for ( size_t j = 1; i + j < sv.size() && j < max_length_intensify; ++j ){
-      // Attach the next word to the expression
-      multiword += " " + sv[i+j]->text();
-
-      // Look for the expression in the list of intensifiers
-      map<string,Intensify::Type>::const_iterator sit;
-      sit = settings.intensify.find( multiword );
-      // If found, update the counts, if not, continue
-      if ( sit != settings.intensify.end() ){
-        intensCombiCnt += j + 1;
-        intensCnt += j + 1;
-        // Break and skip to the first word after this expression
-        i += j;
-        break;
-      }
-    }
-  }
-}
-
-void sentStats::resolveMultiWordAfks(){
-  if ( sv.size() > 1 ){
-    for ( size_t i=0; i < sv.size()-2; ++i ){
-      string word = sv[i]->text();
-      string multiword2 = word + " " + sv[i+1]->text();
-      string multiword3 = multiword2 + " " + sv[i+2]->text();
-      Afk::Type at = Afk::NO_A;
-      map<string,Afk::Type>::const_iterator sit
-	= settings.afkos.find( multiword3 );
-      if ( sit == settings.afkos.end() ){
-	sit = settings.afkos.find( multiword2 );
-      }
-      else {
-	cerr << "FOUND a 3-word AFK: '" << multiword3 << "'" << endl;
-      }
-      if ( sit != settings.afkos.end() ){
-	cerr << "FOUND a 2-word AFK: '" << multiword2 << "'" << endl;
-	at = sit->second;
-      }
-      if ( at != Afk::NO_A ){
-	++afks[at];
-      }
-    }
-    // don't forget the last 2 words
-    string multiword2 = sv[sv.size()-2]->text() + " " + sv[sv.size()-1]->text();
-    map<string,Afk::Type>::const_iterator sit
-      = settings.afkos.find( multiword2 );
-    if ( sit != settings.afkos.end() ){
-      cerr << "FOUND a 2-word AFK: '" << multiword2 << "'" << endl;
-      Afk::Type at = sit->second;
-      ++afks[at];
-    }
-  }
-}
-
-void sentStats::resolvePrepExpr(){
-  if ( sv.size() > 2 ){
-    for ( size_t i=0; i < sv.size()-1; ++i ){
-      string word = sv[i]->ltext();
-      string mw2 = word + " " + sv[i+1]->ltext();
-      if ( settings.vzexpr2.find( mw2 ) != settings.vzexpr2.end() ){
-	++prepExprCnt;
-	i += 1;
-	continue;
-      }
-      if ( i < sv.size() - 2 ){
-	string mw3 = mw2 + " " + sv[i+2]->ltext();
-	if ( settings.vzexpr3.find( mw3 ) != settings.vzexpr3.end() ){
-	  ++prepExprCnt;
-	  i += 2;
-	  continue;
-	}
-	if ( i < sv.size() - 3 ){
-	  string mw4 = mw3 + " " + sv[i+3]->ltext();
-	  if ( settings.vzexpr4.find( mw4 ) != settings.vzexpr4.end() ){
-	    ++prepExprCnt;
-	    i += 3;
-	    continue;
-	  }
-	}
-      }
-    }
-  }
-}
-
-// Finds nodes of adverbials and reports counts
-void sentStats::resolveAdverbials(xmlDoc *alpDoc) {
-  list<xmlNode*> nodes = getAdverbialNodes(alpDoc);
-  vcModCnt = nodes.size();
-
-  // Check for adverbials consisting of a single node that has the 'GENERAL' type.
-  for (auto& node : nodes) {
-    string word = getAttribute(node, "word");
-    if (word != "")
-    {
-      word = TiCC::lowercase(word);
-      if (checkAdverbType(word, CGN::BW) == Adverb::GENERAL)
-      {
-        vcModSingleCnt++;
-      }
-    }
-  }
-}
-
-// Finds nodes of relative clauses and reports counts
-void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
-  string hasFiniteVerb = "//node[@cat='ssub']";
-  string hasDirectFiniteVerb = "/node[@cat='ssub']";
-
-  // Betrekkelijke/bijvoeglijke bijzinnen (zonder/met nevenschikking)
-  list<xmlNode*> relNodes = getNodesByRelCat(alpDoc, "mod", "rel", hasFiniteVerb);
-  relNodes.merge(getNodesByRelCat(alpDoc, "mod", "whrel", hasFiniteVerb));
-  string relConjPath = ".//node[@rel='mod' and @cat='conj']//node[@rel='cnj' and (@cat='rel' or @cat='whrel')]" + hasDirectFiniteVerb;
-  relNodes.merge(TiCC::FindNodes(alpDoc, relConjPath));
-
-  // Bijwoordelijke bijzinnen (zonder/met nevenschikking + licht afwijkende bijzinnen)
-  list<xmlNode*> cpNodes = getNodesByRelCat(alpDoc, "mod", "cp", hasFiniteVerb);
-  string cpConjPath = ".//node[@rel='mod' and @cat='conj']//node[@rel='cnj' and @cat='cp']" + hasDirectFiniteVerb;
-  cpNodes.merge(TiCC::FindNodes(alpDoc, cpConjPath));
-  string cpNuclAExtra = "(@cat!='cp' or not(descendant::node[@rel='cnj' and @cat='ssub']))";
-  string cpNuclAPath = ".//node[(@cat='sv1' or @cat='cp') and following-sibling::node[@rel='nucl'] and " + cpNuclAExtra + "]";
-  cpNodes.merge(TiCC::FindNodes(alpDoc, cpNuclAPath));
-  string cpNuclBPath = ".//node[@rel='sat' and following-sibling::node[@rel='nucl']]/node[@rel='cnj' and @cat='sv1']";
-  cpNodes.merge(TiCC::FindNodes(alpDoc, cpNuclBPath));
-  string cpNuclCPath = ".//node[@rel='sat' and following-sibling::node[@rel='nucl']]//node[@rel='cnj' and @cat='ssub']";
-  cpNodes.merge(TiCC::FindNodes(alpDoc, cpNuclCPath));
-
-  // Finiete complementszinnen
-  // Check whether the previous node is not the top node to prevent clashes with loose clauses below
-  string notTop = ".//node[@cat!='top']";
-  string complWhsubPath = notTop + "/node[@cat='whsub']" + hasFiniteVerb;
-  string complWhrelPath = notTop + "/node[@cat='whrel']" + hasFiniteVerb;
-  string complCpPath = notTop + "/node[@rel!='sat' and @cat='cp']" + hasFiniteVerb;
-  list<xmlNode*> complNodes = TiCC::FindNodes(alpDoc, complWhsubPath);
-  complNodes.merge(complementNodes(TiCC::FindNodes(alpDoc, complWhrelPath), relNodes));
-  complNodes.merge(complementNodes(TiCC::FindNodes(alpDoc, complCpPath), cpNodes));
-
-  // Infinietcomplementen
-  list<xmlNode*> tiNodes = getNodesByCat(alpDoc, "ti");
-
-  // Save counts
-  betrCnt = relNodes.size();
-  bijwCnt = cpNodes.size();
-  complCnt = complNodes.size();
-  infinComplCnt = tiNodes.size();
-
-  // Checks for embedded finite clauses
-  list<xmlNode*> allRelNodes (relNodes);
-  allRelNodes.merge(cpNodes);
-  allRelNodes.merge(complNodes);
-  list<string> ids;
-  for (auto& node : allRelNodes) {
-    list<xmlNode*> embedRelNodes = getNodesByRelCat(node, "mod", "rel", hasFiniteVerb);
-    embedRelNodes.merge(getNodesByRelCat(node, "mod", "whrel", hasFiniteVerb));
-    embedRelNodes.merge(TiCC::FindNodes(node, relConjPath));
-    ids.merge(getNodeIds(embedRelNodes));
-
-    list<xmlNode*> embedCpNodes = getNodesByRelCat(node, "mod", "cp", hasFiniteVerb);
-    embedCpNodes.merge(TiCC::FindNodes(node, cpConjPath));
-    embedCpNodes.merge(TiCC::FindNodes(node, cpNuclAPath));
-    embedCpNodes.merge(TiCC::FindNodes(node, cpNuclBPath));
-    embedCpNodes.merge(TiCC::FindNodes(node, cpNuclCPath));
-    ids.merge(getNodeIds(embedCpNodes));
-
-    ids.merge(getNodeIds(TiCC::FindNodes(node, complWhsubPath)));
-    ids.merge(getNodeIds(complementNodes(TiCC::FindNodes(node, complWhrelPath), embedRelNodes)));
-    ids.merge(getNodeIds(complementNodes(TiCC::FindNodes(node, complCpPath), embedCpNodes)));
-  }
-  set<string> mvFinEmbedIds(ids.begin(), ids.end());
-  mvFinInbedCnt = mvFinEmbedIds.size();
-
-  // Checks for all embedded clauses
-  allRelNodes.merge(tiNodes);
-  ids.clear();
-  for (auto& node : allRelNodes) {
-    list<xmlNode*> embedRelNodes = getNodesByRelCat(node, "mod", "rel", hasFiniteVerb);
-    embedRelNodes.merge(getNodesByRelCat(node, "mod", "whrel", hasFiniteVerb));
-    embedRelNodes.merge(TiCC::FindNodes(node, relConjPath));
-    ids.merge(getNodeIds(embedRelNodes));
-
-    list<xmlNode*> embedCpNodes = getNodesByRelCat(node, "mod", "cp", hasFiniteVerb);
-    embedCpNodes.merge(TiCC::FindNodes(node, cpConjPath));
-    embedCpNodes.merge(TiCC::FindNodes(node, cpNuclAPath));
-    embedCpNodes.merge(TiCC::FindNodes(node, cpNuclBPath));
-    embedCpNodes.merge(TiCC::FindNodes(node, cpNuclCPath));
-    ids.merge(getNodeIds(embedCpNodes));
-
-    ids.merge(getNodeIds(TiCC::FindNodes(node, complWhsubPath)));
-    ids.merge(getNodeIds(complementNodes(TiCC::FindNodes(node, complWhrelPath), embedRelNodes)));
-    ids.merge(getNodeIds(complementNodes(TiCC::FindNodes(node, complCpPath), embedCpNodes)));
-
-    ids.merge(getNodeIds(getNodesByCat(node, "ti")));
-  }
-  set<string> mvInbedIds(ids.begin(), ids.end());
-  mvInbedCnt = mvInbedIds.size();
-
-  // Count 'loose' (directly under top node) relative clauses
-  string losBetr = "//node[@cat='top']/node[@cat='rel' or @cat='whrel']" + hasFiniteVerb;
-  losBetrCnt = TiCC::FindNodes(alpDoc, losBetr).size();
-  string losBijw = "//node[@cat='top']/node[@cat='cp']" + hasFiniteVerb;
-  losBijwCnt = TiCC::FindNodes(alpDoc, losBijw).size();
-}
-
-// Finds nodes of finite verbs and reports counts
-void sentStats::resolveFiniteVerbs(xmlDoc *alpDoc) {
-  smainCnt = getNodesByCat(alpDoc, "smain").size();
-  ssubCnt = getNodesByCat(alpDoc, "ssub").size();
-  sv1Cnt = getNodesByCat(alpDoc, "sv1").size();
-
-  clauseCnt = smainCnt + ssubCnt + sv1Cnt;
-  correctedClauseCnt = clauseCnt > 0 ? clauseCnt : 1; // Correct clause count to 1 if there are no verbs in the sentence
-}
-
-// Finds nodes of coordinating conjunctions and reports counts
-void sentStats::resolveConjunctions(xmlDoc *alpDoc) {
-  smainCnjCnt = getNodesByRelCat(alpDoc, "cnj", "smain").size();
-  // For cnj-ssub, also allow that the cnj node dominates the ssub node
-  ssubCnjCnt = TiCC::FindNodes(alpDoc, ".//node[@rel='cnj'][descendant-or-self::node[@cat='ssub']]").size();
-  sv1CnjCnt = getNodesByRelCat(alpDoc, "cnj", "sv1").size();
-}
-
-// Finds nodes of small conjunctions and reports counts
-void sentStats::resolveSmallConjunctions(xmlDoc *alpDoc) {
-  // Small conjunctions have 'cnj' as relation and do not form a "bigger" sentence
-  string cats = "|smain|ssub|sv1|rel|whrel|cp|oti|ti|whsub|";
-  string smallCnjPath = ".//node[@rel='cnj' and not(contains('" + cats + "', concat('|', @cat, '|')))]";
-  smallCnjCnt = TiCC::FindNodes(alpDoc, smallCnjPath).size();
-
-  // smallCnjExtraCnt count elements that have 'conj' as a category and do not govern a "bigger" sentence
-  // This amount is then substracted from the number of small conjunctions.
-  string smallCnjExtraPath = ".//node[@cat='conj' and not(descendant::node[contains('" + cats + "', concat('|', @cat, '|'))])]";
-  smallCnjExtraCnt = smallCnjCnt - TiCC::FindNodes(alpDoc, smallCnjExtraPath).size();
-}
-
 //#define DEBUG_WOPR
 void orderWopr( const string& txt, vector<double>& wordProbsV,
 		double& sentProb, double& entropy, double& perplexity ){
@@ -2210,8 +1517,42 @@ void orderWopr( const string& txt, vector<double>& wordProbsV,
 
 xmlDoc *AlpinoServerParse( folia::Sentence *);
 
+void fill_word_lemma_buffers( const sentStats* ss,
+            vector<string>& wv,
+            vector<string>& lv ){
+  vector<basicStats*> bv = ss->sv;
+  for ( size_t i=0; i < bv.size(); ++i ){
+    wordStats *w = dynamic_cast<wordStats*>(bv[i]);
+    if ( w->isOverlapCandidate() ){
+      wv.push_back( w->l_word );
+      lv.push_back( w->l_lemma );
+    }
+  }
+}
+
+void np_length( folia::Sentence *s, int& npcount, int& indefcount, int& size ) {
+  vector<folia::Chunk *> cv = s->select<folia::Chunk>();
+  size = 0 ;
+  for( size_t i=0; i < cv.size(); ++i ){
+    if ( cv[i]->cls() == "NP" ){
+      ++npcount;
+      size += cv[i]->size();
+      folia::FoliaElement *det = cv[i]->index(0);
+      if ( det ){
+  vector<folia::PosAnnotation*> posV = det->select<folia::PosAnnotation>(frog_pos_set);
+  if ( posV.size() != 1 )
+    throw folia::ValueError( "word doesn't have Frog POS tag info" );
+  if ( posV[0]->feat("head") == "LID" ){
+    if ( det->text() == "een" )
+      ++indefcount;
+  }
+      }
+    }
+  }
+}
+
 sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
-		      const map<string,double>& LSAword_dists ):
+          const map<string,double>& LSAword_dists ):
   structStats( index, s, "sent" ){
   text = folia::UnicodeToUTF8( s->toktext() );
   cerr << "analyse tokenized sentence=" << text << endl;
@@ -2228,54 +1569,54 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
 #pragma omp section
     {
       if ( settings.doAlpino || settings.doAlpinoServer ){
-	if ( settings.doAlpinoServer ){
-	  cerr << "calling Alpino Server" << endl;
-	  alpDoc = AlpinoServerParse( s );
-	  if ( !alpDoc ){
-	    cerr << "alpino parser failed!" << endl;
-	  }
-	  cerr << "done with Alpino Server" << endl;
-	}
-	else if ( settings.doAlpino ){
-	  cerr << "calling Alpino parser" << endl;
-	  alpDoc = AlpinoParse( s, workdir_name );
-	  if ( !alpDoc ){
-	    cerr << "alpino parser failed!" << endl;
-	  }
-	  cerr << "done with Alpino parser" << endl;
-	}
-	if ( alpDoc ){
-	  parseFailCnt = 0; // OK
-	  for( size_t i=0; i < w.size(); ++i ){
-	    vector<folia::PosAnnotation*> posV = w[i]->select<folia::PosAnnotation>(frog_pos_set);
-	    if ( posV.size() != 1 )
-	      throw folia::ValueError( "word doesn't have Frog POS tag info" );
-	    folia::PosAnnotation *pa = posV[0];
-	    string posHead = pa->feat("head");
-	    if ( posHead == "LET" ){
-	      puncts.insert( i );
-	    }
-	  }
-	  dLevel = get_d_level( s, alpDoc );
-	  if ( dLevel > 4 )
-	    dLevel_gt4 = 1;
-	  mod_stats( alpDoc, adjNpModCnt, npModCnt );
+  if ( settings.doAlpinoServer ){
+    cerr << "calling Alpino Server" << endl;
+    alpDoc = AlpinoServerParse( s );
+    if ( !alpDoc ){
+      cerr << "alpino parser failed!" << endl;
+    }
+    cerr << "done with Alpino Server" << endl;
+  }
+  else if ( settings.doAlpino ){
+    cerr << "calling Alpino parser" << endl;
+    alpDoc = AlpinoParse( s, workdir_name );
+    if ( !alpDoc ){
+      cerr << "alpino parser failed!" << endl;
+    }
+    cerr << "done with Alpino parser" << endl;
+  }
+  if ( alpDoc ){
+    parseFailCnt = 0; // OK
+    for( size_t i=0; i < w.size(); ++i ){
+      vector<folia::PosAnnotation*> posV = w[i]->select<folia::PosAnnotation>(frog_pos_set);
+      if ( posV.size() != 1 )
+        throw folia::ValueError( "word doesn't have Frog POS tag info" );
+      folia::PosAnnotation *pa = posV[0];
+      string posHead = pa->feat("head");
+      if ( posHead == "LET" ){
+        puncts.insert( i );
+      }
+    }
+    dLevel = get_d_level( s, alpDoc );
+    if ( dLevel > 4 )
+      dLevel_gt4 = 1;
+    mod_stats( alpDoc, adjNpModCnt, npModCnt );
     resolveAdverbials(alpDoc);
     resolveRelativeClauses(alpDoc);
     resolveFiniteVerbs(alpDoc);
     resolveConjunctions(alpDoc);
     resolveSmallConjunctions(alpDoc);
-	}
-	else {
-	  parseFailCnt = 1; // failed
-	}
+  }
+  else {
+    parseFailCnt = 1; // failed
+  }
       }
     } // omp section
 
 #pragma omp section
     {
       if ( settings.doWopr ){
-	orderWopr( text, woprProbsV, sentProb, sentEntropy, sentPerplexity );
+  orderWopr( text, woprProbsV, sentProb, sentEntropy, sentPerplexity );
       }
     } // omp section
   } // omp sections
@@ -2335,17 +1676,17 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
       case NER::ORG_B:
       case NER::PER_B:
       case NER::PRO_B:
-	ners[ner]++;
-	nerCnt++;
-	break;
+  ners[ner]++;
+  nerCnt++;
+  break;
       default:
-	;
+  ;
       }
       ws->setPersRef(); // need NER Info for this
       wordCnt++;
       heads[ws->tag]++;
       if ( ws->afkType != Afk::NO_A ){
-	++afks[ws->afkType];
+  ++afks[ws->afkType];
       }
       wordOverlapCnt += ws->wordOverlapCnt;
       lemmaOverlapCnt += ws->lemmaOverlapCnt;
@@ -2366,230 +1707,230 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
       }
       switch ( ws->prop ){
       case CGN::ISNAME:
-	nameCnt++;
-	unique_names[ws->l_word] +=1;
-	break;
+  nameCnt++;
+  unique_names[ws->l_word] +=1;
+  break;
       case CGN::ISVD:
-	switch ( ws->position ){
-	case CGN::NOMIN:
-	  vdNwCnt++;
-	  break;
-	case CGN::PRENOM:
-	  vdBvCnt++;
-	  break;
-	case CGN::VRIJ:
-	  vdVrijCnt++;
-	  break;
-	default:
-	  break;
-	}
-	break;
+  switch ( ws->position ){
+  case CGN::NOMIN:
+    vdNwCnt++;
+    break;
+  case CGN::PRENOM:
+    vdBvCnt++;
+    break;
+  case CGN::VRIJ:
+    vdVrijCnt++;
+    break;
+  default:
+    break;
+  }
+  break;
       case CGN::ISINF:
-	switch ( ws->position ){
-	case CGN::NOMIN:
-	  infNwCnt++;
-	  break;
-	case CGN::PRENOM:
-	  infBvCnt++;
-	  break;
-	case CGN::VRIJ:
-	  infVrijCnt++;
-	  break;
-	default:
-	  break;
-	}
-	break;
+  switch ( ws->position ){
+  case CGN::NOMIN:
+    infNwCnt++;
+    break;
+  case CGN::PRENOM:
+    infBvCnt++;
+    break;
+  case CGN::VRIJ:
+    infVrijCnt++;
+    break;
+  default:
+    break;
+  }
+  break;
       case CGN::ISOD:
-	switch ( ws->position ){
-	case CGN::NOMIN:
-	  odNwCnt++;
-	  break;
-	case CGN::PRENOM:
-	  odBvCnt++;
-	  break;
-	case CGN::VRIJ:
-	  odVrijCnt++;
-	  break;
-	default:
-	  break;
-	}
-	break;
+  switch ( ws->position ){
+  case CGN::NOMIN:
+    odNwCnt++;
+    break;
+  case CGN::PRENOM:
+    odBvCnt++;
+    break;
+  case CGN::VRIJ:
+    odVrijCnt++;
+    break;
+  default:
+    break;
+  }
+  break;
       case CGN::ISPVVERL:
-	pastCnt++;
-	break;
+  pastCnt++;
+  break;
       case CGN::ISPVTGW:
-	presentCnt++;
-	break;
+  presentCnt++;
+  break;
       case CGN::ISSUBJ:
-	subjonctCnt++;
-	break;
+  subjonctCnt++;
+  break;
       case CGN::ISPPRON1:
-	pron1Cnt++;
-	break;
+  pron1Cnt++;
+  break;
       case CGN::ISPPRON2:
-	pron2Cnt++;
-	break;
+  pron2Cnt++;
+  break;
       case CGN::ISPPRON3:
-	pron3Cnt++;
-	break;
+  pron3Cnt++;
+  break;
       default:
-	;// ignore JUSTAWORD and ISAANW
+  ;// ignore JUSTAWORD and ISAANW
       }
       if ( ws->wwform == PASSIVE_VERB )
-	passiveCnt++;
+  passiveCnt++;
       if ( ws->wwform == MODAL_VERB )
-	modalCnt++;
+  modalCnt++;
       if ( ws->wwform == TIME_VERB )
-	timeVCnt++;
+  timeVCnt++;
       if ( ws->wwform == COPULA )
-	koppelCnt++;
+  koppelCnt++;
       if ( ws->isPersRef )
-	persRefCnt++;
+  persRefCnt++;
       if ( ws->isPronRef )
-	pronRefCnt++;
+  pronRefCnt++;
       if ( ws->archaic )
-	archaicsCnt++;
+  archaicsCnt++;
       if ( ws->isContent ){
-	contentCnt++;
-	unique_contents[ws->l_word] +=1;
+  contentCnt++;
+  unique_contents[ws->l_word] +=1;
       }
       if ( ws->isNominal )
-	nominalCnt++;
+  nominalCnt++;
       switch ( ws->tag ){
       case CGN::N:
-	nounCnt++;
-	break;
+  nounCnt++;
+  break;
       case CGN::ADJ:
-	adjCnt++;
-	break;
+  adjCnt++;
+  break;
       case CGN::WW:
-	verbCnt++;
-	break;
+  verbCnt++;
+  break;
       case CGN::VG:
-	vgCnt++;
-	break;
+  vgCnt++;
+  break;
       case CGN::TSW:
-	tswCnt++;
-	break;
+  tswCnt++;
+  break;
       case CGN::LET:
-	letCnt++;
-	break;
+  letCnt++;
+  break;
       case CGN::SPEC:
-	specCnt++;
-	break;
+  specCnt++;
+  break;
       case CGN::BW:
-	bwCnt++;
-	break;
+  bwCnt++;
+  break;
       case CGN::VNW:
-	vnwCnt++;
-	break;
+  vnwCnt++;
+  break;
       case CGN::LID:
-	lidCnt++;
-	break;
+  lidCnt++;
+  break;
       case CGN::TW:
-	twCnt++;
-	break;
+  twCnt++;
+  break;
       case CGN::VZ:
-	vzCnt++;
-	break;
+  vzCnt++;
+  break;
       default:
-	break;
+  break;
       }
       if ( ws->isImperative )
-	impCnt++;
+  impCnt++;
       if ( ws->isPropNeg )
-	propNegCnt++;
+  propNegCnt++;
       if ( ws->isMorphNeg )
-	morphNegCnt++;
+  morphNegCnt++;
       if ( ws->f50 )
-	f50Cnt++;
+  f50Cnt++;
       if ( ws->f65 )
-	f65Cnt++;
+  f65Cnt++;
       if ( ws->f77 )
-	f77Cnt++;
+  f77Cnt++;
       if ( ws->f80 )
-	f80Cnt++;
+  f80Cnt++;
       switch ( ws->top_freq ){
-	// NO BREAKS (being in top1000 means being in top2000 as well)
+  // NO BREAKS (being in top1000 means being in top2000 as well)
       case top1000:
-	++top1000Cnt;
+  ++top1000Cnt;
   if ( ws->isContent ) ++top1000ContentCnt;
       case top2000:
-	++top2000Cnt;
+  ++top2000Cnt;
   if ( ws->isContent ) ++top2000ContentCnt;
       case top3000:
-	++top3000Cnt;
+  ++top3000Cnt;
   if ( ws->isContent ) ++top3000ContentCnt;
       case top5000:
-	++top5000Cnt;
+  ++top5000Cnt;
   if ( ws->isContent ) ++top5000ContentCnt;
       case top10000:
-	++top10000Cnt;
+  ++top10000Cnt;
   if ( ws->isContent ) ++top10000ContentCnt;
       case top20000:
-	++top20000Cnt;
+  ++top20000Cnt;
   if ( ws->isContent ) ++top20000ContentCnt;
       default:
-	break;
+  break;
       }
       switch ( ws->sem_type ){
       case SEM::UNDEFINED_NOUN:
-	++undefinedNounCnt;
-	break;
+  ++undefinedNounCnt;
+  break;
       case SEM::UNDEFINED_ADJ:
-	++undefinedAdjCnt;
-	break;
+  ++undefinedAdjCnt;
+  break;
       case SEM::UNFOUND_NOUN:
-	++uncoveredNounCnt;
-	break;
+  ++uncoveredNounCnt;
+  break;
       case SEM::UNFOUND_ADJ:
-	++uncoveredAdjCnt;
-	break;
+  ++uncoveredAdjCnt;
+  break;
       case SEM::UNFOUND_VERB:
-	++uncoveredVerbCnt;
-	break;
+  ++uncoveredVerbCnt;
+  break;
       case SEM::CONCRETE_HUMAN_NOUN:
-	humanCnt++;
-	strictNounCnt++;
-	broadNounCnt++;
-	break;
+  humanCnt++;
+  strictNounCnt++;
+  broadNounCnt++;
+  break;
       case SEM::CONCRETE_NONHUMAN_NOUN:
-	nonHumanCnt++;
-	strictNounCnt++;
-	broadNounCnt++;
-	break;
+  nonHumanCnt++;
+  strictNounCnt++;
+  broadNounCnt++;
+  break;
       case SEM::CONCRETE_ARTEFACT_NOUN:
-	artefactCnt++;
-	strictNounCnt++;
-	broadNounCnt++;
-	break;
+  artefactCnt++;
+  strictNounCnt++;
+  broadNounCnt++;
+  break;
       case SEM::CONCRETE_SUBSTANCE_NOUN:
-	substanceConcCnt++;
-	strictNounCnt++;
-	broadNounCnt++;
-	break;
+  substanceConcCnt++;
+  strictNounCnt++;
+  broadNounCnt++;
+  break;
       case SEM::CONCRETE_FOOD_CARE_NOUN:
   foodcareCnt++;
   strictNounCnt++;
   broadNounCnt++;
   break;
       case SEM::CONCRETE_OTHER_NOUN:
-	concrotherCnt++;
-	strictNounCnt++;
-	broadNounCnt++;
-	break;
+  concrotherCnt++;
+  strictNounCnt++;
+  broadNounCnt++;
+  break;
       case SEM::BROAD_CONCRETE_PLACE_NOUN:
-	++placeCnt;
-	broadNounCnt++;
-	break;
+  ++placeCnt;
+  broadNounCnt++;
+  break;
       case SEM::BROAD_CONCRETE_TIME_NOUN:
-	++timeCnt;
-	broadNounCnt++;
-	break;
+  ++timeCnt;
+  broadNounCnt++;
+  break;
       case SEM::BROAD_CONCRETE_MEASURE_NOUN:
-	++measureCnt;
-	broadNounCnt++;
-	break;
+  ++measureCnt;
+  broadNounCnt++;
+  break;
       case SEM::CONCRETE_DYNAMIC_NOUN:
   ++dynamicConcCnt;
   strictNounCnt++;
@@ -2599,144 +1940,144 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
   ++substanceAbstrCnt;
   break;
       case SEM::ABSTRACT_DYNAMIC_NOUN:
-	++dynamicAbstrCnt;
-	break;
+  ++dynamicAbstrCnt;
+  break;
       case SEM::ABSTRACT_NONDYNAMIC_NOUN:
-	++nonDynamicCnt;
-	break;
+  ++nonDynamicCnt;
+  break;
       case SEM::INSTITUT_NOUN:
-	institutCnt++;
-	break;
+  institutCnt++;
+  break;
       case SEM::HUMAN_ADJ:
-	humanAdjCnt++;
-	broadAdjCnt++;
-	strictAdjCnt++;
-	break;
+  humanAdjCnt++;
+  broadAdjCnt++;
+  strictAdjCnt++;
+  break;
       case SEM::EMO_ADJ:
-	emoAdjCnt++;
-	broadAdjCnt++;
-	strictAdjCnt++;
-	break;
+  emoAdjCnt++;
+  broadAdjCnt++;
+  strictAdjCnt++;
+  break;
       case SEM::NONHUMAN_SHAPE_ADJ:
-	nonhumanAdjCnt++;
-	shapeAdjCnt++;
-	broadAdjCnt++;
-	strictAdjCnt++;
-	break;
+  nonhumanAdjCnt++;
+  shapeAdjCnt++;
+  broadAdjCnt++;
+  strictAdjCnt++;
+  break;
       case SEM::NONHUMAN_COLOR_ADJ:
-	nonhumanAdjCnt++;
-	colorAdjCnt++;
-	broadAdjCnt++;
-	strictAdjCnt++;
-	break;
+  nonhumanAdjCnt++;
+  colorAdjCnt++;
+  broadAdjCnt++;
+  strictAdjCnt++;
+  break;
       case SEM::NONHUMAN_MATTER_ADJ:
-	nonhumanAdjCnt++;
-	matterAdjCnt++;
-	broadAdjCnt++;
-	strictAdjCnt++;
-	break;
+  nonhumanAdjCnt++;
+  matterAdjCnt++;
+  broadAdjCnt++;
+  strictAdjCnt++;
+  break;
       case SEM::NONHUMAN_SOUND_ADJ:
-	nonhumanAdjCnt++;
-	soundAdjCnt++;
-	broadAdjCnt++;
-	strictAdjCnt++;
-	break;
+  nonhumanAdjCnt++;
+  soundAdjCnt++;
+  broadAdjCnt++;
+  strictAdjCnt++;
+  break;
       case SEM::NONHUMAN_OTHER_ADJ:
-	nonhumanAdjCnt++;
-	nonhumanOtherAdjCnt++;
-	broadAdjCnt++;
-	strictAdjCnt++;
-	break;
+  nonhumanAdjCnt++;
+  nonhumanOtherAdjCnt++;
+  broadAdjCnt++;
+  strictAdjCnt++;
+  break;
       case SEM::TECH_ADJ:
-	techAdjCnt++;
-	break;
+  techAdjCnt++;
+  break;
       case SEM::TIME_ADJ:
-	timeAdjCnt++;
-	broadAdjCnt++;
-	break;
+  timeAdjCnt++;
+  broadAdjCnt++;
+  break;
       case SEM::PLACE_ADJ:
-	placeAdjCnt++;
-	broadAdjCnt++;
-	break;
+  placeAdjCnt++;
+  broadAdjCnt++;
+  break;
       case SEM::SPEC_POS_ADJ:
-	specPosAdjCnt++;
-	subjectiveAdjCnt++;
-	break;
+  specPosAdjCnt++;
+  subjectiveAdjCnt++;
+  break;
       case SEM::SPEC_NEG_ADJ:
-	specNegAdjCnt++;
-	subjectiveAdjCnt++;
-	break;
+  specNegAdjCnt++;
+  subjectiveAdjCnt++;
+  break;
       case SEM::POS_ADJ:
-	posAdjCnt++;
-	subjectiveAdjCnt++;
-	break;
+  posAdjCnt++;
+  subjectiveAdjCnt++;
+  break;
       case SEM::NEG_ADJ:
-	negAdjCnt++;
-	subjectiveAdjCnt++;
-	break;
+  negAdjCnt++;
+  subjectiveAdjCnt++;
+  break;
       case SEM::EVALUATIVE_ADJ:
   evaluativeAdjCnt++;
   subjectiveAdjCnt++;
   break;
       case SEM::EPI_POS_ADJ:
-	epiPosAdjCnt++;
-	subjectiveAdjCnt++;
-	break;
+  epiPosAdjCnt++;
+  subjectiveAdjCnt++;
+  break;
       case SEM::EPI_NEG_ADJ:
-	epiNegAdjCnt++;
-	subjectiveAdjCnt++;
-	break;
+  epiNegAdjCnt++;
+  subjectiveAdjCnt++;
+  break;
       case SEM::ABSTRACT_ADJ:
-	abstractAdjCnt++;
-	break;
+  abstractAdjCnt++;
+  break;
       case SEM::ABSTRACT_STATE:
-	abstractWwCnt++;
-	stateCnt++;
-	break;
+  abstractWwCnt++;
+  stateCnt++;
+  break;
       case SEM::CONCRETE_STATE:
-	concreteWwCnt++;
-	stateCnt++;
-	break;
+  concreteWwCnt++;
+  stateCnt++;
+  break;
       case SEM::UNDEFINED_STATE:
-	undefinedWwCnt++;
-	stateCnt++;
-	break;
+  undefinedWwCnt++;
+  stateCnt++;
+  break;
       case SEM::ABSTRACT_ACTION:
-	abstractWwCnt++;
-	actionCnt++;
-	break;
+  abstractWwCnt++;
+  actionCnt++;
+  break;
       case SEM::CONCRETE_ACTION:
-	concreteWwCnt++;
-	actionCnt++;
-	break;
+  concreteWwCnt++;
+  actionCnt++;
+  break;
       case SEM::UNDEFINED_ACTION:
-	undefinedWwCnt++;
-	actionCnt++;
-	break;
+  undefinedWwCnt++;
+  actionCnt++;
+  break;
       case SEM::ABSTRACT_PROCESS:
-	abstractWwCnt++;
-	processCnt++;
-	break;
+  abstractWwCnt++;
+  processCnt++;
+  break;
       case SEM::CONCRETE_PROCESS:
-	concreteWwCnt++;
-	processCnt++;
-	break;
+  concreteWwCnt++;
+  processCnt++;
+  break;
       case SEM::UNDEFINED_PROCESS:
-	undefinedWwCnt++;
-	processCnt++;
-	break;
+  undefinedWwCnt++;
+  processCnt++;
+  break;
       case SEM::ABSTRACT_UNDEFINED:
-	abstractWwCnt++;
-	break;
+  abstractWwCnt++;
+  break;
       case SEM::CONCRETE_UNDEFINED:
-	concreteWwCnt++;
-	break;
+  concreteWwCnt++;
+  break;
       case SEM::UNDEFINED_VERB:
-	undefinedWwCnt++;
-	undefinedATPCnt++;
-	break;
+  undefinedWwCnt++;
+  undefinedATPCnt++;
+  break;
       default:
-	;
+  ;
       }
       switch ( ws->intensify_type ) {
           case Intensify::BVNW:
@@ -2951,22 +2292,162 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
   overlapSize = settings.overlapSize;
 }
 
-void sentStats::addMetrics( ) const {
-  structStats::addMetrics( );
-  folia::FoliaElement *el = folia_node;
-  folia::Document *doc = el->doc();
-  if ( passiveCnt > 0 )
-    addOneMetric( doc, el, "isPassive", "true" );
-  if ( questCnt > 0 )
-    addOneMetric( doc, el, "isQuestion", "true" );
-  if ( impCnt > 0 )
-    addOneMetric( doc, el, "isImperative", "true" );
+Conn::Type sentStats::checkMultiConnectives( const string& mword ){
+  Conn::Type conn = Conn::NOCONN;
+  if ( settings.multi_temporals.find( mword ) != settings.multi_temporals.end() ){
+    conn = Conn::TEMPOREEL;
+  }
+  else if ( settings.multi_opsommers_wg.find( mword ) != settings.multi_opsommers_wg.end() ){
+    conn = Conn::OPSOMMEND_WG;
+  }
+  else if ( settings.multi_opsommers_zin.find( mword ) != settings.multi_opsommers_zin.end() ){
+    conn = Conn::OPSOMMEND_ZIN;
+  }
+  else if ( settings.multi_contrast.find( mword ) != settings.multi_contrast.end() ){
+    conn = Conn::CONTRASTIEF;
+  }
+  else if ( settings.multi_compars.find( mword ) != settings.multi_compars.end() ){
+    conn = Conn::COMPARATIEF;
+  }
+  else if ( settings.multi_causals.find( mword ) != settings.multi_causals.end() ){
+    conn = Conn::CAUSAAL;
+  }
+  //  cerr << "multi-conn " << mword << " = " << conn << endl;
+  return conn;
+}
+
+Situation::Type sentStats::checkMultiSituations( const string& mword ){
+  //  cerr << "check multi-sit '" << mword << "'" << endl;
+  Situation::Type sit = Situation::NO_SIT;
+  if ( settings.multi_time_sits.find( mword ) != settings.multi_time_sits.end() ){
+    sit = Situation::TIME_SIT;
+  }
+  else if ( settings.multi_space_sits.find( mword ) != settings.multi_space_sits.end() ){
+    sit = Situation::SPACE_SIT;
+  }
+  else if ( settings.multi_causal_sits.find( mword ) != settings.multi_causal_sits.end() ){
+    sit = Situation::CAUSAL_SIT;
+  }
+  else if ( settings.multi_emotion_sits.find( mword ) != settings.multi_emotion_sits.end() ){
+    sit = Situation::EMO_SIT;
+  }
+  //  cerr << "multi-sit " << mword << " = " << sit << endl;
+  return sit;
+}
+
+void sentStats::resolveMultiWordIntensify(){
+  size_t max_length_intensify = 5;
+  for ( size_t i = 0; i < sv.size() - 1; ++i ){
+    string startword = sv[i]->text();
+    string multiword = startword;
+
+    for ( size_t j = 1; i + j < sv.size() && j < max_length_intensify; ++j ){
+      // Attach the next word to the expression
+      multiword += " " + sv[i+j]->text();
+
+      // Look for the expression in the list of intensifiers
+      map<string,Intensify::Type>::const_iterator sit;
+      sit = settings.intensify.find( multiword );
+      // If found, update the counts, if not, continue
+      if ( sit != settings.intensify.end() ){
+        intensCombiCnt += j + 1;
+        intensCnt += j + 1;
+        // Break and skip to the first word after this expression
+        i += j;
+        break;
+      }
+    }
+  }
+}
+
+void sentStats::resolveMultiWordAfks(){
+  if ( sv.size() > 1 ){
+    for ( size_t i=0; i < sv.size()-2; ++i ){
+      string word = sv[i]->text();
+      string multiword2 = word + " " + sv[i+1]->text();
+      string multiword3 = multiword2 + " " + sv[i+2]->text();
+      Afk::Type at = Afk::NO_A;
+      map<string,Afk::Type>::const_iterator sit
+  = settings.afkos.find( multiword3 );
+      if ( sit == settings.afkos.end() ){
+  sit = settings.afkos.find( multiword2 );
+      }
+      else {
+  cerr << "FOUND a 3-word AFK: '" << multiword3 << "'" << endl;
+      }
+      if ( sit != settings.afkos.end() ){
+  cerr << "FOUND a 2-word AFK: '" << multiword2 << "'" << endl;
+  at = sit->second;
+      }
+      if ( at != Afk::NO_A ){
+  ++afks[at];
+      }
+    }
+    // don't forget the last 2 words
+    string multiword2 = sv[sv.size()-2]->text() + " " + sv[sv.size()-1]->text();
+    map<string,Afk::Type>::const_iterator sit
+      = settings.afkos.find( multiword2 );
+    if ( sit != settings.afkos.end() ){
+      cerr << "FOUND a 2-word AFK: '" << multiword2 << "'" << endl;
+      Afk::Type at = sit->second;
+      ++afks[at];
+    }
+  }
+}
+
+void sentStats::resolvePrepExpr(){
+  if ( sv.size() > 2 ){
+    for ( size_t i=0; i < sv.size()-1; ++i ){
+      string word = sv[i]->ltext();
+      string mw2 = word + " " + sv[i+1]->ltext();
+      if ( settings.vzexpr2.find( mw2 ) != settings.vzexpr2.end() ){
+  ++prepExprCnt;
+  i += 1;
+  continue;
+      }
+      if ( i < sv.size() - 2 ){
+  string mw3 = mw2 + " " + sv[i+2]->ltext();
+  if ( settings.vzexpr3.find( mw3 ) != settings.vzexpr3.end() ){
+    ++prepExprCnt;
+    i += 2;
+    continue;
+  }
+  if ( i < sv.size() - 3 ){
+    string mw4 = mw3 + " " + sv[i+3]->ltext();
+    if ( settings.vzexpr4.find( mw4 ) != settings.vzexpr4.end() ){
+      ++prepExprCnt;
+      i += 3;
+      continue;
+    }
+  }
+      }
+    }
+  }
+}
+
+// Finds nodes of adverbials and reports counts
+void sentStats::resolveAdverbials(xmlDoc *alpDoc) {
+  list<xmlNode*> nodes = getAdverbialNodes(alpDoc);
+  vcModCnt = nodes.size();
+
+  // Check for adverbials consisting of a single node that has the 'GENERAL' type.
+  for (auto& node : nodes) {
+    string word = TiCC::getAttribute(node, "word");
+    if (word != "")
+    {
+      word = TiCC::lowercase(word);
+      if (checkAdverbType(word, CGN::BW) == Adverb::GENERAL)
+      {
+        vcModSingleCnt++;
+      }
+    }
+  }
 }
 
 parStats::parStats( int index,
-		    folia::Paragraph *p,
-		    const map<string,double>& LSA_word_dists,
-		    const map<string,double>& LSA_sent_dists ):
+        folia::Paragraph *p,
+        const map<string,double>& LSA_word_dists,
+        const map<string,double>& LSA_sent_dists ):
   structStats( index, p, "par" )
 {
   sentCnt = 0;
@@ -2997,32 +2478,6 @@ parStats::parStats( int index,
     lemma_freq_log_n = NAN;
   else
     lemma_freq_log_n = lemma_freq_n / (contentCnt-nameCnt);
-}
-
-
-void parStats::addMetrics( ) const {
-  folia::FoliaElement *el = folia_node;
-  structStats::addMetrics( );
-  addOneMetric( el->doc(), el,
-		"sentence_count", toString(sentCnt) );
-}
-
-void parStats::setLSAvalues( double suc, double net, double ctx ){
-  if ( suc > 0 )
-    lsa_sent_suc = suc;
-  if ( net > 0 )
-    lsa_sent_net = net;
-  if ( ctx > 0 )
-    lsa_sent_ctx = ctx;
-}
-
-void docStats::setLSAvalues( double suc, double net, double ctx ){
-  if ( suc > 0 )
-    lsa_par_suc = suc;
-  if ( net > 0 )
-    lsa_par_net = net;
-  if ( ctx > 0 )
-    lsa_par_ctx = ctx;
 }
 
 //#define DEBUG_DOL
@@ -3080,7 +2535,6 @@ void docStats::calculate_doc_overlap( ){
   }
 }
 
-
 //#define DEBUG_LSA_SERVER
 
 void docStats::gather_LSA_word_info( folia::Document *doc ){
@@ -3110,32 +2564,32 @@ void docStats::gather_LSA_word_info( folia::Document *doc ){
       string rcall = *it + "\t" + word;
       if ( LSA_word_dists.find( call ) == LSA_word_dists.end() ){
 #ifdef DEBUG_LSA_SERVER
-	cerr << "calling LSA: '" << call << "'" << endl;
+  cerr << "calling LSA: '" << call << "'" << endl;
 #endif
-	client.write( call + "\r\n" );
-	string s;
-	if ( !client.read(s) ){
-	  cerr << "LSA connection failed " << endl;
-	  exit( EXIT_FAILURE );
-	}
+  client.write( call + "\r\n" );
+  string s;
+  if ( !client.read(s) ){
+    cerr << "LSA connection failed " << endl;
+    exit( EXIT_FAILURE );
+  }
 #ifdef DEBUG_LSA_SERVER
-	cerr << "received data [" << s << "]" << endl;
+  cerr << "received data [" << s << "]" << endl;
 #endif
-	double result = 0;
-	if ( !stringTo( s , result ) ){
-	  cerr << "LSA result conversion failed: " << s << endl;
-	  result = 0;
-	}
+  double result = 0;
+  if ( !TiCC::stringTo( s , result ) ){
+    cerr << "LSA result conversion failed: " << s << endl;
+    result = 0;
+  }
 #ifdef DEBUG_LSA_SERVER
-	cerr << "LSA result: " << result << endl;
+  cerr << "LSA result: " << result << endl;
 #endif
 #ifdef DEBUG_LSA
-	cerr << "LSA: '" << call << "' ==> " << result << endl;
+  cerr << "LSA: '" << call << "' ==> " << result << endl;
 #endif
-	if ( result != 0 ){
-	  LSA_word_dists[call] = result;
-	  LSA_word_dists[rcall] = result;
-	}
+  if ( result != 0 ){
+    LSA_word_dists[call] = result;
+    LSA_word_dists[rcall] = result;
+  }
       }
       ++it;
     }
@@ -3161,15 +2615,15 @@ void docStats::gather_LSA_doc_info( folia::Document *doc ){
       vector<folia::Word*> wv = sv[s]->words();
       set<string> bow;
       for ( size_t i=0; i < wv.size(); ++i ){
-	UnicodeString us = wv[i]->text();
-	us.toLower();
-	string s = folia::UnicodeToUTF8( us );
-	bow.insert(s);
+  UnicodeString us = wv[i]->text();
+  us.toLower();
+  string s = folia::UnicodeToUTF8( us );
+  bow.insert(s);
       }
       string norm_s;
       set<string>::iterator it = bow.begin();
       while ( it != bow.end() ) {
-	norm_s += *it++ + " ";
+  norm_s += *it++ + " ";
       }
       norm_sv[sv[s]->id()] = norm_s;
       norm_p += norm_s;
@@ -3179,28 +2633,28 @@ void docStats::gather_LSA_doc_info( folia::Document *doc ){
 #ifdef DEBUG_LSA_SERVER
   cerr << "LSA doc Paragraaf results" << endl;
   for ( map<string,string>::const_iterator it = norm_pv.begin();
-	it != norm_pv.end();
-	++it ){
+  it != norm_pv.end();
+  ++it ){
     cerr << "paragraaf " << it->first << endl;
     cerr << it->second << endl;
   }
   cerr << "en de Zinnen" << endl;
   for ( map<string,string>::const_iterator it = norm_sv.begin();
-	it != norm_sv.end();
-	++it ){
+  it != norm_sv.end();
+  ++it ){
     cerr << "zin " <<  it->first << endl;
     cerr << it->second << endl;
   }
 #endif
 
   for ( map<string,string>::const_iterator it1 = norm_pv.begin();
-	it1 != norm_pv.end();
-	++it1 ){
+  it1 != norm_pv.end();
+  ++it1 ){
     for ( map<string,string>::const_iterator it2 = it1;
-	  it2 != norm_pv.end();
-	  ++it2 ){
+    it2 != norm_pv.end();
+    ++it2 ){
       if ( it2 == it1 )
-	continue;
+  continue;
       string index = it1->first + "<==>" + it2->first;
       string rindex = it2->first + "<==>" + it1->first;
 #ifdef DEBUG_LSA
@@ -3209,43 +2663,43 @@ void docStats::gather_LSA_doc_info( folia::Document *doc ){
       string call = it1->second + "\t" + it2->second;
       if ( LSA_paragraph_dists.find( index ) == LSA_paragraph_dists.end() ){
 #ifdef DEBUG_LSA_SERVER
-	cerr << "calling LSA docs: '" << call << "'" << endl;
+  cerr << "calling LSA docs: '" << call << "'" << endl;
 #endif
-	client.write( call + "\r\n" );
-	string s;
-	if ( !client.read(s) ){
-	  cerr << "LSA connection failed " << endl;
-	  exit( EXIT_FAILURE );
-	}
+  client.write( call + "\r\n" );
+  string s;
+  if ( !client.read(s) ){
+    cerr << "LSA connection failed " << endl;
+    exit( EXIT_FAILURE );
+  }
 #ifdef DEBUG_LSA_SERVER
-	cerr << "received data [" << s << "]" << endl;
+  cerr << "received data [" << s << "]" << endl;
 #endif
-	double result = 0;
-	if ( !stringTo( s , result ) ){
-	  cerr << "LSA result conversion failed: " << s << endl;
-	  result = 0;
-	}
+  double result = 0;
+  if ( !stringTo( s , result ) ){
+    cerr << "LSA result conversion failed: " << s << endl;
+    result = 0;
+  }
 #ifdef DEBUG_LSA_SERVER
-	cerr << "LSA result: " << result << endl;
+  cerr << "LSA result: " << result << endl;
 #endif
 #ifdef DEBUG_LSA
-	cerr << "LSA: '" << index << "' ==> " << result << endl;
+  cerr << "LSA: '" << index << "' ==> " << result << endl;
 #endif
-	if ( result != 0 ){
-	  LSA_paragraph_dists[index] = result;
-	  LSA_paragraph_dists[rindex] = result;
-	}
+  if ( result != 0 ){
+    LSA_paragraph_dists[index] = result;
+    LSA_paragraph_dists[rindex] = result;
+  }
       }
     }
   }
   for ( map<string,string>::const_iterator it1 = norm_sv.begin();
-	it1 != norm_sv.end();
-	++it1 ){
+  it1 != norm_sv.end();
+  ++it1 ){
     for ( map<string,string>::const_iterator it2 = it1;
-	  it2 != norm_sv.end();
-	  ++it2 ){
+    it2 != norm_sv.end();
+    ++it2 ){
       if ( it2 == it1 )
-	continue;
+  continue;
       string index = it1->first + "<==>" + it2->first;
       string rindex = it2->first + "<==>" + it1->first;
 #ifdef DEBUG_LSA
@@ -3254,32 +2708,32 @@ void docStats::gather_LSA_doc_info( folia::Document *doc ){
       string call = it1->second + "\t" + it2->second;
       if ( LSA_sentence_dists.find( index ) == LSA_sentence_dists.end() ){
 #ifdef DEBUG_LSA_SERVER
-	cerr << "calling LSA docs: '" << call << "'" << endl;
+  cerr << "calling LSA docs: '" << call << "'" << endl;
 #endif
-	client.write( call + "\r\n" );
-	string s;
-	if ( !client.read(s) ){
-	  cerr << "LSA connection failed " << endl;
-	  exit( EXIT_FAILURE );
-	}
+  client.write( call + "\r\n" );
+  string s;
+  if ( !client.read(s) ){
+    cerr << "LSA connection failed " << endl;
+    exit( EXIT_FAILURE );
+  }
 #ifdef DEBUG_LSA_SERVER
-	cerr << "received data [" << s << "]" << endl;
+  cerr << "received data [" << s << "]" << endl;
 #endif
-	double result = 0;
-	if ( !stringTo( s , result ) ){
-	  cerr << "LSA result conversion failed: " << s << endl;
-	  result = 0;
-	}
+  double result = 0;
+  if ( !stringTo( s , result ) ){
+    cerr << "LSA result conversion failed: " << s << endl;
+    result = 0;
+  }
 #ifdef DEBUG_LSA_SERVER
-	cerr << "LSA result: " << result << endl;
+  cerr << "LSA result: " << result << endl;
 #endif
 #ifdef DEBUG_LSA
-	cerr << "LSA: '" << index << "' ==> " << result << endl;
+  cerr << "LSA: '" << index << "' ==> " << result << endl;
 #endif
-	if ( result != 0 ){
-	  LSA_sentence_dists[index] = result;
-	  LSA_sentence_dists[rindex] = result;
-	}
+  if ( result != 0 ){
+    LSA_sentence_dists[index] = result;
+    LSA_sentence_dists[rindex] = result;
+  }
       }
     }
   }
@@ -3330,201 +2784,9 @@ docStats::docStats( folia::Document *doc ):
     lemma_freq_log_n = NAN;
   else
     lemma_freq_log_n = lemma_freq_n / (contentCnt-nameCnt);
-  calculate_doc_overlap( );
+  calculate_doc_overlap();
 
-}
-
-string docStats::rarity( int level ) const {
-  map<string,int>::const_iterator it = unique_lemmas.begin();
-  int rare = 0;
-  while ( it != unique_lemmas.end() ){
-    if ( it->second <= level )
-      ++rare;
-    ++it;
-  }
-  double result = rare/double( unique_lemmas.size() );
-  return toString( result );
-}
-
-void docStats::addMetrics() const {
-  folia::FoliaElement *el = folia_node;
-  structStats::addMetrics();
-  addOneMetric( el->doc(), el,
-		"sentence_count", toString( sentCnt ) );
-  addOneMetric( el->doc(), el,
-		"paragraph_count", toString( sv.size() ) );
-  addOneMetric( el->doc(), el,
-		"word_ttr", toString( unique_words.size()/double(wordCnt) ) );
-  addOneMetric( el->doc(), el,
-		"word_mtld", toString( word_mtld ) );
-  addOneMetric( el->doc(), el,
-		"lemma_ttr", toString( unique_lemmas.size()/double(wordCnt) ) );
-  addOneMetric( el->doc(), el,
-		"lemma_mtld", toString( lemma_mtld ) );
-  if ( nameCnt != 0 ){
-    addOneMetric( el->doc(), el,
-		  "names_ttr", toString( unique_names.size()/double(nameCnt) ) );
-  }
-  addOneMetric( el->doc(), el,
-		"name_mtld", toString( name_mtld ) );
-
-  if ( contentCnt != 0 ){
-    addOneMetric( el->doc(), el,
-		  "content_word_ttr", toString( unique_contents.size()/double(contentCnt) ) );
-  }
-  addOneMetric( el->doc(), el,
-		"content_mtld", toString( content_mtld ) );
-
-  if ( timeSitCnt != 0 ){
-    addOneMetric( el->doc(), el,
-		  "time_sit_ttr", toString( unique_tijd_sits.size()/double(timeSitCnt) ) );
-  }
-  addOneMetric( el->doc(), el,
-		"tijd_sit_mtld", toString( tijd_sit_mtld ) );
-
-  if ( spaceSitCnt != 0 ){
-    addOneMetric( el->doc(), el,
-		  "space_sit_ttr", toString( unique_ruimte_sits.size()/double(spaceSitCnt) ) );
-  }
-  addOneMetric( el->doc(), el,
-		"ruimte_sit_mtld", toString( ruimte_sit_mtld ) );
-
-  if ( causeSitCnt != 0 ){
-    addOneMetric( el->doc(), el,
-		  "cause_sit_ttr", toString( unique_cause_sits.size()/double(causeSitCnt) ) );
-  }
-  addOneMetric( el->doc(), el,
-		"cause_sit_mtld", toString( cause_sit_mtld ) );
-
-  if ( emoSitCnt != 0 ){
-    addOneMetric( el->doc(), el,
-		  "emotion_sit_ttr", toString( unique_emotion_sits.size()/double(emoSitCnt) ) );
-  }
-  addOneMetric( el->doc(), el,
-		"emotion_sit_mtld", toString( emotion_sit_mtld ) );
-
-  if ( tempConnCnt != 0 ){
-    addOneMetric( el->doc(), el,
-		  "temp_conn_ttr", toString( unique_temp_conn.size()/double(tempConnCnt) ) );
-  }
-  addOneMetric( el->doc(), el,
-		"temp_conn_mtld", toString(temp_conn_mtld) );
-
-  if ( opsomWgConnCnt != 0 ){
-    addOneMetric( el->doc(), el,
-		  "opsom_wg_conn_ttr", toString( unique_reeks_wg_conn.size()/double(opsomWgConnCnt) ) );
-  }
-  addOneMetric( el->doc(), el,
-		"opsom_wg_conn_mtld", toString(reeks_wg_conn_mtld) );
-
-  if ( opsomZinConnCnt != 0 ){
-    addOneMetric( el->doc(), el,
-      "opsom_zin_conn_ttr", toString( unique_reeks_zin_conn.size()/double(opsomZinConnCnt) ) );
-  }
-  addOneMetric( el->doc(), el,
-    "opsom_zin_conn_mtld", toString(reeks_zin_conn_mtld) );
-
-  if ( contrastConnCnt != 0 ){
-    addOneMetric( el->doc(), el,
-		  "contrast_conn_ttr", toString( unique_contr_conn.size()/double(contrastConnCnt) ) );
-  }
-  addOneMetric( el->doc(), el,
-		"contrast_conn_mtld", toString(contr_conn_mtld) );
-
-  if ( compConnCnt != 0 ){
-    addOneMetric( el->doc(), el,
-		  "comp_conn_ttr", toString( unique_comp_conn.size()/double(compConnCnt) ) );
-  }
-  addOneMetric( el->doc(), el,
-		"comp_conn_mtld", toString(comp_conn_mtld) );
-
-
-  if ( causeConnCnt != 0 ){
-    addOneMetric( el->doc(), el,
-		  "cause_conn_ttr", toString( unique_cause_conn.size()/double(causeConnCnt) ) );
-  }
-  addOneMetric( el->doc(), el,
-		"cause_conn_mtld", toString(cause_conn_mtld) );
-
-
-  addOneMetric( el->doc(), el,
-		"rar_index", rarity( settings.rarityLevel ) );
-  addOneMetric( el->doc(), el,
-		"document_word_argument_overlap_count", toString( doc_word_overlapCnt ) );
-  addOneMetric( el->doc(), el,
-		"document_lemma_argument_overlap_count", toString( doc_lemma_overlapCnt ) );
-}
-
-void docStats::toCSV( const string& name, csvKind what ) const {
-  if ( what == DOC_CSV ){
-    string fname = name + ".document.csv";
-    ofstream out( fname.c_str() );
-    if ( out ){
-      // 20141003: New features: paragraphs/sentences/words per document
-      CSVheader( out, "Inputfile,Par_per_doc,Zin_per_doc,Word_per_doc" );
-      out << name << "," << sv.size() << ",";
-      structStats::toCSV( out );
-      cerr << "stored document statistics in " << fname << endl;
-    }
-    else {
-      cerr << "storing document statistics in " << fname << " FAILED!" << endl;
-    }
-  }
-  else if ( what == PAR_CSV ){
-    string fname = name + ".paragraphs.csv";
-    ofstream out( fname.c_str() );
-    if ( out ){
-      for ( size_t par=0; par < sv.size(); ++par ){
-	if ( par == 0 )
-    // 20141003: New features: sentences/words per paragraph
-	  sv[0]->CSVheader( out, "Inputfile,Segment,Zin_per_par,Wrd_per_par" );
-	out << name << "," << sv[par]->id << ",";
-	sv[par]->toCSV( out );
-    }
-      cerr << "stored paragraph statistics in " << fname << endl;
-    }
-    else {
-      cerr << "storing paragraph statistics in " << fname << " FAILED!" << endl;
-    }
-  }
-  else if ( what == SENT_CSV ){
-    string fname = name + ".sentences.csv";
-    ofstream out( fname.c_str() );
-    if ( out ){
-      for ( size_t par=0; par < sv.size(); ++par ){
-	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
-	  if ( par == 0 && sent == 0 )
-	    sv[0]->sv[0]->CSVheader( out, "Inputfile,Segment,Getokeniseerde_zin" );
-	  out << name << "," << sv[par]->sv[sent]->id << ",";
-	  sv[par]->sv[sent]->toCSV( out );
-	}
-      }
-      cerr << "stored sentence statistics in " << fname << endl;
-    }
-    else {
-      cerr << "storing sentence statistics in " << fname << " FAILED!" << endl;
-    }
-  }
-  else if ( what == WORD_CSV ){
-    string fname = name + ".words.csv";
-    ofstream out( fname.c_str() );
-    if ( out ){
-      for ( size_t par=0; par < sv.size(); ++par ){
-	for ( size_t sent=0; sent < sv[par]->sv.size(); ++sent ){
-	  for ( size_t word=0; word < sv[par]->sv[sent]->sv.size(); ++word ){
-	    if ( par == 0 && sent == 0 && word == 0 )
-	      sv[0]->sv[0]->sv[0]->CSVheader( out );
-	    out << name << ",";
-	    sv[par]->sv[sent]->sv[word]->toCSV( out );
-	  }
-	}
-      }
-      cerr << "stored word statistics in " << fname << endl;
-    }
-    else {
-      cerr << "storing word statistics in " << fname << " FAILED!" << endl;
-    }
-  }
+  rarity_index = rarity( settings.rarityLevel );
 }
 
 //#define DEBUG_FROG

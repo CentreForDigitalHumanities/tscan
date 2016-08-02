@@ -57,7 +57,7 @@ struct basicStats {
   virtual void intensToCSV( std::ostream& ) const = 0;
   virtual void miscToCSV( std::ostream& ) const = 0;
   virtual void miscHeader( std::ostream& ) const = 0;
-  virtual std::string rarity( int ) const { return "NA"; };
+  virtual double rarity( int ) const { return NAN; };
   virtual void toCSV( std::ostream& ) const = 0;
   virtual void addMetrics() const = 0;
   virtual std::string text() const { return ""; };
@@ -827,7 +827,7 @@ struct docStats : public structStats {
   docStats( folia::Document* );
   bool isDocument() const { return true; };
   void toCSV( const std::string&, csvKind ) const;
-  std::string rarity( int level ) const;
+  double rarity( int level ) const;
   void addMetrics() const;
   int word_overlapCnt() const { return doc_word_overlapCnt; };
   int lemma_overlapCnt() const { return doc_lemma_overlapCnt; };
@@ -840,6 +840,7 @@ struct docStats : public structStats {
   std::map<std::string,double> LSA_word_dists;
   std::map<std::string,double> LSA_sentence_dists;
   std::map<std::string,double> LSA_paragraph_dists;
+  double rarity_index;
 };
 
 #endif /* STATS_H */
