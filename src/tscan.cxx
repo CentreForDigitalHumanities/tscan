@@ -5332,21 +5332,25 @@ void sentStats::resolveAdverbials(xmlDoc *alpDoc) {
 void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
   string hasFiniteVerb = "//node[@cat='ssub']";
   string hasDirectFiniteVerb = "/node[@cat='ssub']";
+
   // Betrekkelijke/bijvoeglijke bijzinnen (zonder/met nevenschikking)
   list<xmlNode*> relNodes = getNodesByRelCat(alpDoc, "mod", "rel", hasFiniteVerb);
   relNodes.merge(getNodesByRelCat(alpDoc, "mod", "whrel", hasFiniteVerb));
   string relConjPath = ".//node[@rel='mod' and @cat='conj']//node[@rel='cnj' and (@cat='rel' or @cat='whrel')]" + hasDirectFiniteVerb;
   relNodes.merge(TiCC::FindNodes(alpDoc, relConjPath));
+
   // Bijwoordelijke bijzinnen (zonder/met nevenschikking + licht afwijkende bijzinnen)
   list<xmlNode*> cpNodes = getNodesByRelCat(alpDoc, "mod", "cp", hasFiniteVerb);
   string cpConjPath = ".//node[@rel='mod' and @cat='conj']//node[@rel='cnj' and @cat='cp']" + hasDirectFiniteVerb;
   cpNodes.merge(TiCC::FindNodes(alpDoc, cpConjPath));
-  string cpNuclAPath = ".//node[(@cat='sv1' or @cat='cp') and following-sibling::node[@rel='nucl']]";
+  string cpNuclAExtra = "(@cat!='cp' or not(descendant::node[@rel='cnj' and @cat='ssub']))";
+  string cpNuclAPath = ".//node[(@cat='sv1' or @cat='cp') and following-sibling::node[@rel='nucl'] and " + cpNuclAExtra + "]";
   cpNodes.merge(TiCC::FindNodes(alpDoc, cpNuclAPath));
   string cpNuclBPath = ".//node[@rel='sat' and following-sibling::node[@rel='nucl']]/node[@rel='cnj' and @cat='sv1']";
   cpNodes.merge(TiCC::FindNodes(alpDoc, cpNuclBPath));
   string cpNuclCPath = ".//node[@rel='sat' and following-sibling::node[@rel='nucl']]//node[@rel='cnj' and @cat='ssub']";
   cpNodes.merge(TiCC::FindNodes(alpDoc, cpNuclCPath));
+
   // Finiete complementszinnen
   // Check whether the previous node is not the top node to prevent clashes with loose clauses below
   string notTop = ".//node[@cat!='top']";
@@ -5356,9 +5360,11 @@ void sentStats::resolveRelativeClauses(xmlDoc *alpDoc) {
   list<xmlNode*> complNodes = TiCC::FindNodes(alpDoc, complWhsubPath);
   complNodes.merge(complementNodes(TiCC::FindNodes(alpDoc, complWhrelPath), relNodes));
   complNodes.merge(complementNodes(TiCC::FindNodes(alpDoc, complCpPath), cpNodes));
+
   // Infinietcomplementen
   list<xmlNode*> tiNodes = getNodesByCat(alpDoc, "ti");
 
+  // Save counts
   betrCnt = relNodes.size();
   bijwCnt = cpNodes.size();
   complCnt = complNodes.size();
