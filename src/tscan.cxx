@@ -893,7 +893,7 @@ void settingData::init( const Configuration& cf ){
 
   val = cf.lookUp( "my_classification" );
   if ( !val.empty() ){
-    if ( !fill( my_classification, cf.configDir() + "/" + val ) )
+    if ( !fill( my_classification, val ) ) // full path necessary to allow custom input
       exit( EXIT_FAILURE );
   }
 }
