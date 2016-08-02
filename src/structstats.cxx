@@ -496,6 +496,8 @@ void structStats::infoHeader( ostream& os ) const {
      << "Bijv_bep_d,Bijv_bep_dz,"
      << "Attr_bijv_nw_d,Attr_bijv_nw_dz,"
      << "Ov_bijv_bep_d,Ov_bijv_bep_dz,"
+     << "KConj_per_zin,Extra_KConj_per_zin,"
+     << "KConj_dz,Extra_KConj_dz,"
      << "TTR_wrd,MTLD_wrd,TTR_lem,MTLD_lem,"
      << "TTR_namen,MTLD_namen,TTR_inhwrd,MTLD_inhwrd,"
      << "Inhwrd_d,Inhwrd_dz,"
@@ -517,6 +519,11 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   os << proportion( adjNpModCnt, correctedClauseCnt ) << ",";
   os << density( npModCnt-adjNpModCnt, wordCnt ) << ",";
   os << proportion( npModCnt-adjNpModCnt, correctedClauseCnt ) << ",";
+
+  os << proportion( smallCnjCnt, sentCnt ) << ",";
+  os << proportion( smallCnjExtraCnt, sentCnt ) << ",";
+  os << proportion( smallCnjCnt, correctedClauseCnt ) << ",";
+  os << proportion( smallCnjExtraCnt, correctedClauseCnt ) << ",";
 
   os << proportion( unique_words.size(), wordCnt ) << ",";
   os << word_mtld << ",";
@@ -1503,6 +1510,8 @@ void structStats::merge( structStats *ss ){
   vcModSingleCnt += ss->vcModSingleCnt;
   adjNpModCnt += ss->adjNpModCnt;
   npModCnt += ss->npModCnt;
+  smallCnjCnt += ss->smallCnjCnt;
+  smallCnjExtraCnt += ss->smallCnjExtraCnt;
   if ( ss->dLevel >= 0 ){
     if ( dLevel < 0 )
       dLevel = ss->dLevel;

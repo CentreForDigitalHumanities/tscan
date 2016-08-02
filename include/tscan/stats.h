@@ -411,6 +411,8 @@ struct structStats: public basicStats {
     vcModSingleCnt(0),
     adjNpModCnt(0),
     npModCnt(0),
+    smallCnjCnt(0),
+    smallCnjExtraCnt(0),
     dLevel(-1),
     dLevel_gt4(0),
     impCnt(0),
@@ -706,6 +708,8 @@ struct structStats: public basicStats {
   int vcModSingleCnt;
   int adjNpModCnt;
   int npModCnt;
+  int smallCnjCnt;
+  int smallCnjExtraCnt;
   int dLevel;
   int dLevel_gt4;
   int impCnt;
@@ -808,6 +812,7 @@ struct sentStats : public structStats {
   void resolveRelativeClauses( xmlDoc* );
   void resolveFiniteVerbs( xmlDoc* );
   void resolveConjunctions( xmlDoc* );
+  void resolveSmallConjunctions( xmlDoc* );
 };
 
 
