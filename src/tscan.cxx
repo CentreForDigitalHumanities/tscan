@@ -2593,9 +2593,13 @@ void sentStats::resolveConjunctions(xmlDoc *alpDoc) {
 
 // Finds nodes of small conjunctions and reports counts
 void sentStats::resolveSmallConjunctions(xmlDoc *alpDoc) {
-  string cats = "|smain|ssub|sv1|rel|whrel|cp|oti|ti|whsub|du|";
+  // Small conjunctions have 'cnj' as relation and do not form a "bigger" sentence
+  string cats = "|smain|ssub|sv1|rel|whrel|cp|oti|ti|whsub|";
   string smallCnjPath = ".//node[@rel='cnj' and not(contains('" + cats + "', concat('|', @cat, '|')))]";
   smallCnjCnt = TiCC::FindNodes(alpDoc, smallCnjPath).size();
+
+  // smallCnjExtraCnt count elements that have 'conj' as a category and do not govern a "bigger" sentence
+  // This amount is then substracted from the number of small conjunctions.
   string smallCnjExtraPath = ".//node[@cat='conj' and not(descendant::node[contains('" + cats + "', concat('|', @cat, '|'))])]";
   smallCnjExtraCnt = smallCnjCnt - TiCC::FindNodes(alpDoc, smallCnjExtraPath).size();
 }
