@@ -36,7 +36,7 @@ template<class M> void aggregate( M& out, const M& in ){
 
 struct proportion {
   proportion( double d1, double d2 ) {
-    if ( d2 == 0 || isnan(d1) || isnan(d2) )
+    if ( d2 == 0 || std::isnan(d1) || std::isnan(d2) )
       p = NAN;
     else
       p = d1/d2;
@@ -46,7 +46,7 @@ struct proportion {
 
 struct density {
   density( double d1, double d2 ) {
-    if ( d2 == 0 || isnan(d1) || isnan(d2) )
+    if ( d2 == 0 || std::isnan(d1) || std::isnan(d2) )
       d = NAN;
     else
       d = (d1/d2) * 1000;
