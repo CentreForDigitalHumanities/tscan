@@ -69,5 +69,6 @@ std::list<xmlNode*> getNodesByRelCat( xmlDoc*, const std::string&, const std::st
 std::list<xmlNode*> getNodesByCat( xmlNode*, const std::string&, const std::string& = "" );
 std::list<xmlNode*> getNodesByRelCat( xmlNode*, const std::string&, const std::string&, const std::string& = "" );
 std::list<std::string> getNodeIds( std::list<xmlNode*> );
+std::list<xmlNode*> complementNodes( std::list<xmlNode*>, std::list<xmlNode*> );
 
 #endif // ALPINO_H
