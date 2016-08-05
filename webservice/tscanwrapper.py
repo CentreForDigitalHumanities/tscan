@@ -124,7 +124,7 @@ f.write("general_nouns=\"general_nouns.data\"\n")
 f.write("general_verbs=\"general_verbs.data\"\n")
 f.write("adverbs=\"adverbs.data\"\n")
 
-# 20150802: This allows a completely dcustom classification.
+# 20160802: This allows a completely dcustom classification.
 load_custom_wordlist(f, inputdir, "my_classification", "myclassification")
 # 20150316: This allows custom adjective classification.
 load_custom_wordlist(f, inputdir, "adj_semtypes", "adjclassification", "/data/adjs_semtype.data")

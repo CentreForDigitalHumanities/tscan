@@ -166,7 +166,7 @@ PROFILES = [
             acceptarchive=True,
             multi=True
         ),
-        # 20150802: Added possibility to enter your own classification
+        # 20160802: Added possibility to enter your own classification
         InputTemplate(
             'myclassification',
             PlainTextFormat,
