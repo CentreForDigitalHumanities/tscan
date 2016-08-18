@@ -410,6 +410,8 @@ void sentStats::resolveLSA( const map<string,double>& LSAword_dists ) {
 void sentStats::resolveRelativeClauses( xmlDoc *alpDoc ) {
   string hasFiniteVerb = "//node[@cat='ssub']";
   string hasDirectFiniteVerb = "/node[@cat='ssub']";
+  string hasFiniteVerbSv1 = "//node[@cat='ssub' or @cat='sv1']";
+  string hasDirectFiniteVerbSv1 = "/node[@cat='ssub' or @cat='sv1']";
 
   // Betrekkelijke/bijvoeglijke bijzinnen (zonder/met nevenschikking)
   list<xmlNode*> relNodes = getNodesByRelCat(alpDoc, "mod", "rel", hasFiniteVerb);
@@ -418,15 +420,16 @@ void sentStats::resolveRelativeClauses( xmlDoc *alpDoc ) {
   relNodes.merge(TiCC::FindNodes(alpDoc, relConjPath));
 
   // Bijwoordelijke bijzinnen (zonder/met nevenschikking + licht afwijkende bijzinnen)
-  list<xmlNode*> cpNodes = getNodesByRelCat(alpDoc, "mod", "cp", hasFiniteVerb);
-  string cpConjPath = ".//node[@rel='mod' and @cat='conj']//node[@rel='cnj' and @cat='cp']" + hasDirectFiniteVerb;
+  list<xmlNode*> cpNodes = getNodesByRelCat(alpDoc, "mod", "cp", hasFiniteVerbSv1);
+  string cpConjPath = ".//node[@rel='mod' and @cat='conj']//node[@rel='cnj' and @cat='cp']" + hasDirectFiniteVerbSv1;
   cpNodes.merge(TiCC::FindNodes(alpDoc, cpConjPath));
   string cpNuclAExtra = "(@cat!='cp' or not(descendant::node[@rel='cnj' and @cat='ssub']))";
-  string cpNuclAPath = ".//node[(@cat='sv1' or @cat='cp') and following-sibling::node[@rel='nucl'] and " + cpNuclAExtra + "]";
+  string nuclPath = "(following-sibling::node[@rel='nucl'] or preceding-sibling::node[@rel='nucl'])";
+  string cpNuclAPath = ".//node[(@cat='sv1' or @cat='cp') and " + nuclPath + " and " + cpNuclAExtra + "]";
   cpNodes.merge(TiCC::FindNodes(alpDoc, cpNuclAPath));
-  string cpNuclBPath = ".//node[@rel='sat' and following-sibling::node[@rel='nucl']]/node[@rel='cnj' and @cat='sv1']";
+  string cpNuclBPath = ".//node[@rel='sat' and " + nuclPath + "]/node[@rel='cnj' and @cat='sv1']";
   cpNodes.merge(TiCC::FindNodes(alpDoc, cpNuclBPath));
-  string cpNuclCPath = ".//node[@rel='sat' and following-sibling::node[@rel='nucl']]//node[@rel='cnj' and @cat='ssub']";
+  string cpNuclCPath = ".//node[@rel='sat' and " + nuclPath + "]//node[@rel='cnj' and @cat='ssub']";
   cpNodes.merge(TiCC::FindNodes(alpDoc, cpNuclCPath));
 
   // Finiete complementszinnen
@@ -459,7 +462,7 @@ void sentStats::resolveRelativeClauses( xmlDoc *alpDoc ) {
     embedRelNodes.merge(TiCC::FindNodes(node, relConjPath));
     ids.merge(getNodeIds(embedRelNodes));
 
-    list<xmlNode*> embedCpNodes = getNodesByRelCat(node, "mod", "cp", hasFiniteVerb);
+    list<xmlNode*> embedCpNodes = getNodesByRelCat(node, "mod", "cp", hasFiniteVerbSv1);
     embedCpNodes.merge(TiCC::FindNodes(node, cpConjPath));
     embedCpNodes.merge(TiCC::FindNodes(node, cpNuclAPath));
     embedCpNodes.merge(TiCC::FindNodes(node, cpNuclBPath));
@@ -482,7 +485,7 @@ void sentStats::resolveRelativeClauses( xmlDoc *alpDoc ) {
     embedRelNodes.merge(TiCC::FindNodes(node, relConjPath));
     ids.merge(getNodeIds(embedRelNodes));
 
-    list<xmlNode*> embedCpNodes = getNodesByRelCat(node, "mod", "cp", hasFiniteVerb);
+    list<xmlNode*> embedCpNodes = getNodesByRelCat(node, "mod", "cp", hasFiniteVerbSv1);
     embedCpNodes.merge(TiCC::FindNodes(node, cpConjPath));
     embedCpNodes.merge(TiCC::FindNodes(node, cpNuclAPath));
     embedCpNodes.merge(TiCC::FindNodes(node, cpNuclBPath));
