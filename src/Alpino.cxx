@@ -1006,7 +1006,7 @@ void mod_stats( xmlDoc *doc, int& adjNpMod, int& npMod ) {
   list<xmlNode*> npnodes = TiCC::FindNodes(doc, "//node[@cat='np']");
   for (auto& node : npnodes) {
     adjNpMod += TiCC::FindNodes(node, "./node[@rel='mod' and @pos='adj']").size();
-    npMod += TiCC::FindNodes(node, "./node[@rel='mod' or @rel='app' or @rel='vc']").size();
+    npMod += TiCC::FindNodes(node, "./node[(@rel='det' and (@pt='tw' or @pt='n')) or @rel='mod' or @rel='app' or @rel='vc']").size();
   }
 }
 
