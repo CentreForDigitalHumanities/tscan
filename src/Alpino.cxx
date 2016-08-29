@@ -20,12 +20,14 @@
 
 */
 
+#include <cmath>
 #include <cstdio> // for remove()
 #include <unistd.h>
 #include <iostream>
 #include <vector>
 #include <set>
 #include <fstream>
+#include <algorithm>
 #include "config.h"
 #include "ticcutils/PrettyPrint.h"
 #include "ticcutils/StringOps.h"
@@ -34,12 +36,51 @@
 #include "tscan/Alpino.h"
 
 using namespace std;
-using namespace folia;
 using namespace TiCC;
 
 
-xmlNode *getAlpNodeWord( xmlDoc *doc, const Word *w ){
-  // search the XML node that matches de FoLiA word w
+string MMtoString( const multimap<DD_type, int>& mm, DD_type t ){
+  size_t len = mm.count(t);
+  if ( len > 0 ){
+    int result = 0;
+    for( multimap<DD_type, int>::const_iterator pos = mm.lower_bound(t);
+   pos != mm.upper_bound(t);
+   ++pos ){
+      result += pos->second;
+    }
+    return toString( result/double(len) );
+  }
+  else
+    return "NA";
+}
+
+string MMtoString( const multimap<DD_type, int>& mm ){
+  size_t len = mm.size();
+  if ( len > 0 ){
+    int result = 0;
+    for( multimap<DD_type, int>::const_iterator pos = mm.begin();
+   pos != mm.end();
+   ++pos ){
+      if ( !std::isnan(pos->second) )
+  result += pos->second;
+    }
+    cerr << "MM to string " << result << "/" << len << endl;
+    return toString( result/double(len) );
+  }
+  else
+    return "NA";
+}
+
+void aggregate( multimap<DD_type,int>& out, const multimap<DD_type,int>& in ) {
+  multimap<DD_type,int>::const_iterator ii = in.begin();
+  while ( ii != in.end() ){
+    out.insert( make_pair(ii->first, ii->second ) );
+    ++ii;
+  }
+}
+
+xmlNode *getAlpNodeWord( xmlDoc *doc, const folia::Word *w ){
+  // search the XML node that matches the FoLiA word w
   string id = w->id();
   string::size_type ppos = id.find_last_of( '.' );
   string posS = id.substr( ppos + 1 );
@@ -52,7 +93,7 @@ xmlNode *getAlpNodeWord( xmlDoc *doc, const Word *w ){
     list<xmlNode*>::const_iterator it = nodelist.begin();
     while ( it != nodelist.end() ) {
       xmlNode *pnt = *it;
-      KWargs atts = getAttributes( pnt );
+      folia::KWargs atts = folia::getAttributes( pnt );
       string epos = atts["end"];
       if ( epos == posS ){
   string bpos = atts["begin"];
@@ -146,7 +187,7 @@ void get_index_nodes( const xmlNode* node, vector<xmlNode*>& result ){
   xmlNode *pnt = node->children;
   while ( pnt ){
     if ( pnt->type == XML_ELEMENT_NODE ){
-      KWargs atts = getAttributes( pnt );
+      folia::KWargs atts = folia::getAttributes( pnt );
       if ( atts["index"] != "" &&
      !(atts["pos"] == "" && atts["cat"] == "" ) ){
   result.push_back( pnt );
@@ -269,7 +310,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
   // walk down the Alpino tree and gather all types of distances
   multimap<DD_type,int> result;
   if ( head_node ){
-    KWargs atts = getAttributes( head_node );
+    folia::KWargs atts = folia::getAttributes( head_node );
     string head_rel = atts["rel"];
     string head_cat = atts["cat"];
     string head_pos = atts["pos"];
@@ -278,7 +319,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
       for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
       it != head_siblings.end();
       ++it ){
-  KWargs args = getAttributes( *it );
+  folia::KWargs args = folia::getAttributes( *it );
   //  cerr << "bekijk " << args << endl;
   if ( args["rel"] == "su" || args["rel"] == "sup" ){
     if ( !(*it)->children ){
@@ -289,7 +330,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
         //        cerr << "geval 2 " << endl;
         vector<xmlNode*> inodes = getIndexNodes( head_node->doc );
         for ( size_t i=0; i < inodes.size(); ++i ){
-    KWargs iatts = getAttributes(inodes[i]);
+    folia::KWargs iatts = folia::getAttributes(inodes[i]);
     if ( iatts["index"] == args["index"] ){
       target = inodes[i];
       break;
@@ -485,7 +526,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
       for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
       it != head_siblings.end();
       ++it ){
-  KWargs args = getAttributes( *it );
+  folia::KWargs args = folia::getAttributes( *it );
   //  cerr << "bekijk " << args << endl;
   if ( args["rel"] == "det" ){
     if ( !(*it)->children ){
@@ -521,7 +562,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
       for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
       it != head_siblings.end();
       ++it ){
-  KWargs args = getAttributes( *it );
+  folia::KWargs args = folia::getAttributes( *it );
   //  cerr << "bekijk " << args << endl;
   if ( args["rel"] == "obj1" ){
     if ( !(*it)->children ){
@@ -546,7 +587,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
       for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
       it != head_siblings.end();
       ++it ){
-  KWargs args = getAttributes( *it );
+  folia::KWargs args = folia::getAttributes( *it );
   //  cerr << "bekijk " << args << endl;
   if ( args["rel"] == "cnj" ){
     if ( !(*it)->children ){
@@ -569,7 +610,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
   for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
         it != head_siblings.end();
         ++it ){
-    KWargs args = getAttributes( *it );
+    folia::KWargs args = folia::getAttributes( *it );
     if ( args["rel"] == "body" ){
       xmlNode *res = node_search( *it, "rel", "hd" );
       if ( res ){
@@ -624,7 +665,7 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma,
     if ( lemma == "zijn" || lemma == "worden" ){
 #ifdef WW_DEBUG
       cerr << "passief? lemma=" << lemma << endl;
-      cerr << "attributes: " << getAttributes( wnode ) << endl;
+      cerr << "attributes: " << folia::getAttributes( wnode ) << endl;
 #endif
       string sc = getAttribute( wnode, "sc" );
       if ( sc == "passive" ){
@@ -636,7 +677,7 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma,
     }
     if ( koppels.find( lemma ) != koppels.end() ){
       for ( size_t i=0; i < siblinglist.size(); ++i ){
-  KWargs atts = getAttributes( siblinglist[i] );
+  folia::KWargs atts = folia::getAttributes( siblinglist[i] );
   if ( atts["rel"] == "predc" ){
     //    cerr << "resultaat = koppelww" << endl;
     return COPULA;
@@ -645,7 +686,7 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma,
     }
     if ( lemma == "schijnen" ){
       for ( size_t i=0; i < siblinglist.size(); ++i ){
-  KWargs atts = getAttributes( siblinglist[i] );
+  folia::KWargs atts = folia::getAttributes( siblinglist[i] );
   if ( atts["rel"] == "su" ){
     static string schijn_words[] = { "zon", "ster", "maan", "lamp", "licht" };
     static set<string> sws( schijn_words, schijn_words+5 );
@@ -667,7 +708,7 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma,
     }
     if ( lemma == "hebben" ){
       for ( size_t i=0; i < siblinglist.size(); ++i ){
-  KWargs atts = getAttributes( siblinglist[i] );
+  folia::KWargs atts = folia::getAttributes( siblinglist[i] );
   if ( atts["rel"] == "vc" && (atts["cat"] == "ppart" || atts["cat"] == "inf" ) ){
     //    cerr << "resultaat = tijdww" << endl;
     return TIME_VERB;
@@ -684,7 +725,7 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma,
     for ( vector< xmlNode *>::const_iterator it=siblinglist.begin();
     it != siblinglist.end();
     ++it ){
-      KWargs args = getAttributes( *it );
+      folia::KWargs args = folia::getAttributes( *it );
       if ( args["rel"] == "svp" ){
   if ( args["lcat"] == "part" ){
     full_lemma = args["word"] + lemma;
@@ -699,18 +740,18 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma,
   }
 }
 
-int get_d_level( const Sentence *s, xmlDoc *alp ){
-  // determine de d-level of a sentence
-  vector<PosAnnotation*> poslist;
-  vector<Word*> wordlist = s->words();
+int get_d_level( const folia::Sentence *s, xmlDoc *alp ){
+  // determine de d-level of a folia::Sentence
+  vector<folia::PosAnnotation*> poslist;
+  vector<folia::Word*> wordlist = s->words();
   int pv_counter = 0;
   int neven_counter = 0;
   for ( size_t i=0; i < wordlist.size(); ++i ){
-    Word *w = wordlist[i];
-    vector<PosAnnotation*> posV = w->select<PosAnnotation>("http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn");
+    folia::Word *w = wordlist[i];
+    vector<folia::PosAnnotation*> posV = w->select<folia::PosAnnotation>("http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn");
     if ( posV.size() != 1 )
-      throw ValueError( "word doesn't have POS tag info" );
-    PosAnnotation *pa = posV[0];
+      throw folia::ValueError( "word doesn't have POS tag info" );
+    folia::PosAnnotation *pa = posV[0];
     string pos = pa->feat("head");
     poslist.push_back( pa );
     if ( pos == "WW" ){
@@ -744,10 +785,10 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
     // Het onderwerp van de zin is genominaliseerd
     //    ("Het weigeren van Pietje was voor Jantje reden om ermee te stoppen.")
     xmlNode *node = *nit;
-    KWargs atts = getAttributes( node );
+    folia::KWargs atts = folia::getAttributes( node );
     if ( atts["rel"] == "mod" && atts["cat"] == "rel" ){
       //      cerr << "HIT MOD node " << atts << endl;
-      KWargs attsp = getAttributes( node->parent );
+      folia::KWargs attsp = folia::getAttributes( node->parent );
       //      cerr << "parent: " << attsp << endl;
       if ( attsp["rel"] == "su" )
   return 6;
@@ -762,7 +803,7 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
     }
     else if ( atts["pos"] == "verb" ){
       //      cerr << "HIT verb node " << atts << endl;
-      KWargs attsp = getAttributes( node->parent );
+      folia::KWargs attsp = folia::getAttributes( node->parent );
       //      cerr << "parent: " << attsp << endl;
       if ( attsp["rel"] == "su" && attsp["cat"] == "np" )
   return 6;
@@ -792,7 +833,7 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
     //  "Non-finite complement with its own understood subject". Kan ik even geen voorbeeld van bedenken :p
     // comparatieven met een object van vergelijking
     //    ("Pietje is groter dan Jantje.")
-    KWargs atts = getAttributes( *nit );
+    folia::KWargs atts = folia::getAttributes( *nit );
     if ( atts["rel"] == "obcomp" )
       return 4;
     ++nit;
@@ -800,7 +841,7 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
   vector<xmlNode*> vcnodes;
   nit = nodelist.begin();
   while ( nit != nodelist.end() ){
-    KWargs atts = getAttributes( *nit );
+    folia::KWargs atts = folia::getAttributes( *nit );
     if ( atts["rel"] == "vc" )
       vcnodes.push_back( *nit );
     ++nit;
@@ -812,7 +853,7 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
     string index;
     while ( pnt ){
       if ( pnt->type == XML_ELEMENT_NODE ){
-  KWargs atts = getAttributes( pnt );
+  folia::KWargs atts = folia::getAttributes( pnt );
   string index = atts["index"];
   if ( !index.empty() && atts["rel"] == "su" ){
     found4 = true;
@@ -824,7 +865,7 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
     if ( found4 ){
       vector< xmlNode *> siblinglist = getSibblings( node );
       for ( size_t i=0; i < siblinglist.size(); ++i ){
-  KWargs atts = getAttributes( siblinglist[i] );
+  folia::KWargs atts = folia::getAttributes( siblinglist[i] );
   if ( atts["index"] == index && atts["rel"] == "obj" )
     return 4;
       }
@@ -844,18 +885,18 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
     //     "Het verbaast me dat je dat weet."
     //   Kun je in Alpino detecteren met aan het 'sup' label voor een
     //   voorlopig onderwerp
-    KWargs atts = getAttributes( *nit );
+    folia::KWargs atts = folia::getAttributes( *nit );
     //    cerr << "bekijk " << atts << endl;
     if ( atts["rel"] == "mod" && atts["cat"] == "rel" ){
       //      cerr << "case mod/rel " << endl;
-      KWargs attsp = getAttributes( (*nit)->parent );
+      folia::KWargs attsp = folia::getAttributes( (*nit)->parent );
       //      cerr << "bekijk " << attsp << endl;
       if ( attsp["rel"] == "obj1" )
   return 3;
     }
     else if ( atts["pos"] == "verb" ){
       //      cerr << "case VERB " << endl;
-      KWargs attsp = getAttributes( (*nit)->parent );
+      folia::KWargs attsp = folia::getAttributes( (*nit)->parent );
       //      cerr << "bekijk " << attsp << endl;
       if ( attsp["rel"] == "obj1" && attsp["cat"] == "np" )
   return 3;
@@ -895,7 +936,7 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
     // Zinnen met een infinitief waarbij infinitief en persoonsvorm hetzelfde
     // onderwerp hebben
     //     ("Pietje vergat zijn haar te kammen.")
-    KWargs atts = getAttributes( *nit );
+    folia::KWargs atts = folia::getAttributes( *nit );
     if ( atts["rel"] == "vc" ){
       //      cerr << "VC node " << atts << endl;
       if ( atts["cat"] == "ti"
@@ -903,13 +944,13 @@ int get_d_level( const Sentence *s, xmlDoc *alp ){
      || atts["cat"] == "inf" ){
   xmlNode *su_node = node_search( *nit, "rel", "su" );
   if ( su_node ){
-    KWargs atts1 = getAttributes( su_node );
+    folia::KWargs atts1 = folia::getAttributes( su_node );
     //    cerr << "su node 1 " << atts1 << endl;
     string node_index = atts1["index"];
     if ( !node_index.empty() ){
       vector< xmlNode *> siblinglist = getSibblings( *nit );
       for ( size_t i=0; i < siblinglist.size(); ++i ){
-        KWargs atts2 = getAttributes( siblinglist[i] );
+        folia::KWargs atts2 = folia::getAttributes( siblinglist[i] );
         if ( atts2["rel"] == "su" ){
     //    cerr << "su node 2 " << atts2 << endl;
     if ( atts2["index"] == node_index )
@@ -965,7 +1006,7 @@ void mod_stats( xmlDoc *doc, int& adjNpMod, int& npMod ) {
   list<xmlNode*> npnodes = TiCC::FindNodes(doc, "//node[@cat='np']");
   for (auto& node : npnodes) {
     adjNpMod += TiCC::FindNodes(node, "./node[@rel='mod' and @pos='adj']").size();
-    npMod += TiCC::FindNodes(node, "./node[@rel='mod' or @rel='app' or @rel='vc']").size();
+    npMod += TiCC::FindNodes(node, "./node[(@rel='det' and (@pt='tw' or @pt='n')) or @rel='mod' or @rel='app' or @rel='vc']").size();
   }
 }
 
@@ -974,7 +1015,7 @@ bool isSmallCnj( const xmlNode *eNode ){
   vector< xmlNode *> sl = getSibblings( eNode );
   string pos;
   for ( size_t i=0; i < sl.size(); ++i ){
-    //    cerr << "sibbling: " << getAttributes( sl[i] ) << endl;
+    //    cerr << "sibbling: " << folia::getAttributes( sl[i] ) << endl;
     if ( sl[i] == eNode )
       continue;
     string the_pos = getAttribute( sl[i], "pos" );
@@ -995,7 +1036,7 @@ bool isSmallCnj( const xmlNode *eNode ){
   return false;
 }
 
-// Returns adverbial nodes: "mod" or "predm" directly below a verb (or sentence) instance.
+// Returns adverbial nodes: "mod" or "predm" directly below a verb (or folia::Sentence) instance.
 list<xmlNode*> getAdverbialNodes( xmlDoc *doc ) {
   string verbs = "|smain|ssub|sv1|inf|ti|ppart|ppresent|";
   return TiCC::FindNodes(doc, "//node[contains('" + verbs + "', concat('|', @cat, '|'))]/node[@rel='mod' or @rel='predm']");
@@ -1044,8 +1085,26 @@ list<string> getNodeIds( list<xmlNode*> nodes ) {
   return ids;
 }
 
+// Returns the complement (all nodes in A not in B) of a list of nodes
+list<xmlNode*> complementNodes( list<xmlNode*> nodesA, list<xmlNode*> nodesB) {
+  struct compare
+  {
+    bool operator() (const xmlNode* a, const xmlNode* b) const
+    {
+      return getAttribute(a, "id") < getAttribute(b, "id");
+    }
+  };
+
+  nodesA.sort(compare());
+  nodesB.sort(compare());
+
+  list<xmlNode*> result;
+  set_difference(nodesA.begin(), nodesA.end(), nodesB.begin(), nodesB.end(), back_inserter(result), compare());
+  return result;
+}
+
 xmlDoc *AlpinoParse( const folia::Sentence *s, const string& dirname ){
-  //  parse a FoLiA Sentence into an Alpino tree.
+  //  parse a FoLiA folia::Sentence into an Alpino tree.
   string txt = folia::UnicodeToUTF8(s->toktext());
   //  cerr << "parse line: " << txt << endl;
   string txtfile = dirname + "parse.txt";

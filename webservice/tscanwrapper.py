@@ -55,15 +55,21 @@ if not 'top_freq_lex' in clamdata:
     sys.exit(2)
 
 
-def load_custom_wordlist(configfile, inputdir, tscan_name, inputtemplate, default_location):
+def load_custom_wordlist(configfile, inputdir, tscan_name, inputtemplate, default_location=None):
     """This allows custom word lists. Does require to specify the full path to the files."""
+    wordlist = None
+
     for inputfile in clamdata.inputfiles(inputtemplate):
         wordlist = inputdir + inputfile.filename
         break
     else:
-        # When no inputfile is found, revert to the default
-        wordlist = TSCANDIR + default_location
-    configfile.write(tscan_name + "=\"" + wordlist + "\"\n")
+        # When no inputfile is found, revert to the default (if there is one)
+        if default_location:
+            wordlist = TSCANDIR + default_location
+
+    # Write the wordlist to the config file
+    if wordlist:
+        configfile.write(tscan_name + "=\"" + wordlist + "\"\n")
 
 #Write configuration file
 
@@ -78,11 +84,12 @@ if 'useWopr' in clamdata and clamdata['useWopr'] == 'yes':
     f.write("useWopr=1\n")
 else:
     f.write("useWopr=0\n")
-# !!! disable lsa  !!!
-#if 'useLsa' in clamdata and clamdata['useLsa'] == 'yes':
-#    f.write("useLsa=1\n")
-#else:
-    f.write("useLsa=0\n")
+if 'sentencePerLine' in clamdata and clamdata['sentencePerLine'] == 'yes':
+    f.write("sentencePerLine=1\n")
+else:
+    f.write("sentencePerLine=0\n")
+
+f.write("useLsa=0\n")  # LSA is disabled
 f.write("surprisalPath=\"" + TSCANDIR + "\"\n")
 f.write("styleSheet=\"tscanview.xsl\"\n")
 
@@ -117,6 +124,8 @@ f.write("general_nouns=\"general_nouns.data\"\n")
 f.write("general_verbs=\"general_verbs.data\"\n")
 f.write("adverbs=\"adverbs.data\"\n")
 
+# 20160802: This allows a completely dcustom classification.
+load_custom_wordlist(f, inputdir, "my_classification", "myclassification")
 # 20150316: This allows custom adjective classification.
 load_custom_wordlist(f, inputdir, "adj_semtypes", "adjclassification", "/data/adjs_semtype.data")
 # 20141121: This allows a custom noun classification.

@@ -33,6 +33,9 @@ enum DD_type { SUB_VERB, OBJ1_VERB, OBJ2_VERB, VERB_PP, VERB_VC,
 	       VERB_SVP, VERB_PREDC_N, VERB_PREDC_A, VERB_MOD_BW,
 	       VERB_MOD_A, VERB_NOUN };
 
+std::string MMtoString( const std::multimap<DD_type, int>& mm, DD_type t );
+std::string MMtoString( const std::multimap<DD_type, int>& mm );
+void aggregate( std::multimap<DD_type,int>& out, const std::multimap<DD_type,int>& in );
 std::string toString( const DD_type& );
 inline std::ostream& operator<< (std::ostream&os, const DD_type& t ){
   os << toString( t );
@@ -66,5 +69,6 @@ std::list<xmlNode*> getNodesByRelCat( xmlDoc*, const std::string&, const std::st
 std::list<xmlNode*> getNodesByCat( xmlNode*, const std::string&, const std::string& = "" );
 std::list<xmlNode*> getNodesByRelCat( xmlNode*, const std::string&, const std::string&, const std::string& = "" );
 std::list<std::string> getNodeIds( std::list<xmlNode*> );
+std::list<xmlNode*> complementNodes( std::list<xmlNode*>, std::list<xmlNode*> );
 
 #endif // ALPINO_H

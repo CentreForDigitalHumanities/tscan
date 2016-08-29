@@ -18,8 +18,6 @@ from clam.common.formats import *
 from clam.common.converters import *
 from clam.common.viewers import *
 from clam.common.data import *
-from clam.common.digestauth import pwhash
-import sys
 import os
 from base64 import b64decode as D
 import glob
@@ -49,14 +47,14 @@ USERS = None
 
 # ================ Server specific configuration for CLAM ===============
 hostname = os.uname()[1]
-if 'VIRTUAL_ENV' in os.environ and os.path.exists(os.environ['VIRTUAL_ENV'] +'/bin/tscan'):
+if 'VIRTUAL_ENV' in os.environ and os.path.exists(os.environ['VIRTUAL_ENV'] + '/bin/tscan'):
     # Virtual Environment (LaMachine)
     ROOT = os.environ['VIRTUAL_ENV'] + "/tscan.clam/"
     PORT = 8809
     BINDIR = os.environ['VIRTUAL_ENV'] + '/bin/'
     TSCANDIR = os.environ['VIRTUAL_ENV'] + '/src/tscan/'
 
-    if hostname == 'applejack': #server in Nijmegen
+    if hostname == 'applejack':  # server in Nijmegen
         HOST = "webservices-lst.science.ru.nl"
         URLPREFIX = 'tscan'
 
@@ -81,14 +79,14 @@ if 'VIRTUAL_ENV' in os.environ and os.path.exists(os.environ['VIRTUAL_ENV'] +'/b
         REALM = "WEBSERVICES-LST"
         DIGESTOPAQUE = open(os.environ['CLAM_DIGESTOPAQUEFILE']).read().strip()
         SECRET_KEY = open(os.environ['CLAM_SECRETKEYFILE']).read().strip()
-        ADMINS = ['proycon','antalb','wstoop']
+        ADMINS = ['proycon', 'antalb', 'wstoop']
 
         #The amount of diskspace a user may use (in MB), this is a soft quota which can be exceeded, but creation of new projects is blocked until usage drops below the quota again
         USERQUOTA = 6144
-else: #local
+else:  # local
     TSCANDIR = os.path.dirname(sys.argv[0])
     ROOT = "/tmp/tscan.clam/"
-    PORT= 8080
+    PORT = 8080
     USERS = None
 
 if 'ALPINO_HOME' in os.environ:
@@ -133,7 +131,6 @@ else:
 #MINDISKSPACE = 10
 
 
-
 # ======== WEB-APPLICATION STYLING =============
 
 #Choose a style (has to be defined as a CSS file in style/ ). You can copy, rename and adapt it to make your own style
@@ -156,8 +153,11 @@ CUSTOMHTML_INDEX = CUSTOMHTML_PROJECTSTART = "<p>Voor het juiste gebruik van T-s
 
 PROFILES = [
     Profile(
-        InputTemplate('textinput', PlainTextFormat, 'Text Input',
-            StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file',value='utf-8'),
+        InputTemplate(
+            'textinput',
+            PlainTextFormat,
+            'Text Input',
+            StaticParameter(id='encoding', name='Encoding', description='The character encoding of the file', value='utf-8'),
             #PDFtoTextConverter(id='pdfconv',label='Convert from PDF Document'),
             #MSWordConverter(id='docconv',label='Convert from MS Word Document'),
             extension='.txt',
@@ -166,83 +166,132 @@ PROFILES = [
             acceptarchive=True,
             multi=True
         ),
+        # 20160802: Added possibility to enter your own classification
+        InputTemplate(
+            'myclassification',
+            PlainTextFormat,
+            'Own Classification',
+            StaticParameter(id='encoding', name='Encoding', description='The character encoding of the file', value='utf-8'),
+            extension='.data',
+            optional=True,
+            unique=True,
+        ),
         # 20150316: Added possibility to enter custom adjective classification
-        InputTemplate('adjclassification', PlainTextFormat, 'Adjective Classification',
-            StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file',value='utf-8'),
+        InputTemplate(
+            'adjclassification',
+            PlainTextFormat,
+            'Adjective Classification',
+            StaticParameter(id='encoding', name='Encoding', description='The character encoding of the file', value='utf-8'),
             extension='.data',
             optional=True,
             unique=True,
         ),
         # 20141121: Added possibility to enter custom noun classification
-        InputTemplate('nounclassification', PlainTextFormat, 'Noun Classification',
-            StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file',value='utf-8'),
+        InputTemplate(
+            'nounclassification',
+            PlainTextFormat,
+            'Noun Classification',
+            StaticParameter(id='encoding', name='Encoding', description='The character encoding of the file', value='utf-8'),
             extension='.data',
             optional=True,
             unique=True,
         ),
         # 20150203: Added possibility to enter custom intensifying words
-        InputTemplate('intensify', PlainTextFormat, 'Intensifying words',
-            StaticParameter(id='encoding',name='Encoding',description='The character encoding of the file',value='utf-8'),
+        InputTemplate(
+            'intensify',
+            PlainTextFormat,
+            'Intensifying words',
+            StaticParameter(id='encoding', name='Encoding', description='The character encoding of the file', value='utf-8'),
             extension='.data',
             optional=True,
             unique=True,
         ),
         #------------------------------------------------------------------------------------------------------------------------
-        OutputTemplate('foliaout',FoLiAXMLFormat,'Output analysis',
+        OutputTemplate(
+            'foliaout',
+            FoLiAXMLFormat,
+            'Output analysis',
             XSLTViewer(file=TSCANDIR + '/view/tscanview.xsl'),
-            removeextension='.txt', #remove prior to adding
+            removeextension='.txt',  # remove prior to adding
             extension='.xml',
             multi=True
         ),
-        OutputTemplate('xsl',XMLStyleSheet,'Stylesheet for Visualisation',
+        OutputTemplate(
+            'xsl',
+            XMLStyleSheet,
+            'Stylesheet for Visualisation',
             filename='tscanview.xsl',
             unique=True
         ),
-        OutputTemplate('wordcsv', CSVFormat, 'Document statistics, per word',
-            SetMetaField('encoding','utf-8'),
-            SimpleTableViewer(delimiter=",",quotechar='"'),
+        OutputTemplate(
+            'wordcsv',
+            CSVFormat,
+            'Document statistics, per word',
+            SetMetaField('encoding', 'utf-8'),
+            SimpleTableViewer(delimiter=",", quotechar='"'),
             extension='words.csv',
             multi=True
         ),
-        OutputTemplate('sencsv', CSVFormat, 'Document statistics, per sentence',
-            SetMetaField('encoding','utf-8'),
-            SimpleTableViewer(delimiter=",",quotechar='"'),
+        OutputTemplate(
+            'sencsv',
+            CSVFormat,
+            'Document statistics, per sentence',
+            SetMetaField('encoding', 'utf-8'),
+            SimpleTableViewer(delimiter=",", quotechar='"'),
             extension='sentences.csv',
             multi=True
         ),
-        OutputTemplate('parcsv', CSVFormat, 'Document statistics, per paragraph',
-            SetMetaField('encoding','utf-8'),
-            SimpleTableViewer(delimiter=",",quotechar='"'),
+        OutputTemplate(
+            'parcsv',
+            CSVFormat,
+            'Document statistics, per paragraph',
+            SetMetaField('encoding', 'utf-8'),
+            SimpleTableViewer(delimiter=",", quotechar='"'),
             extension='paragraphs.csv',
             multi=True
         ),
-        OutputTemplate('doccsv', CSVFormat, 'Document statistics, entire document',
-            SetMetaField('encoding','utf-8'),
-            SimpleTableViewer(delimiter=",",quotechar='"'),
+        OutputTemplate(
+            'doccsv',
+            CSVFormat,
+            'Document statistics, entire document',
+            SetMetaField('encoding', 'utf-8'),
+            SimpleTableViewer(delimiter=",", quotechar='"'),
             extension='document.csv',
             multi=True
         ),
-        OutputTemplate('totalwordcsv', CSVFormat, 'Aggregated statistics, per word',
-            SetMetaField('encoding','utf-8'),
-            SimpleTableViewer(delimiter=",",quotechar='"'),
+        OutputTemplate(
+            'totalwordcsv',
+            CSVFormat,
+            'Aggregated statistics, per word',
+            SetMetaField('encoding', 'utf-8'),
+            SimpleTableViewer(delimiter=",", quotechar='"'),
             filename='total.word.csv',
             unique=True
         ),
-        OutputTemplate('totalsencsv', CSVFormat, 'Aggregated statistics, per sentence',
-            SetMetaField('encoding','utf-8'),
-            SimpleTableViewer(delimiter=",",quotechar='"'),
+        OutputTemplate(
+            'totalsencsv',
+            CSVFormat,
+            'Aggregated statistics, per sentence',
+            SetMetaField('encoding', 'utf-8'),
+            SimpleTableViewer(delimiter=",", quotechar='"'),
             filename='total.sen.csv',
             unique=True
         ),
-        OutputTemplate('totalparcsv', CSVFormat, 'Aggregated statistics, per paragraph',
-            SetMetaField('encoding','utf-8'),
-            SimpleTableViewer(delimiter=",",quotechar='"'),
+        OutputTemplate(
+            'totalparcsv',
+            CSVFormat,
+            'Aggregated statistics, per paragraph',
+            SetMetaField('encoding', 'utf-8'),
+            SimpleTableViewer(delimiter=",", quotechar='"'),
             filename='total.par.csv',
             unique=True
         ),
-        OutputTemplate('totaldoccsv', CSVFormat, 'Aggregated statistics, per document',
-            SetMetaField('encoding','utf-8'),
-            SimpleTableViewer(delimiter=",",quotechar='"'),
+        OutputTemplate(
+            'totaldoccsv',
+            CSVFormat,
+            'Aggregated statistics, per document',
+            SetMetaField('encoding', 'utf-8'),
+            SimpleTableViewer(delimiter=",", quotechar='"'),
             filename='total.doc.csv',
             unique=True
         )
@@ -277,31 +326,30 @@ COMMAND = TSCANDIR + "/webservice/tscanwrapper.py $DATAFILE $STATUSFILE $INPUTDI
 
 wordfreqlist = []
 for f in glob.glob(TSCANDIR + "/data/*words.freq"):
-    wordfreqlist.append( (os.path.basename(f), os.path.basename(f)) )
+    wordfreqlist.append((os.path.basename(f), os.path.basename(f)))
 
 lemmafreqlist = []
 for f in glob.glob(TSCANDIR + "/data/*lemma.freq"):
-    lemmafreqlist.append( (os.path.basename(f), os.path.basename(f)) )
-
+    lemmafreqlist.append((os.path.basename(f), os.path.basename(f)))
 
 topfreqlist = []
 for f in glob.glob(TSCANDIR + "/data/*20000.freq"):
-    topfreqlist.append( (os.path.basename(f), os.path.basename(f)) )
+    topfreqlist.append((os.path.basename(f), os.path.basename(f)))
 
 
-PARAMETERS =  [
+PARAMETERS = [
     ('Parameters', [
-        IntegerParameter(id='rarityLevel',name='Rarity Level',description='Rarity level',default=4),
-        IntegerParameter(id='overlapSize',name='Overlap Size',description='Overlap Size',default=50),
-        FloatParameter(id='frequencyClip',name='Frequency Clipping',description='Frequency Clipping',default=99),
-        FloatParameter(id='mtldThreshold',name='MTLD factor size',description='MTLD factor size',default=0.720),
-        ChoiceParameter(id='useAlpino',name='Use Alpino parser',description='Use Alpino parser?', choices=['yes','no'],default='yes'),
-        ChoiceParameter(id='useWopr',name='Use Wopr',description='Use Wopr?', choices=['yes','no'],default='yes'),
-#        ChoiceParameter(id='useLsa',name='Use LSA analyzer',description='Use LSA?', choices=['yes','no'],default='no'),
+        IntegerParameter(id='rarityLevel', name='Rarity Level', description='Rarity level', default=4),
+        IntegerParameter(id='overlapSize', name='Overlap Size', description='Overlap Size', default=50),
+        FloatParameter(id='frequencyClip', name='Frequency Clipping', description='Frequency Clipping', default=99),
+        FloatParameter(id='mtldThreshold', name='MTLD factor size', description='MTLD factor size', default=0.720),
+        ChoiceParameter(id='useAlpino', name='Use Alpino parser', description='Use Alpino parser?', choices=['yes', 'no'], default='yes'),
+        ChoiceParameter(id='useWopr', name='Use Wopr', description='Use Wopr?', choices=['yes', 'no'], default='yes'),
+        ChoiceParameter(id='sentencePerLine', name='One sentence per line', description='Are the input texts already split per line?', choices=['yes', 'no'], default='no'),
         ChoiceParameter(id='word_freq_lex', name='Word Frequency List', description="Word frequency list", choices=wordfreqlist, default="SoNaR500.wordfreqlist_words.freq"),
         ChoiceParameter(id='lemma_freq_lex', name='Lemma Frequency List', description="Lemma frequency list", choices=lemmafreqlist, default="SoNaR500.wordfreqlist_lemma.freq"),
         ChoiceParameter(id='top_freq_lex', name='Top Frequency List', description="Top frequency list", choices=topfreqlist, default="SoNaR500.wordfreqlist20000.freq"),
-    ] )
+    ])
 ]
 
 
