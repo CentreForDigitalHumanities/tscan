@@ -3,6 +3,8 @@ export PORT=7003
 export TIMEOUT=60000
 export MEMLIMIT=1500M
 export TMPDIR=/tmp
+export TCLLIBPATH=${ALPINO_HOME}/create_bin/tcl8.5
+export TCL_LIBRARY=${ALPINO_HOME}/create_bin/tcl8.5
 
 ## this one is for parsing
 
