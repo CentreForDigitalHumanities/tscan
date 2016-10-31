@@ -77,10 +77,10 @@ If you use LaMachine as recommended, always activate the virtual environment fir
 Before you can use t-scan you need to Start the background servers (you may need to edit the scripts to set ports and paths):
 
     $ cd tscan/webservices
+    $ ./startalpino.sh
     $ ./startfrog.sh
     $ ./startwopr20.sh    (will start Wopr to calculate forwards probabilities)
     $ ./startwopr02.sh    (will start Wopr to calculate backwards probabilities)
-    $ ./startalpino.sh
 
 Then either run tscan from the command-line, which will produce a FoLiA XML file,
 
