@@ -1231,7 +1231,8 @@ wordStats::wordStats( int index,
   top_freq(notFound), word_freq(0), lemma_freq(0),
   wordOverlapCnt(0), lemmaOverlapCnt(0),
   word_freq_log(NAN), lemma_freq_log(NAN),
-  logprob10(NAN), prop(CGN::JUSTAWORD), position(CGN::NOPOS),
+  logprob10_fwd(NAN), logprob10_bwd(NAN),
+  prop(CGN::JUSTAWORD), position(CGN::NOPOS),
   sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY),
   general_noun_type(General::NO_GENERAL), general_verb_type(General::NO_GENERAL),
   adverb_type(Adverb::NO_ADVERB), afkType(Afk::NO_A), is_compound(false), compound_parts(0),
@@ -1500,10 +1501,10 @@ void structStats::calculate_MTLDs() {
 }
 
 //#define DEBUG_WOPR
-void orderWopr( const string& txt, vector<double>& wordProbsV,
+void orderWopr( const string& type, const string& txt, vector<double>& wordProbsV,
 		double& sentProb, double& entropy, double& perplexity ){
-  string host = config.lookUp( "host", "wopr" );
-  string port = config.lookUp( "port", "wopr" );
+  string host = config.lookUp( "host_" + type, "wopr" );
+  string port = config.lookUp( "port_" + type, "wopr" );
   Sockets::ClientSocket client;
   if ( !client.connect( host, port ) ){
     cerr << "failed to open Wopr connection: "<< host << ":" << port << endl;
@@ -1630,10 +1631,14 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
   text = folia::UnicodeToUTF8( s->toktext() );
   cerr << "analyse tokenized sentence=" << text << endl;
   vector<folia::Word*> w = s->words();
-  vector<double> woprProbsV(w.size(),NAN);
-  double sentProb = NAN;
-  double sentEntropy = NAN;
-  double sentPerplexity = NAN;
+  vector<double> woprProbsV_fwd(w.size(),NAN);
+  vector<double> woprProbsV_bwd(w.size(),NAN);
+  double sentProb_fwd = NAN;
+  double sentProb_bwd = NAN;
+  double sentEntropy_fwd = NAN;
+  double sentEntropy_bwd = NAN;
+  double sentPerplexity_fwd = NAN;
+  double sentPerplexity_bwd = NAN;
   xmlDoc *alpDoc = 0;
   set<size_t> puncts;
   parseFailCnt = -1; // not parsed (yet)
@@ -1689,7 +1694,8 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
 #pragma omp section
     {
       if ( settings.doWopr ){
-  orderWopr( text, woprProbsV, sentProb, sentEntropy, sentPerplexity );
+  orderWopr( "fwd", text, woprProbsV_fwd, sentProb_fwd, sentEntropy_fwd, sentPerplexity_fwd );
+  orderWopr( "bwd", text, woprProbsV_bwd, sentProb_bwd, sentEntropy_bwd, sentPerplexity_bwd );
       }
     } // omp section
   } // omp sections
@@ -1699,11 +1705,16 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
   //   return;
   // }
   sentCnt = 1; // so only count the sentence when not failed
-  if ( sentProb != -99 ){
-    avg_prob10 = sentProb;
+  if ( sentProb_fwd != -99 ){
+    avg_prob10_fwd = sentProb_fwd;
   }
-  entropy = sentEntropy;
-  perplexity = sentPerplexity;
+  if ( sentProb_bwd != -99 ){
+    avg_prob10_bwd = sentProb_bwd;
+  }
+  entropy_fwd = sentEntropy_fwd;
+  entropy_bwd = sentEntropy_bwd;
+  perplexity_fwd = sentPerplexity_fwd;
+  perplexity_bwd = sentPerplexity_bwd;
   //  cerr << "PUNCTS " << puncts << endl;
   bool question = false;
   vector<string> wordbuffer;
@@ -1725,8 +1736,10 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
       sv.push_back( ws );
       continue;
     }
-    if ( woprProbsV[i] != -99 )
-      ws->logprob10 = woprProbsV[i];
+    if ( woprProbsV_fwd[i] != -99 )
+      ws->logprob10_fwd = woprProbsV_fwd[i];
+    if ( woprProbsV_bwd[i] != -99 )
+      ws->logprob10_bwd = woprProbsV_bwd[i];
     if ( pred ){
       ws->getSentenceOverlap( wordbuffer, lemmabuffer );
     }

@@ -643,7 +643,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
 
 
 void wordStats::miscHeader( ostream& os ) const {
-  os << "Ww_vorm,Ww_tt,Vol_dw,Onvol_dw,Infin,Archaisch,Log_prob,Intens,Eigen_classificatie";
+  os << "Ww_vorm,Ww_tt,Vol_dw,Onvol_dw,Infin,Archaisch,Log_prob_fwd,Log_prob_bwd,Intens,Eigen_classificatie";
 }
 
 void wordStats::miscToCSV( ostream& os ) const {
@@ -658,10 +658,14 @@ void wordStats::miscToCSV( ostream& os ) const {
      << (prop == CGN::ISOD?toString(position):"0") << ","
      << (prop == CGN::ISINF?toString(position):"0") << ",";
   os << archaic << ",";
-  if ( std::isnan(logprob10) )
+  if ( std::isnan(logprob10_fwd) )
     os << "NA,";
   else
-    os << logprob10 << ",";
+    os << logprob10_fwd << ",";
+  if ( std::isnan(logprob10_bwd) )
+    os << "NA,";
+  else
+    os << logprob10_bwd << ",";
   os << (intensify_type != Intensify::NO_INTENSIFY ? "1," : "0,");
   os << my_classification << ",";
 }
@@ -745,8 +749,10 @@ void wordStats::addMetrics( ) const {
     "word_overlap_count", TiCC::toString( wordOverlapCnt ) );
   addOneMetric( doc, el,
     "lemma_overlap_count", TiCC::toString( lemmaOverlapCnt ) );
-  if ( !std::isnan(logprob10)  )
-    addOneMetric( doc, el, "lprob10", TiCC::toString(logprob10) );
+  if ( !std::isnan(logprob10_fwd) )
+    addOneMetric( doc, el, "lprob10_fwd", TiCC::toString(logprob10_fwd) );
+  if ( !std::isnan(logprob10_bwd) )
+    addOneMetric( doc, el, "lprob10_bwd", TiCC::toString(logprob10_bwd) );
   if ( prop != CGN::JUSTAWORD )
     addOneMetric( doc, el, "property", TiCC::toString(prop) );
   if ( sem_type != SEM::NO_SEMTYPE )

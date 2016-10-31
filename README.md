@@ -78,7 +78,8 @@ Before you can use t-scan you need to Start the background servers (you may need
 
     $ cd tscan/webservices
     $ ./startfrog.sh
-    $ ./startwopr.sh
+    $ ./startwopr20.sh    (will start Wopr to calculate forwards probabilities)
+    $ ./startwopr02.sh    (will start Wopr to calculate backwards probabilities)
     $ ./startalpino.sh
 
 Then either run tscan from the command-line, which will produce a FoLiA XML file,

@@ -194,7 +194,8 @@ struct wordStats : public basicStats {
   int lemmaOverlapCnt;
   double word_freq_log;
   double lemma_freq_log;
-  double logprob10;
+  double logprob10_fwd;
+  double logprob10_bwd;
   CGN::Prop prop;
   CGN::Position position;
   SEM::Type sem_type;
@@ -319,9 +320,12 @@ struct structStats: public basicStats {
     lemma_freq_n(0),
     lemma_freq_log(NAN),
     lemma_freq_log_n(NAN),
-    avg_prob10(NAN),
-    entropy(NAN),
-    perplexity(NAN),
+    avg_prob10_fwd(NAN),
+    avg_prob10_bwd(NAN),
+    entropy_fwd(NAN),
+    entropy_bwd(NAN),
+    perplexity_fwd(NAN),
+    perplexity_bwd(NAN),
     lsa_word_suc(NAN),
     lsa_word_net(NAN),
     lsa_sent_suc(NAN),
@@ -616,9 +620,12 @@ struct structStats: public basicStats {
   double lemma_freq_n;
   double lemma_freq_log;
   double lemma_freq_log_n;
-  double avg_prob10;
-  double entropy;
-  double perplexity;
+  double avg_prob10_fwd;
+  double avg_prob10_bwd;
+  double entropy_fwd;
+  double entropy_bwd;
+  double perplexity_fwd;
+  double perplexity_bwd;
   double lsa_word_suc;
   double lsa_word_net;
   double lsa_sent_suc;

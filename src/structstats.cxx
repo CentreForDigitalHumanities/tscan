@@ -996,13 +996,17 @@ void structStats::intensToCSV( ostream& os ) const {
 }
 
 void structStats::miscHeader( ostream& os ) const {
-  os << "Log_prob,Entropie,Perplexiteit,";
+  os << "Log_prob_fwd,Entropie_fwd,Perplexiteit_fwd,";
+  os << "Log_prob_bwd,Entropie_bwd,Perplexiteit_bwd,";
 }
 
 void structStats::miscToCSV( ostream& os ) const {
-  os << proportion( avg_prob10, sentCnt ) << ",";
-  os << proportion( entropy, sentCnt ) << ",";
-  os << proportion( perplexity, sentCnt ) << ",";
+  os << proportion( avg_prob10_fwd, sentCnt ) << ",";
+  os << proportion( entropy_fwd, sentCnt ) << ",";
+  os << proportion( perplexity_fwd, sentCnt ) << ",";
+  os << proportion( avg_prob10_bwd, sentCnt ) << ",";
+  os << proportion( entropy_bwd, sentCnt ) << ",";
+  os << proportion( perplexity_bwd, sentCnt ) << ",";
 }
 
 /**************
@@ -1169,12 +1173,19 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "log_lemma_freq", TiCC::toString(lemma_freq_log) );
   if ( !std::isnan(lemma_freq_log_n)  )
     addOneMetric( doc, el, "log_lemma_freq_no_names", TiCC::toString(lemma_freq_log_n) );
-  if ( !std::isnan(avg_prob10) )
-    addOneMetric( doc, el, "wopr_logprob", TiCC::toString(avg_prob10) );
-  if ( !std::isnan(entropy) )
-    addOneMetric( doc, el, "wopr_entropy", TiCC::toString(entropy) );
-  if ( !std::isnan(perplexity) )
-    addOneMetric( doc, el, "wopr_perplexity", TiCC::toString(perplexity) );
+
+  if ( !std::isnan(avg_prob10_fwd) )
+    addOneMetric( doc, el, "wopr_logprob_fwd", TiCC::toString(avg_prob10_fwd) );
+  if ( !std::isnan(entropy_fwd) )
+    addOneMetric( doc, el, "wopr_entropy_fwd", TiCC::toString(entropy_fwd) );
+  if ( !std::isnan(perplexity_fwd) )
+    addOneMetric( doc, el, "wopr_perplexity_fwd", TiCC::toString(perplexity_fwd) );
+  if ( !std::isnan(avg_prob10_bwd) )
+    addOneMetric( doc, el, "wopr_logprob_bwd", TiCC::toString(avg_prob10_bwd) );
+  if ( !std::isnan(entropy_bwd) )
+    addOneMetric( doc, el, "wopr_entropy_bwd", TiCC::toString(entropy_bwd) );
+  if ( !std::isnan(perplexity_bwd) )
+    addOneMetric( doc, el, "wopr_perplexity_bwd", TiCC::toString(perplexity_bwd) );
 
   addOneMetric( doc, el, "broad_adj", TiCC::toString(broadAdjCnt) );
   addOneMetric( doc, el, "strict_adj", TiCC::toString(strictAdjCnt) );
@@ -1394,23 +1405,45 @@ void structStats::merge( structStats *ss ){
   word_freq_n += ss->word_freq_n;
   lemma_freq += ss->lemma_freq;
   lemma_freq_n += ss->lemma_freq_n;
-  if ( !std::isnan(ss->avg_prob10) ){
-    if ( std::isnan(avg_prob10) )
-      avg_prob10 = ss->avg_prob10;
+
+  // Wopr forwards probabilities
+  if ( !std::isnan(ss->avg_prob10_fwd) ){
+    if ( std::isnan(avg_prob10_fwd) )
+      avg_prob10_fwd = ss->avg_prob10_fwd;
     else
-      avg_prob10 += ss->avg_prob10;
+      avg_prob10_fwd += ss->avg_prob10_fwd;
   }
-  if ( !std::isnan(ss->entropy) ){
-    if ( std::isnan(entropy) )
-      entropy = ss->entropy;
+  if ( !std::isnan(ss->entropy_fwd) ){
+    if ( std::isnan(entropy_fwd) )
+      entropy_fwd = ss->entropy_fwd;
     else
-      entropy += ss->entropy;
+      entropy_fwd += ss->entropy_fwd;
   }
-  if ( !std::isnan(ss->perplexity) ){
-    if ( std::isnan(perplexity) )
-      perplexity = ss->perplexity;
+  if ( !std::isnan(ss->perplexity_fwd) ){
+    if ( std::isnan(perplexity_fwd) )
+      perplexity_fwd = ss->perplexity_fwd;
     else
-      perplexity += ss->perplexity;
+      perplexity_fwd += ss->perplexity_fwd;
+  }
+  
+  // Wopr backwards probabilities
+  if ( !std::isnan(ss->avg_prob10_bwd) ){
+    if ( std::isnan(avg_prob10_bwd) )
+      avg_prob10_bwd = ss->avg_prob10_bwd;
+    else
+      avg_prob10_bwd += ss->avg_prob10_bwd;
+  }
+  if ( !std::isnan(ss->entropy_bwd) ){
+    if ( std::isnan(entropy_bwd) )
+      entropy_bwd = ss->entropy_bwd;
+    else
+      entropy_bwd += ss->entropy_bwd;
+  }
+  if ( !std::isnan(ss->perplexity_bwd) ){
+    if ( std::isnan(perplexity_bwd) )
+      perplexity_bwd = ss->perplexity_bwd;
+    else
+      perplexity_bwd += ss->perplexity_bwd;
   }
 
   intensCnt += ss->intensCnt;
