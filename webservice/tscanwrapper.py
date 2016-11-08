@@ -157,8 +157,10 @@ f.write("port=7001\n")
 f.write("host=127.0.0.1\n\n")
 
 f.write("[[wopr]]\n")
-f.write("port=7002\n")
-f.write("host=127.0.0.1\n\n")
+f.write("port_fwd=7020\n")
+f.write("host_fwd=127.0.0.1\n\n")
+f.write("port_bwd=7002\n")
+f.write("host_bwd=127.0.0.1\n\n")
 
 f.write("[[alpino]]\n")
 f.write("port=7003\n")
