@@ -234,34 +234,24 @@ for inputfile in inputfiles:
 if ref != 0:
     clam.common.status.write(statusfile, "Failed", 90)  # status update
 
-#old code, file by file:
-#for inputfile in clamdata.inputfiles('textinput'):
-   #if '"' in str(inputfile):
-       #clam.common.status.write(statusfile, "Failed, filename has a &quot;, illegal!",100) # status update
-       #sys.exit(2)
-   #inputtemplate = inputfile.metadata.inputtemplate
-   #clam.common.status.write(statusfile, "Processing " + os.path.basename(str(inputfile)),50) # status update
-   #ref = os.system('ALPINO_HOME="/vol/customopt/alpino" tscan --config=' + outputdir + '/tscan.cfg -t \"' + str(inputfile) + '\" -o \"' + outputdir + '/' + os.path.basename(str(inputfile).replace('.txt','') + '.xml') + '"')
-   #if ref != 0:
-        #clam.common.status.write(statusfile, "Failed",50) # status update
-
 #tscan writes CSV file in input directory, move:
 os.system("mv -f " + inputdir + "/*.csv " + outputdir)
 
+#write the csv headers to a file with all results ('total.<type>.csv')
 os.system("cat " + outputdir + "/*.words.csv | head -n 1 > " + outputdir + "/total.word.csv")
 os.system("cat " + outputdir + "/*.paragraphs.csv | head -n 1 > " + outputdir + "/total.par.csv")
 os.system("cat " + outputdir + "/*.sentences.csv | head -n 1 > " + outputdir + "/total.sen.csv")
 os.system("cat " + outputdir + "/*.document.csv | head -n 1 > " + outputdir + "/total.doc.csv")
 
+#move the contents of the files to the total files
 for f in glob.glob(outputdir + "/*.words.csv"):
-    os.system("sed 1d " + f + " >> " + outputdir + "/total.word.csv")
+    os.system("sed 1d \"" + f + "\" >> " + outputdir + "/total.word.csv")
 for f in glob.glob(outputdir + "/*.paragraphs.csv"):
-    os.system("sed 1d " + f + " >> " + outputdir + "/total.par.csv")
+    os.system("sed 1d \"" + f + "\" >> " + outputdir + "/total.par.csv")
 for f in glob.glob(outputdir + "/*.sentences.csv"):
-    os.system("sed 1d " + f + " >> " + outputdir + "/total.sen.csv")
+    os.system("sed 1d \"" + f + "\" >> " + outputdir + "/total.sen.csv")
 for f in glob.glob(outputdir + "/*.document.csv"):
-    os.system("sed 1d " + f + " >> " + outputdir + "/total.doc.csv")
-
+    os.system("sed 1d \"" + f + "\" >> " + outputdir + "/total.doc.csv")
 
 #A nice status message to indicate we're done
 clam.common.status.write(statusfile, "Done", 100)  # status update
