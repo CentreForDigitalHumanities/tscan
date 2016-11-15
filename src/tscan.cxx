@@ -1020,15 +1020,12 @@ void wordStats::checkNoun() {
 
 SEM::Type wordStats::checkSemProps( ) const {
   if ( prop == CGN::ISNAME ){
-    // Names are te be looked up in the Noun list too
+    // Names are te be looked up in the Noun list too, but use the word instead of the lemma (case-sensitivity)
     SEM::Type sem = SEM::UNFOUND_NOUN;
-    map<string,noun>::const_iterator sit = settings.noun_sem.find( lemma );
+    map<string,noun>::const_iterator sit = settings.noun_sem.find( word );
     if ( sit != settings.noun_sem.end() ){
       sem = sit->second.type;
     }
-    // else if ( settings.showProblems ){
-    //   problemFile << "Name, " << word << ", " << lemma << endl;
-    // }
     return sem;
   }
   else if ( tag == CGN::ADJ ) {
