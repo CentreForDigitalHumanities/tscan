@@ -914,45 +914,45 @@ Conn::Type wordStats::checkConnective() const {
   if ( tag != CGN::VG && tag != CGN::VZ && tag != CGN::BW )
     return Conn::NOCONN;
 
-  if ( settings.temporals1[tag].find( l_word )
+  if ( settings.temporals1[tag].find( lemma )
        != settings.temporals1[tag].end() )
     return Conn::TEMPOREEL;
-  else if ( settings.temporals1[CGN::UNASS].find( l_word )
+  else if ( settings.temporals1[CGN::UNASS].find( lemma )
 	    != settings.temporals1[CGN::UNASS].end() )
     return Conn::TEMPOREEL;
 
-  else if ( settings.opsommers_wg[tag].find( l_word )
+  else if ( settings.opsommers_wg[tag].find( lemma )
       != settings.opsommers_wg[tag].end() )
     return Conn::OPSOMMEND_WG;
-  else if ( settings.opsommers_wg[CGN::UNASS].find( l_word )
+  else if ( settings.opsommers_wg[CGN::UNASS].find( lemma )
       != settings.opsommers_wg[CGN::UNASS].end() )
     return Conn::OPSOMMEND_WG;
 
-  else if ( settings.opsommers_zin[tag].find( l_word )
+  else if ( settings.opsommers_zin[tag].find( lemma )
       != settings.opsommers_zin[tag].end() )
     return Conn::OPSOMMEND_ZIN;
-  else if ( settings.opsommers_zin[CGN::UNASS].find( l_word )
+  else if ( settings.opsommers_zin[CGN::UNASS].find( lemma )
       != settings.opsommers_zin[CGN::UNASS].end() )
     return Conn::OPSOMMEND_ZIN;
 
-  else if ( settings.contrast1[tag].find( l_word )
+  else if ( settings.contrast1[tag].find( lemma )
 	    != settings.contrast1[tag].end() )
     return Conn::CONTRASTIEF;
-  else if ( settings.contrast1[CGN::UNASS].find( l_word )
+  else if ( settings.contrast1[CGN::UNASS].find( lemma )
 	    != settings.contrast1[CGN::UNASS].end() )
     return Conn::CONTRASTIEF;
 
-  else if ( settings.compars1[tag].find( l_word )
+  else if ( settings.compars1[tag].find( lemma )
 	    != settings.compars1[tag].end() )
     return Conn::COMPARATIEF;
-  else if ( settings.compars1[CGN::UNASS].find( l_word )
+  else if ( settings.compars1[CGN::UNASS].find( lemma )
 	    != settings.compars1[CGN::UNASS].end() )
     return Conn::COMPARATIEF;
 
-  else if ( settings.causals1[tag].find( l_word )
+  else if ( settings.causals1[tag].find( lemma )
 	    != settings.causals1[tag].end() )
     return Conn::CAUSAAL;
-  else if ( settings.causals1[CGN::UNASS].find( l_word )
+  else if ( settings.causals1[CGN::UNASS].find( lemma )
 	    != settings.causals1[CGN::UNASS].end() )
     return Conn::CAUSAAL;
 
@@ -1083,20 +1083,32 @@ SEM::Type wordStats::checkSemProps( ) const {
   return SEM::NO_SEMTYPE;
 }
 
+// Looks up the Intensity type for a word, or NO_INTENSIFY if not found
 Intensify::Type wordStats::checkIntensify(const xmlNode *alpWord) const {
-  map<string,Intensify::Type>::const_iterator sit = settings.intensify.find(lemma);
   Intensify::Type res = Intensify::NO_INTENSIFY;
+
+  // First check the full lemma (if available), then the normal lemma
+  map<string,Intensify::Type>::const_iterator sit = settings.intensify.end();
+  if (!full_lemma.empty()) {
+    sit = settings.intensify.find(full_lemma);
+  }
+  if (sit == settings.intensify.end()) {
+    sit = settings.intensify.find(lemma);
+  }
+
   if (sit != settings.intensify.end()) {
     res = sit->second;
+
+    // Special case for BVBW: check if this is not a modifier
     if (res == Intensify::BVBW)
     {
-      // cerr << lemma << " => " << tag << endl;
       if (!checkModifier(alpWord)) res = Intensify::NO_INTENSIFY;
     }
   }
   return res;
 }
 
+// Looks up the General type for a noun (based on lemma), or NO_GENERAL if not found
 General::Type wordStats::checkGeneralNoun() const {
   if (tag == CGN::N) {
     map<string,General::Type>::const_iterator sit = settings.general_nouns.find(lemma);
@@ -1107,9 +1119,18 @@ General::Type wordStats::checkGeneralNoun() const {
   return General::NO_GENERAL;
 }
 
+// Looks up the General type for a verb (based on (full) lemma), or NO_GENERAL if not found
 General::Type wordStats::checkGeneralVerb() const {
   if (tag == CGN::WW) {
-    map<string,General::Type>::const_iterator sit = settings.general_verbs.find(lemma);
+    // First check the full lemma (if available), then the normal lemma
+    map<string,General::Type>::const_iterator sit = settings.general_verbs.end();
+    if (!full_lemma.empty()) {
+      sit = settings.general_verbs.find(full_lemma);
+    }
+    if (sit == settings.general_verbs.end()) {
+      sit = settings.general_verbs.find(lemma);
+    }
+
     if (sit != settings.general_verbs.end()) {
       return sit->second;
     }
