@@ -54,7 +54,6 @@
 #include "tscan/stats.h"
 
 using namespace std;
-using namespace TiCC;
 
 const string frog_pos_set = "http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn";
 const string frog_lemma_set = "http://ilk.uvt.nl/folia/sets/frog-mblem-nl";
@@ -674,7 +673,7 @@ bool fill( map<string,tagged_classification>& my_classification, const string& f
   return false;
 }
 
-void settingData::init( const Configuration& cf ){
+void settingData::init( const TiCC::Configuration& cf ){
   doXfiles = true;
   doAlpino = false;
   doAlpinoServer = false;
@@ -1280,7 +1279,7 @@ wordStats::wordStats( int index,
       string full;
       wwform = classifyVerb( alpWord, lemma, full );
       if ( !full.empty() ){
-	to_lower( full );
+	TiCC::to_lower( full );
 	//	cerr << "scheidbaar WW: " << full << endl;
 	full_lemma = full;
       }
@@ -2786,7 +2785,7 @@ void docStats::gather_LSA_doc_info( folia::Document *doc ){
   cerr << "received data [" << s << "]" << endl;
 #endif
   double result = 0;
-  if ( !stringTo( s , result ) ){
+  if ( !TiCC::stringTo( s , result ) ){
     cerr << "LSA result conversion failed: " << s << endl;
     result = 0;
   }
@@ -2831,7 +2830,7 @@ void docStats::gather_LSA_doc_info( folia::Document *doc ){
   cerr << "received data [" << s << "]" << endl;
 #endif
   double result = 0;
-  if ( !stringTo( s , result ) ){
+  if ( !TiCC::stringTo( s , result ) ){
     cerr << "LSA result conversion failed: " << s << endl;
     result = 0;
   }
@@ -3018,7 +3017,7 @@ xmlDoc *AlpinoServerParse( folia::Sentence *sent ){
 int main(int argc, char *argv[]) {
   struct stat sbuf;
   pid_t pid = getpid();
-  workdir_name = "/tmp/tscan-" + toString( pid ) + "/";
+  workdir_name = "/tmp/tscan-" + TiCC::toString( pid ) + "/";
   int res = stat( workdir_name.c_str(), &sbuf );
   if ( res == -1 || !S_ISDIR(sbuf.st_mode) ){
     res = mkdir( workdir_name.c_str(), S_IRWXU|S_IRWXG );

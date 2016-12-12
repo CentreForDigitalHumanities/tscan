@@ -23,7 +23,6 @@
 #include "tscan/Alpino.h"
 
 using namespace std;
-using namespace TiCC;
 
 
 string MMtoString( const multimap<DD_type, int>& mm, DD_type t ){
@@ -35,7 +34,7 @@ string MMtoString( const multimap<DD_type, int>& mm, DD_type t ){
    ++pos ){
       result += pos->second;
     }
-    return toString( result/double(len) );
+    return TiCC::toString( result/double(len) );
   }
   else
     return "NA";
@@ -52,7 +51,7 @@ string MMtoString( const multimap<DD_type, int>& mm ){
   result += pos->second;
     }
     cerr << "MM to string " << result << "/" << len << endl;
-    return toString( result/double(len) );
+    return TiCC::toString( result/double(len) );
   }
   else
     return "NA";
@@ -118,7 +117,7 @@ xmlNode *node_search( const xmlNode* node,
   while ( pnt ){
     // breadth first search
     if ( pnt->type == XML_ELEMENT_NODE ){
-      if ( getAttribute( pnt, att ) == val ){
+      if ( TiCC::getAttribute( pnt, att ) == val ){
   return pnt;
       }
     }
@@ -128,7 +127,7 @@ xmlNode *node_search( const xmlNode* node,
   pnt = node->children;
   while ( pnt ){
     if ( pnt->type == XML_ELEMENT_NODE ){
-      if ( getAttribute( pnt, "root" ) == "" ){
+      if ( TiCC::getAttribute( pnt, "root" ) == "" ){
   xmlNode *tmp = node_search( pnt, att, val );
   if ( tmp )
     return tmp;
@@ -147,7 +146,7 @@ xmlNode *node_search( const xmlNode* node,
   while ( pnt ){
     // breath first search
     if ( pnt->type == XML_ELEMENT_NODE ){
-      string aval = getAttribute( pnt, att );
+      string aval = TiCC::getAttribute( pnt, att );
       if ( values.find( aval ) != values.end() )
   return pnt;
     }
@@ -158,7 +157,7 @@ xmlNode *node_search( const xmlNode* node,
   pnt = node->children;
   while ( pnt ){
     if ( pnt->type == XML_ELEMENT_NODE ){
-      if ( getAttribute( pnt, "root" ) == "" ){
+      if ( TiCC::getAttribute( pnt, "root" ) == "" ){
   xmlNode *tmp = node_search( pnt, att, values );
   if ( tmp )
     return tmp;
@@ -268,7 +267,7 @@ string toString( const DD_type& t ){
 }
 
 int get_begin( const xmlNode *n ){
-  string bpos = getAttribute( n, "begin" );
+  string bpos = TiCC::getAttribute( n, "begin" );
   return TiCC::stringTo<int>( bpos );
 }
 
@@ -327,7 +326,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
     xmlNode *res = node_search( target , "rel", "cnj" );
     if ( res ){
       //      cerr << "geval 3 " << endl;
-      string root = getAttribute( res, "root" );
+      string root = TiCC::getAttribute( res, "root" );
       if ( !root.empty() ){
         //        cerr << "geval 3A " << endl;
         target = res;
@@ -364,7 +363,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
      args["pos"] == "" && args["cat"] == "" ){
         vector<xmlNode*> inodes = getIndexNodes( head_node->doc );
         for ( size_t i=0; i < inodes.size(); ++i ){
-    string myindex = getAttribute( inodes[i], "index" );
+    string myindex = TiCC::getAttribute( inodes[i], "index" );
     if ( args["index"] == myindex ){
       target = inodes[i];
       break;
@@ -373,7 +372,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
         if ( target->children ){
     xmlNode *res = node_search( target , "rel", "cnj" );
     if ( res ){
-      string root = getAttribute( res, "root" );
+      string root = TiCC::getAttribute( res, "root" );
       if ( !root.empty() ){
         target = res;
       }
@@ -406,7 +405,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
      args["pos"] == "" && args["cat"] == "" ){
         vector<xmlNode*> inodes = getIndexNodes( head_node->doc);
         for ( size_t i=0; i < inodes.size(); ++i ){
-    string myindex = getAttribute( inodes[i], "index" );
+    string myindex = TiCC::getAttribute( inodes[i], "index" );
     if ( args["index"] == myindex ){
       target = inodes[i];
       break;
@@ -415,7 +414,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
         if ( target->children ){
     xmlNode *res = node_search( target , "rel", "cnj" );
     if ( res ){
-      string root = getAttribute( res, "root" );
+      string root = TiCC::getAttribute( res, "root" );
       if ( !root.empty() ){
         target = res;
       }
@@ -460,7 +459,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
     }
     xmlNode *res = node_search( *it, "rel", "hd" );
     if ( res ){
-      string lcat = getAttribute( res, "lcat" );
+      string lcat = TiCC::getAttribute( res, "lcat" );
       if ( lcat == "np" ){
         store_result( result, VERB_PREDC_N, head_node, res, puncts );
       }
@@ -481,7 +480,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
     }
     xmlNode *res = node_search( *it, "rel", "hd" );
     if ( res ){
-      string lcat = getAttribute( res, "lcat" );
+      string lcat = TiCC::getAttribute( res, "lcat" );
       if ( lcat == "advp" ){
         store_result( result, VERB_MOD_BW, head_node, res, puncts );
       }
@@ -508,7 +507,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
       }
     }
     else if ( head_rel == "hd" && head_pos == "noun" &&
-        getAttribute( head_node->parent, "cat" ) == "np" ){
+        TiCC::getAttribute( head_node->parent, "cat" ) == "np" ){
       vector< xmlNode *> head_siblings = getSibblings( head_node );
       for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
       it != head_siblings.end();
@@ -529,7 +528,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
       // voorwerp samengesteld zijn uit meerdere woorden...
       // weet alleen even geen voorbeeld...
       if ( res ){
-        string root = getAttribute( *it, "root" );
+        string root = TiCC::getAttribute( *it, "root" );
         if ( !root.empty() )
     store_result( result, NOUN_DET, head_node, res, puncts );
       }
@@ -544,7 +543,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
       }
     }
     else if ( head_rel == "hd" && head_pos == "prep"
-        && getAttribute( head_node->parent, "cat" ) == "pp" ){
+        && TiCC::getAttribute( head_node->parent, "cat" ) == "pp" ){
       vector< xmlNode *> head_siblings = getSibblings( head_node );
       for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
       it != head_siblings.end();
@@ -562,7 +561,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
       }
       res = node_search( *it, "rel", "cnj" );
       if ( res ){
-        if ( getAttribute( res, "root" ) != "" )
+        if ( TiCC::getAttribute( res, "root" ) != "" )
     store_result( result, NOUN_DET, head_node, res, puncts );
       }
     }
@@ -591,7 +590,7 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
     }
     else if ( head_rel == "cmp" &&
         ( head_pos == "comp" || head_pos == "comparative" ) ){
-      string word = getAttribute( head_node, "word" );
+      string word = TiCC::getAttribute( head_node, "word" );
       if ( word != "te" ){
   vector< xmlNode *> head_siblings = getSibblings( head_node );
   for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
@@ -654,7 +653,7 @@ WWform classifyVerb( const xmlNode *wnode, const string& lemma,
       cerr << "passief? lemma=" << lemma << endl;
       cerr << "attributes: " << folia::getAttributes( wnode ) << endl;
 #endif
-      string sc = getAttribute( wnode, "sc" );
+      string sc = TiCC::getAttribute( wnode, "sc" );
       if ( sc == "passive" ){
 #ifdef WW_DEBUG
   cerr << "sc=\"passive\" ==> resultaat = passiefww" << endl;
@@ -960,7 +959,7 @@ bool checkImp( const xmlNode *alp_node ){
   vector< xmlNode *> siblings = getSibblings( alp_node );
   bool su_found = false;
   for ( size_t i=0; i < siblings.size(); ++i ){
-    string rel = getAttribute( siblings[i], "rel" );
+    string rel = TiCC::getAttribute( siblings[i], "rel" );
     if ( rel == "su" || rel == "sup" )
       su_found = true;
   }
@@ -972,8 +971,8 @@ bool checkModifier( const xmlNode *alp_node ){
   // - a form AP, PPART, PPRES or INF (adjective or non-conjugated verb)
   // - a type SMAIN or SSUB (conjugated verb), and the node itself is a MOD
   bool modifies = false;
-  string rel = getAttribute(alp_node, "rel");
-  string p_cat = getAttribute(alp_node->parent, "cat");
+  string rel = TiCC::getAttribute(alp_node, "rel");
+  string p_cat = TiCC::getAttribute(alp_node->parent, "cat");
 
   if (p_cat == "ap" || p_cat == "ppart" ||
       p_cat == "ppres" || p_cat == "inf") {
@@ -1005,7 +1004,7 @@ bool isSmallCnj( const xmlNode *eNode ){
     //    cerr << "sibbling: " << folia::getAttributes( sl[i] ) << endl;
     if ( sl[i] == eNode )
       continue;
-    string the_pos = getAttribute( sl[i], "pos" );
+    string the_pos = TiCC::getAttribute( sl[i], "pos" );
     if ( the_pos.empty() )
       continue;
     if ( the_pos == pos ){
@@ -1067,7 +1066,7 @@ list<string> getNodeIds( list<xmlNode*> nodes ) {
   list<string> ids;
   for (auto& node : nodes)
   {
-    ids.push_back(getAttribute(node, "id"));
+    ids.push_back(TiCC::getAttribute(node, "id"));
   }
   return ids;
 }
@@ -1078,7 +1077,7 @@ list<xmlNode*> complementNodes( list<xmlNode*> nodesA, list<xmlNode*> nodesB) {
   {
     bool operator() (const xmlNode* a, const xmlNode* b) const
     {
-      return getAttribute(a, "id") < getAttribute(b, "id");
+      return TiCC::getAttribute(a, "id") < TiCC::getAttribute(b, "id");
     }
   };
 
