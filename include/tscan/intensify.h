@@ -1,6 +1,9 @@
 #ifndef INTENSIFY_H
 #define	INTENSIFY_H
 
+#include <string>
+#include <iostream>
+
 namespace Intensify {
 
     enum Type {

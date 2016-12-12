@@ -1,5 +1,3 @@
-#include <string>
-#include <iostream>
 #include "tscan/conn.h"
 
 using namespace std;

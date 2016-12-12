@@ -1,9 +1,13 @@
 #ifndef UTILS_H
 #define	UTILS_H
 
+#include <map>
+#include <cmath>
+#include <set>
 #include <string>
 #include <fstream>
-#include <map>
+#include <iostream>
+#include "ticcutils/StringOps.h"
 #include "libfolia/folia.h"
 
 void addOneMetric( folia::Document*, folia::FoliaElement*, const std::string&, const std::string& );

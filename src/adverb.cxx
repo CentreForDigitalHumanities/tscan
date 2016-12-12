@@ -1,5 +1,3 @@
-#include <string>
-#include <iostream>
 #include "tscan/adverb.h"
 
 using namespace std;

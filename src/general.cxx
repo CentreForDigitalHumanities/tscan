@@ -1,5 +1,3 @@
-#include <string>
-#include <iostream>
 #include "tscan/general.h"
 
 using namespace std;

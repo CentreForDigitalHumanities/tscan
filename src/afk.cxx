@@ -1,5 +1,3 @@
-#include <string>
-#include <iostream>
 #include "tscan/afk.h"
 
 using namespace std;

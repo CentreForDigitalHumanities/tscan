@@ -1,5 +1,3 @@
-#include <string>
-#include <iostream>
 #include "tscan/situation.h"
 
 using namespace std;

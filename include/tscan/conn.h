@@ -1,6 +1,9 @@
 #ifndef CONN_H
 #define CONN_H
 
+#include <string>
+#include <iostream>
+
 namespace Conn {
 
     enum Type {

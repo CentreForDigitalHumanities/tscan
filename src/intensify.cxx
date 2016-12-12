@@ -1,5 +1,3 @@
-#include <string>
-#include <iostream>
 #include "tscan/intensify.h"
 
 using namespace std;

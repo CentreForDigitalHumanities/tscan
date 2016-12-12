@@ -28,6 +28,20 @@
 #ifndef ALPINO_H
 #define ALPINO_H
 
+#include <cmath>
+#include <cstdio> // for remove()
+#include <unistd.h>
+#include <iostream>
+#include <vector>
+#include <set>
+#include <fstream>
+#include <algorithm>
+#include "config.h"
+#include "ticcutils/PrettyPrint.h"
+#include "ticcutils/StringOps.h"
+#include "ticcutils/XMLtools.h"
+#include "libfolia/folia.h"
+
 enum DD_type { SUB_VERB, OBJ1_VERB, OBJ2_VERB, VERB_PP, VERB_VC,
 	       VERB_COMP, NOUN_DET, PREP_OBJ1, CRD_CNJ, COMP_BODY, NOUN_VC,
 	       VERB_SVP, VERB_PREDC_N, VERB_PREDC_A, VERB_MOD_BW,

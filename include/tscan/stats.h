@@ -1,9 +1,24 @@
 #ifndef STATS_H
 #define	STATS_H
 
+#include <cmath>
+#include <map>
 #include <string>
 #include <fstream>
-#include <map>
+#include <iostream>
+#include "ticcutils/XMLtools.h"
+#include "libfolia/folia.h"
+#include "tscan/Alpino.h"
+#include "tscan/cgn.h"
+#include "tscan/sem.h"
+#include "tscan/intensify.h"
+#include "tscan/conn.h"
+#include "tscan/general.h"
+#include "tscan/situation.h"
+#include "tscan/afk.h"
+#include "tscan/adverb.h"
+#include "tscan/ner.h"
+#include "tscan/utils.h"
 
 struct sentStats; // Forward declaration
 struct wordStats; // Forward declaration

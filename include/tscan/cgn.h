@@ -1,6 +1,9 @@
 #ifndef CGN_H
 #define	CGN_H
 
+#include <string>
+#include <iostream>
+
 namespace CGN {
 
     enum Type {

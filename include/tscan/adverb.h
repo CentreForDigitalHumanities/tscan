@@ -1,6 +1,9 @@
 #ifndef ADVERB_H
 #define ADVERB_H
 
+#include <string>
+#include <iostream>
+
 namespace Adverb {
   enum Type {
     GENERAL,

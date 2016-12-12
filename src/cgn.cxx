@@ -1,4 +1,3 @@
-#include <iostream>
 #include "tscan/cgn.h"
 
 using namespace std;

@@ -1,6 +1,9 @@
 #ifndef AFK_H
 #define	AFK_H
 
+#include <string>
+#include <iostream>
+
 namespace Afk {
   enum Type { 
     NO_A, OVERHEID_A, ZORG_A, ONDERWIJS_A,

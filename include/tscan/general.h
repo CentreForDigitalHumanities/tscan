@@ -1,6 +1,9 @@
 #ifndef GENERAL_H
 #define	GENERAL_H
 
+#include <string>
+#include <iostream>
+
 namespace General {
 
     enum Type {

@@ -20,19 +20,6 @@
 
 */
 
-#include <cmath>
-#include <cstdio> // for remove()
-#include <unistd.h>
-#include <iostream>
-#include <vector>
-#include <set>
-#include <fstream>
-#include <algorithm>
-#include "config.h"
-#include "ticcutils/PrettyPrint.h"
-#include "ticcutils/StringOps.h"
-#include "ticcutils/XMLtools.h"
-#include "libfolia/folia.h"
 #include "tscan/Alpino.h"
 
 using namespace std;
