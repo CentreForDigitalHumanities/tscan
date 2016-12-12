@@ -1,6 +1,3 @@
-#include <string>
-#include <iostream>
-#include "libfolia/folia.h"
 #include "tscan/ner.h"
 
 using namespace std;
@@ -77,8 +74,28 @@ namespace NER {
     };
   }
 
-  ostream& operator<<(ostream& os, const Type& n) {
+  ostream& operator<<(ostream& os, Type n) {
     os << toString(n);
     return os;
+  }
+
+  SEM::Type toSem(Type n) {
+    switch ( n ) {
+      case LOC_B:
+      case LOC_I:
+        return SEM::BROAD_CONCRETE_PLACE_NOUN;
+        break;
+      case ORG_B:
+      case ORG_I:
+        return SEM::INSTITUT_NOUN;
+        break;
+      case PER_B:
+      case PER_I:
+        return SEM::CONCRETE_HUMAN_NOUN;
+        break;
+      default:
+        return SEM::UNFOUND_NOUN;
+        break;
+    };
   }
 }

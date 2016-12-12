@@ -1,6 +1,11 @@
 #ifndef NER_H
 #define NER_H
 
+#include <string>
+#include <iostream>
+#include "libfolia/folia.h"
+#include "tscan/sem.h"
+
 namespace NER {
 
     enum Type {
@@ -14,7 +19,9 @@ namespace NER {
     };
     Type lookupNer(const folia::Word*, const folia::Sentence*);
     std::string toString(Type);
-    std::ostream& operator<<( std::ostream&, const Type&);
+    std::ostream& operator<<(std::ostream&, Type);
+
+    SEM::Type toSem(Type);
 }
 
 #endif /* NER_H */

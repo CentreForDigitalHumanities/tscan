@@ -1,5 +1,3 @@
-#include <string>
-#include <iostream>
 #include "tscan/sem.h"
 
 using namespace std;
@@ -158,7 +156,7 @@ namespace SEM {
         }
     }
 
-    SEM::Type classifyNoun(const string& s) {
+    SEM::Type classifyNoun(string s) {
         if (s == "undefined")
             return UNDEFINED_NOUN;
         else if (s == "concrother")
@@ -193,7 +191,7 @@ namespace SEM {
             return UNFOUND_NOUN;
     }
 
-    SEM::Type classifyWW(const string& s, const string& c) {
+    SEM::Type classifyWW(string s, string c) {
         if (s == "undefined") {
             if (c == "abstract")
                 return ABSTRACT_UNDEFINED;
@@ -226,7 +224,7 @@ namespace SEM {
         return UNFOUND_VERB;
     }
 
-    SEM::Type classifyADJ(const string& s, const string& sub) {
+    SEM::Type classifyADJ(string s, string sub) {
         SEM::Type result = UNFOUND_ADJ;
         if (s == "undefined") {
             result = UNDEFINED_ADJ;
@@ -275,7 +273,7 @@ namespace SEM {
         return result;
     }
 
-    bool isStrictNoun(const Type st) {
+    bool isStrictNoun(Type st) {
         switch (st) {
             case CONCRETE_HUMAN_NOUN:
             case CONCRETE_NONHUMAN_NOUN:
@@ -291,7 +289,7 @@ namespace SEM {
         }
     }
 
-    bool isBroadNoun(const Type st) {
+    bool isBroadNoun(Type st) {
         switch (st) {
             case CONCRETE_HUMAN_NOUN:
             case CONCRETE_NONHUMAN_NOUN:
@@ -310,7 +308,7 @@ namespace SEM {
         }
     }
 
-    bool isStrictAdj(const Type st) {
+    bool isStrictAdj(Type st) {
         switch (st) {
             case HUMAN_ADJ:
             case EMO_ADJ:
@@ -326,7 +324,7 @@ namespace SEM {
         }
     }
 
-    bool isBroadAdj(const Type st) {
+    bool isBroadAdj(Type st) {
         switch (st) {
             case HUMAN_ADJ:
             case EMO_ADJ:
@@ -344,8 +342,8 @@ namespace SEM {
         }
     }
 
-    ostream& operator<<( ostream& os, const Type& s ){
-      os << toString( s );
-      return os;
+    ostream& operator<<( ostream& os, Type st ) {
+        os << toString(st);
+        return os;
     }
 }

@@ -1,6 +1,9 @@
 #ifndef SEM_H
 #define SEM_H
 
+#include <string>
+#include <iostream>
+
 namespace SEM {
 
     enum Type {
@@ -31,14 +34,14 @@ namespace SEM {
     };
 
     std::string toString(Type);
-    Type classifyNoun(const std::string&);
-    Type classifyWW(const std::string&, const std::string& = "");
-    Type classifyADJ(const std::string&, const std::string& = "");
-    bool isStrictNoun(const Type);
-    bool isBroadNoun(const Type);
-    bool isStrictAdj(const Type);
-    bool isBroadAdj(const Type);
-    std::ostream& operator<<( std::ostream& os, const Type& s );
+    Type classifyNoun(std::string);
+    Type classifyWW(std::string, std::string = "");
+    Type classifyADJ(std::string, std::string = "");
+    bool isStrictNoun(Type);
+    bool isBroadNoun(Type);
+    bool isStrictAdj(Type);
+    bool isBroadAdj(Type);
+    std::ostream& operator<<(std::ostream&, Type);
 }
 
 #endif // SEM_H

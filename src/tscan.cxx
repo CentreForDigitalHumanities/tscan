@@ -1010,6 +1010,7 @@ void wordStats::checkNoun() {
       }
     }
     else {
+      // If we still haven't found a SEM::Type, add this to the problemfile
       sem_type = SEM::UNFOUND_NOUN;
       if ( settings.showProblems ){
         problemFile << "N," << word << ", " << lemma << endl;
@@ -1773,6 +1774,12 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
     else {
       NER::Type ner = NER::lookupNer( w[i], s );
       ws->nerProp = ner;
+
+      // If we did not find a SEM::Type for a noun, use the NER::Type to possibly find one.
+      if ( ws->sem_type == SEM::UNFOUND_NOUN) {
+        ws->sem_type = NER::toSem(ner);
+      }
+
       switch( ner ){
       case NER::LOC_B:
       case NER::EVE_B:
