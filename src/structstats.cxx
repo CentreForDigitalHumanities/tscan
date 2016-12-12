@@ -521,7 +521,15 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   os << content_mtld << ",";
   os << density( contentCnt, wordCnt ) << ",";
   os << proportion( contentCnt, correctedClauseCnt ) << ",";
-  os << rarity( rarityLevel ) << ",";
+
+  double rare = rarity( rarityLevel );
+  if (std::isnan(rare)) {
+    os << "NA" << ",";
+  }
+  else {
+    os << rare << ",";
+  }
+  
   os << density( pronRefCnt, wordCnt ) << ",";
   os << proportion( pronRefCnt, correctedClauseCnt ) << ",";
   if ( isSentence() ){
