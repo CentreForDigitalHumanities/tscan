@@ -15,20 +15,23 @@ for file in $@
 do if test -e $file
     then
 	\rm -f $file.diff
+	\rm -f $file.diff.fd
 	\rm -f $file.err
 	\rm -f $file.out
 	\rm -f $file.tscan.xml
 	echo -n "Tscanning  $file "
 	$comm --skip=c -t $file > $file.out 2> $file.err
-	#xmldiff /tmp/folia.2.xml $file.ok >& $file.diff
-	diff -w --ignore-matching-lines=".?*-annotation .?*" --ignore-matching-lines=".*generator=.*" $file.tscan.xml $file.ok >& $file.diff
+	./foliadiff.sh $file.tscan.xml $file.ok >& $file.diff.fd
 	if [ $? -ne 0 ];
 	then
 	    echo -e $FAIL;
+	    diff -w --ignore-matching-lines=".?*-annotation .?*" --ignore-matching-lines=".*generator=.*" $file.tscan.xml $file.ok >& $file.diff
 	    echo "differences logged in $file.diff";
+	    echo "xmldiff logged in $file.diff.fd";
 	else
 	  echo -e $OK
-	  rm $file.diff
+	  rm -f $file.diff
+	  rm $file.diff.fd
 	fi
     else
 	echo "file $file not found"
