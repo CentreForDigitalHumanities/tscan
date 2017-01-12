@@ -594,8 +594,8 @@ struct structStats: public basicStats {
   int mvFinInbedCnt;
   int infinComplCnt;
   int mvInbedCnt;
-  int losBijwCnt;
   int losBetrCnt;
+  int losBijwCnt;
   int tempConnCnt;
   int opsomWgConnCnt;
   int opsomZinConnCnt;

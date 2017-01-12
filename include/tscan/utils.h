@@ -22,7 +22,7 @@ template<class T> int at( const std::map<T,int>& m, const T key ) {
     return it->second;
   else
     return 0;
-};
+}
 
 template<class M> void aggregate( M& out, const M& in ){
   typename M::const_iterator ii = in.begin();
