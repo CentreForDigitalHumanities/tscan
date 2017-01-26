@@ -1,13 +1,10 @@
-# $Id: Makefile.am 14432 2012-03-09 10:17:55Z mvgompel $
-# $URL: https://ilk.uvt.nl/svn/sources/ucto/trunk/config/Makefile.am $
 
-uctoconfig_DATA = tscan-tokconfig-nl
+uctoconfig_DATA = tscan-tokconfig-nld
 
-uctoconfigdir = $(sysconfdir)/ucto
+uctoconfigdir = $(datadir)/ucto
 
 frogconfig_DATA = tscan-frog.cfg
 
-frogconfigdir = $(sysconfdir)/frog
+frogconfigdir = $(datadir)/frog/nld
 
 EXTRA_DIST = $(uctoconfig_DATA) $(frogconfig_DATA)
-
