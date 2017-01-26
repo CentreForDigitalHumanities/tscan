@@ -1,6 +1,6 @@
 #! /bin/bash -x
 if [ `hostname` == "applejack" ]; then
-	FROGPATH="/scratch2/www/lamachine"
+    FROGPATH="/scratch2/www/lamachine"
     LOGFILE="/scratch2/www/webservices-lst/live/writable/tscan/frog.log"
     THREADS=8
 else
@@ -10,7 +10,7 @@ else
 fi
 PORT=7001
 ID=tscan
-CONFIG=${FROGPATH}/etc/frog/tscan-frog.cfg
+CONFIG=${FROGPATH}/share/frog/nld/tscan-frog.cfg
 
 mv $LOGFILE $LOGFILE.sav # poor mans solution
 
