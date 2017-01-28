@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="tscanview.xsl"?>
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.6" version="1.3.2">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.6.1" version="1.4.0">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2016-12-22T14:50:07" set="tscan-tokconfig-nl"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2016-12-22T14:50:07" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2016-12-22T14:50:07" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-12-22T14:50:07" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
-      <pos-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-12-22T14:50:07" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2016-12-22T14:50:07" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2016-12-22T14:50:07" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-01-28T20:15:27" set="tscan-tokconfig-nld"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2017-01-28T20:15:27" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2017-01-28T20:15:27" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2017-01-28T20:15:27" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <pos-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2017-01-28T20:15:27" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2017-01-28T20:15:27" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2017-01-28T20:15:27" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
       <pos-annotation annotator="tscan" set="tscan-set"/>
     </annotations>
@@ -297,6 +297,7 @@
             <feat class="onz" subset="genus"/>
             <feat class="stan" subset="naamval"/>
           </pos>
+          <lemma class="bezit"/>
           <morphology>
             <morpheme class="complex">
               <t>bezit</t>
@@ -311,7 +312,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="bezit"/>
           <metric class="content_word" value="true"/>
           <metric class="top2000" value="true"/>
           <metric class="word_freq" value="23744"/>
@@ -456,6 +456,10 @@
             <feat class="met-e" subset="buiging"/>
             <feat class="rest" subset="npagr"/>
           </pos>
+          <lemma class="welk"/>
+          <alt xml:id="tscan.p.1.s.1.w.13.alt-lem.1" auth="no">
+            <lemma class="welke"/>
+          </alt>
           <morphology>
             <morpheme class="stem">
               <t>welke</t>
@@ -463,10 +467,6 @@
               <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
-          <lemma class="welk"/>
-          <alt xml:id="tscan.p.1.s.1.w.13.alt-lem.1" auth="no">
-            <lemma class="welke"/>
-          </alt>
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
@@ -554,6 +554,7 @@
             <feat class="tgw" subset="pvtijd"/>
             <feat class="ev" subset="pvagr"/>
           </pos>
+          <lemma class="zijn"/>
           <morphology>
             <morpheme class="complex">
               <t>is</t>
@@ -570,7 +571,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="zijn"/>
           <pos class="wwform(tijdww)" set="tscan-set"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
@@ -808,6 +808,7 @@
             <feat class="met-e" subset="buiging"/>
             <feat class="stan" subset="naamval"/>
           </pos>
+          <lemma class="vroeg"/>
           <morphology>
             <morpheme class="complex">
               <t>vroege</t>
@@ -824,7 +825,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="vroeg"/>
           <metric class="content_word" value="true"/>
           <metric class="top3000" value="true"/>
           <metric class="word_freq" value="13945"/>
@@ -844,6 +844,7 @@
             <feat class="mv" subset="getal"/>
             <feat class="basis" subset="graad"/>
           </pos>
+          <lemma class="boer"/>
           <morphology>
             <morpheme class="complex">
               <t>boeren</t>
@@ -859,7 +860,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="boer"/>
           <metric class="pers_ref" value="true"/>
           <metric class="content_word" value="true"/>
           <metric class="f77" value="true"/>
@@ -885,6 +885,7 @@
             <feat class="zonder" subset="buiging"/>
             <feat class="agr" subset="npagr"/>
           </pos>
+          <lemma class="geen"/>
           <morphology>
             <morpheme class="stem">
               <t>geen</t>
@@ -892,7 +893,6 @@
               <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
-          <lemma class="geen"/>
           <metric class="proper_negative" value="true"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
@@ -915,6 +915,7 @@
             <feat class="onz" subset="genus"/>
             <feat class="stan" subset="naamval"/>
           </pos>
+          <lemma class="schrift"/>
           <morphology>
             <morpheme class="complex">
               <t>schrift</t>
@@ -929,7 +930,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="schrift"/>
           <metric class="content_word" value="true"/>
           <metric class="word_freq" value="2649"/>
           <metric class="log_word_freq" value="3.74326"/>
@@ -1486,6 +1486,7 @@
             <feat class="comp" subset="graad"/>
             <feat class="zonder" subset="buiging"/>
           </pos>
+          <lemma class="jong"/>
           <morphology>
             <morpheme class="complex">
               <t>jonger</t>
@@ -1501,7 +1502,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="jong"/>
           <metric class="content_word" value="true"/>
           <metric class="top5000" value="true"/>
           <metric class="word_freq" value="9143"/>
@@ -1521,6 +1521,7 @@
             <feat class="verl" subset="pvtijd"/>
             <feat class="ev" subset="pvagr"/>
           </pos>
+          <lemma class="zijn"/>
           <morphology>
             <morpheme class="complex">
               <t>was</t>
@@ -1536,7 +1537,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="zijn"/>
           <pos class="wwform(koppelww)" set="tscan-set"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
@@ -1721,6 +1721,7 @@
             <feat class="stan" subset="naamval"/>
             <feat class="rest" subset="npagr"/>
           </pos>
+          <lemma class="de"/>
           <morphology>
             <morpheme class="complex">
               <t>de</t>
@@ -1732,7 +1733,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="de"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -2552,6 +2552,7 @@
             <feat class="zijd" subset="genus"/>
             <feat class="stan" subset="naamval"/>
           </pos>
+          <lemma class="verzamelaar"/>
           <morphology>
             <morpheme class="complex">
               <t>verzamelaar</t>
@@ -2584,7 +2585,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="verzamelaar"/>
           <metric class="pers_ref" value="true"/>
           <metric class="content_word" value="true"/>
           <metric class="top20000" value="true"/>
@@ -2634,6 +2634,7 @@
             <feat class="verl" subset="pvtijd"/>
             <feat class="mv" subset="pvagr"/>
           </pos>
+          <lemma class="gaan"/>
           <morphology>
             <morpheme class="complex">
               <t>gingen</t>
@@ -2650,7 +2651,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="gaan"/>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
           <metric class="content_word" value="true"/>
           <metric class="f65" value="true"/>
@@ -2675,6 +2675,7 @@
             <feat class="vrij" subset="positie"/>
             <feat class="zonder" subset="buiging"/>
           </pos>
+          <lemma class="wonen"/>
           <morphology>
             <morpheme class="complex">
               <t>wonen</t>
@@ -2690,7 +2691,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="wonen"/>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
           <metric class="content_word" value="true"/>
           <metric class="f65" value="true"/>
@@ -2815,6 +2815,7 @@
             <feat class="zijd" subset="genus"/>
             <feat class="stan" subset="naamval"/>
           </pos>
+          <lemma class="plek"/>
           <morphology>
             <morpheme class="complex">
               <t>plek</t>
@@ -2829,7 +2830,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="plek"/>
           <metric class="content_word" value="true"/>
           <metric class="top2000" value="true"/>
           <metric class="word_freq" value="33691"/>

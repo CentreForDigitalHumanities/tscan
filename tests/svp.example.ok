@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="tscanview.xsl"?>
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.6" version="1.3.2">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.6.1" version="1.4.0">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2016-12-22T14:20:51" set="tscan-tokconfig-nl"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2016-12-22T14:20:51" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2016-12-22T14:20:51" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-12-22T14:20:51" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
-      <pos-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2016-12-22T14:20:51" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2016-12-22T14:20:51" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2016-12-22T14:20:51" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-01-28T20:59:13" set="tscan-tokconfig-nld"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2017-01-28T20:59:13" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2017-01-28T20:59:13" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2017-01-28T20:59:13" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <pos-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2017-01-28T20:59:13" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2017-01-28T20:59:13" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2017-01-28T20:59:13" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
       <pos-annotation annotator="tscan" set="tscan-set"/>
     </annotations>
@@ -152,6 +152,7 @@
             <feat class="persoon" subset="persoon"/>
             <feat class="getal" subset="getal"/>
           </pos>
+          <lemma class="die"/>
           <morphology>
             <morpheme class="complex">
               <t>die</t>
@@ -163,7 +164,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="die"/>
           <metric class="betrekkelijk" value="true"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
@@ -295,11 +295,6 @@
           <metric class="lprob10_bwd" value="-0.0927787"/>
           <metric class="property" value="punctuatie"/>
         </w>
-        <entities xml:id="tscan.p.1.s.1.entities.1">
-          <entity xml:id="tscan.p.1.s.1.entities.1.entity.1" class="misc" confidence="0.47918">
-            <wref id="tscan.p.1.s.1.w.2" t="SCHELDT"/>
-          </entity>
-        </entities>
         <chunking xml:id="tscan.p.1.s.1.chunking.1">
           <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.1" class="NP" confidence="0.977426">
             <wref id="tscan.p.1.s.1.w.1" t="Hij"/>
@@ -320,6 +315,11 @@
             <wref id="tscan.p.1.s.1.w.6" t="UIT"/>
           </chunk>
         </chunking>
+        <entities xml:id="tscan.p.1.s.1.entities.1">
+          <entity xml:id="tscan.p.1.s.1.entities.1.entity.1" class="misc" confidence="0.47918">
+            <wref id="tscan.p.1.s.1.w.2" t="SCHELDT"/>
+          </entity>
+        </entities>
         <metric class="word_count" value="6"/>
         <metric class="bv_vd_count" value="0"/>
         <metric class="nw_vd_count" value="0"/>
@@ -837,6 +837,7 @@
           <pos class="VZ(init)" confidence="0.99948" head="VZ" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="init" subset="vztype"/>
           </pos>
+          <lemma class="met"/>
           <morphology>
             <morpheme class="complex">
               <t>met</t>
@@ -851,7 +852,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="met"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -1051,6 +1051,7 @@
           <pos class="VZ(init)" confidence="0.444444" head="VZ" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="init" subset="vztype"/>
           </pos>
+          <lemma class="op"/>
           <morphology>
             <morpheme class="complex">
               <t>op</t>
@@ -1062,7 +1063,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="op"/>
           <metric class="f50" value="true"/>
           <metric class="f65" value="true"/>
           <metric class="f77" value="true"/>
@@ -1705,6 +1705,7 @@
             <feat class="onz" subset="genus"/>
             <feat class="stan" subset="naamval"/>
           </pos>
+          <lemma class="deel"/>
           <morphology>
             <morpheme class="complex">
               <t>deel</t>
@@ -1719,7 +1720,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="deel"/>
           <metric class="pers_ref" value="true"/>
           <metric class="content_word" value="true"/>
           <metric class="f77" value="true"/>
