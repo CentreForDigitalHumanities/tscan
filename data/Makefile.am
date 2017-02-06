@@ -1,6 +1,6 @@
 # $Id $
 # $URL$
-config_DATA = adjs_semtype.data  nouns_semtype.data \
+config_DATA = adjs_semtype.data nouns_semtype.data \
 	verbs_semtype.data intensiveringen.data dcoi_staphformat.freq \
 	freqlist_sonarnews_lemma.freq freqlist_sonarnews_words20000.freq \
 	freqlist_sonarnews_words.freq freqlist_staphorsius_CLIB_lemma.freq \
@@ -15,6 +15,6 @@ config_DATA = adjs_semtype.data  nouns_semtype.data \
 	voorzetseluitdrukkingen.txt afkortingen.lst \
 	general_nouns.data general_verbs.data adverbs.data
 
-configdir = $(sysconfdir)/tscan
+configdir = $(datadir)/tscan
 
 EXTRA_DIST = $(config_DATA)
