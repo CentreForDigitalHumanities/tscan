@@ -260,6 +260,7 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
      << "Namen_p,Namen_d,"
+     << "Wrd_prev,Wrd_prev_z,Inhwrd_prev,Inhwrd_prev_z,Dekking_inhwrd_prev,"
      << "Freq50_staph,Freq65_Staph,Freq77_Staph,Freq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,"
@@ -281,6 +282,12 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
 
      << proportion( nameCnt, (nameCnt+nounCnt) ) << ","
      << density( nameCnt, wordCnt ) << ",";
+
+  os << proportion( prevalenceP, prevalenceCovered ) << ",";
+  os << proportion( prevalenceZ, prevalenceCovered ) << ",";
+  os << proportion( prevalenceContentP, prevalenceContentCovered ) << ",";
+  os << proportion( prevalenceContentZ, prevalenceContentCovered ) << ",";
+  os << proportion( prevalenceContentCovered, contentCnt ) << ",";
 
   os << proportion( f50Cnt, wordCnt ) << ",";
   os << proportion( f65Cnt, wordCnt ) << ",";
@@ -1139,6 +1146,12 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "lsa_par_net_avg", TiCC::toString(lsa_par_net) );
   if ( !std::isnan(lsa_par_ctx) )
     addOneMetric( doc, el, "lsa_par_ctx_avg", TiCC::toString(lsa_par_ctx) );
+  addOneMetric( doc, el, "prevalenceP", TiCC::toString(prevalenceP) );
+  addOneMetric( doc, el, "prevalenceZ", TiCC::toString(prevalenceZ) );
+  addOneMetric( doc, el, "prevalenceContentP", TiCC::toString(prevalenceContentP) );
+  addOneMetric( doc, el, "prevalenceContentZ", TiCC::toString(prevalenceContentZ) );
+  addOneMetric( doc, el, "prevalenceCovered", TiCC::toString(prevalenceCovered) );
+  addOneMetric( doc, el, "prevalenceContentCovered", TiCC::toString(prevalenceContentCovered) );
   addOneMetric( doc, el, "freq50", TiCC::toString(f50Cnt) );
   addOneMetric( doc, el, "freq65", TiCC::toString(f65Cnt) );
   addOneMetric( doc, el, "freq77", TiCC::toString(f77Cnt) );
@@ -1379,6 +1392,12 @@ void structStats::merge( structStats *ss ){
   multiNegCnt += ss->multiNegCnt;
   wordOverlapCnt += ss->wordOverlapCnt;
   lemmaOverlapCnt += ss->lemmaOverlapCnt;
+  prevalenceP += ss->prevalenceP;
+  prevalenceZ += ss->prevalenceZ;
+  prevalenceContentP += ss->prevalenceContentP;
+  prevalenceContentZ += ss->prevalenceContentZ;
+  prevalenceCovered += ss->prevalenceCovered;
+  prevalenceContentCovered += ss->prevalenceContentCovered;
   f50Cnt += ss->f50Cnt;
   f65Cnt += ss->f65Cnt;
   f77Cnt += ss->f77Cnt;

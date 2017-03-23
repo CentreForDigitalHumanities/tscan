@@ -100,6 +100,8 @@ And then navigate to the host and port specified.
 Data
 ----------------
 
+[Word prevalence values](http://crr.ugent.be/programs-data/word-prevalence-values) (in `data/prevalence_data`) courtesy of Keuleers et al., Center for Reading Research, Ghent University.
+
 Certain parts of T-Scan use data from Referentiebestand Nederlands, which we can not distribute due to restrictive licensing issues, so this functionality will not be available.
 
 Certain other data is too large for GitHub, but will be downloaded for you automatically by the ``./downloaddata.sh`` script.

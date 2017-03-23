@@ -441,6 +441,7 @@ void wordStats::wordSortToCSV( ostream& os ) const {
 void wordStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
+     << "Wrd_prev,Wrd_prev_z,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,";
 }
@@ -475,6 +476,16 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
 	 << 1.0/double(morphCnt) << ",";
     }
   }
+
+  if ( std::isnan(prevalenceP) )
+    os << "NA,";
+  else
+    os << prevalenceP << ",";
+  if ( std::isnan(prevalenceZ) )
+    os << "NA,";
+  else
+    os << prevalenceZ << ",";
+
   if ( std::isnan(word_freq_log) )
     os << "NA,";
   else
@@ -704,6 +715,10 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "lsa_word_suc", TiCC::toString(lsa_opv) );
   if ( lsa_ctx )
     addOneMetric( doc, el, "lsa_word_ctx", TiCC::toString(lsa_ctx) );
+  if ( !std::isnan(prevalenceP) )
+    addOneMetric( doc, el, "prevalenceP", TiCC::toString(prevalenceP) );
+  if ( !std::isnan(prevalenceZ) )
+    addOneMetric( doc, el, "prevalenceZ", TiCC::toString(prevalenceZ) );
   if ( f50 )
     addOneMetric( doc, el, "f50", "true" );
   if ( f65 )

@@ -79,6 +79,11 @@ struct noun {
   int compound_parts;
 };
 
+struct prevalence {
+  double percentage;
+  double zscore;
+};
+
 struct tagged_classification {
   CGN::Type tag;
   string classification;
@@ -136,7 +141,8 @@ struct settingData {
   set<string> vzexpr2;
   set<string> vzexpr3;
   set<string> vzexpr4;
-  map<string,Afk::Type> afkos;
+  map<string, Afk::Type> afkos;
+  map<string, prevalence> prevalences;
   map<string, tagged_classification> my_classification;
 };
 
@@ -626,6 +632,43 @@ bool fill( map<string,Afk::Type>& afks, const string& filename ){
   return false;
 }
 
+bool fill_prevalences( map<string, prevalence>& prevalences, istream& is ){
+  string line;
+  while( safe_getline( is, line ) ){
+    // a line is supposed to be :
+    // a comment, starting with '#'
+    // like: '# comment'
+    // OR: a lemma with prevalence values in columns 2 and 3
+    line = TiCC::trim( line );
+    if ( line.empty() || line[0] == '#' )
+      continue;
+    vector<string> vec;
+    int n = TiCC::split_at_first_of( line, vec, " \t" );
+    if ( n != 6 ) {
+      cerr << "skip line: " << line << " (expected 6 values, got " << n << ")" << endl;
+      continue;
+    }
+    else {
+      prevalence p;
+      p.percentage = TiCC::stringTo<double>(vec[2]);
+      p.zscore = TiCC::stringTo<double>(vec[3]);
+      prevalences[vec[0]] = p;
+    }
+  }
+  return true;
+}
+
+bool fill_prevalences( map<string, prevalence>& prevalences, const string& filename ){
+  ifstream is( filename.c_str() );
+  if ( is ){
+    return fill_prevalences( prevalences, is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
 bool fill( map<string,tagged_classification>& my_classification, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
@@ -887,6 +930,11 @@ void settingData::init( const TiCC::Configuration& cf ){
   val = cf.lookUp( "afkortingen" );
   if ( !val.empty() ){
     if ( !fill( afkos, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+  val = cf.lookUp( "prevalence" );
+  if ( !val.empty() ){
+    if ( !fill_prevalences( prevalences, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
 
@@ -1220,6 +1268,14 @@ void wordStats::freqLookup(){
   }
 }
 
+void wordStats::prevalenceLookup() {
+  map<string,prevalence>::const_iterator it = settings.prevalences.find( l_lemma );
+  if ( it != settings.prevalences.end() ){
+    prevalenceP = it->second.percentage;
+    prevalenceZ = it->second.zscore;
+  }
+}
+
 void wordStats::staphFreqLookup(){
   map<string,cf_data>::const_iterator it = settings.staph_word_freq_lex.find( l_word );
   if ( it != settings.staph_word_freq_lex.end() ){
@@ -1245,6 +1301,7 @@ wordStats::wordStats( int index,
   archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false),
   nerProp(NER::NONER), connType(Conn::NOCONN), isMultiConn(false), sitType(Situation::NO_SIT),
+  prevalenceP(NAN), prevalenceZ(NAN),
   f50(false), f65(false), f77(false), f80(false),
   top_freq(notFound), word_freq(0), lemma_freq(0),
   wordOverlapCnt(0), lemmaOverlapCnt(0),
@@ -1341,6 +1398,7 @@ wordStats::wordStats( int index,
     if ( alpWord )
       isNominal = checkNominal( alpWord );
     top_freq = topFreqLookup(l_word);
+    prevalenceLookup();
     staphFreqLookup();
     if ( isContent ){
       freqLookup();
@@ -2356,6 +2414,19 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           case top5000: top5000CntCorr++;
           case top20000: top20000CntCorr++;
           default: break;
+        }
+      }
+
+      // Prevalences
+      if ( !std::isnan(ws->prevalenceP) ) {
+        prevalenceP += ws->prevalenceP;
+        prevalenceZ += ws->prevalenceZ;
+        prevalenceCovered++;
+
+        if ( ws->isContent ) {
+          prevalenceContentP += ws->prevalenceP;
+          prevalenceContentZ += ws->prevalenceZ;
+          prevalenceContentCovered++;
         }
       }
 

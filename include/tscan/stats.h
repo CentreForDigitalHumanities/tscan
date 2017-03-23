@@ -168,6 +168,7 @@ struct wordStats : public basicStats {
   std::string checkMyClassification() const;
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
+  void prevalenceLookup();
   void staphFreqLookup();
   top_val topFreqLookup(const std::string&) const;
   int wordFreqLookup(const std::string&) const;
@@ -198,6 +199,8 @@ struct wordStats : public basicStats {
   Conn::Type connType;
   bool isMultiConn;
   Situation::Type sitType;
+  double prevalenceP;
+  double prevalenceZ;
   bool f50;
   bool f65;
   bool f77;
@@ -311,6 +314,12 @@ struct structStats: public basicStats {
     multiNegCnt(0),
     wordOverlapCnt(0),
     lemmaOverlapCnt(0),
+    prevalenceP(0),
+    prevalenceZ(0),
+    prevalenceContentP(0),
+    prevalenceContentZ(0),
+    prevalenceCovered(0),
+    prevalenceContentCovered(0),
     f50Cnt(0),
     f65Cnt(0),
     f77Cnt(0),
@@ -611,6 +620,12 @@ struct structStats: public basicStats {
   int multiNegCnt;
   int wordOverlapCnt;
   int lemmaOverlapCnt;
+  double prevalenceP;
+  double prevalenceZ;
+  double prevalenceContentP;
+  double prevalenceContentZ;
+  int prevalenceCovered;
+  int prevalenceContentCovered;
   int f50Cnt;
   int f65Cnt;
   int f77Cnt;

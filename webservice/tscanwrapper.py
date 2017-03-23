@@ -150,6 +150,7 @@ f.write("causal_situation=\"causaliteit.txt\"\n")
 f.write("space_situation=\"ruimte.txt\"\n")
 f.write("time_situation=\"tijd.txt\"\n")
 f.write("emotion_situation=\"emoties.txt\"\n")
+f.write("prevalence=\"prevalence.data\"\n")
 
 
 f.write("[[frog]]\n")  # Frog server should already be runnning, start manually
