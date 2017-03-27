@@ -999,6 +999,7 @@ void structStats::intensToCSV( ostream& os ) const {
 void structStats::miscHeader( ostream& os ) const {
   os << "Log_prob_fwd,Entropie_fwd,Perplexiteit_fwd,";
   os << "Log_prob_bwd,Entropie_bwd,Perplexiteit_bwd,";
+  os << "Eigen_classificatie";
 }
 
 void structStats::miscToCSV( ostream& os ) const {
@@ -1008,6 +1009,8 @@ void structStats::miscToCSV( ostream& os ) const {
   os << proportion( avg_prob10_bwd, sentCnt ) << ",";
   os << proportion( entropy_bwd, sentCnt ) << ",";
   os << proportion( perplexity_bwd, sentCnt ) << ",";
+
+  os << "\"" << escape_quotes(toStringCounter(my_classification)) << "\"";
 }
 
 /**************
@@ -1316,6 +1319,9 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "verb_adv_mod_dist", MMtoString( distances, VERB_MOD_A ) );
   addOneMetric( doc, el, "verb_noun_dist", MMtoString( distances, VERB_NOUN ) );
 
+  if ( !my_classification.empty() )
+    addOneMetric( doc, el, "my_classification", toStringCounter(my_classification) );
+
   addOneMetric( doc, el, "deplen", toMString( al_gem ) );
   addOneMetric( doc, el, "max_deplen", toMString( al_max ) );
   for ( size_t i=0; i < sv.size(); ++i ){
@@ -1606,6 +1612,7 @@ void structStats::merge( structStats *ss ){
   top20000CntSat += ss->top20000CntSat;
   top20000CntNounCorr += ss->top20000CntNounCorr;
   top20000CntCorr += ss->top20000CntCorr;
+  updateCounter(my_classification, ss->my_classification);
   sv.push_back( ss );
   aggregate( heads, ss->heads );
   aggregate( unique_names, ss->unique_names );

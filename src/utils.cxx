@@ -131,6 +131,28 @@ istream& safe_getline( istream& is, string& t ){
   }
 }
 
+// Updates a counter with another counter
+void updateCounter ( map<string, int> &m1, map<string, int> m2) {
+  for ( auto p : m2 ) {
+    m1[p.first] += m2[p.first];
+  }
+}
+
+// Returns a counter as a JSON string
+string toStringCounter ( map<string, int> m) {
+  if ( m.empty() ) {
+    return "";
+  }
+
+  string result = "{";
+  for ( auto p : m ) {
+    result += "\"" + p.first + "\": " + to_string(p.second) + ",";
+  }
+  result.pop_back(); // remove last comma from string
+  result += "}";
+  return result;
+}
+
 /**
  * Converts a double to string, if NAN, return "NA"
  * @param  d the double

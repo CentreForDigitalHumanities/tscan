@@ -13,6 +13,8 @@
 void addOneMetric( folia::Document*, folia::FoliaElement*, const std::string&, const std::string& );
 void argument_overlap( const std::string, const std::vector<std::string>&, int& );
 std::istream& safe_getline( std::istream&, std::string& );
+void updateCounter( std::map<std::string, int>&, std::map<std::string, int>);
+std::string toStringCounter( std::map<std::string, int>);
 std::string toMString( double d );
 std::string escape_quotes(const std::string &before);
 

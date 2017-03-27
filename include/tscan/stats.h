@@ -827,6 +827,7 @@ struct structStats: public basicStats {
   int top20000CntCorr;
   int rarityLevel;
   unsigned int overlapSize;
+  std::map<std::string,int> my_classification;
 };
 
 

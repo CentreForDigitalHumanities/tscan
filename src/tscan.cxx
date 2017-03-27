@@ -2430,6 +2430,11 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
         }
       }
 
+      // My classification
+      if ( !ws->my_classification.empty() ) {
+        ++my_classification[ws->my_classification];
+      }
+
       sv.push_back( ws );
     }
   }
