@@ -74,7 +74,6 @@ struct noun {
   SEM::Type type;
   bool is_compound;
   string head;
-  string satellite;
   string satellite_clean;
   int compound_parts;
 };
@@ -156,11 +155,11 @@ bool fillN( map<string,noun>& m, istream& is ){
     if ( line.empty() )
       continue;
 
-    // Split at a tab; the line should contain either 3 (non-compounds) or 7 (compounds) values
+    // Split at a tab; the line should contain either 3 (non-compounds) or 6 (compounds) values
     vector<string> parts;
     int i = TiCC::split_at( line, parts, "\t" );
-    if (i != 3 && i != 7) {
-      cerr << "skip line: " << line << " (expected 3 or 7 values, got " << i << ")" << endl;
+    if (i != 3 && i != 6) {
+      cerr << "skip line: " << line << " (expected 3 or 6 values, got " << i << ")" << endl;
       continue;
     }
 
@@ -170,9 +169,8 @@ bool fillN( map<string,noun>& m, istream& is ){
     n.is_compound = parts[2] == "1";
     if (n.is_compound) {
       n.head = parts[3];
-      n.satellite = parts[4];
-      n.satellite_clean = parts[5];
-      n.compound_parts = atoi(parts[6].c_str());
+      n.satellite_clean = parts[4];
+      n.compound_parts = atoi(parts[5].c_str());
     }
     m[parts[0]] = n;
   }
