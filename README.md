@@ -1,10 +1,8 @@
 [![Build Status](https://travis-ci.org/proycon/tscan.svg?branch=master)](https://travis-ci.org/proycon/tscan) [![Language Machines Badge](http://applejack.science.ru.nl/lamabadge.php/tscan)](http://applejack.science.ru.nl/languagemachines/)
 
-========================================
-T-Scan
-========================================
+# T-Scan
 
-tscan 0.4 (c) TiCC/ 1998 - 2017
+tscan 0.5 (c) TiCC/ 1998 - 2017
 
     Tilburg centre for Cognition and Communication, Tilburg University.
     UiL-OTS, Utrecht University
@@ -18,22 +16,16 @@ Kraf et al., 2009). The code has been reimplemented and extended by Ko van der
 Sloot (Tilburg University), and is currently maintained and continued by
 Martijn van der Klis (Utrecht University).
 
-------------------------------
-Web application / Webservice
-------------------------------
+## Web application / Webservice
 
 This repository contains the T-Scan source code, allowing you to run it
 yourself on your own system. In addition, T-Scan is available as a web application and webservice through https://webservices-lst.science.ru.nl , register for a (free) account there first, and then access T-Scan through https://webservices-lst.science.ru.nl/tscan/ .
 
-----------------
-Documentation
-----------------
+## Documentation
 
 Extensive documentation (in Dutch) can be found in [``docs/tscanhandleiding.pdf``](https://github.com/proycon/tscan/raw/master/docs/tscanhandleiding.pdf).
 
-----------------
-Installation 
-----------------
+## Installation
 
 T-Scan heavily depends upon other sofware, such as Frog, Wopr and Alpino.
 
@@ -66,9 +58,7 @@ If you do not want to use LaMachine, first make sure you have **all** necessary 
     $ make
     $ sudo make install
 
-----------------
-Usage
-----------------
+## Usage
 
 If you use LaMachine as recommended, always activate the virtual environment first.
     
@@ -96,9 +86,7 @@ Then either run tscan from the command-line, which will produce a FoLiA XML file
 
 And then navigate to the host and port specified.
 
-----------------
-Data
-----------------
+## Data
 
 [Word prevalence values](http://crr.ugent.be/programs-data/word-prevalence-values) (in `data/prevalence_data`) courtesy of Keuleers et al., Center for Reading Research, Ghent University.
 
@@ -106,9 +94,7 @@ Certain parts of T-Scan use data from Referentiebestand Nederlands, which we can
 
 Certain other data is too large for GitHub, but will be downloaded for you automatically by the ``./downloaddata.sh`` script.
 
-----------------
-References
-----------------
+## References
 
-* Kraf, R. & Pander Maat, H. (2009) - Leesbaarheidsonderzoek: oude problemen en nieuwe kansen. Tijdschrift voor Taalbeheersing 31(2). 97-123
-* Pander Maat, H. & Kraf, R. & van den Bosch, A. & Dekker, N. & van Gompel, M. & Kleijn, S. & Sanders, T. & van der Sloot, K. (2014) - T-Scan: a new tool for analyzing Dutch text. Computational Linguistics in the Netherlands 12/2014; 4:53-74.
+* Kraf, R. & Pander Maat, H. (2009). Leesbaarheidsonderzoek: oude problemen en nieuwe kansen. *Tijdschrift voor Taalbeheersing* 31(2), 97-123.
+* Pander Maat, H. & Kraf, R. & van den Bosch, A. & Dekker, N. & van Gompel, M. & Kleijn, S. & Sanders, T. & van der Sloot, K. (2014). T-Scan: a new tool for analyzing Dutch text. *Computational Linguistics in the Netherlands Journal* 4, 53-74.
