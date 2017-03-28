@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.60])
-AC_INIT([tscan], [0.5], [m.h.vanderklis@uu.nl])
+AC_INIT([tscan], [0.5.1], [m.h.vanderklis@uu.nl])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/tscan.cxx])
 AC_CONFIG_MACRO_DIR([m4])
