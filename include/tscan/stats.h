@@ -299,6 +299,7 @@ struct structStats: public basicStats {
     mvInbedCnt(0),
     losBetrCnt(0),
     losBijwCnt(0),
+    allConnCnt(0),
     tempConnCnt(0),
     opsomWgConnCnt(0),
     opsomZinConnCnt(0),
@@ -452,6 +453,7 @@ struct structStats: public basicStats {
     lemma_mtld(0),
     content_mtld(0),
     name_mtld(0),
+    all_conn_mtld(0),
     temp_conn_mtld(0),
     reeks_wg_conn_mtld(0),
     reeks_zin_conn_mtld(0),
@@ -605,6 +607,7 @@ struct structStats: public basicStats {
   int mvInbedCnt;
   int losBetrCnt;
   int losBijwCnt;
+  int allConnCnt;
   int tempConnCnt;
   int opsomWgConnCnt;
   int opsomZinConnCnt;
@@ -761,6 +764,7 @@ struct structStats: public basicStats {
   std::map<std::string,int> unique_ruimte_sits;
   std::map<std::string,int> unique_cause_sits;
   std::map<std::string,int> unique_emotion_sits;
+  std::map<std::string,int> unique_all_conn;
   std::map<std::string,int> unique_temp_conn;
   std::map<std::string,int> unique_reeks_wg_conn;
   std::map<std::string,int> unique_reeks_zin_conn;
@@ -773,6 +777,7 @@ struct structStats: public basicStats {
   double lemma_mtld;
   double content_mtld;
   double name_mtld;
+  double all_conn_mtld;
   double temp_conn_mtld;
   double reeks_wg_conn_mtld;
   double reeks_zin_conn_mtld;
@@ -840,7 +845,6 @@ struct sentStats : public structStats {
   void resolveLSA( const std::map<std::string,double>& );
   void resolveMultiWordIntensify();
   void resolveMultiWordAfks();
-  void incrementConnCnt( Conn::Type );
   void addMetrics() const;
   bool checkAls( size_t );
   double getMeanAL() const;

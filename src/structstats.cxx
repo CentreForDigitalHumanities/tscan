@@ -569,7 +569,8 @@ void structStats::informationDensityToCSV( ostream& os ) const {
 }
 
 void structStats::coherenceHeader( ostream& os ) const {
-  os << "Conn_temp_d,Conn_temp_dz,Conn_temp_TTR,Conn_temp_MTLD,"
+  os << "Conn_d,Conn_dz,Conn_TTR,Conn_MTLD,"
+     << "Conn_temp_d,Conn_temp_dz,Conn_temp_TTR,Conn_temp_MTLD,"
      << "Conn_reeks_wg_d,Conn_reeks_wg_dz,Conn_reeks_wg_TTR,Conn_reeks_wg_MTLD,"
      << "Conn_reeks_zin_d,Conn_reeks_zin_dz,Conn_reeks_zin_TTR,Conn_reeks_zin_MTLD,"
      << "Conn_contr_d,Conn_contr_dz,Conn_contr_TTR,Conn_contr_MTLD,"
@@ -583,6 +584,10 @@ void structStats::coherenceHeader( ostream& os ) const {
 }
 
 void structStats::coherenceToCSV( ostream& os ) const {
+  os << density( allConnCnt, wordCnt ) << ",";
+  os << proportion( allConnCnt, correctedClauseCnt ) << ",";
+  os << proportion( unique_all_conn.size(), allConnCnt ) << ",";
+  os << all_conn_mtld << ",";
   os << density( tempConnCnt, wordCnt ) << ",";
   os << proportion( tempConnCnt, correctedClauseCnt ) << ",";
   os << proportion( unique_temp_conn.size(), tempConnCnt ) << ",";
@@ -1111,6 +1116,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "spec_count", TiCC::toString(specCnt) );
   addOneMetric( doc, el, "let_count", TiCC::toString(letCnt) );
   addOneMetric( doc, el, "rel_count", TiCC::toString(betrCnt) );
+  addOneMetric( doc, el, "all_connector_count", TiCC::toString(allConnCnt) );
   addOneMetric( doc, el, "temporal_connector_count", TiCC::toString(tempConnCnt) );
   addOneMetric( doc, el, "reeks_wg_connector_count", TiCC::toString(opsomWgConnCnt) );
   addOneMetric( doc, el, "reeks_zin_connector_count", TiCC::toString(opsomZinConnCnt) );
@@ -1623,6 +1629,7 @@ void structStats::merge( structStats *ss ){
   aggregate( unique_ruimte_sits, ss->unique_ruimte_sits );
   aggregate( unique_cause_sits, ss->unique_cause_sits );
   aggregate( unique_emotion_sits, ss->unique_emotion_sits );
+  aggregate( unique_all_conn, ss->unique_all_conn );
   aggregate( unique_temp_conn, ss->unique_temp_conn );
   aggregate( unique_reeks_wg_conn, ss->unique_reeks_wg_conn );
   aggregate( unique_reeks_zin_conn, ss->unique_reeks_zin_conn );

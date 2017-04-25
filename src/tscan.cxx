@@ -1572,6 +1572,15 @@ void structStats::calculate_MTLDs() {
   ruimte_sit_mtld = average_mtld( ruimte_sits );
   cause_sit_mtld = average_mtld( cause_sits );
   emotion_sit_mtld = average_mtld( emotion_sits );
+
+  // Combined connective MLTD (but don't include reeks_wg_conn)
+  vector<string> all_conn;
+  all_conn.insert( all_conn.end(), temp_conn.begin(), temp_conn.end() );
+  all_conn.insert( all_conn.end(), reeks_zin_conn.begin(), reeks_zin_conn.end() );
+  all_conn.insert( all_conn.end(), contr_conn.begin(), contr_conn.end() );
+  all_conn.insert( all_conn.end(), comp_conn.begin(), comp_conn.end() );
+  all_conn.insert( all_conn.end(), cause_conn.begin(), cause_conn.end() );
+  all_conn_mtld = average_mtld( all_conn );
 }
 
 //#define DEBUG_WOPR

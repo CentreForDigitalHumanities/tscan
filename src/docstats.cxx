@@ -167,6 +167,13 @@ void docStats::addMetrics() const {
   addOneMetric( el->doc(), el,
 		"emotion_sit_mtld", TiCC::toString( emotion_sit_mtld ) );
 
+  if ( allConnCnt != 0 ){
+    addOneMetric( el->doc(), el,
+      "all_conn_ttr", TiCC::toString( unique_all_conn.size()/double(allConnCnt) ) );
+  }
+  addOneMetric( el->doc(), el,
+    "all_conn_mtld", TiCC::toString(all_conn_mtld) );
+
   if ( tempConnCnt != 0 ){
     addOneMetric( el->doc(), el,
 		  "temp_conn_ttr", TiCC::toString( unique_temp_conn.size()/double(tempConnCnt) ) );

@@ -32,30 +32,6 @@ double sentStats::getHighestAL() const {
  * CONNECTIVES
  *************/
 
-void sentStats::incrementConnCnt( Conn::Type t ) {
-  switch ( t ){
-  case Conn::TEMPOREEL:
-    tempConnCnt++;
-    break;
-  case Conn::OPSOMMEND_WG:
-    opsomWgConnCnt++;
-    break;
-  case Conn::OPSOMMEND_ZIN:
-    opsomZinConnCnt++;
-    break;
-  case Conn::CONTRASTIEF:
-    contrastConnCnt++;
-    break;
-  case Conn::COMPARATIEF:
-    compConnCnt++;
-    break;
-  case Conn::CAUSAAL:
-    break;
-  default:
-    break;
-  }
-}
-
 void sentStats::resolveConnectives() {
   const string neg_longA[] = { "afgezien van", "zomin als", "met uitzondering van"};
   static set<string> negatives_long = set<string>( neg_longA, neg_longA + sizeof(neg_longA)/sizeof(string) );
@@ -113,27 +89,38 @@ void sentStats::resolveConnectives() {
     switch( sv[i]->getConnType() ){
     case Conn::TEMPOREEL:
       unique_temp_conn[sv[i]->ltext()]++;
+      unique_all_conn[sv[i]->ltext()]++;
       tempConnCnt++;
+      allConnCnt++;
       break;
     case Conn::OPSOMMEND_WG:
       unique_reeks_wg_conn[sv[i]->ltext()]++;
       opsomWgConnCnt++;
+      // Don't add OPSOMMEND_WG to allContCnt/unique_all_conn
       break;
     case Conn::OPSOMMEND_ZIN:
       unique_reeks_zin_conn[sv[i]->ltext()]++;
+      unique_all_conn[sv[i]->ltext()]++;
       opsomZinConnCnt++;
+      allConnCnt++;
       break;
     case Conn::CONTRASTIEF:
       unique_contr_conn[sv[i]->ltext()]++;
+      unique_all_conn[sv[i]->ltext()]++;
       contrastConnCnt++;
+      allConnCnt++;
       break;
     case Conn::COMPARATIEF:
       unique_comp_conn[sv[i]->ltext()]++;
+      unique_all_conn[sv[i]->ltext()]++;
       compConnCnt++;
+      allConnCnt++;
       break;
     case Conn::CAUSAAL:
       unique_cause_conn[sv[i]->ltext()]++;
+      unique_all_conn[sv[i]->ltext()]++;
       causeConnCnt++;
+      allConnCnt++;
       break;
     default:
       break;
