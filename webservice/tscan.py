@@ -345,6 +345,7 @@ PARAMETERS = [
         ChoiceParameter(id='useAlpino', name='Use Alpino parser', description='Use Alpino parser?', choices=['yes', 'no'], default='yes'),
         ChoiceParameter(id='useWopr', name='Use Wopr', description='Use Wopr?', choices=['yes', 'no'], default='yes'),
         ChoiceParameter(id='sentencePerLine', name='One sentence per line', description='Are the input texts already split per line?', choices=['yes', 'no'], default='no'),
+        ChoiceParameter(id='prevalence', name='Prevalence data', description='Use prevalence data (http://crr.ugent.be/programs-data/word-prevalence-values) for', choices=[('nl', 'The Netherlands'), ('be', 'Belgium')], default='nl'),
         ChoiceParameter(id='word_freq_lex', name='Word Frequency List', description="Word frequency list", choices=wordfreqlist, default="SoNaR500.wordfreqlist_words.freq"),
         ChoiceParameter(id='lemma_freq_lex', name='Lemma Frequency List', description="Lemma frequency list", choices=lemmafreqlist, default="SoNaR500.wordfreqlist_lemma.freq"),
         ChoiceParameter(id='top_freq_lex', name='Top Frequency List', description="Top frequency list", choices=topfreqlist, default="SoNaR500.wordfreqlist20000.freq"),
