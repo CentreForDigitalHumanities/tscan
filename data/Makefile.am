@@ -14,7 +14,7 @@ config_DATA = adjs_semtype.data nouns_semtype.data \
 	causaliteit.txt ruimte.txt tijd.txt emoties.txt \
 	voorzetseluitdrukkingen.txt afkortingen.lst \
 	general_nouns.data general_verbs.data adverbs.data \
-	prevalence.data
+	prevalence_nl.data prevalence_be.data
 
 configdir = $(datadir)/tscan
 
