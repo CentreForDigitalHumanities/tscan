@@ -339,7 +339,6 @@ for f in glob.glob(TSCANDIR + "/data/*20000.freq"):
 
 PARAMETERS = [
     ('Parameters', [
-        IntegerParameter(id='rarityLevel', name='Rarity Level', description='Rarity level', default=4),
         IntegerParameter(id='overlapSize', name='Overlap Size', description='Overlap Size', default=50),
         FloatParameter(id='frequencyClip', name='Frequency Clipping', description='Frequency Clipping', default=99),
         FloatParameter(id='mtldThreshold', name='MTLD factor size', description='MTLD factor size', default=0.720),
