@@ -20,14 +20,19 @@ void wordStats::setPersRef() {
 }
 
 bool wordStats::checkContent() const {
+  // Head verbs are content words
   if ( tag == CGN::WW ){
     if ( wwform == HEAD_VERB ){
       return true;
     }
   }
+  // Adverbs of the subtype "Manner" are content words
+  else if ( tag == CGN::BW) {
+    return Adverb::isContent(adverb_sub_type);
+  }
+  // Names, nouns and adjectives are content words
   else {
-    return ( prop == CGN::ISNAME
-	     || tag == CGN::N || tag == CGN::BW || tag == CGN::ADJ );
+    return ( prop == CGN::ISNAME || tag == CGN::N || tag == CGN::ADJ );
   }
   return false;
 }

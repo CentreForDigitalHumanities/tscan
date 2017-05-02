@@ -108,7 +108,7 @@ struct settingData {
   map<string, Intensify::Type> intensify;
   map<string, General::Type> general_nouns;
   map<string, General::Type> general_verbs;
-  map<string, Adverb::Type> adverbs;
+  map<string, Adverb::adverb> adverbs;
   map<string, double> pol_lex;
   map<string, cf_data> staph_word_freq_lex;
   long int staph_total;
@@ -330,7 +330,7 @@ bool fill_general(map<string,General::Type>& m, const string& filename) {
   return false;
 }
 
-bool fill_adverbs(map<string,Adverb::Type>& m, istream& is){
+bool fill_adverbs(map<string,Adverb::adverb>& m, istream& is){
   string line;
   while( safe_getline( is, line ) ){
     line = TiCC::trim( line );
@@ -338,25 +338,27 @@ bool fill_adverbs(map<string,Adverb::Type>& m, istream& is){
       continue;
     vector<string> parts;
     int n = TiCC::split_at( line, parts, "\t" ); // split at tab
-    if ( n < 2 || n > 2 ){
-      cerr << "skip line: " << line << " (expected 2 values, got "
+    if ( n != 3 ){
+      cerr << "skip line: " << line << " (expected 3 values, got "
        << n << ")" << endl;
       continue;
     }
     string low = TiCC::trim(TiCC::lowercase(parts[0]));
-    Adverb::Type res = Adverb::classify(TiCC::lowercase(parts[1]));
+    Adverb::adverb a;
+    a.type = Adverb::classifyType(TiCC::lowercase(parts[1]));
+    a.subtype = Adverb::classifySubType(TiCC::lowercase(parts[2]));
     if ( m.find(low) != m.end() ){
       cerr << "Information: multiple entry '" << low << "' in adverbs lex" << endl;
     }
-    if ( res != Adverb::NO_ADVERB ){
+    if ( a.type != Adverb::NO_ADVERB ){
       // no use to store undefined values
-      m[low] = res;
+      m[low] = a;
     }
   }
   return true;
 }
 
-bool fill_adverbs(map<string,Adverb::Type>& m, const string& filename) {
+bool fill_adverbs(map<string,Adverb::adverb>& m, const string& filename) {
   ifstream is( filename.c_str() );
   if (is) {
     return fill_adverbs(m, is);
@@ -1186,12 +1188,22 @@ General::Type wordStats::checkGeneralVerb() const {
 
 Adverb::Type checkAdverbType(string word, CGN::Type tag) {
   if (tag == CGN::BW) {
-    map<string,Adverb::Type>::const_iterator sit = settings.adverbs.find(word);
+    map<string,Adverb::adverb>::const_iterator sit = settings.adverbs.find(word);
     if (sit != settings.adverbs.end()) {
-      return sit->second;
+      return sit->second.type;
     }
   }
   return Adverb::NO_ADVERB;
+}
+
+Adverb::SubType checkAdverbSubType(string word, CGN::Type tag) {
+  if (tag == CGN::BW) {
+    map<string,Adverb::adverb>::const_iterator sit = settings.adverbs.find(word);
+    if (sit != settings.adverbs.end()) {
+      return sit->second.subtype;
+    }
+  }
+  return Adverb::NO_ADVERB_SUBTYPE;
 }
 
 Afk::Type wordStats::checkAfk() const {
@@ -1308,7 +1320,8 @@ wordStats::wordStats( int index,
   prop(CGN::JUSTAWORD), position(CGN::NOPOS),
   sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY),
   general_noun_type(General::NO_GENERAL), general_verb_type(General::NO_GENERAL),
-  adverb_type(Adverb::NO_ADVERB), afkType(Afk::NO_A), is_compound(false), compound_parts(0),
+  adverb_type(Adverb::NO_ADVERB), adverb_sub_type(Adverb::NO_ADVERB_SUBTYPE),
+  afkType(Afk::NO_A), is_compound(false), compound_parts(0),
   word_freq_log_head(NAN), word_freq_log_sat(NAN), word_freq_log_head_sat(NAN)
 {
   UnicodeString us = w->text();
@@ -1344,7 +1357,6 @@ wordStats::wordStats( int index,
       }
     }
   }
-  isContent = checkContent();
   if ( prop != CGN::ISLET ){
     vector<string> mv = get_full_morph_analysis( w, true );
     // get_full_morph_amalysis returns 1 or more morpheme sequences
@@ -1392,12 +1404,14 @@ wordStats::wordStats( int index,
     general_noun_type = checkGeneralNoun();
     general_verb_type = checkGeneralVerb();
     adverb_type = checkAdverbType(word, tag);
+    adverb_sub_type = checkAdverbSubType(word, tag);
     afkType = checkAfk();
     if ( alpWord )
       isNominal = checkNominal( alpWord );
     top_freq = topFreqLookup(l_word);
     prevalenceLookup();
     staphFreqLookup();
+    isContent = checkContent();
     if ( isContent ){
       freqLookup();
     }

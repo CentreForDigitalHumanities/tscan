@@ -221,6 +221,7 @@ struct wordStats : public basicStats {
   General::Type general_noun_type;
   General::Type general_verb_type;
   Adverb::Type adverb_type;
+  Adverb::SubType adverb_sub_type;
   std::vector<std::string> morphemes;
   std::multimap<DD_type,int> distances;
   Afk::Type afkType;
