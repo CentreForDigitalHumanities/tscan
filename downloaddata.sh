@@ -7,7 +7,7 @@ fi
 
 echo "Downloading big data"
 PREDOWNLOAD=`stat --printf='%X' tscan-bigdata.tar.bz2 2> /dev/null`
-wget -c -N http://www.hum.uu.nl/uilots/lab/tscan/tscan-bigdata.tar.bz2
+wget -c -N https://resources.lab.hum.uu.nl/resources/tscan/tscan-bigdata.tar.bz2
 POSTDOWNLOAD=`stat --printf='%X' tscan-bigdata.tar.bz2 2> /dev/null`
 if [ "$PREDOWNLOAD" != "$POSTDOWNLOAD" ]; then
     tar -xvjf tscan-bigdata.tar.bz2
