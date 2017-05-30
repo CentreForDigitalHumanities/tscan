@@ -1403,8 +1403,8 @@ wordStats::wordStats( int index,
     intensify_type = checkIntensify(alpWord);
     general_noun_type = checkGeneralNoun();
     general_verb_type = checkGeneralVerb();
-    adverb_type = checkAdverbType(word, tag);
-    adverb_sub_type = checkAdverbSubType(word, tag);
+    adverb_type = checkAdverbType(l_word, tag);
+    adverb_sub_type = checkAdverbSubType(l_word, tag);
     afkType = checkAfk();
     if ( alpWord )
       isNominal = checkNominal( alpWord );
