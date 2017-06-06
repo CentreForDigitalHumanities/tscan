@@ -263,10 +263,13 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
      << "Wrd_prev,Wrd_prev_z,Inhwrd_prev,Inhwrd_prev_z,Dekking_inhwrd_prev,"
      << "Freq50_staph,Freq65_Staph,Freq77_Staph,Freq80_Staph,"
      << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
+     << "Wrd_freq_log_zonder_abw,Wrd_freq_zn_log_zonder_abw,Lem_freq_log_zonder_abw,Lem_freq_zn_log_zonder_abw,"
      << "Freq1000,Freq2000,Freq3000,"
      << "Freq5000,Freq10000,Freq20000,"
      << "Freq1000_inhwrd,Freq2000_inhwrd,Freq3000_inhwrd,"
-     << "Freq5000_inhwrd,Freq10000_inhwrd,Freq20000_inhwrd,";
+     << "Freq5000_inhwrd,Freq10000_inhwrd,Freq20000_inhwrd,"
+     << "Freq1000_inhwrd_zonder_abw,Freq2000_inhwrd_zonder_abw,Freq3000_inhwrd_zonder_abw,"
+     << "Freq5000_inhwrd_zonder_abw,Freq10000_inhwrd_zonder_abw,Freq20000_inhwrd_zonder_abw,";
 }
 
 void structStats::wordDifficultiesToCSV( ostream& os ) const {
@@ -293,22 +296,37 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
   os << proportion( f65Cnt, wordCnt ) << ",";
   os << proportion( f77Cnt, wordCnt ) << ",";
   os << proportion( f80Cnt, wordCnt ) << ",";
+
   os << word_freq_log << ",";
   os << word_freq_log_n << ",";
   os << lemma_freq_log << ",";
   os << lemma_freq_log_n << ",";
+
+  os << word_freq_log_strict << ",";
+  os << word_freq_log_n_strict << ",";
+  os << lemma_freq_log_strict << ",";
+  os << lemma_freq_log_n_strict << ",";
+
   os << proportion( top1000Cnt, wordCnt ) << ",";
   os << proportion( top2000Cnt, wordCnt ) << ",";
   os << proportion( top3000Cnt, wordCnt ) << ",";
   os << proportion( top5000Cnt, wordCnt ) << ",";
   os << proportion( top10000Cnt, wordCnt ) << ",";
   os << proportion( top20000Cnt, wordCnt ) << ",";
+
   os << proportion( top1000ContentCnt, contentCnt ) << ",";
   os << proportion( top2000ContentCnt, contentCnt ) << ",";
   os << proportion( top3000ContentCnt, contentCnt ) << ",";
   os << proportion( top5000ContentCnt, contentCnt ) << ",";
   os << proportion( top10000ContentCnt, contentCnt ) << ",";
   os << proportion( top20000ContentCnt, contentCnt ) << ",";
+
+  os << proportion( top1000ContentStrictCnt, contentStrictCnt ) << ",";
+  os << proportion( top2000ContentStrictCnt, contentStrictCnt ) << ",";
+  os << proportion( top3000ContentStrictCnt, contentStrictCnt ) << ",";
+  os << proportion( top5000ContentStrictCnt, contentStrictCnt ) << ",";
+  os << proportion( top10000ContentStrictCnt, contentStrictCnt ) << ",";
+  os << proportion( top20000ContentStrictCnt, contentStrictCnt ) << ",";
 }
 
 void structStats::compoundHeader( ostream& os ) const {
@@ -319,6 +337,7 @@ void structStats::compoundHeader( ostream& os ) const {
   os << "Wrd_freq_log_nw,Wrd_freq_log_ong_nw,Wrd_freq_log_sam_nw,";
   os << "Wrd_freq_log_hfdwrd,Wrd_freq_log_satwrd,Wrd_freq_log_(hfd_sat),";
   os << "Wrd_freq_log_nw_corr,Wrd_freq_log_corr,";
+  os << "Wrd_freq_log_corr_zonder_abw,";
   os << "Freq1000_nw,Freq5000_nw,Freq20000_nw,";
   os << "Freq1000_nsam_nw,Freq5000_nsam_nw,Freq20000_nsam_nw,";
   os << "Freq1000_sam_nw,Freq5000_sam_nw,Freq20000_sam_nw,";
@@ -349,6 +368,9 @@ void structStats::compoundToCSV( ostream& os ) const {
   os << proportion(word_freq_log_head_sat, compoundCnt) << ",";
   os << proportion(word_freq_log_noun_corr, nounCnt) << ",";
   os << proportion(word_freq_log_corr, contentCnt) << ",";
+
+  os << proportion(word_freq_log_corr_strict, contentStrictCnt) << ",";
+
   os << proportion(top1000CntNoun, nounCnt) << ",";
   os << proportion(top5000CntNoun, nounCnt) << ",";
   os << proportion(top20000CntNoun, nounCnt) << ",";
@@ -492,8 +514,11 @@ void structStats::infoHeader( ostream& os ) const {
      << "KConj_per_zin,Extra_KConj_per_zin,"
      << "KConj_dz,Extra_KConj_dz,"
      << "TTR_wrd,MTLD_wrd,TTR_lem,MTLD_lem,"
-     << "TTR_namen,MTLD_namen,TTR_inhwrd,MTLD_inhwrd,"
+     << "TTR_namen,MTLD_namen,"
+     << "TTR_inhwrd,MTLD_inhwrd,"
+     << "TTR_inhwrd_zonder_abw,MTLD_inhwrd_zonder_abw,"
      << "Inhwrd_d,Inhwrd_dz,"
+     << "Inhwrd_d_zonder_abw,Inhwrd_dz_zonder_abw,"
      << "Zeldz_index,"
      << "Vnw_ref_d,Vnw_ref_dz,"
      << "Arg_over_vzin_d,Arg_over_vzin_dz,Lem_over_vzin_d,Lem_over_vzin_dz,"
@@ -520,14 +545,24 @@ void structStats::informationDensityToCSV( ostream& os ) const {
 
   os << proportion( unique_words.size(), wordCnt ) << ",";
   os << word_mtld << ",";
+
   os << proportion( unique_lemmas.size(), wordCnt ) << ",";
   os << lemma_mtld << ",";
+
   os << proportion( unique_names.size(), nameCnt ) << ",";
   os << name_mtld << ",";
+
   os << proportion( unique_contents.size(), contentCnt ) << ",";
   os << content_mtld << ",";
+
+  os << proportion( unique_contents_strict.size(), contentStrictCnt ) << ",";
+  os << content_mtld_strict << ",";
+
   os << density( contentCnt, wordCnt ) << ",";
   os << proportion( contentCnt, correctedClauseCnt ) << ",";
+
+  os << density( contentStrictCnt, wordCnt ) << ",";
+  os << proportion( contentStrictCnt, correctedClauseCnt ) << ",";
 
   double rare = rarity( rarityLevel );
   if (std::isnan(rare)) {
@@ -1102,6 +1137,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "pron_ref_count", TiCC::toString(pronRefCnt) );
   addOneMetric( doc, el, "archaic_count", TiCC::toString(archaicsCnt) );
   addOneMetric( doc, el, "content_count", TiCC::toString(contentCnt) );
+  addOneMetric( doc, el, "content_strict_count", TiCC::toString(contentStrictCnt) );
   addOneMetric( doc, el, "nominal_count", TiCC::toString(nominalCnt) );
   addOneMetric( doc, el, "adj_count", TiCC::toString(adjCnt) );
   addOneMetric( doc, el, "vg_count", TiCC::toString(vgCnt) );
@@ -1165,6 +1201,7 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "freq65", TiCC::toString(f65Cnt) );
   addOneMetric( doc, el, "freq77", TiCC::toString(f77Cnt) );
   addOneMetric( doc, el, "freq80", TiCC::toString(f80Cnt) );
+
   addOneMetric( doc, el, "top1000", TiCC::toString(top1000Cnt) );
   addOneMetric( doc, el, "top2000", TiCC::toString(top2000Cnt) );
   addOneMetric( doc, el, "top3000", TiCC::toString(top3000Cnt) );
@@ -1177,6 +1214,13 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "top5000Content", TiCC::toString(top5000ContentCnt) );
   addOneMetric( doc, el, "top10000Content", TiCC::toString(top10000ContentCnt) );
   addOneMetric( doc, el, "top20000Content", TiCC::toString(top20000ContentCnt) );
+  addOneMetric( doc, el, "top1000StrictContent", TiCC::toString(top1000ContentStrictCnt) );
+  addOneMetric( doc, el, "top2000StrictContent", TiCC::toString(top2000ContentStrictCnt) );
+  addOneMetric( doc, el, "top3000StrictContent", TiCC::toString(top3000ContentStrictCnt) );
+  addOneMetric( doc, el, "top5000StrictContent", TiCC::toString(top5000ContentStrictCnt) );
+  addOneMetric( doc, el, "top10000StrictContent", TiCC::toString(top10000ContentStrictCnt) );
+  addOneMetric( doc, el, "top20000StrictContent", TiCC::toString(top20000ContentStrictCnt) );
+
   addOneMetric( doc, el, "word_freq", TiCC::toString(word_freq) );
   addOneMetric( doc, el, "word_freq_no_names", TiCC::toString(word_freq_n) );
   if ( !std::isnan(word_freq_log)  )
@@ -1189,6 +1233,15 @@ void structStats::addMetrics( ) const {
     addOneMetric( doc, el, "log_lemma_freq", TiCC::toString(lemma_freq_log) );
   if ( !std::isnan(lemma_freq_log_n)  )
     addOneMetric( doc, el, "log_lemma_freq_no_names", TiCC::toString(lemma_freq_log_n) );
+
+  if ( !std::isnan(word_freq_log_strict)  )
+    addOneMetric( doc, el, "log_word_freq_strict", TiCC::toString(word_freq_log_strict) );
+  if ( !std::isnan(word_freq_log_n_strict)  )
+    addOneMetric( doc, el, "log_word_freq_no_names_strict", TiCC::toString(word_freq_log_n_strict) );
+  if ( !std::isnan(lemma_freq_log_strict)  )
+    addOneMetric( doc, el, "log_lemma_freq_strict", TiCC::toString(lemma_freq_log_strict) );
+  if ( !std::isnan(lemma_freq_log_n_strict)  )
+    addOneMetric( doc, el, "log_lemma_freq_no_names_strict", TiCC::toString(lemma_freq_log_n_strict) );
 
   if ( !std::isnan(avg_prob10_fwd) )
     addOneMetric( doc, el, "wopr_logprob_fwd", TiCC::toString(avg_prob10_fwd) );
@@ -1367,6 +1420,7 @@ void structStats::merge( structStats *ss ){
   koppelCnt += ss->koppelCnt;
   archaicsCnt += ss->archaicsCnt;
   contentCnt += ss->contentCnt;
+  contentStrictCnt += ss->contentStrictCnt;
   nominalCnt += ss->nominalCnt;
   adjCnt += ss->adjCnt;
   vgCnt += ss->vgCnt;
@@ -1414,6 +1468,7 @@ void structStats::merge( structStats *ss ){
   f65Cnt += ss->f65Cnt;
   f77Cnt += ss->f77Cnt;
   f80Cnt += ss->f80Cnt;
+
   top1000Cnt += ss->top1000Cnt;
   top2000Cnt += ss->top2000Cnt;
   top3000Cnt += ss->top3000Cnt;
@@ -1426,10 +1481,22 @@ void structStats::merge( structStats *ss ){
   top5000ContentCnt += ss->top5000ContentCnt;
   top10000ContentCnt += ss->top10000ContentCnt;
   top20000ContentCnt += ss->top20000ContentCnt;
+  top1000ContentStrictCnt += ss->top1000ContentStrictCnt;
+  top2000ContentStrictCnt += ss->top2000ContentStrictCnt;
+  top3000ContentStrictCnt += ss->top3000ContentStrictCnt;
+  top5000ContentStrictCnt += ss->top5000ContentStrictCnt;
+  top10000ContentStrictCnt += ss->top10000ContentStrictCnt;
+  top20000ContentStrictCnt += ss->top20000ContentStrictCnt;
+
   word_freq += ss->word_freq;
   word_freq_n += ss->word_freq_n;
   lemma_freq += ss->lemma_freq;
   lemma_freq_n += ss->lemma_freq_n;
+
+  word_freq_strict += ss->word_freq_strict;
+  word_freq_n_strict += ss->word_freq_n_strict;
+  lemma_freq_strict += ss->lemma_freq_strict;
+  lemma_freq_n_strict += ss->lemma_freq_n_strict;
 
   // Wopr forwards probabilities
   if ( !std::isnan(ss->avg_prob10_fwd) ){
@@ -1597,6 +1664,7 @@ void structStats::merge( structStats *ss ){
   word_freq_log_head_sat += ss->word_freq_log_head_sat;
   word_freq_log_noun_corr += ss->word_freq_log_noun_corr;
   word_freq_log_corr += ss->word_freq_log_corr;
+  word_freq_log_corr_strict += ss->word_freq_log_corr_strict;
   top1000CntNoun += ss->top1000CntNoun;
   top1000CntNonComp += ss->top1000CntNonComp;
   top1000CntComp += ss->top1000CntComp;
@@ -1623,6 +1691,7 @@ void structStats::merge( structStats *ss ){
   aggregate( heads, ss->heads );
   aggregate( unique_names, ss->unique_names );
   aggregate( unique_contents, ss->unique_contents );
+  aggregate( unique_contents_strict, ss->unique_contents_strict );
   aggregate( unique_words, ss->unique_words );
   aggregate( unique_lemmas, ss->unique_lemmas );
   aggregate( unique_tijd_sits, ss->unique_tijd_sits );

@@ -153,7 +153,7 @@ struct wordStats : public basicStats {
   void setSitType( Situation::Type t ){ sitType = t; };
   Situation::Type getSitType() const { return sitType; };
   void addMetrics() const;
-  bool checkContent() const;
+  bool checkContent( bool ) const;
   Conn::Type checkConnective() const;
   Situation::Type checkSituation() const;
   bool checkNominal( const xmlNode* ) const;
@@ -189,6 +189,7 @@ struct wordStats : public basicStats {
   bool isPronRef;
   bool archaic;
   bool isContent;
+  bool isContentStrict;
   bool isNominal;
   bool isOnder;
   bool isImperative;
@@ -279,6 +280,7 @@ struct structStats: public basicStats {
     pronRefCnt(0),
     archaicsCnt(0),
     contentCnt(0),
+    contentStrictCnt(0),
     nominalCnt(0),
     adjCnt(0),
     vgCnt(0),
@@ -338,14 +340,28 @@ struct structStats: public basicStats {
     top5000ContentCnt(0),
     top10000ContentCnt(0),
     top20000ContentCnt(0),
+    top1000ContentStrictCnt(0),
+    top2000ContentStrictCnt(0),
+    top3000ContentStrictCnt(0),
+    top5000ContentStrictCnt(0),
+    top10000ContentStrictCnt(0),
+    top20000ContentStrictCnt(0),
     word_freq(0),
     word_freq_n(0),
+    word_freq_strict(0),
+    word_freq_n_strict(0),
     word_freq_log(NAN),
     word_freq_log_n(NAN),
+    word_freq_log_strict(NAN),
+    word_freq_log_n_strict(NAN),
     lemma_freq(0),
     lemma_freq_n(0),
     lemma_freq_log(NAN),
     lemma_freq_log_n(NAN),
+    lemma_freq_strict(0),
+    lemma_freq_n_strict(0),
+    lemma_freq_log_strict(NAN),
+    lemma_freq_log_n_strict(NAN),
     avg_prob10_fwd(NAN),
     avg_prob10_bwd(NAN),
     entropy_fwd(NAN),
@@ -453,6 +469,7 @@ struct structStats: public basicStats {
     word_mtld(0),
     lemma_mtld(0),
     content_mtld(0),
+    content_mtld_strict(0),
     name_mtld(0),
     all_conn_mtld(0),
     temp_conn_mtld(0),
@@ -483,6 +500,7 @@ struct structStats: public basicStats {
     word_freq_log_head_sat(0),
     word_freq_log_noun_corr(0),
     word_freq_log_corr(0),
+    word_freq_log_corr_strict(0),
     top1000CntNoun(0),
     top1000CntNonComp(0),
     top1000CntComp(0),
@@ -587,6 +605,7 @@ struct structStats: public basicStats {
   int pronRefCnt;
   int archaicsCnt;
   int contentCnt;
+  int contentStrictCnt;
   int nominalCnt;
   int adjCnt;
   int vgCnt;
@@ -646,14 +665,28 @@ struct structStats: public basicStats {
   int top5000ContentCnt;
   int top10000ContentCnt;
   int top20000ContentCnt;
+  int top1000ContentStrictCnt;
+  int top2000ContentStrictCnt;
+  int top3000ContentStrictCnt;
+  int top5000ContentStrictCnt;
+  int top10000ContentStrictCnt;
+  int top20000ContentStrictCnt;
   double word_freq;
   double word_freq_n;
+  double word_freq_strict;
+  double word_freq_n_strict;
   double word_freq_log;
   double word_freq_log_n;
+  double word_freq_log_strict;
+  double word_freq_log_n_strict;
   double lemma_freq;
   double lemma_freq_n;
+  double lemma_freq_strict;
+  double lemma_freq_n_strict;
   double lemma_freq_log;
   double lemma_freq_log_n;
+  double lemma_freq_log_strict;
+  double lemma_freq_log_n_strict;
   double avg_prob10_fwd;
   double avg_prob10_bwd;
   double entropy_fwd;
@@ -761,6 +794,7 @@ struct structStats: public basicStats {
   std::map<CGN::Type,int> heads;
   std::map<std::string,int> unique_names;
   std::map<std::string,int> unique_contents;
+  std::map<std::string,int> unique_contents_strict;
   std::map<std::string,int> unique_tijd_sits;
   std::map<std::string,int> unique_ruimte_sits;
   std::map<std::string,int> unique_cause_sits;
@@ -777,6 +811,7 @@ struct structStats: public basicStats {
   double word_mtld;
   double lemma_mtld;
   double content_mtld;
+  double content_mtld_strict;
   double name_mtld;
   double all_conn_mtld;
   double temp_conn_mtld;
@@ -810,6 +845,7 @@ struct structStats: public basicStats {
   double word_freq_log_head_sat;
   double word_freq_log_noun_corr;
   double word_freq_log_corr;
+  double word_freq_log_corr_strict;
   int top1000CntNoun;
   int top1000CntNonComp;
   int top1000CntComp;

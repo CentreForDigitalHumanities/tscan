@@ -1308,7 +1308,8 @@ wordStats::wordStats( int index,
 		      bool fail ):
   basicStats( index, w, "word" ), parseFail(fail), wwform(::NO_VERB),
   isPersRef(false), isPronRef(false),
-  archaic(false), isContent(false), isNominal(false),isOnder(false), isImperative(false),
+  archaic(false), isContent(false), isContentStrict(false),
+  isNominal(false), isOnder(false), isImperative(false),
   isBetr(false), isPropNeg(false), isMorphNeg(false),
   nerProp(NER::NONER), connType(Conn::NOCONN), isMultiConn(false), sitType(Situation::NO_SIT),
   prevalenceP(NAN), prevalenceZ(NAN),
@@ -1411,7 +1412,8 @@ wordStats::wordStats( int index,
     top_freq = topFreqLookup(l_word);
     prevalenceLookup();
     staphFreqLookup();
-    isContent = checkContent();
+    isContent = checkContent(false);
+    isContentStrict = checkContent(true);
     if ( isContent ){
       freqLookup();
     }
@@ -1507,6 +1509,7 @@ void structStats::calculate_MTLDs() {
   vector<string> words;
   vector<string> lemmas;
   vector<string> conts;
+  vector<string> conts_strict;
   vector<string> names;
   vector<string> temp_conn;
   vector<string> reeks_wg_conn;
@@ -1528,6 +1531,9 @@ void structStats::calculate_MTLDs() {
     lemmas.push_back( lemma );
     if ( wordNodes[i]->isContent ){
       conts.push_back( wordNodes[i]->ltext() );
+    }
+    if ( wordNodes[i]->isContentStrict ){
+      conts_strict.push_back( wordNodes[i]->ltext() );
     }
     if ( wordNodes[i]->prop == CGN::ISNAME ){
       names.push_back( wordNodes[i]->ltext() );
@@ -1575,6 +1581,7 @@ void structStats::calculate_MTLDs() {
   word_mtld = average_mtld( words );
   lemma_mtld = average_mtld( lemmas );
   content_mtld = average_mtld( conts );
+  content_mtld_strict = average_mtld( conts_strict );
   name_mtld = average_mtld( names );
   temp_conn_mtld = average_mtld( temp_conn );
   reeks_wg_conn_mtld = average_mtld( reeks_wg_conn );
@@ -1894,6 +1901,14 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           lemma_freq_n += ws->lemma_freq_log;
         }
       }
+      if ( ws->isContentStrict ) {
+        word_freq_strict += ws->word_freq_log;
+        lemma_freq_strict += ws->lemma_freq_log;
+        if ( ws->prop != CGN::ISNAME ){
+          word_freq_n_strict += ws->word_freq_log;
+          lemma_freq_n_strict += ws->lemma_freq_log;
+        }
+      }
       switch ( ws->prop ){
       case CGN::ISNAME:
   nameCnt++;
@@ -1983,6 +1998,10 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
   contentCnt++;
   unique_contents[ws->l_word] +=1;
       }
+      if ( ws->isContentStrict ){
+  contentStrictCnt++;
+  unique_contents_strict[ws->l_word] +=1;
+      }
       if ( ws->isNominal )
   nominalCnt++;
       switch ( ws->tag ){
@@ -2044,21 +2063,27 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
       case top1000:
   ++top1000Cnt;
   if ( ws->isContent ) ++top1000ContentCnt;
+  if ( ws->isContentStrict ) ++top1000ContentStrictCnt;
       case top2000:
   ++top2000Cnt;
   if ( ws->isContent ) ++top2000ContentCnt;
+  if ( ws->isContentStrict ) ++top2000ContentStrictCnt;
       case top3000:
   ++top3000Cnt;
   if ( ws->isContent ) ++top3000ContentCnt;
+  if ( ws->isContentStrict ) ++top3000ContentStrictCnt;
       case top5000:
   ++top5000Cnt;
   if ( ws->isContent ) ++top5000ContentCnt;
+  if ( ws->isContentStrict ) ++top5000ContentStrictCnt;
       case top10000:
   ++top10000Cnt;
   if ( ws->isContent ) ++top10000ContentCnt;
+  if ( ws->isContentStrict ) ++top10000ContentStrictCnt;
       case top20000:
   ++top20000Cnt;
   if ( ws->isContent ) ++top20000ContentCnt;
+  if ( ws->isContentStrict ) ++top20000ContentStrictCnt;
       default:
   break;
       }
@@ -2358,6 +2383,7 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           word_freq_log_head_sat += ws->word_freq_log_head_sat;
           word_freq_log_noun_corr += ws->word_freq_log_head;
           word_freq_log_corr += ws->word_freq_log_head;
+          if (ws->isContentStrict) word_freq_log_corr_strict += ws->word_freq_log_head;
 
           switch (ws->top_freq) {
             case top1000:
@@ -2407,6 +2433,7 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           word_freq_log_non_comp += ws->word_freq_log;
           word_freq_log_noun_corr += ws->word_freq_log;
           word_freq_log_corr += ws->word_freq_log;
+          if (ws->isContentStrict) word_freq_log_corr_strict += ws->word_freq_log;
 
           switch (ws->top_freq) {
             case top1000:
@@ -2428,6 +2455,9 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
 
         if (ws->isContent) {
           word_freq_log_corr += ws->word_freq_log;
+        }
+        if (ws->isContentStrict) {
+          word_freq_log_corr_strict += ws->word_freq_log;
         }
 
         switch (ws->top_freq) {
@@ -2478,22 +2508,17 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
     questCnt = 1;
   if ( (morphNegCnt + propNegCnt) > 1 )
     multiNegCnt = 1;
-  if ( word_freq == 0 || contentCnt == 0 )
-    word_freq_log = NAN;
-  else
-    word_freq_log = word_freq / contentCnt;
-  if ( lemma_freq == 0 || contentCnt == 0 )
-    lemma_freq_log = NAN;
-  else
-    lemma_freq_log = lemma_freq / contentCnt;
-  if ( contentCnt == nameCnt || word_freq_n == 0 )
-    word_freq_log_n = NAN;
-  else
-    word_freq_log_n = word_freq_n / (contentCnt-nameCnt);
-  if ( contentCnt == nameCnt || lemma_freq_n == 0 )
-    lemma_freq_log_n = NAN;
-  else
-    lemma_freq_log_n = lemma_freq_n / (contentCnt-nameCnt);
+
+  word_freq_log = proportion(word_freq, contentCnt).p;
+  lemma_freq_log = proportion(lemma_freq, contentCnt).p;
+  word_freq_log_n = proportion(word_freq_n, contentCnt-nameCnt).p;
+  lemma_freq_log_n = proportion(lemma_freq_n, contentCnt-nameCnt).p;
+
+  word_freq_log_strict = proportion(word_freq_strict, contentStrictCnt).p;
+  lemma_freq_log_strict = proportion(lemma_freq_strict, contentStrictCnt).p;
+  word_freq_log_n_strict = proportion(word_freq_n_strict, contentStrictCnt-nameCnt).p;
+  lemma_freq_log_n_strict = proportion(lemma_freq_n_strict, contentStrictCnt-nameCnt).p;
+
   np_length( s, npCnt, indefNpCnt, npSize );
   rarityLevel = settings.rarityLevel;
   overlapSize = settings.overlapSize;
@@ -2669,22 +2694,16 @@ parStats::parStats( int index,
     resolveLSA( LSA_sent_dists );
   }
   calculate_MTLDs();
-  if ( word_freq == 0 || contentCnt == 0 )
-    word_freq_log = NAN;
-  else
-    word_freq_log = word_freq / contentCnt;
-  if ( contentCnt == nameCnt || word_freq_n == 0 )
-    word_freq_log_n = NAN;
-  else
-    word_freq_log_n = word_freq_n / (contentCnt-nameCnt);
-  if ( lemma_freq == 0 || contentCnt == 0 )
-    lemma_freq_log = NAN;
-  else
-    lemma_freq_log = lemma_freq / contentCnt;
-  if ( contentCnt == nameCnt || lemma_freq_n == 0 )
-    lemma_freq_log_n = NAN;
-  else
-    lemma_freq_log_n = lemma_freq_n / (contentCnt-nameCnt);
+
+  word_freq_log = proportion(word_freq, contentCnt).p;
+  lemma_freq_log = proportion(lemma_freq, contentCnt).p;
+  word_freq_log_n = proportion(word_freq_n, contentCnt-nameCnt).p;
+  lemma_freq_log_n = proportion(lemma_freq_n, contentCnt-nameCnt).p;
+
+  word_freq_log_strict = proportion(word_freq_strict, contentStrictCnt).p;
+  lemma_freq_log_strict = proportion(lemma_freq_strict, contentStrictCnt).p;
+  word_freq_log_n_strict = proportion(word_freq_n_strict, contentStrictCnt-nameCnt).p;
+  lemma_freq_log_n_strict = proportion(lemma_freq_n_strict, contentStrictCnt-nameCnt).p;
 }
 
 //#define DEBUG_DOL
@@ -2975,22 +2994,17 @@ docStats::docStats( folia::Document *doc ):
     resolveLSA( LSA_paragraph_dists );
   }
   calculate_MTLDs();
-  if ( word_freq == 0 || contentCnt == 0 )
-    word_freq_log = NAN;
-  else
-    word_freq_log = word_freq / contentCnt;
-  if ( contentCnt == nameCnt || word_freq_n == 0 )
-    word_freq_log_n = NAN;
-  else
-    word_freq_log_n = word_freq_n / (contentCnt-nameCnt);
-  if ( lemma_freq == 0 || contentCnt == 0 )
-    lemma_freq_log = NAN;
-  else
-    lemma_freq_log = lemma_freq / contentCnt;
-  if ( contentCnt == nameCnt || lemma_freq_n == 0 )
-    lemma_freq_log_n = NAN;
-  else
-    lemma_freq_log_n = lemma_freq_n / (contentCnt-nameCnt);
+
+  word_freq_log = proportion(word_freq, contentCnt).p;
+  lemma_freq_log = proportion(lemma_freq, contentCnt).p;
+  word_freq_log_n = proportion(word_freq_n, contentCnt-nameCnt).p;
+  lemma_freq_log_n = proportion(lemma_freq_n, contentCnt-nameCnt).p;
+
+  word_freq_log_strict = proportion(word_freq_strict, contentStrictCnt).p;
+  lemma_freq_log_strict = proportion(lemma_freq_strict, contentStrictCnt).p;
+  word_freq_log_n_strict = proportion(word_freq_n_strict, contentStrictCnt-nameCnt).p;
+  lemma_freq_log_n_strict = proportion(lemma_freq_n_strict, contentStrictCnt-nameCnt).p;
+
   calculate_doc_overlap();
 
   rarity_index = rarity( settings.rarityLevel );

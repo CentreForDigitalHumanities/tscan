@@ -19,16 +19,16 @@ void wordStats::setPersRef() {
   }
 }
 
-bool wordStats::checkContent() const {
+bool wordStats::checkContent( bool strict ) const {
   // Head verbs are content words
   if ( tag == CGN::WW ){
     if ( wwform == HEAD_VERB ){
       return true;
     }
   }
-  // Adverbs of the subtype "Manner" are content words
-  else if ( tag == CGN::BW) {
-    return Adverb::isContent(adverb_sub_type);
+  // In strict mode, only adverbs of the subtype "Manner" are content words
+  else if ( tag == CGN::BW ) {
+    return !strict || Adverb::isContent(adverb_sub_type);
   }
   // Names, nouns and adjectives are content words
   else {
@@ -698,6 +698,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "archaic", "true" );
   if ( isContent )
     addOneMetric( doc, el, "content_word", "true" );
+  if ( isContentStrict )
+    addOneMetric( doc, el, "content_word_strict", "true" );
   if ( isNominal )
     addOneMetric( doc, el, "nominalization", "true" );
   if ( isOnder )

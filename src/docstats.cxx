@@ -136,8 +136,15 @@ void docStats::addMetrics() const {
     addOneMetric( el->doc(), el,
 		  "content_word_ttr", TiCC::toString( unique_contents.size()/double(contentCnt) ) );
   }
+  if ( contentStrictCnt != 0 ){
+    addOneMetric( el->doc(), el,
+      "content_word_ttr_strict", TiCC::toString( unique_contents_strict.size()/double(contentStrictCnt) ) );
+  }
+
   addOneMetric( el->doc(), el,
 		"content_mtld", TiCC::toString( content_mtld ) );
+  addOneMetric( el->doc(), el,
+    "content_mtld_strict", TiCC::toString( content_mtld_strict ) );
 
   if ( timeSitCnt != 0 ){
     addOneMetric( el->doc(), el,
