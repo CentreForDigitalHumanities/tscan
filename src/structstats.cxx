@@ -1442,12 +1442,15 @@ void structStats::merge( structStats *ss ){
   mvInbedCnt += ss->mvInbedCnt;
   losBetrCnt += ss->losBetrCnt;
   losBijwCnt += ss->losBijwCnt;
+
+  allConnCnt += ss->allConnCnt;
   tempConnCnt += ss->tempConnCnt;
   opsomWgConnCnt += ss->opsomWgConnCnt;
   opsomZinConnCnt += ss->opsomZinConnCnt;
   contrastConnCnt += ss->contrastConnCnt;
   compConnCnt += ss->compConnCnt;
   causeConnCnt += ss->causeConnCnt;
+
   timeSitCnt += ss->timeSitCnt;
   spaceSitCnt += ss->spaceSitCnt;
   causeSitCnt += ss->causeSitCnt;
