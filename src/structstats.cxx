@@ -506,13 +506,14 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 }
 
 void structStats::infoHeader( ostream& os ) const {
-  os << "Bijw_bep_d,Bijw_bep_dz,"
+  os << "Bijw_bep_d,Bijw_bep_dz,Bijw_bep_dz_zbijzin,"
      << "Bijw_bep_alg_d,Bijw_bep_alg_dz,"
-     << "Bijv_bep_d,Bijv_bep_dz,"
+     << "Bijv_bep_d,Bijv_bep_dz,Bijv_bep_dz_zbijzin,"
      << "Attr_bijv_nw_d,Attr_bijv_nw_dz,"
      << "Ov_bijv_bep_d,Ov_bijv_bep_dz,"
      << "KConj_per_zin,Extra_KConj_per_zin,"
      << "KConj_dz,Extra_KConj_dz,"
+     << "Props_dz_tot,"
      << "TTR_wrd,MTLD_wrd,TTR_lem,MTLD_lem,"
      << "TTR_namen,MTLD_namen,"
      << "TTR_inhwrd,MTLD_inhwrd,"
@@ -529,12 +530,22 @@ void structStats::infoHeader( ostream& os ) const {
 void structStats::informationDensityToCSV( ostream& os ) const {
   os << density( vcModCnt, wordCnt ) << ",";
   os << proportion( vcModCnt, correctedClauseCnt ) << ",";
+
+  int vcModCorrectedCnt = max(0, vcModCnt - bijwCnt);
+  os << proportion( vcModCorrectedCnt, correctedClauseCnt ) << ",";
+
   os << density( vcModSingleCnt, wordCnt ) << ",";
   os << proportion( vcModSingleCnt, correctedClauseCnt ) << ",";
+
   os << density( npModCnt, wordCnt ) << ",";
   os << proportion( npModCnt, correctedClauseCnt ) << ",";
+
+  int npModCorrectedCnt = max(0, npModCnt - betrCnt);
+  os << proportion( npModCorrectedCnt, correctedClauseCnt ) << ",";
+
   os << density( adjNpModCnt, wordCnt ) << ",";
   os << proportion( adjNpModCnt, correctedClauseCnt ) << ",";
+
   os << density( npModCnt-adjNpModCnt, wordCnt ) << ",";
   os << proportion( npModCnt-adjNpModCnt, correctedClauseCnt ) << ",";
 
@@ -542,6 +553,10 @@ void structStats::informationDensityToCSV( ostream& os ) const {
   os << proportion( smallCnjExtraCnt, sentCnt ) << ",";
   os << proportion( smallCnjCnt, correctedClauseCnt ) << ",";
   os << proportion( smallCnjExtraCnt, correctedClauseCnt ) << ",";
+
+  int propositionCount = vcModCorrectedCnt + npModCorrectedCnt + smallCnjExtraCnt;
+  double propositionPr = proportion( propositionCount, correctedClauseCnt ).p + 1.0;
+  os << propositionPr << ",";
 
   os << proportion( unique_words.size(), wordCnt ) << ",";
   os << word_mtld << ",";
