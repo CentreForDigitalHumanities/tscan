@@ -2,7 +2,7 @@
 
 # T-Scan
 
-tscan 0.5 (c) TiCC/ 1998 - 2017
+tscan 0.7 (c) TiCC/ 1998 - 2017
 
     Tilburg centre for Cognition and Communication, Tilburg University.
     UiL-OTS, Utrecht University
@@ -90,7 +90,7 @@ And then navigate to the host and port specified.
 
 [Word prevalence values](http://crr.ugent.be/programs-data/word-prevalence-values) (in `data/prevalence_nl.data` and `data/prevalence_be.data`) courtesy of Keuleers et al., Center for Reading Research, Ghent University.
 
-Certain parts of T-Scan use data from Referentiebestand Nederlands, which we can not distribute due to restrictive licensing issues, so this functionality will not be available.
+Certain parts of T-Scan use data from [Referentiebestand Nederlands](http://tst.inl.nl/producten/rbn/), which we can not distribute due to restrictive licensing issues, so this functionality will not be available.
 
 Certain other data is too large for GitHub, but will be downloaded for you automatically by the ``./downloaddata.sh`` script.
 
