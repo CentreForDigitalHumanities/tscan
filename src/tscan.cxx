@@ -673,7 +673,7 @@ bool fill( map<string,tagged_classification>& my_classification, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
     // a line is supposed to be :
-    // a comment, starting with '#' 
+    // a comment, starting with '#'
     // like: '# comment'
     // OR: a lemma with an optional pos-tag, followed by a categorization
     line = TiCC::trim( line );
@@ -1798,8 +1798,13 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
 #pragma omp section
     {
       if ( settings.doWopr ){
-  orderWopr( "fwd", text, woprProbsV_fwd, sentProb_fwd, sentEntropy_fwd, sentPerplexity_fwd );
-  orderWopr( "bwd", text, woprProbsV_bwd, sentProb_bwd, sentEntropy_bwd, sentPerplexity_bwd );
+	orderWopr( "fwd", text, woprProbsV_fwd, sentProb_fwd, sentEntropy_fwd, sentPerplexity_fwd );
+      }
+    } // omp section
+#pragma omp section
+    {
+      if ( settings.doWopr ){
+	orderWopr( "bwd", text, woprProbsV_bwd, sentProb_bwd, sentEntropy_bwd, sentPerplexity_bwd );
       }
     } // omp section
   } // omp sections
