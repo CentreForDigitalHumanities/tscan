@@ -3,13 +3,13 @@
 <FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.8" version="1.4.1">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-06-16T15:21:27" set="tscan-tokconfig-nld"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2017-06-16T15:21:27" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2017-06-16T15:21:27" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2017-06-16T15:21:27" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
-      <pos-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2017-06-16T15:21:27" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2017-06-16T15:21:27" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2017-06-16T15:21:27" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-06-22T15:52:33" set="tscan-tokconfig-nld"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2017-06-22T15:52:33" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2017-06-22T15:52:33" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2017-06-22T15:52:33" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <pos-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2017-06-22T15:52:33" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2017-06-22T15:52:33" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2017-06-22T15:52:33" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
       <pos-annotation annotator="tscan" set="tscan-set"/>
     </annotations>
@@ -789,7 +789,6 @@
             <feat class="1" subset="persoon"/>
             <feat class="mv" subset="getal"/>
           </pos>
-          <lemma class="we"/>
           <morphology>
             <morpheme class="complex">
               <t>we</t>
@@ -801,6 +800,7 @@
               </morpheme>
             </morpheme>
           </morphology>
+          <lemma class="we"/>
           <metric class="pers_ref" value="true"/>
           <metric class="prevalenceP" value="0.993459"/>
           <metric class="prevalenceZ" value="2.4815"/>
@@ -4786,6 +4786,7 @@
           <pos class="VG(neven)" confidence="0.999194" head="VG" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="neven" subset="conjtype"/>
           </pos>
+          <lemma class="en"/>
           <morphology>
             <morpheme class="complex">
               <t>en</t>
@@ -4797,7 +4798,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="en"/>
           <metric class="prevalenceP" value="0.996869"/>
           <metric class="prevalenceZ" value="2.73375"/>
           <metric class="f50" value="true"/>
@@ -6854,6 +6854,7 @@
             <feat class="3" subset="persoon"/>
             <feat class="mv" subset="getal"/>
           </pos>
+          <lemma class="ze"/>
           <morphology>
             <morpheme class="complex">
               <t>ze</t>
@@ -6865,7 +6866,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="ze"/>
           <metric class="pers_ref" value="true"/>
           <metric class="pron_ref" value="true"/>
           <metric class="prevalenceP" value="0.992246"/>
@@ -10853,6 +10853,7 @@
             <feat class="3" subset="persoon"/>
             <feat class="mv" subset="getal"/>
           </pos>
+          <lemma class="ze"/>
           <morphology>
             <morpheme class="complex">
               <t>ze</t>
@@ -10864,7 +10865,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="ze"/>
           <metric class="pers_ref" value="true"/>
           <metric class="pron_ref" value="true"/>
           <metric class="prevalenceP" value="0.992246"/>
@@ -14845,21 +14845,15 @@
             <morpheme class="complex">
               <t>imperfectie</t>
               <feat class="[[[im][perfect]adjective]adjective[ie]]noun/singular" subset="structure"/>
-              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex">
-                <feat class="AA" subset="compound"/>
-              </pos>
+              <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="complex">
                 <feat class="N_A*" subset="applied_rule"/>
                 <feat class="[[[im][perfect]adjective]adjective[ie]]noun" subset="structure"/>
-                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex">
-                  <feat class="AA" subset="compound"/>
-                </pos>
+                <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 <morpheme class="complex">
                   <feat class="A_*A" subset="applied_rule"/>
                   <feat class="[[im][perfect]adjective]adjective" subset="structure"/>
-                  <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex">
-                    <feat class="AA" subset="compound"/>
-                  </pos>
+                  <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                   <morpheme class="affix">
                     <t>im</t>
                     <feat class="[im]" subset="structure"/>
@@ -14897,6 +14891,7 @@
             <feat class="tgw" subset="pvtijd"/>
             <feat class="ev" subset="pvagr"/>
           </pos>
+          <lemma class="zijn"/>
           <morphology>
             <morpheme class="complex">
               <t>is</t>
@@ -14913,7 +14908,6 @@
               </morpheme>
             </morpheme>
           </morphology>
-          <lemma class="zijn"/>
           <pos class="wwform(koppelww)" set="tscan-set"/>
           <metric class="prevalenceP" value="0.999628"/>
           <metric class="prevalenceZ" value="3.37248"/>
@@ -17294,7 +17288,6 @@
             <feat class="2v" subset="persoon"/>
             <feat class="ev" subset="getal"/>
           </pos>
-          <lemma class="je"/>
           <morphology>
             <morpheme class="complex">
               <t>je</t>
@@ -17306,6 +17299,7 @@
               </morpheme>
             </morpheme>
           </morphology>
+          <lemma class="je"/>
           <metric class="pers_ref" value="true"/>
           <metric class="prevalenceP" value="0.998124"/>
           <metric class="prevalenceZ" value="2.89837"/>
@@ -18026,7 +18020,6 @@
             <feat class="zonder" subset="buiging"/>
             <feat class="agr" subset="npagr"/>
           </pos>
-          <lemma class="je"/>
           <morphology>
             <morpheme class="complex">
               <t>je</t>
@@ -18038,6 +18031,7 @@
               </morpheme>
             </morpheme>
           </morphology>
+          <lemma class="je"/>
           <metric class="pers_ref" value="true"/>
           <metric class="prevalenceP" value="0.998124"/>
           <metric class="prevalenceZ" value="2.89837"/>
@@ -21232,7 +21226,6 @@
             <feat class="mv" subset="getal"/>
             <feat class="basis" subset="graad"/>
           </pos>
-          <lemma class="':"/>
           <morphology>
             <morpheme class="stem">
               <t>':</t>
@@ -21240,6 +21233,7 @@
               <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
+          <lemma class="':"/>
           <metric class="content_word" value="true"/>
           <metric class="content_word_strict" value="true"/>
           <metric class="word_freq" value="0"/>
@@ -21282,7 +21276,6 @@
             <feat class="zijd" subset="genus"/>
             <feat class="stan" subset="naamval"/>
           </pos>
-          <lemma class="hbo-hit"/>
           <morphology>
             <morpheme class="complex">
               <t>hbo-hit</t>
@@ -21297,6 +21290,7 @@
               </morpheme>
             </morpheme>
           </morphology>
+          <lemma class="hbo-hit"/>
           <metric class="content_word" value="true"/>
           <metric class="content_word_strict" value="true"/>
           <metric class="word_freq" value="0"/>
@@ -21312,7 +21306,6 @@
           <pos class="VZ(init)" confidence="0.999006" head="VZ" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="init" subset="vztype"/>
           </pos>
-          <lemma class="in"/>
           <morphology>
             <morpheme class="complex">
               <t>in</t>
@@ -21324,6 +21317,7 @@
               </morpheme>
             </morpheme>
           </morphology>
+          <lemma class="in"/>
           <metric class="prevalenceP" value="0.997547"/>
           <metric class="prevalenceZ" value="2.81315"/>
           <metric class="f50" value="true"/>
