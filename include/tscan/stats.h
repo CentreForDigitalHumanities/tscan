@@ -235,6 +235,7 @@ struct wordStats : public basicStats {
   double word_freq_log_head;
   double word_freq_log_sat;
   double word_freq_log_head_sat;
+  double word_freq_log_corr;
   top_val top_freq_head;
   top_val top_freq_sat;
   std::string compstr;

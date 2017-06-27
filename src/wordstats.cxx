@@ -447,7 +447,9 @@ void wordStats::wordDifficultiesHeader( ostream& os ) const {
   os << "Let_per_wrd,Wrd_per_let,Let_per_wrd_zn,Wrd_per_let_zn,"
      << "Morf_per_wrd,Wrd_per_morf,Morf_per_wrd_zn,Wrd_per_morf_zn,"
      << "Wrd_prev,Wrd_prev_z,"
-     << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
+     << "Wrd_freq_log,Wrd_freq_zn_log,"
+     << "Wrd_freq_log_corr,Wrd_freq_zn_log_corr,"
+     << "Lem_freq_log,Lem_freq_zn_log,"
      << "Freq1000,Freq2000,Freq3000,Freq5000,Freq10000,Freq20000,";
 }
 
@@ -499,6 +501,16 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
     os << "NA" << ",";
   else
     os << word_freq_log << ",";
+
+  if ( std::isnan(word_freq_log_corr) )
+    os << "NA,";
+  else
+    os << word_freq_log_corr << ",";
+  if ( prop == CGN::ISNAME || std::isnan(word_freq_log_corr) )
+    os << "NA" << ",";
+  else
+    os << word_freq_log_corr << ",";
+
   if ( std::isnan(lemma_freq_log) )
     os << "NA,";
   else

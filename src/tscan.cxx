@@ -1323,7 +1323,7 @@ wordStats::wordStats( int index,
   general_noun_type(General::NO_GENERAL), general_verb_type(General::NO_GENERAL),
   adverb_type(Adverb::NO_ADVERB), adverb_sub_type(Adverb::NO_ADVERB_SUBTYPE),
   afkType(Afk::NO_A), is_compound(false), compound_parts(0),
-  word_freq_log_head(NAN), word_freq_log_sat(NAN), word_freq_log_head_sat(NAN)
+  word_freq_log_head(NAN), word_freq_log_sat(NAN), word_freq_log_head_sat(NAN), word_freq_log_corr(NAN)
 {
   UnicodeString us = w->text();
   charCnt = us.length();
@@ -1425,6 +1425,10 @@ wordStats::wordStats( int index,
       word_freq_log_head_sat = (word_freq_log_head + word_freq_log_sat) / double(2);
       top_freq_head = topFreqLookup(compound_head);
       top_freq_sat = topFreqLookup(compound_sat);
+      word_freq_log_corr = word_freq_log_head;
+    }
+    else {
+      word_freq_log_corr = word_freq_log;
     }
     my_classification = checkMyClassification();
   }
