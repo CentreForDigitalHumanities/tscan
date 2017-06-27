@@ -337,7 +337,9 @@ void structStats::compoundHeader( ostream& os ) const {
   os << "Wrd_freq_log_nw,Wrd_freq_log_ong_nw,Wrd_freq_log_sam_nw,";
   os << "Wrd_freq_log_hfdwrd,Wrd_freq_log_satwrd,Wrd_freq_log_(hfd_sat),";
   os << "Wrd_freq_log_nw_corr,Wrd_freq_log_corr,";
+  os << "Wrd_freq_log_zn_corr,";
   os << "Wrd_freq_log_corr_zonder_abw,";
+  os << "Wrd_freq_log_zn_corr_zonder_abw,";
   os << "Freq1000_nw,Freq5000_nw,Freq20000_nw,";
   os << "Freq1000_nsam_nw,Freq5000_nsam_nw,Freq20000_nsam_nw,";
   os << "Freq1000_sam_nw,Freq5000_sam_nw,Freq20000_sam_nw,";
@@ -369,7 +371,9 @@ void structStats::compoundToCSV( ostream& os ) const {
   os << proportion(word_freq_log_noun_corr, nounCnt) << ",";
   os << proportion(word_freq_log_corr, contentCnt) << ",";
 
+  os << proportion(word_freq_log_n_corr, contentCnt-nameCnt) << ",";
   os << proportion(word_freq_log_corr_strict, contentStrictCnt) << ",";
+  os << proportion(word_freq_log_n_corr_strict, contentStrictCnt-nameCnt) << ",";
 
   os << proportion(top1000CntNoun, nounCnt) << ",";
   os << proportion(top5000CntNoun, nounCnt) << ",";
@@ -1683,6 +1687,8 @@ void structStats::merge( structStats *ss ){
   word_freq_log_noun_corr += ss->word_freq_log_noun_corr;
   word_freq_log_corr += ss->word_freq_log_corr;
   word_freq_log_corr_strict += ss->word_freq_log_corr_strict;
+  word_freq_log_n_corr += ss->word_freq_log_n_corr;
+  word_freq_log_n_corr_strict += ss->word_freq_log_n_corr_strict;
   top1000CntNoun += ss->top1000CntNoun;
   top1000CntNonComp += ss->top1000CntNonComp;
   top1000CntComp += ss->top1000CntComp;

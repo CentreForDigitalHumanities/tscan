@@ -502,6 +502,8 @@ struct structStats: public basicStats {
     word_freq_log_noun_corr(0),
     word_freq_log_corr(0),
     word_freq_log_corr_strict(0),
+    word_freq_log_n_corr(0),
+    word_freq_log_n_corr_strict(0),
     top1000CntNoun(0),
     top1000CntNonComp(0),
     top1000CntComp(0),
@@ -847,6 +849,8 @@ struct structStats: public basicStats {
   double word_freq_log_noun_corr;
   double word_freq_log_corr;
   double word_freq_log_corr_strict;
+  double word_freq_log_n_corr;
+  double word_freq_log_n_corr_strict;
   int top1000CntNoun;
   int top1000CntNonComp;
   int top1000CntComp;

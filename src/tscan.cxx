@@ -2392,7 +2392,11 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           word_freq_log_head_sat += ws->word_freq_log_head_sat;
           word_freq_log_noun_corr += ws->word_freq_log_head;
           word_freq_log_corr += ws->word_freq_log_head;
-          if (ws->isContentStrict) word_freq_log_corr_strict += ws->word_freq_log_head;
+          word_freq_log_n_corr += ws->word_freq_log_head;
+          if (ws->isContentStrict) {
+              word_freq_log_corr_strict += ws->word_freq_log_head;
+              word_freq_log_n_corr_strict += ws->word_freq_log_head;
+          }
 
           switch (ws->top_freq) {
             case top1000:
@@ -2442,7 +2446,11 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           word_freq_log_non_comp += ws->word_freq_log;
           word_freq_log_noun_corr += ws->word_freq_log;
           word_freq_log_corr += ws->word_freq_log;
-          if (ws->isContentStrict) word_freq_log_corr_strict += ws->word_freq_log;
+          word_freq_log_n_corr += ws->word_freq_log;
+          if (ws->isContentStrict) {
+            word_freq_log_corr_strict += ws->word_freq_log;
+            word_freq_log_n_corr_strict += ws->word_freq_log;
+          }
 
           switch (ws->top_freq) {
             case top1000:
@@ -2464,9 +2472,15 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
 
         if (ws->isContent) {
           word_freq_log_corr += ws->word_freq_log;
+          if (ws->prop != CGN::ISNAME) {
+            word_freq_log_n_corr += ws->word_freq_log;
+          }
         }
         if (ws->isContentStrict) {
           word_freq_log_corr_strict += ws->word_freq_log;
+          if (ws->prop != CGN::ISNAME) {
+            word_freq_log_n_corr_strict += ws->word_freq_log;
+          }
         }
 
         switch (ws->top_freq) {
