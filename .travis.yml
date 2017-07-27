@@ -1,73 +1,89 @@
 sudo: required
 dist: trusty
+group: edge
 
 language: cpp
-compiler:
-    - gcc
-    - clang
+
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      env: COMPILER=g++
+
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          packages:
+            - clang++
+            - libiomp-dev
+      env:
+        - COMPILER=clang++
+        - CXXFLAGS="-fopenmp=libiomp5"
+
 before_install:
     - sudo apt-get update
-    - sudo apt-get install pkg-config autoconf-archive autotools-dev libicu-dev libxml2-dev libbz2-dev zlib1g-dev python-dev
+    - sudo apt-get install pkg-config autoconf-archive autotools-dev libicu-dev libxml2-dev libbz2-dev zlib1g-dev python-dev libtar-dev
     - git clone https://github.com/proycon/ticcutils
     - cd ticcutils
     - bash bootstrap.sh
     - ./configure
-    - make
-    - sudo make install
+    - make CXX=$COMPILER
+    - sudo make CXX=$COMPILER install
     - cd ..
     - git clone https://github.com/proycon/libfolia
     - cd libfolia
     - bash bootstrap.sh
     - ./configure
-    - make
-    - sudo make install
+    - make CXX=$COMPILER
+    - sudo make CXX=$COMPILER install
     - cd ..
     - git clone https://github.com/LanguageMachines/uctodata
     - cd uctodata
     - bash bootstrap.sh
     - ./configure
-    - make
-    - sudo make install
+    - make CXX=$COMPILER
+    - sudo make CXX=$COMPILER install
     - cd ..
     - git clone https://github.com/proycon/ucto
     - cd ucto
     - bash bootstrap.sh
     - ./configure
-    - make
-    - sudo make install
+    - make CXX=$COMPILER
+    - sudo make CXX=$COMPILER install
     - cd ..
     - git clone https://github.com/proycon/timbl
     - cd timbl
     - bash bootstrap.sh
     - ./configure
-    - make
-    - sudo make install
+    - make CXX=$COMPILER
+    - sudo make CXX=$COMPILER install
     - cd ..
     - git clone https://github.com/proycon/mbt
     - cd mbt
     - bash bootstrap.sh
     - ./configure
-    - make
-    - sudo make install
+    - make CXX=$COMPILER
+    - sudo make CXX=$COMPILER install
     - cd ..
     - git clone https://github.com/proycon/frogdata
     - cd frogdata
     - bash bootstrap.sh
     - ./configure
-    - make
-    - sudo make install
+    - make CXX=$COMPILER
+    - sudo make CXX=$COMPILER install
     - cd ..
     - git clone https://github.com/proycon/frog
     - cd frog
     - bash bootstrap.sh
     - ./configure
-    - make
-    - sudo make install
+    - make CXX=$COMPILER
+    - sudo make CXX=$COMPILER install
     - cd ..
 install:
     - bash bootstrap.sh
     - ./configure
-    - make
-    - sudo make install
+    - make CXX=$COMPILER
+    - sudo make CXX=$COMPILER install
 script:
-    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib make check
+    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib make CXX=$COMPILER check
