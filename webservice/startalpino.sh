@@ -1,6 +1,6 @@
 #! /bin/sh
 export PORT=7003
-export TIMEOUT=60000
+export TIMEOUT=300000
 export MEMLIMIT=1500M
 export TMPDIR=/tmp
 export TCLLIBPATH=${ALPINO_HOME}/create_bin/tcl8.5
@@ -8,7 +8,7 @@ export TCL_LIBRARY=${ALPINO_HOME}/create_bin/tcl8.5
 
 ## this one is for parsing
 
-PROLOGMAXSIZE=${MEMLIMIT} ${ALPINO_HOME}/bin/Alpino -notk -fast user_max=${TIMEOUT}\
+PROLOGMAXSIZE=${MEMLIMIT} ${ALPINO_HOME}/bin/Alpino -notk -veryfast user_max=${TIMEOUT}\
  server_kind=parse\
  server_port=${PORT}\
  assume_input_is_tokenized=on\
