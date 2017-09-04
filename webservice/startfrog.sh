@@ -3,6 +3,10 @@ if [ `hostname` == "applejack" ]; then
     FROGPATH="/scratch2/www/lamachine"
     LOGFILE="/scratch2/www/webservices-lst/live/writable/tscan/frog.log"
     THREADS=8
+elif [ `hostname` == "mlp01" ]; then
+    FROGPATH="/var/www/lamachine"
+    LOGFILE="/var/www/webservices-lst/live/writable/logs/tscan.frog.err"
+    THREADS=8
 else
     FROGPATH="/usr/local/"
     LOGFILE="/tmp/frog-tscan.log"
