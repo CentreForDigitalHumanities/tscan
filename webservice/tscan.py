@@ -84,7 +84,7 @@ if 'VIRTUAL_ENV' in os.environ and os.path.exists(os.environ['VIRTUAL_ENV'] + '/
         #The amount of diskspace a user may use (in MB), this is a soft quota which can be exceeded, but creation of new projects is blocked until usage drops below the quota again
         USERQUOTA = 6144
     elif hostname == 'mlp01':  # server in Nijmegen
-        HOST = "new.webservices-lst.science.ru.nl"
+        HOST = "webservices-lst.science.ru.nl"
         URLPREFIX = 'tscan'
 
         if not 'CLAMTEST' in os.environ:
