@@ -153,7 +153,7 @@ f.write("emotion_situation=\"emoties.txt\"\n")
 
 prevalence = 'nl'
 if 'prevalence' in clamdata:
-    prevalence = clamdata['prevalence'] 
+    prevalence = clamdata['prevalence']
 f.write("prevalence=\"prevalence_" + prevalence + ".data\"\n")
 
 
@@ -181,9 +181,6 @@ f.write("host=127.0.0.1\n")
 
 
 f.close()
-
-print("on git commit: ", file=sys.stderr)
-os.system('git rev-parse HEAD >&2')
 
 
 #collect all input files
