@@ -2,7 +2,7 @@
 
 # T-Scan
 
-tscan 0.8 (c) TiCC/ 1998 - 2017
+tscan 0.9 (c) TiCC/ 1998 - 2018
 
     Tilburg centre for Cognition and Communication, Tilburg University.
     UiL-OTS, Utrecht University
