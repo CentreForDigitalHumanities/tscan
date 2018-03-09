@@ -118,27 +118,27 @@ void docStats::addMetrics() const {
   addOneMetric( el->doc(), el,
 		"paragraph_count", TiCC::toString( sv.size() ) );
   addOneMetric( el->doc(), el,
-		"word_ttr", TiCC::toString( unique_words.size()/double(wordCnt) ) );
+		"word_ttr", TiCC::toString( unique_words.size()/double(wordInclCnt) ) );
   addOneMetric( el->doc(), el,
 		"word_mtld", TiCC::toString( word_mtld ) );
   addOneMetric( el->doc(), el,
-		"lemma_ttr", TiCC::toString( unique_lemmas.size()/double(wordCnt) ) );
+		"lemma_ttr", TiCC::toString( unique_lemmas.size()/double(wordInclCnt) ) );
   addOneMetric( el->doc(), el,
 		"lemma_mtld", TiCC::toString( lemma_mtld ) );
   if ( nameCnt != 0 ){
     addOneMetric( el->doc(), el,
-		  "names_ttr", TiCC::toString( unique_names.size()/double(nameCnt) ) );
+		  "names_ttr", TiCC::toString( unique_names.size()/double(nameInclCnt) ) );
   }
   addOneMetric( el->doc(), el,
 		"name_mtld", TiCC::toString( name_mtld ) );
 
-  if ( contentCnt != 0 ){
+  if ( contentInclCnt != 0 ){
     addOneMetric( el->doc(), el,
-		  "content_word_ttr", TiCC::toString( unique_contents.size()/double(contentCnt) ) );
+		  "content_word_ttr", TiCC::toString( unique_contents.size()/double(contentInclCnt) ) );
   }
-  if ( contentStrictCnt != 0 ){
+  if ( contentStrictInclCnt != 0 ){
     addOneMetric( el->doc(), el,
-      "content_word_ttr_strict", TiCC::toString( unique_contents_strict.size()/double(contentStrictCnt) ) );
+      "content_word_ttr_strict", TiCC::toString( unique_contents_strict.size()/double(contentStrictInclCnt) ) );
   }
 
   addOneMetric( el->doc(), el,

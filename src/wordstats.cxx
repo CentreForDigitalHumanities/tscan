@@ -656,7 +656,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
 
 
 void wordStats::miscHeader( ostream& os ) const {
-  os << "Ww_vorm,Ww_tt,Vol_dw,Onvol_dw,Infin,Archaisch,Log_prob_fwd,Log_prob_bwd,Intens,Eigen_classificatie";
+  os << "Ww_vorm,Ww_tt,Vol_dw,Onvol_dw,Infin,Archaisch,Log_prob_fwd,Log_prob_bwd,Intens,Op_stoplijst,Eigen_classificatie";
 }
 
 void wordStats::miscToCSV( ostream& os ) const {
@@ -680,6 +680,7 @@ void wordStats::miscToCSV( ostream& os ) const {
   else
     os << logprob10_bwd << ",";
   os << (intensify_type != Intensify::NO_INTENSIFY ? "1," : "0,");
+  os << (on_stoplist ? "1" : "0") << ",";
   os << my_classification << ",";
 }
 
@@ -786,6 +787,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "adverbtype", Adverb::toString(adverb_type) );
   if ( afkType != Afk::NO_A )
     addOneMetric( doc, el, "afktype", Afk::toString(afkType) );
+  if ( on_stoplist )
+    addOneMetric( doc, el, "on_stoplist", "true" );
   if ( !my_classification.empty() )
     addOneMetric( doc, el, "my_classification", my_classification );
 }

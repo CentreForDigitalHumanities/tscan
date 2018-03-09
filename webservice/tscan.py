@@ -195,6 +195,16 @@ PROFILES = [
             acceptarchive=True,
             multi=True
         ),
+        # 20180305: Added possibility to add a stoplist
+        InputTemplate(
+            'stoplist',
+            PlainTextFormat,
+            'Stoplist',
+            StaticParameter(id='encoding', name='Encoding', description='The character encoding of the file', value='utf-8'),
+            extension='.data',
+            optional=True,
+            unique=True,
+        ),
         # 20160802: Added possibility to enter your own classification
         InputTemplate(
             'myclassification',

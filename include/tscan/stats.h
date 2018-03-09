@@ -166,6 +166,7 @@ struct wordStats : public basicStats {
   General::Type checkGeneralVerb() const;
   Afk::Type checkAfk() const;
   std::string checkMyClassification() const;
+  bool checkStoplist() const;
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
   void prevalenceLookup();
@@ -239,6 +240,7 @@ struct wordStats : public basicStats {
   top_val top_freq_head;
   top_val top_freq_sat;
   std::string compstr;
+  bool on_stoplist;
   std::string my_classification;
 };
 
@@ -247,6 +249,7 @@ struct structStats: public basicStats {
   structStats( int index, folia::FoliaElement* el, const std::string& cat ):
     basicStats( index, el, cat ),
     wordCnt(0),
+    wordInclCnt(0), // wordCnt including stopwords
     sentCnt(0),
     parseFailCnt(0),
     vdBvCnt(0),
@@ -270,6 +273,7 @@ struct structStats: public basicStats {
     pastCnt(0),
     subjonctCnt(0),
     nameCnt(0),
+    nameInclCnt(0), // nameCnt including stopwords
     pron1Cnt(0),
     pron2Cnt(0),
     pron3Cnt(0),
@@ -281,9 +285,12 @@ struct structStats: public basicStats {
     pronRefCnt(0),
     archaicsCnt(0),
     contentCnt(0),
+    contentInclCnt(0), // contentCnt including stopwords
     contentStrictCnt(0),
+    contentStrictInclCnt(0), // contentStrictCnt including stopwords
     nominalCnt(0),
     adjCnt(0),
+    adjInclCnt(0), // adjCnt including stopwords
     vgCnt(0),
     vnwCnt(0),
     lidCnt(0),
@@ -291,7 +298,9 @@ struct structStats: public basicStats {
     bwCnt(0),
     twCnt(0),
     nounCnt(0),
+    nounInclCnt(0), // nounCnt including stopwords
     verbCnt(0),
+    verbInclCnt(0), // verbCnt including stopwords
     tswCnt(0),
     specCnt(0),
     letCnt(0),
@@ -574,6 +583,7 @@ struct structStats: public basicStats {
   void calculate_MTLDs();
   std::string text;
   int wordCnt;
+  int wordInclCnt;
   int sentCnt;
   int parseFailCnt;
   int vdBvCnt;
@@ -597,6 +607,7 @@ struct structStats: public basicStats {
   int pastCnt;
   int subjonctCnt;
   int nameCnt;
+  int nameInclCnt;
   int pron1Cnt;
   int pron2Cnt;
   int pron3Cnt;
@@ -608,9 +619,12 @@ struct structStats: public basicStats {
   int pronRefCnt;
   int archaicsCnt;
   int contentCnt;
+  int contentInclCnt;
   int contentStrictCnt;
+  int contentStrictInclCnt;
   int nominalCnt;
   int adjCnt;
+  int adjInclCnt;
   int vgCnt;
   int vnwCnt;
   int lidCnt;
@@ -618,7 +632,9 @@ struct structStats: public basicStats {
   int bwCnt;
   int twCnt;
   int nounCnt;
+  int nounInclCnt;
   int verbCnt;
+  int verbInclCnt;
   int tswCnt;
   int specCnt;
   int letCnt;
@@ -899,6 +915,7 @@ struct sentStats : public structStats {
   void resolveFiniteVerbs( xmlDoc* );
   void resolveConjunctions( xmlDoc* );
   void resolveSmallConjunctions( xmlDoc* );
+  void setCommonCounts( wordStats* );
 };
 
 

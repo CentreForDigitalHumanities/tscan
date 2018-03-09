@@ -2,6 +2,201 @@
 
 using namespace std;
 
+/**
+ * @brief Sets some common counts for words both on and off the stoplist
+ * @param ws
+ */
+void sentStats::setCommonCounts(wordStats *ws) {
+  wordInclCnt++;
+
+  switch (ws->prop) {
+    case CGN::ISNAME:
+      nameInclCnt++;
+      unique_names[ws->l_word] += 1;
+      break;
+    case CGN::ISVD:
+      switch (ws->position) {
+        case CGN::NOMIN:
+          vdNwCnt++;
+          break;
+        case CGN::PRENOM:
+          vdBvCnt++;
+          break;
+        case CGN::VRIJ:
+          vdVrijCnt++;
+          break;
+        default:
+          break;
+      }
+      break;
+    case CGN::ISINF:
+      switch (ws->position) {
+        case CGN::NOMIN:
+          infNwCnt++;
+          break;
+        case CGN::PRENOM:
+          infBvCnt++;
+          break;
+        case CGN::VRIJ:
+          infVrijCnt++;
+          break;
+        default:
+          break;
+      }
+      break;
+    case CGN::ISOD:
+      switch (ws->position) {
+        case CGN::NOMIN:
+          odNwCnt++;
+          break;
+        case CGN::PRENOM:
+          odBvCnt++;
+          break;
+        case CGN::VRIJ:
+          odVrijCnt++;
+          break;
+        default:
+          break;
+      }
+      break;
+    case CGN::ISPVVERL:
+      pastCnt++;
+      break;
+    case CGN::ISPVTGW:
+      presentCnt++;
+      break;
+    case CGN::ISSUBJ:
+      subjonctCnt++;
+      break;
+    case CGN::ISPPRON1:
+      pron1Cnt++;
+      break;
+    case CGN::ISPPRON2:
+      pron2Cnt++;
+      break;
+    case CGN::ISPPRON3:
+      pron3Cnt++;
+      break;
+    default:;  // ignore JUSTAWORD and ISAANW
+  }
+
+  switch (ws->tag) {
+    case CGN::N:
+      nounInclCnt++;
+      break;
+    case CGN::ADJ:
+      adjInclCnt++;
+      break;
+    case CGN::WW:
+      verbInclCnt++;
+      break;
+    case CGN::VG:
+      vgCnt++;
+      break;
+    case CGN::TSW:
+      tswCnt++;
+      break;
+    case CGN::LET:
+      letCnt++;
+      break;
+    case CGN::SPEC:
+      specCnt++;
+      break;
+    case CGN::BW:
+      bwCnt++;
+      break;
+    case CGN::VNW:
+      vnwCnt++;
+      break;
+    case CGN::LID:
+      lidCnt++;
+      break;
+    case CGN::TW:
+      twCnt++;
+      break;
+    case CGN::VZ:
+      vzCnt++;
+      break;
+    default:
+      break;
+  }
+
+  if (ws->wwform == PASSIVE_VERB) passiveCnt++;
+  if (ws->wwform == MODAL_VERB) modalCnt++;
+  if (ws->wwform == TIME_VERB) timeVCnt++;
+  if (ws->wwform == COPULA) koppelCnt++;
+
+  if (ws->isPropNeg) propNegCnt++;
+  if (ws->isMorphNeg) morphNegCnt++;
+  if (ws->isPersRef) persRefCnt++;
+  if (ws->isPronRef) pronRefCnt++;
+  if (ws->archaic) archaicsCnt++;
+  if (ws->isImperative) impCnt++;
+
+  unique_words[ws->l_word] += 1;
+  unique_lemmas[ws->lemma] += 1;
+
+  wordOverlapCnt += ws->wordOverlapCnt;
+  lemmaOverlapCnt += ws->lemmaOverlapCnt;
+
+  if (ws->isContent) {
+    contentInclCnt++;
+    unique_contents[ws->l_word] += 1;
+  }
+  if (ws->isContentStrict) {
+    contentStrictInclCnt++;
+    unique_contents_strict[ws->l_word] += 1;
+  }
+
+  // Counts for abbreviations
+  if (ws->afkType != Afk::NO_A) {
+    ++afks[ws->afkType];
+  }
+
+  // Counts for adverbs
+  if (ws->adverb_type == Adverb::GENERAL) generalAdverbCnt++;
+  if (ws->adverb_type == Adverb::SPECIFIC) specificAdverbCnt++;
+  
+  // Counts for intensifying words
+  switch (ws->intensify_type) {
+    case Intensify::BVNW:
+      intensBvnwCnt++;
+      intensCnt++;
+      break;
+    case Intensify::BVBW:
+      intensBvbwCnt++;
+      intensCnt++;
+      break;
+    case Intensify::BW:
+      intensBwCnt++;
+      intensCnt++;
+      break;
+    case Intensify::COMBI:
+      intensCombiCnt++;
+      intensCnt++;
+      break;
+    case Intensify::NW:
+      intensNwCnt++;
+      intensCnt++;
+      break;
+    case Intensify::TUSS:
+      intensTussCnt++;
+      intensCnt++;
+      break;
+    case Intensify::WW:
+      intensWwCnt++;
+      intensCnt++;
+      break;
+    default:
+      break;
+  }
+
+  // My classification
+  if ( !ws->my_classification.empty() ) {
+    ++my_classification[ws->my_classification];
+  }
+}
+
 /****
  * AL
  ****/

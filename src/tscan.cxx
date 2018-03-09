@@ -142,6 +142,7 @@ struct settingData {
   set<string> vzexpr4;
   map<string, Afk::Type> afkos;
   map<string, prevalence> prevalences;
+  map<CGN::Type, set<string> > stop_lemmata;
   map<string, tagged_classification> my_classification;
 };
 
@@ -669,6 +670,43 @@ bool fill_prevalences( map<string, prevalence>& prevalences, const string& filen
   return false;
 }
 
+bool fill_stop_lemmata( map<CGN::Type, set<string> >& stop_lemmata, istream& is ){
+  string line;
+  while( safe_getline( is, line ) ){
+    // a line is supposed to be :
+    // a comment, starting with '#'
+    // like: '# comment'
+    // OR: a lemma followed by an optional CGN tag
+    line = TiCC::trim( line );
+    if ( line.empty() || line[0] == '#' )
+      continue;
+    vector<string> vec;
+    int n = TiCC::split_at_first_of( line, vec, " \t" );
+    if ( n == 0 || n > 2 ) {
+      cerr << "skip line: " << line << " (expected 1 or 2 values, got "
+     << n << ")" << endl;
+      continue;
+    }
+    CGN::Type tag = CGN::UNASS;
+    if ( n == 2 ){
+      tag = CGN::toCGN(vec[1]);
+    }
+    stop_lemmata[tag].insert(vec[0]);
+  }
+  return true;
+}
+
+bool fill_stop_lemmata( map<CGN::Type, set<string> >& stop_lemmata, const string& filename ){
+  ifstream is( filename.c_str() );
+  if ( is ){
+    return fill_stop_lemmata( stop_lemmata, is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
 bool fill( map<string,tagged_classification>& my_classification, istream& is ){
   string line;
   while( safe_getline( is, line ) ){
@@ -935,6 +973,12 @@ void settingData::init( const TiCC::Configuration& cf ){
   val = cf.lookUp( "prevalence" );
   if ( !val.empty() ){
     if ( !fill_prevalences( prevalences, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
+
+  val = cf.lookUp( "stop_lemmata" );
+  if ( !val.empty() ){
+    if ( !fill_stop_lemmata( stop_lemmata, val ) )
       exit( EXIT_FAILURE );
   }
 
@@ -1229,6 +1273,21 @@ string wordStats::checkMyClassification() const {
   return result;
 }
 
+// Returns whether the lemma appears on the stoplist
+bool wordStats::checkStoplist() const {
+  bool result = false;
+  
+  if ( settings.stop_lemmata[tag].find( lemma )
+       != settings.stop_lemmata[tag].end() ){
+    result = true;
+  }
+  else if ( settings.stop_lemmata[CGN::UNASS].find( lemma )
+	    != settings.stop_lemmata[CGN::UNASS].end() ){
+    result = true;
+  }
+  return result;
+}
+
 // Returns the position of a word in the top-20000 lexicon
 top_val wordStats::topFreqLookup(const string& w) const {
   map<string,top_val>::const_iterator it = settings.top_freq_lex.find( w );
@@ -1322,7 +1381,7 @@ wordStats::wordStats( int index,
   sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY),
   general_noun_type(General::NO_GENERAL), general_verb_type(General::NO_GENERAL),
   adverb_type(Adverb::NO_ADVERB), adverb_sub_type(Adverb::NO_ADVERB_SUBTYPE),
-  afkType(Afk::NO_A), is_compound(false), compound_parts(0),
+  afkType(Afk::NO_A), is_compound(false), compound_parts(0), on_stoplist(false),
   word_freq_log_head(NAN), word_freq_log_sat(NAN), word_freq_log_head_sat(NAN), word_freq_log_corr(NAN)
 {
   UnicodeString us = w->text();
@@ -1430,6 +1489,7 @@ wordStats::wordStats( int index,
     else {
       word_freq_log_corr = word_freq_log;
     }
+    on_stoplist = checkStoplist();
     my_classification = checkMyClassification();
   }
 }
@@ -1865,475 +1925,310 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
       sv.push_back( ws );
       continue;
     }
+    else if (ws->on_stoplist) {
+      sentStats::setCommonCounts(ws);
+      sv.push_back( ws );
+      continue;
+    }
     else {
-      NER::Type ner = NER::lookupNer( w[i], s );
+      sentStats::setCommonCounts(ws);
+      
+      wordCnt++;
+      if (ws->prop == CGN::ISNAME) nameCnt++;
+      if (ws->isContent) contentCnt++;
+      if (ws->isContentStrict) contentStrictCnt++;
+      if (ws->tag == CGN::N) nounCnt++;
+      if (ws->tag == CGN::WW) verbCnt++;
+
+      NER::Type ner = NER::lookupNer(w[i], s);
       ws->nerProp = ner;
 
       // If we did not find a SEM::Type for a noun, use the NER::Type to possibly find one.
-      if ( ws->sem_type == SEM::UNFOUND_NOUN) {
+      if (ws->sem_type == SEM::UNFOUND_NOUN) {
         ws->sem_type = NER::toSem(ner);
       }
 
-      switch( ner ){
-      case NER::LOC_B:
-      case NER::EVE_B:
-      case NER::MISC_B:
-      case NER::ORG_B:
-      case NER::PER_B:
-      case NER::PRO_B:
-  ners[ner]++;
-  nerCnt++;
-  break;
-      default:
-  ;
+      switch (ner) {
+        case NER::LOC_B:
+        case NER::EVE_B:
+        case NER::MISC_B:
+        case NER::ORG_B:
+        case NER::PER_B:
+        case NER::PRO_B:
+          ners[ner]++;
+          nerCnt++;
+          break;
+        default:;
       }
-      ws->setPersRef(); // need NER Info for this
-      wordCnt++;
+
+      ws->setPersRef();  // need NER Info for this
       heads[ws->tag]++;
-      if ( ws->afkType != Afk::NO_A ){
-  ++afks[ws->afkType];
-      }
-      wordOverlapCnt += ws->wordOverlapCnt;
-      lemmaOverlapCnt += ws->lemmaOverlapCnt;
       charCnt += ws->charCnt;
       charCntExNames += ws->charCntExNames;
       morphCnt += ws->morphCnt;
       morphCntExNames += ws->morphCntExNames;
-      unique_words[ws->l_word] += 1;
-      unique_lemmas[ws->lemma] += 1;
-      aggregate( distances, ws->distances );
-      if ( ws->isContent ) {
+      aggregate(distances, ws->distances);
+
+      if (ws->isContent) {
         word_freq += ws->word_freq_log;
         lemma_freq += ws->lemma_freq_log;
-        if ( ws->prop != CGN::ISNAME ){
+        if (ws->prop != CGN::ISNAME) {
           word_freq_n += ws->word_freq_log;
           lemma_freq_n += ws->lemma_freq_log;
         }
       }
-      if ( ws->isContentStrict ) {
+      if (ws->isContentStrict) {
         word_freq_strict += ws->word_freq_log;
         lemma_freq_strict += ws->lemma_freq_log;
-        if ( ws->prop != CGN::ISNAME ){
+        if (ws->prop != CGN::ISNAME) {
           word_freq_n_strict += ws->word_freq_log;
           lemma_freq_n_strict += ws->lemma_freq_log;
         }
       }
-      switch ( ws->prop ){
-      case CGN::ISNAME:
-  nameCnt++;
-  unique_names[ws->l_word] +=1;
-  break;
-      case CGN::ISVD:
-  switch ( ws->position ){
-  case CGN::NOMIN:
-    vdNwCnt++;
-    break;
-  case CGN::PRENOM:
-    vdBvCnt++;
-    break;
-  case CGN::VRIJ:
-    vdVrijCnt++;
-    break;
-  default:
-    break;
-  }
-  break;
-      case CGN::ISINF:
-  switch ( ws->position ){
-  case CGN::NOMIN:
-    infNwCnt++;
-    break;
-  case CGN::PRENOM:
-    infBvCnt++;
-    break;
-  case CGN::VRIJ:
-    infVrijCnt++;
-    break;
-  default:
-    break;
-  }
-  break;
-      case CGN::ISOD:
-  switch ( ws->position ){
-  case CGN::NOMIN:
-    odNwCnt++;
-    break;
-  case CGN::PRENOM:
-    odBvCnt++;
-    break;
-  case CGN::VRIJ:
-    odVrijCnt++;
-    break;
-  default:
-    break;
-  }
-  break;
-      case CGN::ISPVVERL:
-  pastCnt++;
-  break;
-      case CGN::ISPVTGW:
-  presentCnt++;
-  break;
-      case CGN::ISSUBJ:
-  subjonctCnt++;
-  break;
-      case CGN::ISPPRON1:
-  pron1Cnt++;
-  break;
-      case CGN::ISPPRON2:
-  pron2Cnt++;
-  break;
-      case CGN::ISPPRON3:
-  pron3Cnt++;
-  break;
-      default:
-  ;// ignore JUSTAWORD and ISAANW
+
+      if (ws->isNominal) nominalCnt++;
+
+      if (ws->f50) f50Cnt++;
+      if (ws->f65) f65Cnt++;
+      if (ws->f77) f77Cnt++;
+      if (ws->f80) f80Cnt++;
+
+      switch (ws->top_freq) {
+        // NO BREAKS (being in top1000 means being in top2000 as well)
+        case top1000:
+          ++top1000Cnt;
+          if (ws->isContent) ++top1000ContentCnt;
+          if (ws->isContentStrict) ++top1000ContentStrictCnt;
+        case top2000:
+          ++top2000Cnt;
+          if (ws->isContent) ++top2000ContentCnt;
+          if (ws->isContentStrict) ++top2000ContentStrictCnt;
+        case top3000:
+          ++top3000Cnt;
+          if (ws->isContent) ++top3000ContentCnt;
+          if (ws->isContentStrict) ++top3000ContentStrictCnt;
+        case top5000:
+          ++top5000Cnt;
+          if (ws->isContent) ++top5000ContentCnt;
+          if (ws->isContentStrict) ++top5000ContentStrictCnt;
+        case top10000:
+          ++top10000Cnt;
+          if (ws->isContent) ++top10000ContentCnt;
+          if (ws->isContentStrict) ++top10000ContentStrictCnt;
+        case top20000:
+          ++top20000Cnt;
+          if (ws->isContent) ++top20000ContentCnt;
+          if (ws->isContentStrict) ++top20000ContentStrictCnt;
+        default:
+          break;
       }
-      if ( ws->wwform == PASSIVE_VERB )
-  passiveCnt++;
-      if ( ws->wwform == MODAL_VERB )
-  modalCnt++;
-      if ( ws->wwform == TIME_VERB )
-  timeVCnt++;
-      if ( ws->wwform == COPULA )
-  koppelCnt++;
-      if ( ws->isPersRef )
-  persRefCnt++;
-      if ( ws->isPronRef )
-  pronRefCnt++;
-      if ( ws->archaic )
-  archaicsCnt++;
-      if ( ws->isContent ){
-  contentCnt++;
-  unique_contents[ws->l_word] +=1;
+
+      switch (ws->sem_type) {
+        case SEM::UNDEFINED_NOUN:
+          ++undefinedNounCnt;
+          break;
+        case SEM::UNDEFINED_ADJ:
+          ++undefinedAdjCnt;
+          break;
+        case SEM::UNFOUND_NOUN:
+          ++uncoveredNounCnt;
+          break;
+        case SEM::UNFOUND_ADJ:
+          ++uncoveredAdjCnt;
+          break;
+        case SEM::UNFOUND_VERB:
+          ++uncoveredVerbCnt;
+          break;
+        case SEM::CONCRETE_HUMAN_NOUN:
+          humanCnt++;
+          strictNounCnt++;
+          broadNounCnt++;
+          break;
+        case SEM::CONCRETE_NONHUMAN_NOUN:
+          nonHumanCnt++;
+          strictNounCnt++;
+          broadNounCnt++;
+          break;
+        case SEM::CONCRETE_ARTEFACT_NOUN:
+          artefactCnt++;
+          strictNounCnt++;
+          broadNounCnt++;
+          break;
+        case SEM::CONCRETE_SUBSTANCE_NOUN:
+          substanceConcCnt++;
+          strictNounCnt++;
+          broadNounCnt++;
+          break;
+        case SEM::CONCRETE_FOOD_CARE_NOUN:
+          foodcareCnt++;
+          strictNounCnt++;
+          broadNounCnt++;
+          break;
+        case SEM::CONCRETE_OTHER_NOUN:
+          concrotherCnt++;
+          strictNounCnt++;
+          broadNounCnt++;
+          break;
+        case SEM::BROAD_CONCRETE_PLACE_NOUN:
+          ++placeCnt;
+          broadNounCnt++;
+          break;
+        case SEM::BROAD_CONCRETE_TIME_NOUN:
+          ++timeCnt;
+          broadNounCnt++;
+          break;
+        case SEM::BROAD_CONCRETE_MEASURE_NOUN:
+          ++measureCnt;
+          broadNounCnt++;
+          break;
+        case SEM::CONCRETE_DYNAMIC_NOUN:
+          ++dynamicConcCnt;
+          strictNounCnt++;
+          broadNounCnt++;
+          break;
+        case SEM::ABSTRACT_SUBSTANCE_NOUN:
+          ++substanceAbstrCnt;
+          break;
+        case SEM::ABSTRACT_DYNAMIC_NOUN:
+          ++dynamicAbstrCnt;
+          break;
+        case SEM::ABSTRACT_NONDYNAMIC_NOUN:
+          ++nonDynamicCnt;
+          break;
+        case SEM::INSTITUT_NOUN:
+          institutCnt++;
+          break;
+        case SEM::HUMAN_ADJ:
+          humanAdjCnt++;
+          broadAdjCnt++;
+          strictAdjCnt++;
+          break;
+        case SEM::EMO_ADJ:
+          emoAdjCnt++;
+          broadAdjCnt++;
+          strictAdjCnt++;
+          break;
+        case SEM::NONHUMAN_SHAPE_ADJ:
+          nonhumanAdjCnt++;
+          shapeAdjCnt++;
+          broadAdjCnt++;
+          strictAdjCnt++;
+          break;
+        case SEM::NONHUMAN_COLOR_ADJ:
+          nonhumanAdjCnt++;
+          colorAdjCnt++;
+          broadAdjCnt++;
+          strictAdjCnt++;
+          break;
+        case SEM::NONHUMAN_MATTER_ADJ:
+          nonhumanAdjCnt++;
+          matterAdjCnt++;
+          broadAdjCnt++;
+          strictAdjCnt++;
+          break;
+        case SEM::NONHUMAN_SOUND_ADJ:
+          nonhumanAdjCnt++;
+          soundAdjCnt++;
+          broadAdjCnt++;
+          strictAdjCnt++;
+          break;
+        case SEM::NONHUMAN_OTHER_ADJ:
+          nonhumanAdjCnt++;
+          nonhumanOtherAdjCnt++;
+          broadAdjCnt++;
+          strictAdjCnt++;
+          break;
+        case SEM::TECH_ADJ:
+          techAdjCnt++;
+          break;
+        case SEM::TIME_ADJ:
+          timeAdjCnt++;
+          broadAdjCnt++;
+          break;
+        case SEM::PLACE_ADJ:
+          placeAdjCnt++;
+          broadAdjCnt++;
+          break;
+        case SEM::SPEC_POS_ADJ:
+          specPosAdjCnt++;
+          subjectiveAdjCnt++;
+          break;
+        case SEM::SPEC_NEG_ADJ:
+          specNegAdjCnt++;
+          subjectiveAdjCnt++;
+          break;
+        case SEM::POS_ADJ:
+          posAdjCnt++;
+          subjectiveAdjCnt++;
+          break;
+        case SEM::NEG_ADJ:
+          negAdjCnt++;
+          subjectiveAdjCnt++;
+          break;
+        case SEM::EVALUATIVE_ADJ:
+          evaluativeAdjCnt++;
+          subjectiveAdjCnt++;
+          break;
+        case SEM::EPI_POS_ADJ:
+          epiPosAdjCnt++;
+          subjectiveAdjCnt++;
+          break;
+        case SEM::EPI_NEG_ADJ:
+          epiNegAdjCnt++;
+          subjectiveAdjCnt++;
+          break;
+        case SEM::ABSTRACT_ADJ:
+          abstractAdjCnt++;
+          break;
+        case SEM::ABSTRACT_STATE:
+          abstractWwCnt++;
+          stateCnt++;
+          break;
+        case SEM::CONCRETE_STATE:
+          concreteWwCnt++;
+          stateCnt++;
+          break;
+        case SEM::UNDEFINED_STATE:
+          undefinedWwCnt++;
+          stateCnt++;
+          break;
+        case SEM::ABSTRACT_ACTION:
+          abstractWwCnt++;
+          actionCnt++;
+          break;
+        case SEM::CONCRETE_ACTION:
+          concreteWwCnt++;
+          actionCnt++;
+          break;
+        case SEM::UNDEFINED_ACTION:
+          undefinedWwCnt++;
+          actionCnt++;
+          break;
+        case SEM::ABSTRACT_PROCESS:
+          abstractWwCnt++;
+          processCnt++;
+          break;
+        case SEM::CONCRETE_PROCESS:
+          concreteWwCnt++;
+          processCnt++;
+          break;
+        case SEM::UNDEFINED_PROCESS:
+          undefinedWwCnt++;
+          processCnt++;
+          break;
+        case SEM::ABSTRACT_UNDEFINED:
+          abstractWwCnt++;
+          break;
+        case SEM::CONCRETE_UNDEFINED:
+          concreteWwCnt++;
+          break;
+        case SEM::UNDEFINED_VERB:
+          undefinedWwCnt++;
+          undefinedATPCnt++;
+          break;
+        default:;
       }
-      if ( ws->isContentStrict ){
-  contentStrictCnt++;
-  unique_contents_strict[ws->l_word] +=1;
-      }
-      if ( ws->isNominal )
-  nominalCnt++;
-      switch ( ws->tag ){
-      case CGN::N:
-  nounCnt++;
-  break;
-      case CGN::ADJ:
-  adjCnt++;
-  break;
-      case CGN::WW:
-  verbCnt++;
-  break;
-      case CGN::VG:
-  vgCnt++;
-  break;
-      case CGN::TSW:
-  tswCnt++;
-  break;
-      case CGN::LET:
-  letCnt++;
-  break;
-      case CGN::SPEC:
-  specCnt++;
-  break;
-      case CGN::BW:
-  bwCnt++;
-  break;
-      case CGN::VNW:
-  vnwCnt++;
-  break;
-      case CGN::LID:
-  lidCnt++;
-  break;
-      case CGN::TW:
-  twCnt++;
-  break;
-      case CGN::VZ:
-  vzCnt++;
-  break;
-      default:
-  break;
-      }
-      if ( ws->isImperative )
-  impCnt++;
-      if ( ws->isPropNeg )
-  propNegCnt++;
-      if ( ws->isMorphNeg )
-  morphNegCnt++;
-      if ( ws->f50 )
-  f50Cnt++;
-      if ( ws->f65 )
-  f65Cnt++;
-      if ( ws->f77 )
-  f77Cnt++;
-      if ( ws->f80 )
-  f80Cnt++;
-      switch ( ws->top_freq ){
-  // NO BREAKS (being in top1000 means being in top2000 as well)
-      case top1000:
-  ++top1000Cnt;
-  if ( ws->isContent ) ++top1000ContentCnt;
-  if ( ws->isContentStrict ) ++top1000ContentStrictCnt;
-      case top2000:
-  ++top2000Cnt;
-  if ( ws->isContent ) ++top2000ContentCnt;
-  if ( ws->isContentStrict ) ++top2000ContentStrictCnt;
-      case top3000:
-  ++top3000Cnt;
-  if ( ws->isContent ) ++top3000ContentCnt;
-  if ( ws->isContentStrict ) ++top3000ContentStrictCnt;
-      case top5000:
-  ++top5000Cnt;
-  if ( ws->isContent ) ++top5000ContentCnt;
-  if ( ws->isContentStrict ) ++top5000ContentStrictCnt;
-      case top10000:
-  ++top10000Cnt;
-  if ( ws->isContent ) ++top10000ContentCnt;
-  if ( ws->isContentStrict ) ++top10000ContentStrictCnt;
-      case top20000:
-  ++top20000Cnt;
-  if ( ws->isContent ) ++top20000ContentCnt;
-  if ( ws->isContentStrict ) ++top20000ContentStrictCnt;
-      default:
-  break;
-      }
-      switch ( ws->sem_type ){
-      case SEM::UNDEFINED_NOUN:
-  ++undefinedNounCnt;
-  break;
-      case SEM::UNDEFINED_ADJ:
-  ++undefinedAdjCnt;
-  break;
-      case SEM::UNFOUND_NOUN:
-  ++uncoveredNounCnt;
-  break;
-      case SEM::UNFOUND_ADJ:
-  ++uncoveredAdjCnt;
-  break;
-      case SEM::UNFOUND_VERB:
-  ++uncoveredVerbCnt;
-  break;
-      case SEM::CONCRETE_HUMAN_NOUN:
-  humanCnt++;
-  strictNounCnt++;
-  broadNounCnt++;
-  break;
-      case SEM::CONCRETE_NONHUMAN_NOUN:
-  nonHumanCnt++;
-  strictNounCnt++;
-  broadNounCnt++;
-  break;
-      case SEM::CONCRETE_ARTEFACT_NOUN:
-  artefactCnt++;
-  strictNounCnt++;
-  broadNounCnt++;
-  break;
-      case SEM::CONCRETE_SUBSTANCE_NOUN:
-  substanceConcCnt++;
-  strictNounCnt++;
-  broadNounCnt++;
-  break;
-      case SEM::CONCRETE_FOOD_CARE_NOUN:
-  foodcareCnt++;
-  strictNounCnt++;
-  broadNounCnt++;
-  break;
-      case SEM::CONCRETE_OTHER_NOUN:
-  concrotherCnt++;
-  strictNounCnt++;
-  broadNounCnt++;
-  break;
-      case SEM::BROAD_CONCRETE_PLACE_NOUN:
-  ++placeCnt;
-  broadNounCnt++;
-  break;
-      case SEM::BROAD_CONCRETE_TIME_NOUN:
-  ++timeCnt;
-  broadNounCnt++;
-  break;
-      case SEM::BROAD_CONCRETE_MEASURE_NOUN:
-  ++measureCnt;
-  broadNounCnt++;
-  break;
-      case SEM::CONCRETE_DYNAMIC_NOUN:
-  ++dynamicConcCnt;
-  strictNounCnt++;
-  broadNounCnt++;
-  break;
-      case SEM::ABSTRACT_SUBSTANCE_NOUN:
-  ++substanceAbstrCnt;
-  break;
-      case SEM::ABSTRACT_DYNAMIC_NOUN:
-  ++dynamicAbstrCnt;
-  break;
-      case SEM::ABSTRACT_NONDYNAMIC_NOUN:
-  ++nonDynamicCnt;
-  break;
-      case SEM::INSTITUT_NOUN:
-  institutCnt++;
-  break;
-      case SEM::HUMAN_ADJ:
-  humanAdjCnt++;
-  broadAdjCnt++;
-  strictAdjCnt++;
-  break;
-      case SEM::EMO_ADJ:
-  emoAdjCnt++;
-  broadAdjCnt++;
-  strictAdjCnt++;
-  break;
-      case SEM::NONHUMAN_SHAPE_ADJ:
-  nonhumanAdjCnt++;
-  shapeAdjCnt++;
-  broadAdjCnt++;
-  strictAdjCnt++;
-  break;
-      case SEM::NONHUMAN_COLOR_ADJ:
-  nonhumanAdjCnt++;
-  colorAdjCnt++;
-  broadAdjCnt++;
-  strictAdjCnt++;
-  break;
-      case SEM::NONHUMAN_MATTER_ADJ:
-  nonhumanAdjCnt++;
-  matterAdjCnt++;
-  broadAdjCnt++;
-  strictAdjCnt++;
-  break;
-      case SEM::NONHUMAN_SOUND_ADJ:
-  nonhumanAdjCnt++;
-  soundAdjCnt++;
-  broadAdjCnt++;
-  strictAdjCnt++;
-  break;
-      case SEM::NONHUMAN_OTHER_ADJ:
-  nonhumanAdjCnt++;
-  nonhumanOtherAdjCnt++;
-  broadAdjCnt++;
-  strictAdjCnt++;
-  break;
-      case SEM::TECH_ADJ:
-  techAdjCnt++;
-  break;
-      case SEM::TIME_ADJ:
-  timeAdjCnt++;
-  broadAdjCnt++;
-  break;
-      case SEM::PLACE_ADJ:
-  placeAdjCnt++;
-  broadAdjCnt++;
-  break;
-      case SEM::SPEC_POS_ADJ:
-  specPosAdjCnt++;
-  subjectiveAdjCnt++;
-  break;
-      case SEM::SPEC_NEG_ADJ:
-  specNegAdjCnt++;
-  subjectiveAdjCnt++;
-  break;
-      case SEM::POS_ADJ:
-  posAdjCnt++;
-  subjectiveAdjCnt++;
-  break;
-      case SEM::NEG_ADJ:
-  negAdjCnt++;
-  subjectiveAdjCnt++;
-  break;
-      case SEM::EVALUATIVE_ADJ:
-  evaluativeAdjCnt++;
-  subjectiveAdjCnt++;
-  break;
-      case SEM::EPI_POS_ADJ:
-  epiPosAdjCnt++;
-  subjectiveAdjCnt++;
-  break;
-      case SEM::EPI_NEG_ADJ:
-  epiNegAdjCnt++;
-  subjectiveAdjCnt++;
-  break;
-      case SEM::ABSTRACT_ADJ:
-  abstractAdjCnt++;
-  break;
-      case SEM::ABSTRACT_STATE:
-  abstractWwCnt++;
-  stateCnt++;
-  break;
-      case SEM::CONCRETE_STATE:
-  concreteWwCnt++;
-  stateCnt++;
-  break;
-      case SEM::UNDEFINED_STATE:
-  undefinedWwCnt++;
-  stateCnt++;
-  break;
-      case SEM::ABSTRACT_ACTION:
-  abstractWwCnt++;
-  actionCnt++;
-  break;
-      case SEM::CONCRETE_ACTION:
-  concreteWwCnt++;
-  actionCnt++;
-  break;
-      case SEM::UNDEFINED_ACTION:
-  undefinedWwCnt++;
-  actionCnt++;
-  break;
-      case SEM::ABSTRACT_PROCESS:
-  abstractWwCnt++;
-  processCnt++;
-  break;
-      case SEM::CONCRETE_PROCESS:
-  concreteWwCnt++;
-  processCnt++;
-  break;
-      case SEM::UNDEFINED_PROCESS:
-  undefinedWwCnt++;
-  processCnt++;
-  break;
-      case SEM::ABSTRACT_UNDEFINED:
-  abstractWwCnt++;
-  break;
-      case SEM::CONCRETE_UNDEFINED:
-  concreteWwCnt++;
-  break;
-      case SEM::UNDEFINED_VERB:
-  undefinedWwCnt++;
-  undefinedATPCnt++;
-  break;
-      default:
-  ;
-      }
-      switch ( ws->intensify_type ) {
-          case Intensify::BVNW:
-              intensBvnwCnt++;
-              intensCnt++;
-              break;
-          case Intensify::BVBW:
-              intensBvbwCnt++;
-              intensCnt++;
-              break;
-          case Intensify::BW:
-              intensBwCnt++;
-              intensCnt++;
-              break;
-          case Intensify::COMBI:
-              intensCombiCnt++;
-              intensCnt++;
-              break;
-          case Intensify::NW:
-              intensNwCnt++;
-              intensCnt++;
-              break;
-          case Intensify::TUSS:
-              intensTussCnt++;
-              intensCnt++;
-              break;
-          case Intensify::WW:
-              intensWwCnt++;
-              intensCnt++;
-              break;
-          default:
-              break;
-      }
+      
       // Counts for general nouns
       if (ws->general_noun_type != General::NO_GENERAL) generalNounCnt++;
       if (General::isSeparate(ws->general_noun_type)) generalNounSepCnt++;
@@ -2351,10 +2246,6 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
       if (General::isKnowledge(ws->general_verb_type)) generalVerbKnowCnt++;
       if (General::isDiscussion(ws->general_verb_type)) generalVerbDiscCnt++;
       if (General::isDevelopment(ws->general_verb_type)) generalVerbDeveCnt++;
-
-      // Counts for adverbs
-      if (ws->adverb_type == Adverb::GENERAL) generalAdverbCnt++;
-      if (ws->adverb_type == Adverb::SPECIFIC) specificAdverbCnt++;
 
       // Counts for compounds
       if (ws->tag == CGN::N) {
@@ -2502,11 +2393,6 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           prevalenceContentZ += ws->prevalenceZ;
           prevalenceContentCovered++;
         }
-      }
-
-      // My classification
-      if ( !ws->my_classification.empty() ) {
-        ++my_classification[ws->my_classification];
       }
 
       sv.push_back( ws );

@@ -124,6 +124,8 @@ f.write("general_nouns=\"general_nouns.data\"\n")
 f.write("general_verbs=\"general_verbs.data\"\n")
 f.write("adverbs=\"adverbs.data\"\n")
 
+# 20180305: This allows a stoplist.
+load_custom_wordlist(f, inputdir, "stop_lemmata", "stoplist")
 # 20160802: This allows a completely dcustom classification.
 load_custom_wordlist(f, inputdir, "my_classification", "myclassification")
 # 20150316: This allows custom adjective classification.
