@@ -34,7 +34,7 @@ Installation is not trivial, to be able to succesfully build tscan from the tarb
 - autoconf-archive
 - ticcutils
 - libfolia
-- Alpino 
+- Alpino
 - frog
 - wopr
 - CLAM
@@ -42,14 +42,11 @@ Installation is not trivial, to be able to succesfully build tscan from the tarb
 To facilitate installation, T-Scan is included as an extra option in [LaMachine](https://proycon.github.io/LaMachine)
 
 We strongly recommend to use [LaMachine](https://proycon.github.io/LaMachine) to
-install tscan. In addition, T-Scan also uses Alpino, which has to be obtained separately from
-http://www.let.rug.nl/vannoord/alp/Alpino/.
+install tscan. In addition, T-Scan also uses Alpino, which is also included in LaMachine.
 
-To install LaMachine with T-Scan you need to pass the ``tscan`` argument, as it is **not** included by default:
+To install T-scan in an existing LaMachine environment you may need to adapt your installation manifest, as it is **not** included by default:
 
-    $ git clone https://github.com/proycon/LaMachine
-    $ ./LaMachine/virtualenv-bootstrap.sh tscan
-    $ rm -Rf LaMachine    #repository is not needed anymore
+    (lamachine)$ lamachine-update --edit
 
 If you do not want to use LaMachine, first make sure you have **all** necessary dependencies and then compile/install as follows:
 
@@ -57,12 +54,14 @@ If you do not want to use LaMachine, first make sure you have **all** necessary 
     $ ./configure
     $ make
     $ sudo make install
+    $ cd webservice
+    $ python3 setup.py install
 
 ## Usage
 
 If you use LaMachine as recommended, always activate the virtual environment first.
-    
-    $ . /path/to/lamachine/bin/activate
+
+    $ source lamachine-activate
 
 Before you can use T-Scan you need to start the background servers (you may need to edit the scripts to set ports and paths):
 
@@ -81,8 +80,7 @@ Then either run tscan from the command-line, which will produce a FoLiA XML file
 
 ... or use the webapplication/webservice:
 
-    $ cd tscan/webservices
-    $ clamservice tscan   #this starts the CLAM service for TSCAN
+    $ clamservice ticclservice.tscan   #this starts the CLAM service for TSCAN
 
 And then navigate to the host and port specified.
 
