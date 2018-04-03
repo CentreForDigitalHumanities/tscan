@@ -24,7 +24,7 @@ import glob
 
 #DEBUG = True
 
-REQUIRE_VERSION = 0.99
+REQUIRE_VERSION = 2.3
 CLAMDIR = clam.__path__[0]
 
 # ======== GENERAL INFORMATION ===========
@@ -45,88 +45,16 @@ SYSTEM_DESCRIPTION = ""
 
 USERS = None
 
-# ================ Server specific configuration for CLAM ===============
-hostname = os.uname()[1]
-if 'VIRTUAL_ENV' in os.environ and os.path.exists(os.environ['VIRTUAL_ENV'] + '/bin/tscan'):
-    # Virtual Environment (LaMachine)
-    ROOT = os.environ['VIRTUAL_ENV'] + "/tscan.clam/"
-    PORT = 8809
-    BINDIR = os.environ['VIRTUAL_ENV'] + '/bin/'
-    TSCANDIR = os.environ['VIRTUAL_ENV'] + '/src/tscan/'
-
-    if hostname == 'applejack':  # server in Nijmegen
-        HOST = "webservices-lst.science.ru.nl"
-        URLPREFIX = 'tscan'
-
-        if not 'CLAMTEST' in os.environ:
-            ROOT = "/scratch2/www/webservices-lst/live/writable/tscan/"
-            if 'CLAMSSL' in os.environ:
-                PORT = 443
-            else:
-                PORT = 80
-        else:
-            ROOT = "/scratch2/www/webservices-lst/test/writable/tscan/"
-            PORT = 81
-
-        USERS_MYSQL = {
-            'host': 'mysql-clamopener.science.ru.nl',
-            'user': 'clamopener',
-            'password': D(open(os.environ['CLAMOPENER_KEYFILE']).read().strip()),
-            'database': 'clamopener',
-            'table': 'clamusers_clamusers'
-        }
-        DEBUG = False
-        REALM = "WEBSERVICES-LST"
-        DIGESTOPAQUE = open(os.environ['CLAM_DIGESTOPAQUEFILE']).read().strip()
-        SECRET_KEY = open(os.environ['CLAM_SECRETKEYFILE']).read().strip()
-        ADMINS = ['proycon', 'antalb', 'wstoop']
-
-        #The amount of diskspace a user may use (in MB), this is a soft quota which can be exceeded, but creation of new projects is blocked until usage drops below the quota again
-        USERQUOTA = 6144
-    elif hostname == 'mlp01':  # server in Nijmegen
-        HOST = "webservices-lst.science.ru.nl"
-        URLPREFIX = 'tscan'
-
-        if not 'CLAMTEST' in os.environ:
-            ROOT = "/var/www/webservices-lst/live/writable/tscan/"
-            if 'CLAMSSL' in os.environ:
-                PORT = 443
-            else:
-                PORT = 80
-        else:
-            ROOT = "/var/www/webservices-lst/test/writable/tscan/"
-            PORT = 81
-
-        USERS_MYSQL = {
-            'host': 'mysql-clamopener.science.ru.nl',
-            'user': 'clamopener',
-            'password': D(open(os.environ['CLAMOPENER_KEYFILE']).read().strip()),
-            'database': 'clamopener',
-            'table': 'clamusers_clamusers'
-        }
-        DEBUG = False
-        REALM = "WEBSERVICES-LST"
-        DIGESTOPAQUE = open(os.environ['CLAM_DIGESTOPAQUEFILE']).read().strip()
-        SECRET_KEY = open(os.environ['CLAM_SECRETKEYFILE']).read().strip()
-        ADMINS = ['proycon', 'antalb', 'wstoop']
-
-        #The amount of diskspace a user may use (in MB), this is a soft quota which can be exceeded, but creation of new projects is blocked until usage drops below the quota again
-        USERQUOTA = 6144
-else:  # local
-    TSCANDIR = os.path.dirname(sys.argv[0])
-    ROOT = "/tmp/tscan.clam/"
-    PORT = 8080
-    USERS = None
 
 if 'ALPINO_HOME' in os.environ:
     ALPINOHOME = os.environ['ALPINO_HOME']
 else:
     ALPINOHOME = ""
 
+#load external configuration file (see tscan.config.yml)
+loadconfig(__name__)
 
-#The hostname of the system. Will be automatically determined if not set. (If you start clam with the built-in webserver, you can override this with -H)
-#Users *must* make use of this hostname and no other (even if it points to the same IP) for the web application to work.
-#HOST = 'localhost'
+
 
 #If the webservice runs in another webserver (e.g. apache, nginx, lighttpd), and it
 #doesn't run at the root of the server, you can specify a URL prefix here:
