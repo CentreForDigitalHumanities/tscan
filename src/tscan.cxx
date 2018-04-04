@@ -1937,6 +1937,7 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
       if (ws->isContentStrict) contentStrictCnt++;
       if (ws->tag == CGN::N) nounCnt++;
       if (ws->tag == CGN::WW) verbCnt++;
+      if (ws->tag == CGN::ADJ) adjCnt++;
 
       NER::Type ner = NER::lookupNer(w[i], s);
       ws->nerProp = ner;
