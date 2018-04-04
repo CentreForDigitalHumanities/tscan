@@ -1,12 +1,12 @@
 #! /bin/bash -x
-if [ `hostname` == "applejack" ]; then
-    FROGPATH="/scratch2/www/lamachine"
-    LOGFILE="/scratch2/www/webservices-lst/live/writable/tscan/frog.log"
-    THREADS=8
-elif [ `hostname` == "mlp01" ]; then
+if [ `hostname` == "mlp01" ]; then
     FROGPATH="/var/www/lamachine"
     LOGFILE="/var/www/webservices-lst/live/writable/logs/tscan.frog.err"
     THREADS=8
+elif [ ! -z "$LM_PREFIX" ]; then
+    #LaMachine v2
+    FROGPATH="$LM_PREFIX"
+    LOGFILE="/tmp/frog-tscan.log"
 else
     FROGPATH="/usr/local/"
     LOGFILE="/tmp/frog-tscan.log"
