@@ -38,6 +38,7 @@
 #include "ticcutils/FileUtils.h"
 #include "ticcutils/CommandLine.h"
 #include "ticcutils/XMLtools.h"
+#include "ticcutils/Unicode.h"
 #include "libfolia/folia.h"
 #include "frog/FrogAPI.h"
 #include "tscan/Alpino.h"
@@ -1276,7 +1277,7 @@ string wordStats::checkMyClassification() const {
 // Returns whether the lemma appears on the stoplist
 bool wordStats::checkStoplist() const {
   bool result = false;
-  
+
   if ( settings.stop_lemmata[tag].find( lemma )
        != settings.stop_lemmata[tag].end() ){
     result = true;
@@ -1386,8 +1387,8 @@ wordStats::wordStats( int index,
 {
   UnicodeString us = w->text();
   charCnt = us.length();
-  word = folia::UnicodeToUTF8( us );
-  l_word = folia::UnicodeToUTF8( us.toLower() );
+  word = TiCC::UnicodeToUTF8( us );
+  l_word = TiCC::UnicodeToUTF8( us.toLower() );
   if ( fail )
     return;
   vector<folia::PosAnnotation*> posV = w->select<folia::PosAnnotation>(frog_pos_set);
@@ -1397,8 +1398,8 @@ wordStats::wordStats( int index,
   pos = pa->cls();
   tag = CGN::toCGN( pa->feat("head") );
   lemma = w->lemma( frog_lemma_set );
-  us = folia::UTF8ToUnicode( lemma );
-  l_lemma = folia::UnicodeToUTF8( us.toLower() );
+  us = TiCC::UnicodeFromUTF8( lemma );
+  l_lemma = TiCC::UnicodeToUTF8( us.toLower() );
 
   setCGNProps( pa );
   if ( alpWord ){
@@ -1796,7 +1797,7 @@ void np_length( folia::Sentence *s, int& npcount, int& indefcount, int& size ) {
 sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           const map<string,double>& LSAword_dists ):
   structStats( index, s, "sent" ){
-  text = folia::UnicodeToUTF8( s->toktext() );
+  text = TiCC::UnicodeToUTF8( s->toktext() );
   cerr << "analyse tokenized sentence=" << text << endl;
   vector<folia::Word*> w = s->words();
   vector<double> woprProbsV_fwd(w.size(),NAN);
@@ -2230,7 +2231,7 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           break;
         default:;
       }
-      
+
       // Counts for general nouns
       if (ws->general_noun_type != General::NO_GENERAL) generalNounCnt++;
       if (General::isSeparate(ws->general_noun_type)) generalNounSepCnt++;
@@ -2688,7 +2689,7 @@ void docStats::gather_LSA_word_info( folia::Document *doc ){
   for ( size_t i=0; i < wv.size(); ++i ){
     UnicodeString us = wv[i]->text();
     us.toLower();
-    string s = folia::UnicodeToUTF8( us );
+    string s = TiCC::UnicodeToUTF8( us );
     bow.insert(s);
   }
   while ( !bow.empty() ){
@@ -2754,7 +2755,7 @@ void docStats::gather_LSA_doc_info( folia::Document *doc ){
       for ( size_t i=0; i < wv.size(); ++i ){
   UnicodeString us = wv[i]->text();
   us.toLower();
-  string s = folia::UnicodeToUTF8( us );
+  string s = TiCC::UnicodeToUTF8( us );
   bow.insert(s);
       }
       string norm_s;
@@ -3019,7 +3020,7 @@ xmlDoc *AlpinoServerParse( folia::Sentence *sent ){
 #ifdef DEBUG_ALPINO
   cerr << "start input loop" << endl;
 #endif
-  string txt = folia::UnicodeToUTF8(sent->toktext());
+  string txt = TiCC::UnicodeToUTF8(sent->toktext());
   client.write( txt + "\n\n" );
   string result;
   string s;
