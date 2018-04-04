@@ -76,7 +76,7 @@ Then either run tscan from the command-line, which will produce a FoLiA XML file
     $ cd tscan
     $ cp tscan.cfg.example tscan.cfg
     (edit tscan.cfg if necessary)
-    $ tscan -c tscan.cfg input.txt
+    $ tscan --config=tscan.cfg input.txt
 
 ... or use the webapplication/webservice:
 
