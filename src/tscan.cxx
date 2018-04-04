@@ -1,7 +1,7 @@
 /*
   T-scan
 
-  Copyright (c) 1998 - 2015
+  Copyright (c) 1998 - 2018
 
   This file is part of tscan
 
@@ -1382,10 +1382,10 @@ wordStats::wordStats( int index,
   sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY),
   general_noun_type(General::NO_GENERAL), general_verb_type(General::NO_GENERAL),
   adverb_type(Adverb::NO_ADVERB), adverb_sub_type(Adverb::NO_ADVERB_SUBTYPE),
-  afkType(Afk::NO_A), is_compound(false), compound_parts(0), on_stoplist(false),
-  word_freq_log_head(NAN), word_freq_log_sat(NAN), word_freq_log_head_sat(NAN), word_freq_log_corr(NAN)
+  afkType(Afk::NO_A), is_compound(false), compound_parts(0),
+  word_freq_log_head(NAN), word_freq_log_sat(NAN), word_freq_log_head_sat(NAN), word_freq_log_corr(NAN), on_stoplist(false)
 {
-  UnicodeString us = w->text();
+  icu::UnicodeString us = w->text();
   charCnt = us.length();
   word = TiCC::UnicodeToUTF8( us );
   l_word = TiCC::UnicodeToUTF8( us.toLower() );
@@ -1998,32 +1998,38 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
 
       switch (ws->top_freq) {
         // NO BREAKS (being in top1000 means being in top2000 as well)
-        case top1000:
-          ++top1000Cnt;
-          if (ws->isContent) ++top1000ContentCnt;
-          if (ws->isContentStrict) ++top1000ContentStrictCnt;
-        case top2000:
-          ++top2000Cnt;
-          if (ws->isContent) ++top2000ContentCnt;
-          if (ws->isContentStrict) ++top2000ContentStrictCnt;
-        case top3000:
-          ++top3000Cnt;
-          if (ws->isContent) ++top3000ContentCnt;
-          if (ws->isContentStrict) ++top3000ContentStrictCnt;
-        case top5000:
-          ++top5000Cnt;
-          if (ws->isContent) ++top5000ContentCnt;
-          if (ws->isContentStrict) ++top5000ContentStrictCnt;
-        case top10000:
-          ++top10000Cnt;
-          if (ws->isContent) ++top10000ContentCnt;
-          if (ws->isContentStrict) ++top10000ContentStrictCnt;
-        case top20000:
-          ++top20000Cnt;
-          if (ws->isContent) ++top20000ContentCnt;
-          if (ws->isContentStrict) ++top20000ContentStrictCnt;
-        default:
-          break;
+      case top1000:
+	++top1000Cnt;
+	if (ws->isContent) ++top1000ContentCnt;
+	if (ws->isContentStrict) ++top1000ContentStrictCnt;
+	// fallthrough
+      case top2000:
+	++top2000Cnt;
+	if (ws->isContent) ++top2000ContentCnt;
+	if (ws->isContentStrict) ++top2000ContentStrictCnt;
+	// fallthrough
+      case top3000:
+	++top3000Cnt;
+	if (ws->isContent) ++top3000ContentCnt;
+	if (ws->isContentStrict) ++top3000ContentStrictCnt;
+	// fallthrough
+      case top5000:
+	++top5000Cnt;
+	if (ws->isContent) ++top5000ContentCnt;
+	if (ws->isContentStrict) ++top5000ContentStrictCnt;
+	// fallthrough
+      case top10000:
+	++top10000Cnt;
+	if (ws->isContent) ++top10000ContentCnt;
+	if (ws->isContentStrict) ++top10000ContentStrictCnt;
+	// fallthrough
+      case top20000:
+	++top20000Cnt;
+	if (ws->isContent) ++top20000ContentCnt;
+	if (ws->isContentStrict) ++top20000ContentStrictCnt;
+	// fallthrough
+      default:
+	break;
       }
 
       switch (ws->sem_type) {
@@ -2255,17 +2261,20 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
         charCntNoun += ws->charCnt;
         word_freq_log_noun += ws->word_freq_log;
         switch (ws->top_freq) {
-          case top1000:
-            top1000CntNoun++;
-          case top2000:
-          case top3000:
-          case top5000:
-            top5000CntNoun++;
-          case top10000:
-          case top20000:
-            top20000CntNoun++;
-          default:
-            break;
+	case top1000:
+	  top1000CntNoun++;
+	  // fallthrough
+	case top2000:
+	case top3000:
+	case top5000:
+	  top5000CntNoun++;
+	  // fallthrough
+	case top10000:
+	case top20000:
+	  top20000CntNoun++;
+	  // fallthrough
+	default:
+	  break;
         }
 
         if (ws->is_compound) {
@@ -2293,43 +2302,53 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           }
 
           switch (ws->top_freq) {
-            case top1000:
-              top1000CntComp++;
-            case top2000:
-            case top3000:
-            case top5000:
-              top5000CntComp++;
-            case top10000:
-            case top20000:
-              top20000CntComp++;
-            default:
+	  case top1000:
+	    top1000CntComp++;
+	    // fallthrough
+	  case top2000:
+	  case top3000:
+	  case top5000:
+	    top5000CntComp++;
+	    // fallthrough
+	  case top10000:
+	  // fallthrough
+	  case top20000:
+	    top20000CntComp++;
+	    // fallthrough
+	  default:
               break;
           }
           switch (ws->top_freq_head) {
-            case top1000:
-              top1000CntHead++; top1000CntNounCorr++; top1000CntCorr++;
-            case top2000:
-            case top3000:
-            case top5000:
-              top5000CntHead++; top5000CntNounCorr++; top5000CntCorr++;
-            case top10000:
-            case top20000:
-              top20000CntHead++; top20000CntNounCorr++; top20000CntCorr++;
-            default:
-              break;
+	  case top1000:
+	    top1000CntHead++; top1000CntNounCorr++; top1000CntCorr++;
+	    // fallthrough
+	  case top2000:
+	  case top3000:
+	  case top5000:
+	    top5000CntHead++; top5000CntNounCorr++; top5000CntCorr++;
+	    // fallthrough
+	  case top10000:
+	  case top20000:
+	    top20000CntHead++; top20000CntNounCorr++; top20000CntCorr++;
+	    // fallthrough
+	  default:
+	    break;
           }
           switch (ws->top_freq_sat) {
-            case top1000:
-              top1000CntSat++;
-            case top2000:
-            case top3000:
-            case top5000:
-              top5000CntSat++;
-            case top10000:
-            case top20000:
-              top20000CntSat++;
-            default:
-              break;
+	  case top1000:
+	    top1000CntSat++;
+	    // fallthrough
+	  case top2000:
+	  case top3000:
+	  case top5000:
+	    top5000CntSat++;
+	    // fallthrough
+	  case top10000:
+	  case top20000:
+	    top20000CntSat++;
+	    // fallthrough
+	  default:
+	    break;
           }
         }
         else {
@@ -2347,17 +2366,20 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           }
 
           switch (ws->top_freq) {
-            case top1000:
-              top1000CntNonComp++; top1000CntNounCorr++; top1000CntCorr++;
-            case top2000:
-            case top3000:
-            case top5000:
-              top5000CntNonComp++; top5000CntNounCorr++; top5000CntCorr++;
-            case top10000:
-            case top20000:
-              top20000CntNonComp++; top20000CntNounCorr++; top20000CntCorr++;
-            default:
-              break;
+	  case top1000:
+	    top1000CntNonComp++; top1000CntNounCorr++; top1000CntCorr++;
+	    // fallthrough
+	  case top2000:
+	  case top3000:
+	  case top5000:
+	    top5000CntNonComp++; top5000CntNounCorr++; top5000CntCorr++;
+	    // fallthrough
+	  case top10000:
+	  case top20000:
+	    top20000CntNonComp++; top20000CntNounCorr++; top20000CntCorr++;
+	    // fallthrough
+	  default:
+	    break;
           }
         }
       }
@@ -2379,8 +2401,11 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
 
         switch (ws->top_freq) {
           case top1000: top1000CntCorr++;
+	    // fallthrough
           case top5000: top5000CntCorr++;
+	    // fallthrough
           case top20000: top20000CntCorr++;
+	    // fallthrough
           default: break;
         }
       }
@@ -2687,7 +2712,7 @@ void docStats::gather_LSA_word_info( folia::Document *doc ){
   vector<folia::Word*> wv = doc->words();
   set<string> bow;
   for ( size_t i=0; i < wv.size(); ++i ){
-    UnicodeString us = wv[i]->text();
+    icu::UnicodeString us = wv[i]->text();
     us.toLower();
     string s = TiCC::UnicodeToUTF8( us );
     bow.insert(s);
@@ -2753,15 +2778,15 @@ void docStats::gather_LSA_doc_info( folia::Document *doc ){
       vector<folia::Word*> wv = sv[s]->words();
       set<string> bow;
       for ( size_t i=0; i < wv.size(); ++i ){
-  UnicodeString us = wv[i]->text();
-  us.toLower();
-  string s = TiCC::UnicodeToUTF8( us );
-  bow.insert(s);
+	icu::UnicodeString us = wv[i]->text();
+	us.toLower();
+	string s = TiCC::UnicodeToUTF8( us );
+	bow.insert(s);
       }
       string norm_s;
       set<string>::iterator it = bow.begin();
       while ( it != bow.end() ) {
-  norm_s += *it++ + " ";
+	norm_s += *it++ + " ";
       }
       norm_sv[sv[s]->id()] = norm_s;
       norm_p += norm_s;
