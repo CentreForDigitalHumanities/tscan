@@ -149,7 +149,7 @@ struct wordStats : public basicStats {
   Conn::Type getConnType() const { return connType; };
   void setConnType( Conn::Type t ){ connType = t; };
   void setMultiConn(){ isMultiConn = true; };
-  void setPersRef();
+  bool setPersRef();
   void setSitType( Situation::Type t ){ sitType = t; };
   Situation::Type getSitType() const { return sitType; };
   void addMetrics() const;

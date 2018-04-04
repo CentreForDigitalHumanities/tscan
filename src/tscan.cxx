@@ -1931,8 +1931,6 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
       continue;
     }
     else {
-      sentStats::setCommonCounts(ws);
-      
       wordCnt++;
       if (ws->prop == CGN::ISNAME) nameCnt++;
       if (ws->isContent) contentCnt++;
@@ -1961,7 +1959,10 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
         default:;
       }
 
-      ws->setPersRef();  // need NER Info for this
+      ws->isPersRef = ws->setPersRef();  // need NER Info for this
+
+      sentStats::setCommonCounts(ws);
+
       heads[ws->tag]++;
       charCnt += ws->charCnt;
       charCntExNames += ws->charCntExNames;

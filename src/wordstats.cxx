@@ -8,15 +8,10 @@ vector<const wordStats*> wordStats::collectWords() const {
   return result;
 }
 
-void wordStats::setPersRef() {
-  if ( sem_type == SEM::CONCRETE_HUMAN_NOUN ||
+bool wordStats::setPersRef() {
+  return ( sem_type == SEM::CONCRETE_HUMAN_NOUN ||
        nerProp == NER::PER_B ||
-       prop == CGN::ISPPRON1 || prop == CGN::ISPPRON2 || prop == CGN::ISPPRON3 ){
-    isPersRef = true;
-  }
-  else {
-    isPersRef = false;
-  }
+       prop == CGN::ISPPRON1 || prop == CGN::ISPPRON2 || prop == CGN::ISPPRON3 );
 }
 
 bool wordStats::checkContent( bool strict ) const {
