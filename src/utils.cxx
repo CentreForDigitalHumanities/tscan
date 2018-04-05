@@ -179,6 +179,7 @@ string escape_quotes(const string &before)
     switch (before[i]) {
       case '"':
         after += '"'; // duplicate quotes
+	// fallthrough
       default:
         after += before[i];
     }
