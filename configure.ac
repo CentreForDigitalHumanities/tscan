@@ -59,7 +59,7 @@ fi
 AC_OSX_PKG( [icu4c] )
 AC_MSG_NOTICE([pkg-config: PATH=$PKG_CONFIG_PATH])
 
-PKG_CHECK_MODULES([ICU], [icu-uc >= 55 icu-io] )
+PKG_CHECK_MODULES([ICU], [icu-uc >= 50 icu-io] )
 CXXFLAGS="$CXXFLAGS $ICU_CFLAGS"
 LIBS="$ICU_LIBS $LIBS"
 
