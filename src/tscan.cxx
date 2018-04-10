@@ -72,7 +72,7 @@ struct cf_data {
 };
 
 struct noun {
-  noun(): type(NO_SEMTYPE),is_compound(false), compound_parts(0){};
+  noun(): type(SEM::NO_SEMTYPE),is_compound(false), compound_parts(0){};
   SEM::Type type;
   bool is_compound;
   string head;
@@ -1508,7 +1508,6 @@ double calculate_mtld( const vector<string>& v ){
       token_factor += 1.0;
 #endif
       token_count = 0;
-      token_ttr = 1.0;
       unique_tokens.clear();
 #ifdef DEBUG_MTLD
       cerr <<"\treset: token_factor = " << token_factor << endl << endl;
