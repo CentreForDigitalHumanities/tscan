@@ -21,7 +21,7 @@ echo "Downloading big data"
 PREDOWNLOAD=`$mystat tscan-bigdata.tar.bz2 2> /dev/null`
 echo pre=$PREDOWNLOAD
 wget -c -N https://resources.lab.hum.uu.nl/resources/tscan/tscan-bigdata.tar.bz2
-POSTDOWNLOAD=`mystat tscan-bigdata.tar.bz2 2> /dev/null`
+POSTDOWNLOAD=`$mystat tscan-bigdata.tar.bz2 2> /dev/null`
 echo post=$POSTDOWNLOAD
 
 if [ "$PREDOWNLOAD" != "$POSTDOWNLOAD" ]; then
