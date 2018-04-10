@@ -2,19 +2,6 @@
 
 using namespace std;
 
-/*****
- * LSA
- *****/
-
-void docStats::setLSAvalues( double suc, double net, double ctx ){
-  if ( suc > 0 )
-    lsa_par_suc = suc;
-  if ( net > 0 )
-    lsa_par_net = net;
-  if ( ctx > 0 )
-    lsa_par_ctx = ctx;
-}
-
 /********
  * RARITY
  ********/

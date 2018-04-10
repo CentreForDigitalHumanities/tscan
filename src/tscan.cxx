@@ -94,7 +94,6 @@ struct settingData {
   bool doAlpino;
   bool doAlpinoServer;
   bool doWopr;
-  bool doLsa;
   bool doXfiles;
   bool showProblems;
   bool sentencePerLine;
@@ -781,19 +780,6 @@ void settingData::init( const TiCC::Configuration& cf ){
       exit( EXIT_FAILURE );
     }
   }
-  doLsa = false;
-  val = cf.lookUp( "useLsa" );
-  if ( !val.empty() ){
-    if ( !TiCC::stringTo( val, doLsa ) ){
-      cerr << "invalid value for 'useLsa' in config file" << endl;
-      exit( EXIT_FAILURE );
-    }
-    if ( doLsa ){
-      cerr << "sorry, but LSA is disabled. Please remove 'useLsa' from the "
-     	   << "config file, or set it to false." << endl;
-      exit( EXIT_FAILURE );
-    }
-  }
   showProblems = true;
   val = cf.lookUp( "logProblems" );
   if ( !val.empty() ){
@@ -997,7 +983,7 @@ inline void usage(){
   cerr << "\t--config=<file> read configuration from 'file' " << endl;
   cerr << "\t-V or --version show version " << endl;
   cerr << "\t-n assume input file to hold one sentence per line" << endl;
-  cerr << "\t--skip=[aclw]    Skip Alpino (a), CSV output (c), Lsa (l) or Wopr (w).\n";
+  cerr << "\t--skip=[aclw]    Skip Alpino (a), CSV output (c) or Wopr (w).\n";
   cerr << "\t-t <file> process the 'file'. (deprecated)" << endl;
   cerr << endl;
 }
@@ -1794,8 +1780,7 @@ void np_length( folia::Sentence *s, int& npcount, int& indefcount, int& size ) {
   }
 }
 
-sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
-          const map<string,double>& LSAword_dists ):
+sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred ):
   structStats( index, s, "sent" ){
   text = TiCC::UnicodeToUTF8( s->toktext() );
   cerr << "analyse tokenized sentence=" << text << endl;
@@ -2434,9 +2419,6 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
   resolveConnectives();
   resolveSituations();
   calculate_MTLDs();
-  if ( settings.doLsa ){
-    resolveLSA( LSAword_dists );
-  }
   resolveMultiWordIntensify();
   // Disabled for now
   //  resolveMultiWordAfks();
@@ -2613,22 +2595,16 @@ void sentStats::resolveAdverbials(xmlDoc *alpDoc) {
   }
 }
 
-parStats::parStats( int index,
-        folia::Paragraph *p,
-        const map<string,double>& LSA_word_dists,
-        const map<string,double>& LSA_sent_dists ):
+parStats::parStats( int index, folia::Paragraph *p ):
   structStats( index, p, "par" )
 {
   sentCnt = 0;
   vector<folia::Sentence*> sents = p->sentences();
   sentStats *prev = 0;
   for ( size_t i=0; i < sents.size(); ++i ){
-    sentStats *ss = new sentStats( i, sents[i], prev, LSA_word_dists );
+    sentStats *ss = new sentStats( i, sents[i], prev );
     prev = ss;
     merge( ss );
-  }
-  if ( settings.doLsa ){
-    resolveLSA( LSA_sent_dists );
   }
   calculate_MTLDs();
 
@@ -2698,210 +2674,6 @@ void docStats::calculate_doc_overlap( ){
   }
 }
 
-//#define DEBUG_LSA_SERVER
-
-void docStats::gather_LSA_word_info( folia::Document *doc ){
-  string host = config.lookUp( "host", "lsa_words" );
-  string port = config.lookUp( "port", "lsa_words" );
-  Sockets::ClientSocket client;
-  if ( !client.connect( host, port ) ){
-    cerr << "failed to open LSA connection: "<< host << ":" << port << endl;
-    cerr << "Reason: " << client.getMessage() << endl;
-    exit( EXIT_FAILURE );
-  }
-  vector<folia::Word*> wv = doc->words();
-  set<string> bow;
-  for ( size_t i=0; i < wv.size(); ++i ){
-    icu::UnicodeString us = wv[i]->text();
-    us.toLower();
-    string s = TiCC::UnicodeToUTF8( us );
-    bow.insert(s);
-  }
-  while ( !bow.empty() ){
-    set<string>::iterator it = bow.begin();
-    string word = *it;
-    bow.erase( it );
-    it = bow.begin();
-    while ( it != bow.end() ) {
-      string call = word + "\t" + *it;
-      string rcall = *it + "\t" + word;
-      if ( LSA_word_dists.find( call ) == LSA_word_dists.end() ){
-#ifdef DEBUG_LSA_SERVER
-  cerr << "calling LSA: '" << call << "'" << endl;
-#endif
-  client.write( call + "\r\n" );
-  string s;
-  if ( !client.read(s) ){
-    cerr << "LSA connection failed " << endl;
-    exit( EXIT_FAILURE );
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "received data [" << s << "]" << endl;
-#endif
-  double result = 0;
-  if ( !TiCC::stringTo( s , result ) ){
-    cerr << "LSA result conversion failed: " << s << endl;
-    result = 0;
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "LSA result: " << result << endl;
-#endif
-#ifdef DEBUG_LSA
-  cerr << "LSA: '" << call << "' ==> " << result << endl;
-#endif
-  if ( result != 0 ){
-    LSA_word_dists[call] = result;
-    LSA_word_dists[rcall] = result;
-  }
-      }
-      ++it;
-    }
-  }
-}
-
-void docStats::gather_LSA_doc_info( folia::Document *doc ){
-  string host = config.lookUp( "host", "lsa_docs" );
-  string port = config.lookUp( "port", "lsa_docs" );
-  Sockets::ClientSocket client;
-  if ( !client.connect( host, port ) ){
-    cerr << "failed to open LSA connection: "<< host << ":" << port << endl;
-    cerr << "Reason: " << client.getMessage() << endl;
-    exit( EXIT_FAILURE );
-  }
-  vector<folia::Paragraph*> pv = doc->paragraphs();
-  map<string,string> norm_pv;
-  map<string,string> norm_sv;
-  for ( size_t p=0; p < pv.size(); ++p ){
-    vector<folia::Sentence*> sv = pv[p]->sentences();
-    string norm_p;
-    for ( size_t s=0; s < sv.size(); ++s ){
-      vector<folia::Word*> wv = sv[s]->words();
-      set<string> bow;
-      for ( size_t i=0; i < wv.size(); ++i ){
-	icu::UnicodeString us = wv[i]->text();
-	us.toLower();
-	string s = TiCC::UnicodeToUTF8( us );
-	bow.insert(s);
-      }
-      string norm_s;
-      set<string>::iterator it = bow.begin();
-      while ( it != bow.end() ) {
-	norm_s += *it++ + " ";
-      }
-      norm_sv[sv[s]->id()] = norm_s;
-      norm_p += norm_s;
-    }
-    norm_pv[pv[p]->id()] = norm_p;
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "LSA doc Paragraaf results" << endl;
-  for ( map<string,string>::const_iterator it = norm_pv.begin();
-  it != norm_pv.end();
-  ++it ){
-    cerr << "paragraaf " << it->first << endl;
-    cerr << it->second << endl;
-  }
-  cerr << "en de Zinnen" << endl;
-  for ( map<string,string>::const_iterator it = norm_sv.begin();
-  it != norm_sv.end();
-  ++it ){
-    cerr << "zin " <<  it->first << endl;
-    cerr << it->second << endl;
-  }
-#endif
-
-  for ( map<string,string>::const_iterator it1 = norm_pv.begin();
-  it1 != norm_pv.end();
-  ++it1 ){
-    for ( map<string,string>::const_iterator it2 = it1;
-    it2 != norm_pv.end();
-    ++it2 ){
-      if ( it2 == it1 )
-  continue;
-      string index = it1->first + "<==>" + it2->first;
-      string rindex = it2->first + "<==>" + it1->first;
-#ifdef DEBUG_LSA
-      cerr << "LSA combine paragraaf " << index << endl;
-#endif
-      string call = it1->second + "\t" + it2->second;
-      if ( LSA_paragraph_dists.find( index ) == LSA_paragraph_dists.end() ){
-#ifdef DEBUG_LSA_SERVER
-  cerr << "calling LSA docs: '" << call << "'" << endl;
-#endif
-  client.write( call + "\r\n" );
-  string s;
-  if ( !client.read(s) ){
-    cerr << "LSA connection failed " << endl;
-    exit( EXIT_FAILURE );
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "received data [" << s << "]" << endl;
-#endif
-  double result = 0;
-  if ( !TiCC::stringTo( s , result ) ){
-    cerr << "LSA result conversion failed: " << s << endl;
-    result = 0;
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "LSA result: " << result << endl;
-#endif
-#ifdef DEBUG_LSA
-  cerr << "LSA: '" << index << "' ==> " << result << endl;
-#endif
-  if ( result != 0 ){
-    LSA_paragraph_dists[index] = result;
-    LSA_paragraph_dists[rindex] = result;
-  }
-      }
-    }
-  }
-  for ( map<string,string>::const_iterator it1 = norm_sv.begin();
-  it1 != norm_sv.end();
-  ++it1 ){
-    for ( map<string,string>::const_iterator it2 = it1;
-    it2 != norm_sv.end();
-    ++it2 ){
-      if ( it2 == it1 )
-  continue;
-      string index = it1->first + "<==>" + it2->first;
-      string rindex = it2->first + "<==>" + it1->first;
-#ifdef DEBUG_LSA
-      cerr << "LSA combine sentence " << index << endl;
-#endif
-      string call = it1->second + "\t" + it2->second;
-      if ( LSA_sentence_dists.find( index ) == LSA_sentence_dists.end() ){
-#ifdef DEBUG_LSA_SERVER
-  cerr << "calling LSA docs: '" << call << "'" << endl;
-#endif
-  client.write( call + "\r\n" );
-  string s;
-  if ( !client.read(s) ){
-    cerr << "LSA connection failed " << endl;
-    exit( EXIT_FAILURE );
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "received data [" << s << "]" << endl;
-#endif
-  double result = 0;
-  if ( !TiCC::stringTo( s , result ) ){
-    cerr << "LSA result conversion failed: " << s << endl;
-    result = 0;
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "LSA result: " << result << endl;
-#endif
-#ifdef DEBUG_LSA
-  cerr << "LSA: '" << index << "' ==> " << result << endl;
-#endif
-  if ( result != 0 ){
-    LSA_sentence_dists[index] = result;
-    LSA_sentence_dists[rindex] = result;
-  }
-      }
-    }
-  }
-}
-
 docStats::docStats( folia::Document *doc ):
   structStats( 0, 0, "document" ),
   doc_word_overlapCnt(0), doc_lemma_overlapCnt(0)
@@ -2916,19 +2688,12 @@ docStats::docStats( folia::Document *doc ):
   if ( !settings.style.empty() ){
     doc->replaceStyle( "text/xsl", settings.style );
   }
-  if ( settings.doLsa ){
-    gather_LSA_word_info( doc );
-    gather_LSA_doc_info( doc );
-  }
   vector<folia::Paragraph*> pars = doc->paragraphs();
   if ( pars.size() > 0 )
     folia_node = pars[0]->parent();
   for ( size_t i=0; i != pars.size(); ++i ){
-    parStats *ps = new parStats( i, pars[i], LSA_word_dists, LSA_sentence_dists );
+    parStats *ps = new parStats( i, pars[i] );
       merge( ps );
-  }
-  if ( settings.doLsa ){
-    resolveLSA( LSA_paragraph_dists );
   }
   calculate_MTLDs();
 
@@ -3159,9 +2924,6 @@ int main(int argc, char *argv[]) {
     string skip = val;
     if ( skip.find_first_of("wW") != string::npos ){
       settings.doWopr = false;
-    }
-    if ( skip.find_first_of("lL") != string::npos ){
-      settings.doLsa = false;
     }
     if ( skip.find_first_of("aA") != string::npos ){
       settings.doAlpino = false;

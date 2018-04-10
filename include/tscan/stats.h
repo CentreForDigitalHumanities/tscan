@@ -34,9 +34,7 @@ struct basicStats {
     charCnt(0),
     charCntExNames(0),
     morphCnt(0),
-    morphCntExNames(0),
-    lsa_opv(0),
-    lsa_ctx(0)
+    morphCntExNames(0)
   { if ( el ){
       id = el->id();
     }
@@ -95,8 +93,6 @@ struct basicStats {
   virtual std::vector<const wordStats*> collectWords() const = 0;
   virtual double get_al_gem() const { return NAN; };
   virtual double get_al_max() const { return NAN; };
-  void setLSAsuc( double d ){ lsa_opv = d; };
-  void setLSAcontext( double d ){ lsa_ctx = d; };
   folia::FoliaElement* folia_node;
   std::string category;
   std::string id;
@@ -105,8 +101,6 @@ struct basicStats {
   int charCntExNames;
   int morphCnt;
   int morphCntExNames;
-  double lsa_opv;
-  double lsa_ctx;
   std::vector<basicStats*> sv;
 };
 
@@ -378,14 +372,6 @@ struct structStats: public basicStats {
     entropy_bwd(NAN),
     perplexity_fwd(NAN),
     perplexity_bwd(NAN),
-    lsa_word_suc(NAN),
-    lsa_word_net(NAN),
-    lsa_sent_suc(NAN),
-    lsa_sent_net(NAN),
-    lsa_sent_ctx(NAN),
-    lsa_par_suc(NAN),
-    lsa_par_net(NAN),
-    lsa_par_ctx(NAN),
     al_gem(NAN),
     al_max(NAN),
     intensCnt(0),
@@ -573,9 +559,6 @@ struct structStats: public basicStats {
   virtual int word_overlapCnt() const { return -1; };
   virtual int lemma_overlapCnt() const { return -1; };
   std::vector<const wordStats*> collectWords() const;
-  virtual void setLSAvalues( double, double, double = 0 ) = 0;
-  virtual void resolveLSA( const std::map<std::string,double>& );
-  void calculate_LSA_summary();
   double get_al_gem() const { return al_gem; };
   double get_al_max() const { return al_max; };
   virtual double getMeanAL() const;
@@ -712,14 +695,6 @@ struct structStats: public basicStats {
   double entropy_bwd;
   double perplexity_fwd;
   double perplexity_bwd;
-  double lsa_word_suc;
-  double lsa_word_net;
-  double lsa_sent_suc;
-  double lsa_sent_net;
-  double lsa_sent_ctx;
-  double lsa_par_suc;
-  double lsa_par_net;
-  double lsa_par_ctx;
   double al_gem;
   double al_max;
   int intensCnt;
@@ -895,12 +870,10 @@ struct structStats: public basicStats {
 
 
 struct sentStats : public structStats {
-  sentStats( int, folia::Sentence*, const sentStats*, const std::map<std::string,double>& );
+  sentStats( int, folia::Sentence*, const sentStats* );
   bool isSentence() const { return true; };
   void resolveConnectives();
   void resolveSituations();
-  void setLSAvalues( double, double, double = 0 );
-  void resolveLSA( const std::map<std::string,double>& );
   void resolveMultiWordIntensify();
   void resolveMultiWordAfks();
   void addMetrics() const;
@@ -920,9 +893,8 @@ struct sentStats : public structStats {
 
 
 struct parStats: public structStats {
-  parStats( int, folia::Paragraph*, const std::map<std::string,double>&, const std::map<std::string,double>& );
+  parStats( int, folia::Paragraph* );
   void addMetrics() const;
-  void setLSAvalues( double, double, double );
 };
 
 
@@ -935,14 +907,8 @@ struct docStats : public structStats {
   int word_overlapCnt() const { return doc_word_overlapCnt; };
   int lemma_overlapCnt() const { return doc_lemma_overlapCnt; };
   void calculate_doc_overlap();
-  void setLSAvalues( double, double, double );
-  void gather_LSA_word_info( folia::Document* );
-  void gather_LSA_doc_info( folia::Document* );
   int doc_word_overlapCnt;
   int doc_lemma_overlapCnt;
-  std::map<std::string,double> LSA_word_dists;
-  std::map<std::string,double> LSA_sentence_dists;
-  std::map<std::string,double> LSA_paragraph_dists;
   double rarity_index;
 };
 
