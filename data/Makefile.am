@@ -1,5 +1,4 @@
-# $Id $
-# $URL$
+
 config_DATA = adjs_semtype.data nouns_semtype.data \
 	verbs_semtype.data intensiveringen.data dcoi_staphformat.freq \
 	freqlist_sonarnews_lemma.freq freqlist_sonarnews_words20000.freq \
