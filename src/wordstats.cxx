@@ -726,10 +726,6 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "situation", Situation::toString(sitType) );
   if ( isMultiConn )
     addOneMetric( doc, el, "multi_connective", "true" );
-  if ( lsa_opv )
-    addOneMetric( doc, el, "lsa_word_suc", TiCC::toString(lsa_opv) );
-  if ( lsa_ctx )
-    addOneMetric( doc, el, "lsa_word_ctx", TiCC::toString(lsa_ctx) );
   if ( !std::isnan(prevalenceP) )
     addOneMetric( doc, el, "prevalenceP", TiCC::toString(prevalenceP) );
   if ( !std::isnan(prevalenceZ) )

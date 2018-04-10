@@ -89,7 +89,6 @@ if 'sentencePerLine' in clamdata and clamdata['sentencePerLine'] == 'yes':
 else:
     f.write("sentencePerLine=0\n")
 
-f.write("useLsa=0\n")  # LSA is disabled
 f.write("surprisalPath=\"" + TSCANDIR + "\"\n")
 f.write("styleSheet=\"tscanview.xsl\"\n")
 
@@ -173,17 +172,7 @@ f.write("[[alpino]]\n")
 f.write("port=7003\n")
 f.write("host=127.0.0.1\n")
 
-f.write("[[lsa_words]]\n")
-f.write("port=7004\n")
-f.write("host=127.0.0.1\n")
-
-f.write("[[lsa_docs]]\n")
-f.write("port=7005\n")
-f.write("host=127.0.0.1\n")
-
-
 f.close()
-
 
 #collect all input files
 inputfiles = []
