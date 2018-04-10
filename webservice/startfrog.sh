@@ -18,4 +18,4 @@ CONFIG=${FROGPATH}/share/frog/nld/tscan-frog.cfg
 
 mv $LOGFILE $LOGFILE.sav # poor mans solution
 
-frog -X --id=${ID} -c ${CONFIG} --skip=mp -S${PORT} 2> $LOGFILE
+frog -X --id=${ID} -c ${CONFIG} --skip=mp -S"${PORT}" 2> $LOGFILE
