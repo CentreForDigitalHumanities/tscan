@@ -10,7 +10,7 @@ namespace SEM {
         NO_SEMTYPE,
         UNFOUND_NOUN, UNFOUND_ADJ, UNFOUND_VERB,
         UNDEFINED_NOUN, UNDEFINED_ADJ,
-        CONCRETE_DYNAMIC_NOUN, ABSTRACT_DYNAMIC_NOUN, 
+        CONCRETE_DYNAMIC_NOUN, ABSTRACT_DYNAMIC_NOUN,
         ABSTRACT_SUBSTANCE_NOUN, ABSTRACT_NONDYNAMIC_NOUN,
         BROAD_CONCRETE_PLACE_NOUN,
         BROAD_CONCRETE_TIME_NOUN,
@@ -34,9 +34,9 @@ namespace SEM {
     };
 
     std::string toString(Type);
-    Type classifyNoun(std::string);
-    Type classifyWW(std::string, std::string = "");
-    Type classifyADJ(std::string, std::string = "");
+    Type classifyNoun( const std::string& );
+    Type classifyWW( const std::string&, const std::string& = "");
+    Type classifyADJ( const std::string&, const std::string& = "");
     bool isStrictNoun(Type);
     bool isBroadNoun(Type);
     bool isStrictAdj(Type);

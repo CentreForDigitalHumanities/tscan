@@ -153,7 +153,6 @@ xmlNode *node_search( const xmlNode* node,
     }
     pnt = pnt->next;;
   }
-  pnt = node->children;
   // no luck, so get down the non-root nodes
   pnt = node->children;
   while ( pnt ){

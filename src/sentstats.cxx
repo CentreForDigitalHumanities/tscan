@@ -156,7 +156,7 @@ void sentStats::setCommonCounts(wordStats *ws) {
   // Counts for adverbs
   if (ws->adverb_type == Adverb::GENERAL) generalAdverbCnt++;
   if (ws->adverb_type == Adverb::SPECIFIC) specificAdverbCnt++;
-  
+
   // Counts for intensifying words
   switch (ws->intensify_type) {
     case Intensify::BVNW:
@@ -541,10 +541,9 @@ void sentStats::resolveLSA( const map<string,double>& LSAword_dists ) {
       string word1 = sv[i]->ltext();
       string word2 = sv[j]->ltext();
       string call = word1 + "\t" + word2;
-      double result = 0;
       map<string,double>::const_iterator it = LSAword_dists.find(call);
       if ( it != LSAword_dists.end() ){
-	result = it->second;
+	double result = it->second;
 	if ( j == i+1 ){
 	  sv[i]->setLSAsuc(result);
 	  suc += result;

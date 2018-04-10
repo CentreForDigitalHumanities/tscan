@@ -72,6 +72,7 @@ struct cf_data {
 };
 
 struct noun {
+  noun(): type(NO_SEMTYPE),is_compound(false), compound_parts(0){};
   SEM::Type type;
   bool is_compound;
   string head;
@@ -1504,11 +1505,10 @@ double calculate_mtld( const vector<string>& v ){
   int token_count = 0;
   set<string> unique_tokens;
   double token_factor = 0.0;
-  double token_ttr = 1.0;
   for ( size_t i=0; i < v.size(); ++i ){
     ++token_count;
     unique_tokens.insert(v[i]);
-    token_ttr = unique_tokens.size() / double(token_count);
+    double token_ttr = unique_tokens.size() / double(token_count);
 #ifdef DEBUG_MTLD
     cerr << v[i] << "\t [" << unique_tokens.size() << "/"
 	 << token_count << "] >> ttr " << token_ttr << endl;
@@ -1694,13 +1694,13 @@ void orderWopr( const string& type, const string& txt, vector<double>& wordProbs
 #ifdef DEBUG_WOPR
     cerr << "start FoLiA parsing" << endl;
 #endif
-    folia::Document *doc = new folia::Document();
+    folia::Document doc;
     try {
-      doc->readFromString( result );
+      doc.readFromString( result );
 #ifdef DEBUG_WOPR
       cerr << "finished parsing" << endl;
 #endif
-      vector<folia::Word*> wv = doc->words();
+      vector<folia::Word*> wv = doc.words();
       if ( wv.size() !=  wordProbsV.size() ){
 	cerr << "unforseen mismatch between de number of words returned by WOPR"
 	    << endl << " and the number of words in the input sentence. "
@@ -1717,10 +1717,9 @@ void orderWopr( const string& type, const string& txt, vector<double>& wordProbs
 	  }
 	}
       }
-      vector<folia::Sentence*> sv = doc->sentences();
+      vector<folia::Sentence*> sv = doc.sentences();
       if ( sv.size() != 1 ){
 	throw logic_error( "The document returned by WOPR contains > 1 Sentence" );
-	return;
       }
       vector<folia::Metric*> mv = sv[0]->select<folia::Metric>();
       if ( mv.size() > 0 ){
