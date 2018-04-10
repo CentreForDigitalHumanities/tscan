@@ -1,24 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="tscanview.xsl"?>
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.8" version="1.4.1">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.13" version="1.5.1">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2017-06-16T16:25:36" set="tscan-tokconfig-nld"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2017-06-16T16:25:36" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2017-06-16T16:25:36" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2017-06-16T16:25:36" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
-      <pos-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2017-06-16T16:25:36" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-      <chunking-annotation annotator="frog-chunker-1.0" annotatortype="auto" datetime="2017-06-16T16:25:36" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-1.0" annotatortype="auto" datetime="2017-06-16T16:25:36" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
+      <token-annotation annotator="ucto" annotatortype="auto" datetime="2018-04-10T11:12:11" set="tscan-tokconfig-nld"/>
+      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2018-04-10T11:12:11" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2018-04-10T11:12:11" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
+      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2018-04-10T11:12:11" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
+      <pos-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2018-04-10T11:12:11" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+      <chunking-annotation annotator="frog-chunker-2.0" annotatortype="auto" datetime="2018-04-10T11:12:11" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
+      <entity-annotation annotator="frog-ner-2.0" annotatortype="auto" datetime="2018-04-10T11:12:11" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
       <metric-annotation annotator="tscan" set="metricset"/>
       <pos-annotation annotator="tscan" set="tscan-set"/>
     </annotations>
   </metadata>
   <text xml:id="tscan.text">
     <p xml:id="tscan.p.1">
-      <t>Na een zwerftocht door de stad heb ik een pan gekocht.</t>
       <s xml:id="tscan.p.1.s.1">
-        <t>Na een zwerftocht door de stad heb ik een pan gekocht.</t>
         <w xml:id="tscan.p.1.s.1.w.1" class="WORD">
           <t>Na</t>
           <pos class="VZ(init)" confidence="0.997472" head="VZ" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
@@ -125,7 +123,7 @@
           <metric class="lemma_overlap_count" value="0"/>
           <metric class="lprob10_fwd" value="-3.05308"/>
           <metric class="lprob10_bwd" value="-4.0114"/>
-          <metric class="semtype" value="niet-gevonden"/>
+          <metric class="semtype" value="abstract-gebeuren"/>
         </w>
         <w xml:id="tscan.p.1.s.1.w.4" class="WORD">
           <t>door</t>
@@ -168,7 +166,6 @@
             <feat class="stan" subset="naamval"/>
             <feat class="rest" subset="npagr"/>
           </pos>
-          <lemma class="de"/>
           <morphology>
             <morpheme class="complex">
               <t>de</t>
@@ -180,6 +177,7 @@
               </morpheme>
             </morpheme>
           </morphology>
+          <lemma class="de"/>
           <metric class="prevalenceP" value="0.996701"/>
           <metric class="prevalenceZ" value="2.71644"/>
           <metric class="f50" value="true"/>
@@ -472,35 +470,36 @@
           <metric class="property" value="punctuatie"/>
         </w>
         <chunking xml:id="tscan.p.1.s.1.chunking.1">
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.1" class="PP" confidence="0.997778">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.1" class="PP" confidence="1">
             <wref id="tscan.p.1.s.1.w.1" t="Na"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.2" class="NP" confidence="0.965017">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.2" class="NP" confidence="1">
             <wref id="tscan.p.1.s.1.w.2" t="een"/>
             <wref id="tscan.p.1.s.1.w.3" t="zwerftocht"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.3" class="PP" confidence="0.989899">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.3" class="PP" confidence="0.909091">
             <wref id="tscan.p.1.s.1.w.4" t="door"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.4" class="NP" confidence="0.929957">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.4" class="NP" confidence="1">
             <wref id="tscan.p.1.s.1.w.5" t="de"/>
             <wref id="tscan.p.1.s.1.w.6" t="stad"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.5" class="VP" confidence="0.954315">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.5" class="VP" confidence="1">
             <wref id="tscan.p.1.s.1.w.7" t="heb"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.6" class="NP" confidence="0.991326">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.6" class="NP" confidence="1">
             <wref id="tscan.p.1.s.1.w.8" t="ik"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.7" class="NP" confidence="0.951198">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.7" class="NP" confidence="1">
             <wref id="tscan.p.1.s.1.w.9" t="een"/>
             <wref id="tscan.p.1.s.1.w.10" t="pan"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.8" class="VP" confidence="0.981818">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.8" class="VP" confidence="1">
             <wref id="tscan.p.1.s.1.w.11" t="gekocht"/>
           </chunk>
         </chunking>
         <metric class="word_count" value="11"/>
+        <metric class="word_count_incl_stopwords" value="11"/>
         <metric class="bv_vd_count" value="0"/>
         <metric class="nw_vd_count" value="0"/>
         <metric class="vrij_vd_count" value="1"/>
@@ -675,12 +674,12 @@
         <metric class="measure_nouns_count" value="0"/>
         <metric class="dynamic_conc_nouns_count" value="0"/>
         <metric class="substance_abstr_nouns_count" value="0"/>
-        <metric class="dynamic_abstr_nouns_count" value="0"/>
+        <metric class="dynamic_abstr_nouns_count" value="1"/>
         <metric class="nondynamic_nouns_count" value="0"/>
         <metric class="institut_nouns_count" value="0"/>
         <metric class="undefined_nouns_count" value="0"/>
-        <metric class="covered_nouns_count" value="2"/>
-        <metric class="uncovered_nouns_count" value="1"/>
+        <metric class="covered_nouns_count" value="3"/>
+        <metric class="uncovered_nouns_count" value="0"/>
         <metric class="abstract_ww" value="2"/>
         <metric class="concrete_ww" value="0"/>
         <metric class="undefined_ww" value="0"/>
@@ -723,6 +722,7 @@
         <metric class="max_deplen" value="9"/>
       </s>
       <metric class="word_count" value="11"/>
+      <metric class="word_count_incl_stopwords" value="11"/>
       <metric class="bv_vd_count" value="0"/>
       <metric class="nw_vd_count" value="0"/>
       <metric class="vrij_vd_count" value="1"/>
@@ -897,12 +897,12 @@
       <metric class="measure_nouns_count" value="0"/>
       <metric class="dynamic_conc_nouns_count" value="0"/>
       <metric class="substance_abstr_nouns_count" value="0"/>
-      <metric class="dynamic_abstr_nouns_count" value="0"/>
+      <metric class="dynamic_abstr_nouns_count" value="1"/>
       <metric class="nondynamic_nouns_count" value="0"/>
       <metric class="institut_nouns_count" value="0"/>
       <metric class="undefined_nouns_count" value="0"/>
-      <metric class="covered_nouns_count" value="2"/>
-      <metric class="uncovered_nouns_count" value="1"/>
+      <metric class="covered_nouns_count" value="3"/>
+      <metric class="uncovered_nouns_count" value="0"/>
       <metric class="abstract_ww" value="2"/>
       <metric class="concrete_ww" value="0"/>
       <metric class="undefined_ww" value="0"/>
@@ -946,6 +946,7 @@
       <metric class="sentence_count" value="1"/>
     </p>
     <metric class="word_count" value="11"/>
+    <metric class="word_count_incl_stopwords" value="11"/>
     <metric class="bv_vd_count" value="0"/>
     <metric class="nw_vd_count" value="0"/>
     <metric class="vrij_vd_count" value="1"/>
@@ -1120,12 +1121,12 @@
     <metric class="measure_nouns_count" value="0"/>
     <metric class="dynamic_conc_nouns_count" value="0"/>
     <metric class="substance_abstr_nouns_count" value="0"/>
-    <metric class="dynamic_abstr_nouns_count" value="0"/>
+    <metric class="dynamic_abstr_nouns_count" value="1"/>
     <metric class="nondynamic_nouns_count" value="0"/>
     <metric class="institut_nouns_count" value="0"/>
     <metric class="undefined_nouns_count" value="0"/>
-    <metric class="covered_nouns_count" value="2"/>
-    <metric class="uncovered_nouns_count" value="1"/>
+    <metric class="covered_nouns_count" value="3"/>
+    <metric class="uncovered_nouns_count" value="0"/>
     <metric class="abstract_ww" value="2"/>
     <metric class="concrete_ww" value="0"/>
     <metric class="undefined_ww" value="0"/>
