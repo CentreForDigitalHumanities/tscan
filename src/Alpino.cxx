@@ -298,7 +298,6 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
   if ( head_node ){
     folia::KWargs atts = folia::getAttributes( head_node );
     string head_rel = atts["rel"];
-    string head_cat = atts["cat"];
     string head_pos = atts["pos"];
     if ( head_rel == "hd" && head_pos == "verb" ){
       vector< xmlNode *> head_siblings = getSibblings( head_node );
