@@ -5,11 +5,27 @@ if [ $? -ne 0 ]; then
     exit 2
 fi
 
+osname=`uname`
+case ${osname} in
+    Linux*)
+	mystat='stat -c "%X"'
+	;;
+    Darwin*)
+	mystat='stat -f "%X"'
+	;;
+esac
+
+echo ${mystat}
+
 echo "Downloading big data"
-PREDOWNLOAD=`stat --printf='%X' tscan-bigdata.tar.bz2 2> /dev/null`
+PREDOWNLOAD=`$mystat tscan-bigdata.tar.bz2 2> /dev/null`
+echo pre=$PREDOWNLOAD
 wget -c -N https://resources.lab.hum.uu.nl/resources/tscan/tscan-bigdata.tar.bz2
-POSTDOWNLOAD=`stat --printf='%X' tscan-bigdata.tar.bz2 2> /dev/null`
+POSTDOWNLOAD=`$mystat tscan-bigdata.tar.bz2 2> /dev/null`
+echo post=$POSTDOWNLOAD
+
 if [ "$PREDOWNLOAD" != "$POSTDOWNLOAD" ]; then
+    echo "extracting the big data"
     tar -xvjf tscan-bigdata.tar.bz2
 fi
 

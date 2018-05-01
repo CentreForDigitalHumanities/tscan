@@ -1,7 +1,7 @@
 /*
   T-scan
 
-  Copyright (c) 1998 - 2015
+  Copyright (c) 1998 - 2018
 
   This file is part of tscan
 
@@ -21,6 +21,7 @@
 */
 
 #include "tscan/Alpino.h"
+#include "ticcutils/Unicode.h"
 
 using namespace std;
 
@@ -152,7 +153,6 @@ xmlNode *node_search( const xmlNode* node,
     }
     pnt = pnt->next;;
   }
-  pnt = node->children;
   // no luck, so get down the non-root nodes
   pnt = node->children;
   while ( pnt ){
@@ -1091,7 +1091,7 @@ list<xmlNode*> complementNodes( list<xmlNode*> nodesA, list<xmlNode*> nodesB) {
 
 xmlDoc *AlpinoParse( const folia::Sentence *s, const string& dirname ){
   //  parse a FoLiA folia::Sentence into an Alpino tree.
-  string txt = folia::UnicodeToUTF8(s->toktext());
+  string txt = TiCC::UnicodeToUTF8(s->toktext());
   //  cerr << "parse line: " << txt << endl;
   string txtfile = dirname + "parse.txt";
   ofstream os( txtfile.c_str() );

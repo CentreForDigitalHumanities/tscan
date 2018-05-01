@@ -156,7 +156,7 @@ void sentStats::setCommonCounts(wordStats *ws) {
   // Counts for adverbs
   if (ws->adverb_type == Adverb::GENERAL) generalAdverbCnt++;
   if (ws->adverb_type == Adverb::SPECIFIC) specificAdverbCnt++;
-  
+
   // Counts for intensifying words
   switch (ws->intensify_type) {
     case Intensify::BVNW:
@@ -491,83 +491,6 @@ void sentStats::resolveSituations() {
       break;
     }
   }
-}
-
-/*****
- * LSA
- *****/
-
-void sentStats::setLSAvalues( double suc, double net, double ctx ) {
-  if ( suc > 0 )
-    lsa_word_suc = suc;
-  if ( net > 0 )
-    lsa_word_net = net;
-  if ( ctx > 0 )
-    throw logic_error("context cannot be !=0 for sentstats");
-}
-
-void sentStats::resolveLSA( const map<string,double>& LSAword_dists ) {
-  if ( sv.size() < 1 )
-    return;
-
-  int lets = 0;
-  double suc = 0;
-  double net = 0;
-  size_t node_count = 0;
-  for ( size_t i=0; i < sv.size(); ++i ){
-    double context = 0.0;
-    for ( size_t j=0; j < sv.size(); ++j ){
-      if ( j == i )
-	continue;
-      string word1 = sv[i]->ltext();
-      string word2 = sv[j]->ltext();
-      string call = word1 + "\t" + word2;
-      map<string,double>::const_iterator it = LSAword_dists.find(call);
-      if ( it != LSAword_dists.end() ){
-	context += it->second;
-      }
-    }
-    sv[i]->setLSAcontext(context/(sv.size()-1));
-    for ( size_t j=i+1; j < sv.size(); ++j ){
-      if ( sv[i]->wordProperty() == CGN::ISLET ){
-	continue;
-      }
-      if ( sv[j]->wordProperty() == CGN::ISLET ){
-	if ( i == 0 )
-	  ++lets;
-	continue;
-      }
-      ++node_count;
-      string word1 = sv[i]->ltext();
-      string word2 = sv[j]->ltext();
-      string call = word1 + "\t" + word2;
-      double result = 0;
-      map<string,double>::const_iterator it = LSAword_dists.find(call);
-      if ( it != LSAword_dists.end() ){
-	result = it->second;
-	if ( j == i+1 ){
-	  sv[i]->setLSAsuc(result);
-	  suc += result;
-	}
-	net += result;
-      }
-#ifdef DEBUG_LSA
-      cerr << "LSA-sent lookup '" << call << "' ==> " << result << endl;
-#endif
-    }
-  }
-#ifdef DEBUG_LSA
-  cerr << "size = " << sv.size() << ", LETS = " << lets << endl;
-  cerr << "LSA-sent-SUC sum = " << suc << endl;
-  cerr << "LSA-sent=NET sum = " << net << ", node count = " << node_count << endl;
-#endif
-  suc = suc/(sv.size()-lets);
-  net = net/node_count;
-#ifdef DEBUG_LSA
-  cerr << "LSA-sent-SUC result = " << suc << endl;
-  cerr << "LSA-sent-NET result = " << net << endl;
-#endif
-  setLSAvalues( suc, net, 0 );
 }
 
 /******************

@@ -21,7 +21,9 @@ void addOneMetric( folia::Document *doc, folia::FoliaElement *parent, const stri
  * @param buffer          current buffer
  * @param arg_overlap_cnt resulting count
  */
-void argument_overlap( const string w_or_l, const vector<string>& buffer, int& arg_overlap_cnt ) {
+void argument_overlap( const string& w_or_l,
+		       const vector<string>& buffer,
+		       int& arg_overlap_cnt ) {
   if ( buffer.empty() )
     return;
   // cerr << "test overlap, lemma/word= " << w_or_l << endl;
@@ -179,6 +181,7 @@ string escape_quotes(const string &before)
     switch (before[i]) {
       case '"':
         after += '"'; // duplicate quotes
+	// fallthrough
       default:
         after += before[i];
     }

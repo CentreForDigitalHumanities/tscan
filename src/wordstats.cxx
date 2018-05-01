@@ -8,15 +8,10 @@ vector<const wordStats*> wordStats::collectWords() const {
   return result;
 }
 
-void wordStats::setPersRef() {
-  if ( sem_type == SEM::CONCRETE_HUMAN_NOUN ||
+bool wordStats::setPersRef() {
+  return ( sem_type == SEM::CONCRETE_HUMAN_NOUN ||
        nerProp == NER::PER_B ||
-       prop == CGN::ISPPRON1 || prop == CGN::ISPPRON2 || prop == CGN::ISPPRON3 ){
-    isPersRef = true;
-  }
-  else {
-    isPersRef = false;
-  }
+       prop == CGN::ISPPRON1 || prop == CGN::ISPPRON2 || prop == CGN::ISPPRON3 );
 }
 
 bool wordStats::checkContent( bool strict ) const {
@@ -731,10 +726,6 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "situation", Situation::toString(sitType) );
   if ( isMultiConn )
     addOneMetric( doc, el, "multi_connective", "true" );
-  if ( lsa_opv )
-    addOneMetric( doc, el, "lsa_word_suc", TiCC::toString(lsa_opv) );
-  if ( lsa_ctx )
-    addOneMetric( doc, el, "lsa_word_ctx", TiCC::toString(lsa_ctx) );
   if ( !std::isnan(prevalenceP) )
     addOneMetric( doc, el, "prevalenceP", TiCC::toString(prevalenceP) );
   if ( !std::isnan(prevalenceZ) )

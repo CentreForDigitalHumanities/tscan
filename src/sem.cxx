@@ -156,7 +156,7 @@ namespace SEM {
         }
     }
 
-    SEM::Type classifyNoun(string s) {
+    SEM::Type classifyNoun( const string& s) {
         if (s == "undefined")
             return UNDEFINED_NOUN;
         else if (s == "concrother")
@@ -177,7 +177,7 @@ namespace SEM {
             return CONCRETE_DYNAMIC_NOUN;
         else if (s == "substance_abstr") // 20150508: Added new SEM::Type
             return ABSTRACT_SUBSTANCE_NOUN;
-        else if (s == "dynamic_abstr") 
+        else if (s == "dynamic_abstr")
             return ABSTRACT_DYNAMIC_NOUN;
         else if (s == "nondynamic")
             return ABSTRACT_NONDYNAMIC_NOUN;
@@ -191,7 +191,7 @@ namespace SEM {
             return UNFOUND_NOUN;
     }
 
-    SEM::Type classifyWW(string s, string c) {
+    SEM::Type classifyWW( const string& s, const string& c) {
         if (s == "undefined") {
             if (c == "abstract")
                 return ABSTRACT_UNDEFINED;
@@ -224,7 +224,7 @@ namespace SEM {
         return UNFOUND_VERB;
     }
 
-    SEM::Type classifyADJ(string s, string sub) {
+    SEM::Type classifyADJ( const string& s, const string& sub) {
         SEM::Type result = UNFOUND_ADJ;
         if (s == "undefined") {
             result = UNDEFINED_ADJ;

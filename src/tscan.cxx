@@ -1,7 +1,7 @@
 /*
   T-scan
 
-  Copyright (c) 1998 - 2015
+  Copyright (c) 1998 - 2018
 
   This file is part of tscan
 
@@ -38,6 +38,7 @@
 #include "ticcutils/FileUtils.h"
 #include "ticcutils/CommandLine.h"
 #include "ticcutils/XMLtools.h"
+#include "ticcutils/Unicode.h"
 #include "libfolia/folia.h"
 #include "frog/FrogAPI.h"
 #include "tscan/Alpino.h"
@@ -71,6 +72,7 @@ struct cf_data {
 };
 
 struct noun {
+  noun(): type(SEM::NO_SEMTYPE),is_compound(false), compound_parts(0){};
   SEM::Type type;
   bool is_compound;
   string head;
@@ -93,7 +95,6 @@ struct settingData {
   bool doAlpino;
   bool doAlpinoServer;
   bool doWopr;
-  bool doLsa;
   bool doXfiles;
   bool showProblems;
   bool sentencePerLine;
@@ -780,19 +781,6 @@ void settingData::init( const TiCC::Configuration& cf ){
       exit( EXIT_FAILURE );
     }
   }
-  doLsa = false;
-  val = cf.lookUp( "useLsa" );
-  if ( !val.empty() ){
-    if ( !TiCC::stringTo( val, doLsa ) ){
-      cerr << "invalid value for 'useLsa' in config file" << endl;
-      exit( EXIT_FAILURE );
-    }
-    if ( doLsa ){
-      cerr << "sorry, but LSA is disabled. Please remove 'useLsa' from the "
-     	   << "config file, or set it to false." << endl;
-      exit( EXIT_FAILURE );
-    }
-  }
   showProblems = true;
   val = cf.lookUp( "logProblems" );
   if ( !val.empty() ){
@@ -996,7 +984,7 @@ inline void usage(){
   cerr << "\t--config=<file> read configuration from 'file' " << endl;
   cerr << "\t-V or --version show version " << endl;
   cerr << "\t-n assume input file to hold one sentence per line" << endl;
-  cerr << "\t--skip=[aclw]    Skip Alpino (a), CSV output (c), Lsa (l) or Wopr (w).\n";
+  cerr << "\t--skip=[aclw]    Skip Alpino (a), CSV output (c) or Wopr (w).\n";
   cerr << "\t-t <file> process the 'file'. (deprecated)" << endl;
   cerr << endl;
 }
@@ -1276,7 +1264,7 @@ string wordStats::checkMyClassification() const {
 // Returns whether the lemma appears on the stoplist
 bool wordStats::checkStoplist() const {
   bool result = false;
-  
+
   if ( settings.stop_lemmata[tag].find( lemma )
        != settings.stop_lemmata[tag].end() ){
     result = true;
@@ -1381,13 +1369,13 @@ wordStats::wordStats( int index,
   sem_type(SEM::NO_SEMTYPE), intensify_type(Intensify::NO_INTENSIFY),
   general_noun_type(General::NO_GENERAL), general_verb_type(General::NO_GENERAL),
   adverb_type(Adverb::NO_ADVERB), adverb_sub_type(Adverb::NO_ADVERB_SUBTYPE),
-  afkType(Afk::NO_A), is_compound(false), compound_parts(0), on_stoplist(false),
-  word_freq_log_head(NAN), word_freq_log_sat(NAN), word_freq_log_head_sat(NAN), word_freq_log_corr(NAN)
+  afkType(Afk::NO_A), is_compound(false), compound_parts(0),
+  word_freq_log_head(NAN), word_freq_log_sat(NAN), word_freq_log_head_sat(NAN), word_freq_log_corr(NAN), on_stoplist(false)
 {
-  UnicodeString us = w->text();
+  icu::UnicodeString us = w->text();
   charCnt = us.length();
-  word = folia::UnicodeToUTF8( us );
-  l_word = folia::UnicodeToUTF8( us.toLower() );
+  word = TiCC::UnicodeToUTF8( us );
+  l_word = TiCC::UnicodeToUTF8( us.toLower() );
   if ( fail )
     return;
   vector<folia::PosAnnotation*> posV = w->select<folia::PosAnnotation>(frog_pos_set);
@@ -1397,8 +1385,8 @@ wordStats::wordStats( int index,
   pos = pa->cls();
   tag = CGN::toCGN( pa->feat("head") );
   lemma = w->lemma( frog_lemma_set );
-  us = folia::UTF8ToUnicode( lemma );
-  l_lemma = folia::UnicodeToUTF8( us.toLower() );
+  us = TiCC::UnicodeFromUTF8( lemma );
+  l_lemma = TiCC::UnicodeToUTF8( us.toLower() );
 
   setCGNProps( pa );
   if ( alpWord ){
@@ -1503,11 +1491,10 @@ double calculate_mtld( const vector<string>& v ){
   int token_count = 0;
   set<string> unique_tokens;
   double token_factor = 0.0;
-  double token_ttr = 1.0;
   for ( size_t i=0; i < v.size(); ++i ){
     ++token_count;
     unique_tokens.insert(v[i]);
-    token_ttr = unique_tokens.size() / double(token_count);
+    double token_ttr = unique_tokens.size() / double(token_count);
 #ifdef DEBUG_MTLD
     cerr << v[i] << "\t [" << unique_tokens.size() << "/"
 	 << token_count << "] >> ttr " << token_ttr << endl;
@@ -1521,7 +1508,6 @@ double calculate_mtld( const vector<string>& v ){
       token_factor += 1.0;
 #endif
       token_count = 0;
-      token_ttr = 1.0;
       unique_tokens.clear();
 #ifdef DEBUG_MTLD
       cerr <<"\treset: token_factor = " << token_factor << endl << endl;
@@ -1693,13 +1679,13 @@ void orderWopr( const string& type, const string& txt, vector<double>& wordProbs
 #ifdef DEBUG_WOPR
     cerr << "start FoLiA parsing" << endl;
 #endif
-    folia::Document *doc = new folia::Document();
+    folia::Document doc;
     try {
-      doc->readFromString( result );
+      doc.readFromString( result );
 #ifdef DEBUG_WOPR
       cerr << "finished parsing" << endl;
 #endif
-      vector<folia::Word*> wv = doc->words();
+      vector<folia::Word*> wv = doc.words();
       if ( wv.size() !=  wordProbsV.size() ){
 	cerr << "unforseen mismatch between de number of words returned by WOPR"
 	    << endl << " and the number of words in the input sentence. "
@@ -1716,10 +1702,9 @@ void orderWopr( const string& type, const string& txt, vector<double>& wordProbs
 	  }
 	}
       }
-      vector<folia::Sentence*> sv = doc->sentences();
+      vector<folia::Sentence*> sv = doc.sentences();
       if ( sv.size() != 1 ){
 	throw logic_error( "The document returned by WOPR contains > 1 Sentence" );
-	return;
       }
       vector<folia::Metric*> mv = sv[0]->select<folia::Metric>();
       if ( mv.size() > 0 ){
@@ -1793,10 +1778,9 @@ void np_length( folia::Sentence *s, int& npcount, int& indefcount, int& size ) {
   }
 }
 
-sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
-          const map<string,double>& LSAword_dists ):
+sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred ):
   structStats( index, s, "sent" ){
-  text = folia::UnicodeToUTF8( s->toktext() );
+  text = TiCC::UnicodeToUTF8( s->toktext() );
   cerr << "analyse tokenized sentence=" << text << endl;
   vector<folia::Word*> w = s->words();
   vector<double> woprProbsV_fwd(w.size(),NAN);
@@ -1931,14 +1915,13 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
       continue;
     }
     else {
-      sentStats::setCommonCounts(ws);
-      
       wordCnt++;
       if (ws->prop == CGN::ISNAME) nameCnt++;
       if (ws->isContent) contentCnt++;
       if (ws->isContentStrict) contentStrictCnt++;
       if (ws->tag == CGN::N) nounCnt++;
       if (ws->tag == CGN::WW) verbCnt++;
+      if (ws->tag == CGN::ADJ) adjCnt++;
 
       NER::Type ner = NER::lookupNer(w[i], s);
       ws->nerProp = ner;
@@ -1961,7 +1944,10 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
         default:;
       }
 
-      ws->setPersRef();  // need NER Info for this
+      ws->isPersRef = ws->setPersRef();  // need NER Info for this
+
+      sentStats::setCommonCounts(ws);
+
       heads[ws->tag]++;
       charCnt += ws->charCnt;
       charCntExNames += ws->charCntExNames;
@@ -1995,32 +1981,38 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
 
       switch (ws->top_freq) {
         // NO BREAKS (being in top1000 means being in top2000 as well)
-        case top1000:
-          ++top1000Cnt;
-          if (ws->isContent) ++top1000ContentCnt;
-          if (ws->isContentStrict) ++top1000ContentStrictCnt;
-        case top2000:
-          ++top2000Cnt;
-          if (ws->isContent) ++top2000ContentCnt;
-          if (ws->isContentStrict) ++top2000ContentStrictCnt;
-        case top3000:
-          ++top3000Cnt;
-          if (ws->isContent) ++top3000ContentCnt;
-          if (ws->isContentStrict) ++top3000ContentStrictCnt;
-        case top5000:
-          ++top5000Cnt;
-          if (ws->isContent) ++top5000ContentCnt;
-          if (ws->isContentStrict) ++top5000ContentStrictCnt;
-        case top10000:
-          ++top10000Cnt;
-          if (ws->isContent) ++top10000ContentCnt;
-          if (ws->isContentStrict) ++top10000ContentStrictCnt;
-        case top20000:
-          ++top20000Cnt;
-          if (ws->isContent) ++top20000ContentCnt;
-          if (ws->isContentStrict) ++top20000ContentStrictCnt;
-        default:
-          break;
+      case top1000:
+	++top1000Cnt;
+	if (ws->isContent) ++top1000ContentCnt;
+	if (ws->isContentStrict) ++top1000ContentStrictCnt;
+	// fallthrough
+      case top2000:
+	++top2000Cnt;
+	if (ws->isContent) ++top2000ContentCnt;
+	if (ws->isContentStrict) ++top2000ContentStrictCnt;
+	// fallthrough
+      case top3000:
+	++top3000Cnt;
+	if (ws->isContent) ++top3000ContentCnt;
+	if (ws->isContentStrict) ++top3000ContentStrictCnt;
+	// fallthrough
+      case top5000:
+	++top5000Cnt;
+	if (ws->isContent) ++top5000ContentCnt;
+	if (ws->isContentStrict) ++top5000ContentStrictCnt;
+	// fallthrough
+      case top10000:
+	++top10000Cnt;
+	if (ws->isContent) ++top10000ContentCnt;
+	if (ws->isContentStrict) ++top10000ContentStrictCnt;
+	// fallthrough
+      case top20000:
+	++top20000Cnt;
+	if (ws->isContent) ++top20000ContentCnt;
+	if (ws->isContentStrict) ++top20000ContentStrictCnt;
+	// fallthrough
+      default:
+	break;
       }
 
       switch (ws->sem_type) {
@@ -2228,7 +2220,7 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           break;
         default:;
       }
-      
+
       // Counts for general nouns
       if (ws->general_noun_type != General::NO_GENERAL) generalNounCnt++;
       if (General::isSeparate(ws->general_noun_type)) generalNounSepCnt++;
@@ -2252,17 +2244,20 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
         charCntNoun += ws->charCnt;
         word_freq_log_noun += ws->word_freq_log;
         switch (ws->top_freq) {
-          case top1000:
-            top1000CntNoun++;
-          case top2000:
-          case top3000:
-          case top5000:
-            top5000CntNoun++;
-          case top10000:
-          case top20000:
-            top20000CntNoun++;
-          default:
-            break;
+	case top1000:
+	  top1000CntNoun++;
+	  // fallthrough
+	case top2000:
+	case top3000:
+	case top5000:
+	  top5000CntNoun++;
+	  // fallthrough
+	case top10000:
+	case top20000:
+	  top20000CntNoun++;
+	  // fallthrough
+	default:
+	  break;
         }
 
         if (ws->is_compound) {
@@ -2290,43 +2285,53 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           }
 
           switch (ws->top_freq) {
-            case top1000:
-              top1000CntComp++;
-            case top2000:
-            case top3000:
-            case top5000:
-              top5000CntComp++;
-            case top10000:
-            case top20000:
-              top20000CntComp++;
-            default:
+	  case top1000:
+	    top1000CntComp++;
+	    // fallthrough
+	  case top2000:
+	  case top3000:
+	  case top5000:
+	    top5000CntComp++;
+	    // fallthrough
+	  case top10000:
+	  // fallthrough
+	  case top20000:
+	    top20000CntComp++;
+	    // fallthrough
+	  default:
               break;
           }
           switch (ws->top_freq_head) {
-            case top1000:
-              top1000CntHead++; top1000CntNounCorr++; top1000CntCorr++;
-            case top2000:
-            case top3000:
-            case top5000:
-              top5000CntHead++; top5000CntNounCorr++; top5000CntCorr++;
-            case top10000:
-            case top20000:
-              top20000CntHead++; top20000CntNounCorr++; top20000CntCorr++;
-            default:
-              break;
+	  case top1000:
+	    top1000CntHead++; top1000CntNounCorr++; top1000CntCorr++;
+	    // fallthrough
+	  case top2000:
+	  case top3000:
+	  case top5000:
+	    top5000CntHead++; top5000CntNounCorr++; top5000CntCorr++;
+	    // fallthrough
+	  case top10000:
+	  case top20000:
+	    top20000CntHead++; top20000CntNounCorr++; top20000CntCorr++;
+	    // fallthrough
+	  default:
+	    break;
           }
           switch (ws->top_freq_sat) {
-            case top1000:
-              top1000CntSat++;
-            case top2000:
-            case top3000:
-            case top5000:
-              top5000CntSat++;
-            case top10000:
-            case top20000:
-              top20000CntSat++;
-            default:
-              break;
+	  case top1000:
+	    top1000CntSat++;
+	    // fallthrough
+	  case top2000:
+	  case top3000:
+	  case top5000:
+	    top5000CntSat++;
+	    // fallthrough
+	  case top10000:
+	  case top20000:
+	    top20000CntSat++;
+	    // fallthrough
+	  default:
+	    break;
           }
         }
         else {
@@ -2344,17 +2349,20 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
           }
 
           switch (ws->top_freq) {
-            case top1000:
-              top1000CntNonComp++; top1000CntNounCorr++; top1000CntCorr++;
-            case top2000:
-            case top3000:
-            case top5000:
-              top5000CntNonComp++; top5000CntNounCorr++; top5000CntCorr++;
-            case top10000:
-            case top20000:
-              top20000CntNonComp++; top20000CntNounCorr++; top20000CntCorr++;
-            default:
-              break;
+	  case top1000:
+	    top1000CntNonComp++; top1000CntNounCorr++; top1000CntCorr++;
+	    // fallthrough
+	  case top2000:
+	  case top3000:
+	  case top5000:
+	    top5000CntNonComp++; top5000CntNounCorr++; top5000CntCorr++;
+	    // fallthrough
+	  case top10000:
+	  case top20000:
+	    top20000CntNonComp++; top20000CntNounCorr++; top20000CntCorr++;
+	    // fallthrough
+	  default:
+	    break;
           }
         }
       }
@@ -2376,8 +2384,11 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
 
         switch (ws->top_freq) {
           case top1000: top1000CntCorr++;
+	    // fallthrough
           case top5000: top5000CntCorr++;
+	    // fallthrough
           case top20000: top20000CntCorr++;
+	    // fallthrough
           default: break;
         }
       }
@@ -2406,9 +2417,6 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred,
   resolveConnectives();
   resolveSituations();
   calculate_MTLDs();
-  if ( settings.doLsa ){
-    resolveLSA( LSAword_dists );
-  }
   resolveMultiWordIntensify();
   // Disabled for now
   //  resolveMultiWordAfks();
@@ -2585,22 +2593,16 @@ void sentStats::resolveAdverbials(xmlDoc *alpDoc) {
   }
 }
 
-parStats::parStats( int index,
-        folia::Paragraph *p,
-        const map<string,double>& LSA_word_dists,
-        const map<string,double>& LSA_sent_dists ):
+parStats::parStats( int index, folia::Paragraph *p ):
   structStats( index, p, "par" )
 {
   sentCnt = 0;
   vector<folia::Sentence*> sents = p->sentences();
   sentStats *prev = 0;
   for ( size_t i=0; i < sents.size(); ++i ){
-    sentStats *ss = new sentStats( i, sents[i], prev, LSA_word_dists );
+    sentStats *ss = new sentStats( i, sents[i], prev );
     prev = ss;
     merge( ss );
-  }
-  if ( settings.doLsa ){
-    resolveLSA( LSA_sent_dists );
   }
   calculate_MTLDs();
 
@@ -2670,210 +2672,6 @@ void docStats::calculate_doc_overlap( ){
   }
 }
 
-//#define DEBUG_LSA_SERVER
-
-void docStats::gather_LSA_word_info( folia::Document *doc ){
-  string host = config.lookUp( "host", "lsa_words" );
-  string port = config.lookUp( "port", "lsa_words" );
-  Sockets::ClientSocket client;
-  if ( !client.connect( host, port ) ){
-    cerr << "failed to open LSA connection: "<< host << ":" << port << endl;
-    cerr << "Reason: " << client.getMessage() << endl;
-    exit( EXIT_FAILURE );
-  }
-  vector<folia::Word*> wv = doc->words();
-  set<string> bow;
-  for ( size_t i=0; i < wv.size(); ++i ){
-    UnicodeString us = wv[i]->text();
-    us.toLower();
-    string s = folia::UnicodeToUTF8( us );
-    bow.insert(s);
-  }
-  while ( !bow.empty() ){
-    set<string>::iterator it = bow.begin();
-    string word = *it;
-    bow.erase( it );
-    it = bow.begin();
-    while ( it != bow.end() ) {
-      string call = word + "\t" + *it;
-      string rcall = *it + "\t" + word;
-      if ( LSA_word_dists.find( call ) == LSA_word_dists.end() ){
-#ifdef DEBUG_LSA_SERVER
-  cerr << "calling LSA: '" << call << "'" << endl;
-#endif
-  client.write( call + "\r\n" );
-  string s;
-  if ( !client.read(s) ){
-    cerr << "LSA connection failed " << endl;
-    exit( EXIT_FAILURE );
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "received data [" << s << "]" << endl;
-#endif
-  double result = 0;
-  if ( !TiCC::stringTo( s , result ) ){
-    cerr << "LSA result conversion failed: " << s << endl;
-    result = 0;
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "LSA result: " << result << endl;
-#endif
-#ifdef DEBUG_LSA
-  cerr << "LSA: '" << call << "' ==> " << result << endl;
-#endif
-  if ( result != 0 ){
-    LSA_word_dists[call] = result;
-    LSA_word_dists[rcall] = result;
-  }
-      }
-      ++it;
-    }
-  }
-}
-
-void docStats::gather_LSA_doc_info( folia::Document *doc ){
-  string host = config.lookUp( "host", "lsa_docs" );
-  string port = config.lookUp( "port", "lsa_docs" );
-  Sockets::ClientSocket client;
-  if ( !client.connect( host, port ) ){
-    cerr << "failed to open LSA connection: "<< host << ":" << port << endl;
-    cerr << "Reason: " << client.getMessage() << endl;
-    exit( EXIT_FAILURE );
-  }
-  vector<folia::Paragraph*> pv = doc->paragraphs();
-  map<string,string> norm_pv;
-  map<string,string> norm_sv;
-  for ( size_t p=0; p < pv.size(); ++p ){
-    vector<folia::Sentence*> sv = pv[p]->sentences();
-    string norm_p;
-    for ( size_t s=0; s < sv.size(); ++s ){
-      vector<folia::Word*> wv = sv[s]->words();
-      set<string> bow;
-      for ( size_t i=0; i < wv.size(); ++i ){
-  UnicodeString us = wv[i]->text();
-  us.toLower();
-  string s = folia::UnicodeToUTF8( us );
-  bow.insert(s);
-      }
-      string norm_s;
-      set<string>::iterator it = bow.begin();
-      while ( it != bow.end() ) {
-  norm_s += *it++ + " ";
-      }
-      norm_sv[sv[s]->id()] = norm_s;
-      norm_p += norm_s;
-    }
-    norm_pv[pv[p]->id()] = norm_p;
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "LSA doc Paragraaf results" << endl;
-  for ( map<string,string>::const_iterator it = norm_pv.begin();
-  it != norm_pv.end();
-  ++it ){
-    cerr << "paragraaf " << it->first << endl;
-    cerr << it->second << endl;
-  }
-  cerr << "en de Zinnen" << endl;
-  for ( map<string,string>::const_iterator it = norm_sv.begin();
-  it != norm_sv.end();
-  ++it ){
-    cerr << "zin " <<  it->first << endl;
-    cerr << it->second << endl;
-  }
-#endif
-
-  for ( map<string,string>::const_iterator it1 = norm_pv.begin();
-  it1 != norm_pv.end();
-  ++it1 ){
-    for ( map<string,string>::const_iterator it2 = it1;
-    it2 != norm_pv.end();
-    ++it2 ){
-      if ( it2 == it1 )
-  continue;
-      string index = it1->first + "<==>" + it2->first;
-      string rindex = it2->first + "<==>" + it1->first;
-#ifdef DEBUG_LSA
-      cerr << "LSA combine paragraaf " << index << endl;
-#endif
-      string call = it1->second + "\t" + it2->second;
-      if ( LSA_paragraph_dists.find( index ) == LSA_paragraph_dists.end() ){
-#ifdef DEBUG_LSA_SERVER
-  cerr << "calling LSA docs: '" << call << "'" << endl;
-#endif
-  client.write( call + "\r\n" );
-  string s;
-  if ( !client.read(s) ){
-    cerr << "LSA connection failed " << endl;
-    exit( EXIT_FAILURE );
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "received data [" << s << "]" << endl;
-#endif
-  double result = 0;
-  if ( !TiCC::stringTo( s , result ) ){
-    cerr << "LSA result conversion failed: " << s << endl;
-    result = 0;
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "LSA result: " << result << endl;
-#endif
-#ifdef DEBUG_LSA
-  cerr << "LSA: '" << index << "' ==> " << result << endl;
-#endif
-  if ( result != 0 ){
-    LSA_paragraph_dists[index] = result;
-    LSA_paragraph_dists[rindex] = result;
-  }
-      }
-    }
-  }
-  for ( map<string,string>::const_iterator it1 = norm_sv.begin();
-  it1 != norm_sv.end();
-  ++it1 ){
-    for ( map<string,string>::const_iterator it2 = it1;
-    it2 != norm_sv.end();
-    ++it2 ){
-      if ( it2 == it1 )
-  continue;
-      string index = it1->first + "<==>" + it2->first;
-      string rindex = it2->first + "<==>" + it1->first;
-#ifdef DEBUG_LSA
-      cerr << "LSA combine sentence " << index << endl;
-#endif
-      string call = it1->second + "\t" + it2->second;
-      if ( LSA_sentence_dists.find( index ) == LSA_sentence_dists.end() ){
-#ifdef DEBUG_LSA_SERVER
-  cerr << "calling LSA docs: '" << call << "'" << endl;
-#endif
-  client.write( call + "\r\n" );
-  string s;
-  if ( !client.read(s) ){
-    cerr << "LSA connection failed " << endl;
-    exit( EXIT_FAILURE );
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "received data [" << s << "]" << endl;
-#endif
-  double result = 0;
-  if ( !TiCC::stringTo( s , result ) ){
-    cerr << "LSA result conversion failed: " << s << endl;
-    result = 0;
-  }
-#ifdef DEBUG_LSA_SERVER
-  cerr << "LSA result: " << result << endl;
-#endif
-#ifdef DEBUG_LSA
-  cerr << "LSA: '" << index << "' ==> " << result << endl;
-#endif
-  if ( result != 0 ){
-    LSA_sentence_dists[index] = result;
-    LSA_sentence_dists[rindex] = result;
-  }
-      }
-    }
-  }
-}
-
 docStats::docStats( folia::Document *doc ):
   structStats( 0, 0, "document" ),
   doc_word_overlapCnt(0), doc_lemma_overlapCnt(0)
@@ -2888,19 +2686,12 @@ docStats::docStats( folia::Document *doc ):
   if ( !settings.style.empty() ){
     doc->replaceStyle( "text/xsl", settings.style );
   }
-  if ( settings.doLsa ){
-    gather_LSA_word_info( doc );
-    gather_LSA_doc_info( doc );
-  }
   vector<folia::Paragraph*> pars = doc->paragraphs();
   if ( pars.size() > 0 )
     folia_node = pars[0]->parent();
   for ( size_t i=0; i != pars.size(); ++i ){
-    parStats *ps = new parStats( i, pars[i], LSA_word_dists, LSA_sentence_dists );
+    parStats *ps = new parStats( i, pars[i] );
       merge( ps );
-  }
-  if ( settings.doLsa ){
-    resolveLSA( LSA_paragraph_dists );
   }
   calculate_MTLDs();
 
@@ -3017,7 +2808,7 @@ xmlDoc *AlpinoServerParse( folia::Sentence *sent ){
 #ifdef DEBUG_ALPINO
   cerr << "start input loop" << endl;
 #endif
-  string txt = folia::UnicodeToUTF8(sent->toktext());
+  string txt = TiCC::UnicodeToUTF8(sent->toktext());
   client.write( txt + "\n\n" );
   string result;
   string s;
@@ -3131,9 +2922,6 @@ int main(int argc, char *argv[]) {
     string skip = val;
     if ( skip.find_first_of("wW") != string::npos ){
       settings.doWopr = false;
-    }
-    if ( skip.find_first_of("lL") != string::npos ){
-      settings.doLsa = false;
     }
     if ( skip.find_first_of("aA") != string::npos ){
       settings.doAlpino = false;

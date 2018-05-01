@@ -4,7 +4,7 @@ using namespace std;
 
 namespace CGN {
 
-    Type toCGN(string s) {
+    Type toCGN( const string& s) {
         if (s == "N")
             return N;
         else if (s == "ADJ")
