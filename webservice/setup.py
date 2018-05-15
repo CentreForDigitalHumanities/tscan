@@ -10,7 +10,7 @@ from setuptools import setup
 
 setup(
     name = "tscan",
-    version = "0.9.2", #also change in ../configure.ac
+    version = "0.9.3", #also change in ../configure.ac
     author = "Martijn van der Klis, Ko van der Sloot, Maarten van Gompel",
     author_email = "m.h.vanderklis@uu.nl",
     description = ("Webservice for T-scan"),

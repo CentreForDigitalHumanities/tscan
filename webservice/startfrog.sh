@@ -1,6 +1,6 @@
 #! /bin/bash -x
 if [ `hostname` == "mlp01" ]; then
-    FROGPATH="/var/www/lamachine"
+    FROGPATH="/var/www/lamachine2/weblamachine"
     LOGFILE="/var/www/webservices-lst/live/writable/logs/tscan.frog.err"
     THREADS=8
 elif [ ! -z "$LM_PREFIX" ]; then
