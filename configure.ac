@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.60])
-AC_INIT([tscan], [0.9.3], [m.h.vanderklis@uu.nl]) #also change in webservice/setup.py
+AC_INIT([tscan], [0.9.3], [m.h.vanderklis@uu.nl]) #also change in webservice/setup.py and codemeta.json!
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/tscan.cxx])
 AC_CONFIG_MACRO_DIR([m4])
