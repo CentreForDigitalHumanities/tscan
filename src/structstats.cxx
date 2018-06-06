@@ -917,18 +917,30 @@ void structStats::intensToCSV( ostream& os ) const {
 }
 
 void structStats::miscHeader( ostream& os ) const {
-  os << "Log_prob_fwd,Entropie_fwd,Perplexiteit_fwd,";
-  os << "Log_prob_bwd,Entropie_bwd,Perplexiteit_bwd,";
+  os << "Log_prob_fwd,Log_prob_fwd_inhwrd,Log_prob_fwd_zn,Log_prob_fwd_inhwrd_zn,";
+  os << "Entropie_fwd,Entropie_fwd_norm,Perplexiteit_fwd,Perplexiteit_fwd_norm,";
+  os << "Log_prob_bwd,Log_prob_bwd_inhwrd,Log_prob_bwd_zn,Log_prob_bwd_inhwrd_zn,";
+  os << "Entropie_bwd,Entropie_bwd_norm,Perplexiteit_bwd,Perplexiteit_bwd_norm,";
   os << "Eigen_classificatie";
 }
 
 void structStats::miscToCSV( ostream& os ) const {
   os << proportion( avg_prob10_fwd, sentCnt ) << ",";
+  os << proportion( avg_prob10_fwd_content, sentCnt ) << ",";
+  os << proportion( avg_prob10_fwd_ex_names, sentCnt ) << ",";
+  os << proportion( avg_prob10_fwd_content_ex_names, sentCnt ) << ",";
   os << proportion( entropy_fwd, sentCnt ) << ",";
+  os << proportion( entropy_fwd_norm, sentCnt ) << ",";
   os << proportion( perplexity_fwd, sentCnt ) << ",";
+  os << proportion( perplexity_fwd_norm, sentCnt ) << ",";
   os << proportion( avg_prob10_bwd, sentCnt ) << ",";
+  os << proportion( avg_prob10_bwd_content, sentCnt ) << ",";
+  os << proportion( avg_prob10_bwd_ex_names, sentCnt ) << ",";
+  os << proportion( avg_prob10_bwd_content_ex_names, sentCnt ) << ",";
   os << proportion( entropy_bwd, sentCnt ) << ",";
+  os << proportion( entropy_bwd_norm, sentCnt ) << ",";
   os << proportion( perplexity_bwd, sentCnt ) << ",";
+  os << proportion( perplexity_bwd_norm, sentCnt ) << ",";
 
   os << "\"" << escape_quotes(toStringCounter(my_classification)) << "\"";
 }
@@ -1370,44 +1382,24 @@ void structStats::merge( structStats *ss ){
   lemma_freq_n_strict += ss->lemma_freq_n_strict;
 
   // Wopr forwards probabilities
-  if ( !std::isnan(ss->avg_prob10_fwd) ){
-    if ( std::isnan(avg_prob10_fwd) )
-      avg_prob10_fwd = ss->avg_prob10_fwd;
-    else
-      avg_prob10_fwd += ss->avg_prob10_fwd;
-  }
-  if ( !std::isnan(ss->entropy_fwd) ){
-    if ( std::isnan(entropy_fwd) )
-      entropy_fwd = ss->entropy_fwd;
-    else
-      entropy_fwd += ss->entropy_fwd;
-  }
-  if ( !std::isnan(ss->perplexity_fwd) ){
-    if ( std::isnan(perplexity_fwd) )
-      perplexity_fwd = ss->perplexity_fwd;
-    else
-      perplexity_fwd += ss->perplexity_fwd;
-  }
+  avg_prob10_fwd += ss->avg_prob10_fwd;
+  avg_prob10_fwd_content += ss->avg_prob10_fwd_content;
+  avg_prob10_fwd_ex_names += ss->avg_prob10_fwd_ex_names;
+  avg_prob10_fwd_content_ex_names += ss->avg_prob10_fwd_content_ex_names;
+  entropy_fwd += ss->entropy_fwd;
+  entropy_fwd_norm += ss->entropy_fwd_norm;
+  perplexity_fwd += ss->perplexity_fwd;
+  perplexity_fwd_norm += ss->perplexity_fwd_norm;
   
   // Wopr backwards probabilities
-  if ( !std::isnan(ss->avg_prob10_bwd) ){
-    if ( std::isnan(avg_prob10_bwd) )
-      avg_prob10_bwd = ss->avg_prob10_bwd;
-    else
-      avg_prob10_bwd += ss->avg_prob10_bwd;
-  }
-  if ( !std::isnan(ss->entropy_bwd) ){
-    if ( std::isnan(entropy_bwd) )
-      entropy_bwd = ss->entropy_bwd;
-    else
-      entropy_bwd += ss->entropy_bwd;
-  }
-  if ( !std::isnan(ss->perplexity_bwd) ){
-    if ( std::isnan(perplexity_bwd) )
-      perplexity_bwd = ss->perplexity_bwd;
-    else
-      perplexity_bwd += ss->perplexity_bwd;
-  }
+  avg_prob10_bwd += ss->avg_prob10_bwd;
+  avg_prob10_bwd_content += ss->avg_prob10_bwd_content;
+  avg_prob10_bwd_ex_names += ss->avg_prob10_bwd_ex_names;
+  avg_prob10_bwd_content_ex_names += ss->avg_prob10_bwd_content_ex_names;
+  entropy_bwd += ss->entropy_bwd;
+  entropy_bwd_norm += ss->entropy_bwd_norm;
+  perplexity_bwd += ss->perplexity_bwd;
+  perplexity_bwd_norm += ss->perplexity_bwd_norm;
 
   intensCnt += ss->intensCnt;
   intensBvnwCnt += ss->intensBvnwCnt;

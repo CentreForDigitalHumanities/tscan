@@ -366,12 +366,22 @@ struct structStats: public basicStats {
     lemma_freq_log_n(NAN),
     lemma_freq_log_strict(NAN),
     lemma_freq_log_n_strict(NAN),
-    avg_prob10_fwd(NAN),
-    avg_prob10_bwd(NAN),
-    entropy_fwd(NAN),
-    entropy_bwd(NAN),
-    perplexity_fwd(NAN),
-    perplexity_bwd(NAN),
+    avg_prob10_fwd(0),
+    avg_prob10_fwd_content(0),
+    avg_prob10_fwd_ex_names(0),
+    avg_prob10_fwd_content_ex_names(0),
+    avg_prob10_bwd(0),
+    avg_prob10_bwd_content(0),
+    avg_prob10_bwd_ex_names(0),
+    avg_prob10_bwd_content_ex_names(0),
+    entropy_fwd(0),
+    entropy_fwd_norm(0),
+    entropy_bwd(0),
+    entropy_bwd_norm(0),
+    perplexity_fwd(0),
+    perplexity_fwd_norm(0),
+    perplexity_bwd(0),
+    perplexity_bwd_norm(0),
     al_gem(NAN),
     al_max(NAN),
     intensCnt(0),
@@ -690,11 +700,21 @@ struct structStats: public basicStats {
   double lemma_freq_log_strict;
   double lemma_freq_log_n_strict;
   double avg_prob10_fwd;
+  double avg_prob10_fwd_content;
+  double avg_prob10_fwd_ex_names;
+  double avg_prob10_fwd_content_ex_names;
   double avg_prob10_bwd;
+  double avg_prob10_bwd_content;
+  double avg_prob10_bwd_ex_names;
+  double avg_prob10_bwd_content_ex_names;
   double entropy_fwd;
+  double entropy_fwd_norm;
   double entropy_bwd;
+  double entropy_bwd_norm;
   double perplexity_fwd;
+  double perplexity_fwd_norm;
   double perplexity_bwd;
+  double perplexity_bwd_norm;
   double al_gem;
   double al_max;
   int intensCnt;

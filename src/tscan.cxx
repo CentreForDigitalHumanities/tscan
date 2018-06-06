@@ -1739,7 +1739,7 @@ void orderWopr( const string& type, const string& txt, vector<double>& wordProbs
     cerr << "No usable FoLia date retrieved from Wopr. Got '"
 	<< result << "'" << endl;
   }
-  cerr << "Done with Wopr" << endl;
+  cerr << "done with Wopr" << endl;
 }
 
 xmlDoc *AlpinoServerParse( folia::Sentence *);
@@ -1857,22 +1857,8 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred ):
     } // omp section
   } // omp sections
 
-  // if ( parseFailCnt == 1 ){
-  //   // glorious fail
-  //   return;
-  // }
   sentCnt = 1; // so only count the sentence when not failed
-  if ( sentProb_fwd != -99 ){
-    avg_prob10_fwd = sentProb_fwd;
-  }
-  if ( sentProb_bwd != -99 ){
-    avg_prob10_bwd = sentProb_bwd;
-  }
-  entropy_fwd = sentEntropy_fwd;
-  entropy_bwd = sentEntropy_bwd;
-  perplexity_fwd = sentPerplexity_fwd;
-  perplexity_bwd = sentPerplexity_bwd;
-  //  cerr << "PUNCTS " << puncts << endl;
+
   bool question = false;
   vector<string> wordbuffer;
   vector<string> lemmabuffer;
@@ -1958,9 +1944,13 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred ):
       if (ws->isContent) {
         word_freq += ws->word_freq_log;
         lemma_freq += ws->lemma_freq_log;
+        avg_prob10_fwd_content += ws->logprob10_fwd;
+        avg_prob10_bwd_content += ws->logprob10_bwd;
         if (ws->prop != CGN::ISNAME) {
           word_freq_n += ws->word_freq_log;
           lemma_freq_n += ws->lemma_freq_log;
+          avg_prob10_fwd_content_ex_names += ws->logprob10_fwd;
+          avg_prob10_bwd_content_ex_names += ws->logprob10_bwd;
         }
       }
       if (ws->isContentStrict) {
@@ -1970,6 +1960,10 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred ):
           word_freq_n_strict += ws->word_freq_log;
           lemma_freq_n_strict += ws->lemma_freq_log;
         }
+      }
+      if (ws->prop != CGN::ISNAME) {
+        avg_prob10_fwd_ex_names += ws->logprob10_fwd;
+        avg_prob10_bwd_ex_names += ws->logprob10_bwd;
       }
 
       if (ws->isNominal) nominalCnt++;
@@ -2439,6 +2433,29 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred ):
   np_length( s, npCnt, indefNpCnt, npSize );
   rarityLevel = settings.rarityLevel;
   overlapSize = settings.overlapSize;
+
+  // Assign and normalize the values from Wopr
+  if ( sentProb_fwd != -99 ){
+    avg_prob10_fwd = sentProb_fwd;
+  }
+  if ( sentProb_bwd != -99 ){
+    avg_prob10_bwd = sentProb_bwd;
+  }
+  entropy_fwd = sentEntropy_fwd;
+  entropy_bwd = sentEntropy_bwd;
+  perplexity_fwd = sentPerplexity_fwd;
+  perplexity_bwd = sentPerplexity_bwd;
+
+  avg_prob10_fwd_content = proportion(avg_prob10_fwd_content, contentCnt).p;
+  avg_prob10_fwd_ex_names = proportion(avg_prob10_fwd_ex_names, wordCnt - nameCnt).p;
+  avg_prob10_fwd_content_ex_names = proportion(avg_prob10_fwd_content_ex_names, contentCnt - nameCnt).p;
+  avg_prob10_bwd_content = proportion(avg_prob10_bwd_content, contentCnt).p;
+  avg_prob10_bwd_ex_names = proportion(avg_prob10_bwd_ex_names, wordCnt - nameCnt).p;
+  avg_prob10_bwd_content_ex_names = proportion(avg_prob10_bwd_content_ex_names, contentCnt - nameCnt).p;
+  entropy_fwd_norm = proportion(entropy_fwd, w.size()).p;
+  entropy_bwd_norm = proportion(entropy_bwd, w.size()).p;
+  perplexity_fwd_norm = proportion(perplexity_fwd, pow(w.size(), 2)).p;
+  perplexity_bwd_norm = proportion(perplexity_bwd, pow(w.size(), 2)).p;
 }
 
 Conn::Type sentStats::checkMultiConnectives( const string& mword ){
