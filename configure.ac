@@ -89,6 +89,5 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
 		 data/Makefile
 		 webservice/Makefile
-		 config/Makefile
                  docs/Makefile])
 AC_OUTPUT
