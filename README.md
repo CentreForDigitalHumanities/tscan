@@ -2,7 +2,7 @@
 
 # T-Scan
 
-tscan 0.9 (c) TiCC/ 1998 - 2018
+tscan 0.9 (c) TiCC/ 1998 - 2019
 
     Tilburg centre for Cognition and Communication, Tilburg University.
     UiL-OTS, Utrecht University
@@ -29,7 +29,7 @@ Extensive documentation (in Dutch) can be found in [``docs/tscanhandleiding.pdf`
 
 T-Scan heavily depends upon other sofware, such as Frog, Wopr and Alpino.
 
-Installation is not trivial, to be able to succesfully build tscan from the tarball, you need the following packages:
+Installation is not trivial, to be able to succesfully build T-Scan from the tarball, you need the following packages:
 - autotools
 - autoconf-archive
 - ticcutils
@@ -42,9 +42,9 @@ Installation is not trivial, to be able to succesfully build tscan from the tarb
 To facilitate installation, T-Scan is included as an extra option in [LaMachine](https://proycon.github.io/LaMachine)
 
 We strongly recommend to use [LaMachine](https://proycon.github.io/LaMachine) to
-install tscan. In addition, T-Scan also uses Alpino, which is also included in LaMachine.
+install T-Scan. In addition, T-Scan also uses Alpino, which is also included in LaMachine.
 
-To install T-scan in an existing LaMachine environment you may need to adapt your installation manifest, as it is **not** included by default:
+To install T-Scan in an existing LaMachine environment you may need to adapt your installation manifest, as it is **not** included by default:
 
     (lamachine)$ lamachine-update --edit
 
@@ -71,7 +71,7 @@ Before you can use T-Scan you need to start the background servers (you may need
     $ ./startwopr20.sh    (will start Wopr to calculate forwards probabilities)
     $ ./startwopr02.sh    (will start Wopr to calculate backwards probabilities)
 
-Then either run tscan from the command-line, which will produce a FoLiA XML file,
+Then either run T-Scan from the command-line, which will produce a FoLiA XML file,
 
     $ cd tscan
     $ cp tscan.cfg.example tscan.cfg
@@ -80,7 +80,8 @@ Then either run tscan from the command-line, which will produce a FoLiA XML file
 
 ... or use the webapplication/webservice:
 
-    $ clamservice ticclservice.tscan   #this starts the CLAM service for TSCAN
+    $ cd tscan/webservices/tscanservice
+    $ clamservice tscanservice.tscan   #this starts the CLAM service for T-Scan
 
 And then navigate to the host and port specified.
 
