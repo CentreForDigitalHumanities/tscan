@@ -14,8 +14,9 @@ else
 fi
 PORT=7001
 ID=tscan
-CONFIG=${FROGPATH}/share/frog/nld/tscan-frog.cfg
+CONFIG=${FROGPATH}/share/frog/nld/frog.cfg
 
 mv $LOGFILE $LOGFILE.sav # poor mans solution
 
 frog -X --id=${ID} -c ${CONFIG} --skip=mp -S"${PORT}" 2> $LOGFILE
+
