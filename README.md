@@ -42,7 +42,8 @@ Installation is not trivial, to be able to succesfully build tscan from the tarb
 To facilitate installation, T-Scan is included as an extra option in [LaMachine](https://proycon.github.io/LaMachine)
 
 We strongly recommend to use [LaMachine](https://proycon.github.io/LaMachine) to
-install tscan. In addition, T-Scan also uses Alpino, which is also included in LaMachine.
+install tscan. In addition, T-Scan also uses Alpino, which is also included in LaMachine. Be aware that T-scan and
+dependencies are memory intensive, we recommend at least 16GB RAM for proper operation.
 
 To install T-scan in an existing LaMachine environment you may need to adapt your installation manifest, as it is **not** included by default:
 
@@ -78,7 +79,11 @@ Then either run tscan from the command-line, which will produce a FoLiA XML file
     (edit tscan.cfg if necessary)
     $ tscan --config=tscan.cfg input.txt
 
-... or use the webapplication/webservice:
+... or use the webapplication/webservice, which you can start in LaMachine with either:
+
+    $ lamachine-start-webserver
+
+.. or manually with:
 
     $ clamservice ticclservice.tscan   #this starts the CLAM service for TSCAN
 
