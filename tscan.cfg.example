@@ -1,13 +1,13 @@
 useAlpino=1
 useAlpinoServer=1
-useWopr=1
+useWopr=0
 
 styleSheet="tscanview.xsl"
 
 rarityLevel=4
 overlapSize=50
 frequencyClip=99
-mtldTreshold=0.720
+mtldThreshold=0.720
 
 configDir=data
 adj_semtypes="data/adjs_semtype.data"
@@ -17,7 +17,6 @@ noun_semtypes="data/nouns_semtype.data"
 staph_word_freq_lex="freqlist_staphorsius_CLIB_words.freq"
 word_freq_lex="freqlist_staphorsius_CLIB_words.freq"
 lemma_freq_lex="freqlist_staphorsius_CLIB_lemma.freq"
-#top_freq_lex="SoNaR500.wordfreqlist20000.freq"
 top_freq_lex="freqlist_sonarnews_words20000.freq"
 
 temporals="temporal_connectors.lst"
@@ -34,13 +33,17 @@ emotion_situation="emoties.txt"
 voorzetselexpr="voorzetseluitdrukkingen.txt"
 afkortingen="afkortingen.lst"
 
+prevalence="prevalence_nl.data"
+
 [[frog]]
 port=7001
 host=localhost
 
 [[wopr]]
-port=7002
-host=localhost
+port_fwd=7020
+host_fwd=localhost
+port_bwd=7002
+host_bwd=localhost
 
 [[alpino]]
 port=7003

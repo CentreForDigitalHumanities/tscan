@@ -59,14 +59,14 @@ before_install:
       export CXXFLAGS="-I/usr/local/opt/llvm/include";
     fi
 
-  - git clone https://github.com/proycon/ticcutils
+  - git clone https://github.com/LanguageMachines/ticcutils
   - cd ticcutils
   - bash bootstrap.sh
   - ./configure $OPENMPFLAG
   - make
   - sudo make install
   - cd ..
-  - git clone https://github.com/proycon/libfolia
+  - git clone https://github.com/LanguageMachines/libfolia
   - cd libfolia
   - bash bootstrap.sh
   - ./configure $OPENMPFLAG
@@ -80,35 +80,35 @@ before_install:
   - make
   - sudo make install
   - cd ..
-  - git clone https://github.com/proycon/ucto
+  - git clone https://github.com/LanguageMachines/ucto
   - cd ucto
   - bash bootstrap.sh
   - ./configure $OPENMPFLAG
   - make
   - sudo make install
   - cd ..
-  - git clone https://github.com/proycon/timbl
+  - git clone https://github.com/LanguageMachines/timbl
   - cd timbl
   - bash bootstrap.sh
   - ./configure $OPENMPFLAG
   - make
   - sudo make install
   - cd ..
-  - git clone https://github.com/proycon/mbt
+  - git clone https://github.com/LanguageMachines/mbt
   - cd mbt
   - bash bootstrap.sh
   - ./configure $OPENMPFLAG
   - make
   - sudo make install
   - cd ..
-  - git clone https://github.com/proycon/frogdata
+  - git clone https://github.com/LanguageMachines/frogdata
   - cd frogdata
   - bash bootstrap.sh
   - ./configure $OPENMPFLAG
   - make
   - sudo make install
   - cd ..
-  - git clone https://github.com/proycon/frog
+  - git clone https://github.com/LanguageMachines/frog
   - cd frog
   - bash bootstrap.sh
   - ./configure $OPENMPFLAG
