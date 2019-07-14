@@ -1,4 +1,4 @@
-#! /bin/bash -x
+#!/bin/bash -x
 if [ `hostname` == "mlp01" ]; then
     FROGPATH="/var/www/lamachine2/weblamachine"
     LOGFILE="/var/www/webservices-lst/live/writable/logs/tscan.frog.err"
@@ -14,9 +14,9 @@ else
 fi
 PORT=7001
 ID=tscan
-CONFIG=${FROGPATH}/share/frog/nld/frog.cfg
+#CONFIG=${FROGPATH}/share/frog/nld/frog.cfg
 
 mv $LOGFILE $LOGFILE.sav # poor mans solution
 
-frog -X --id=${ID} -c ${CONFIG} --skip=mp -S"${PORT}" 2> $LOGFILE
+frog -X --id=${ID} --skip=mp -S"${PORT}" 2> $LOGFILE
 

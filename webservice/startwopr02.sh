@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 PORT=7002
 DATADIR=../data
 
