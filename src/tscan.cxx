@@ -1736,7 +1736,7 @@ void orderWopr( const string& type, const string& txt, vector<double>& wordProbs
     }
   }
   else {
-    cerr << "No usable FoLia date retrieved from Wopr. Got '"
+    cerr << "No usable FoLia data retrieved from Wopr. Got '"
 	<< result << "'" << endl;
   }
   cerr << "done with Wopr" << endl;
@@ -1799,47 +1799,47 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats* pred ):
 #pragma omp section
     {
       if ( settings.doAlpino || settings.doAlpinoServer ){
-  if ( settings.doAlpinoServer ){
-    cerr << "calling Alpino Server" << endl;
-    alpDoc = AlpinoServerParse( s );
-    if ( !alpDoc ){
-      cerr << "alpino parser failed!" << endl;
-    }
-    cerr << "done with Alpino Server" << endl;
-  }
-  else if ( settings.doAlpino ){
-    cerr << "calling Alpino parser" << endl;
-    alpDoc = AlpinoParse( s, workdir_name );
-    if ( !alpDoc ){
-      cerr << "alpino parser failed!" << endl;
-    }
-    cerr << "done with Alpino parser" << endl;
-  }
-  if ( alpDoc ){
-    parseFailCnt = 0; // OK
-    for( size_t i=0; i < w.size(); ++i ){
-      vector<folia::PosAnnotation*> posV = w[i]->select<folia::PosAnnotation>(frog_pos_set);
-      if ( posV.size() != 1 )
-        throw folia::ValueError( "word doesn't have Frog POS tag info" );
-      folia::PosAnnotation *pa = posV[0];
-      string posHead = pa->feat("head");
-      if ( posHead == "LET" ){
-        puncts.insert( i );
-      }
-    }
-    dLevel = get_d_level( s, alpDoc );
-    if ( dLevel > 4 )
-      dLevel_gt4 = 1;
-    mod_stats( alpDoc, adjNpModCnt, npModCnt );
-    resolveAdverbials(alpDoc);
-    resolveRelativeClauses(alpDoc);
-    resolveFiniteVerbs(alpDoc);
-    resolveConjunctions(alpDoc);
-    resolveSmallConjunctions(alpDoc);
-  }
-  else {
-    parseFailCnt = 1; // failed
-  }
+	if ( settings.doAlpinoServer ){
+	  cerr << "calling Alpino Server" << endl;
+	  alpDoc = AlpinoServerParse( s );
+	  if ( !alpDoc ){
+	    cerr << "alpino parser failed!" << endl;
+	  }
+	  cerr << "done with Alpino Server" << endl;
+	}
+	else if ( settings.doAlpino ){
+	  cerr << "calling Alpino parser" << endl;
+	  alpDoc = AlpinoParse( s, workdir_name );
+	  if ( !alpDoc ){
+	    cerr << "alpino parser failed!" << endl;
+	  }
+	  cerr << "done with Alpino parser" << endl;
+	}
+	if ( alpDoc ){
+	  parseFailCnt = 0; // OK
+	  for( size_t i=0; i < w.size(); ++i ){
+	    vector<folia::PosAnnotation*> posV = w[i]->select<folia::PosAnnotation>(frog_pos_set);
+	    if ( posV.size() != 1 )
+	      throw folia::ValueError( "word doesn't have Frog POS tag info" );
+	    folia::PosAnnotation *pa = posV[0];
+	    string posHead = pa->feat("head");
+	    if ( posHead == "LET" ){
+	      puncts.insert( i );
+	    }
+	  }
+	  dLevel = get_d_level( s, alpDoc );
+	  if ( dLevel > 4 )
+	    dLevel_gt4 = 1;
+	  mod_stats( alpDoc, adjNpModCnt, npModCnt );
+	  resolveAdverbials(alpDoc);
+	  resolveRelativeClauses(alpDoc);
+	  resolveFiniteVerbs(alpDoc);
+	  resolveConjunctions(alpDoc);
+	  resolveSmallConjunctions(alpDoc);
+	}
+	else {
+	  parseFailCnt = 1; // failed
+	}
       }
     } // omp section
 
