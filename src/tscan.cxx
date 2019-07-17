@@ -2969,6 +2969,10 @@ int main(int argc, char *argv[]) {
     ifstream is( inName.c_str() );
     if ( !is ){
       cerr << "failed to open file '" << inName << "'" << endl;
+      if ( !o_option.empty() ){
+	// just 1 inputfile
+	exit(EXIT_FAILURE);
+      }
       continue;
     }
     else {
@@ -2976,6 +2980,10 @@ int main(int argc, char *argv[]) {
       folia::Document *doc = getFrogResult( is );
       if ( !doc ){
 	cerr << "big trouble: no FoLiA document created " << endl;
+	if ( !o_option.empty() ){
+	  // just 1 inputfile
+	  exit(EXIT_FAILURE);
+	}
 	continue;
       }
       else {
