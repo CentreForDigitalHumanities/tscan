@@ -1,5 +1,5 @@
 sudo: required
-dist: trusty
+dist: bionic
 group: edge
 
 # whitelist
@@ -28,7 +28,7 @@ matrix:
       compiler: clang++
       env:
         - SCAN=scan-build
-        #        - OPENMPFLAG=--disable-openmp
+        - OPENMPFLAG=--disable-openmp
 
     - os: osx
       compiler: clang++
@@ -38,7 +38,9 @@ matrix:
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       sudo apt-get update;
-      sudo apt-get install pkg-config autoconf-archive autotools-dev ccache cppcheck libicu-dev libxml2-dev libbz2-dev zlib1g-dev libtar-dev libboost-dev libboost-regex-dev expect libexttextcat-dev;
+      sudo apt-get install pkg-config autoconf-archive autotools-dev ccache;
+      sudo apt-get install cppcheck libicu-dev libxml2-dev libbz2-dev;
+      sudo apt-get install zlib1g-dev libtar-dev expect libexttextcat-dev;
     fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew update;
@@ -51,7 +53,6 @@ before_install:
       brew install cppcheck;
       brew install ccache;
       brew install libtextcat;
-      brew outdated boost || brew upgrade boost;
       brew outdated icu4c || brew install icu4c;
       brew install llvm;
       export PATH="/usr/local/opt/llvm/bin:$PATH";
