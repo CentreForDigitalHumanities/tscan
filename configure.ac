@@ -21,8 +21,10 @@ LT_INIT
 # Check for OpenMP support
 AC_OPENMP
 if test "x$ac_cv_prog_cxx_openmp" != "xunsupported"; then
-   CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
-   AC_DEFINE(HAVE_OPENMP, 1 , Define to 1 if you have OpenMP )
+  if test "x$ac_cv_prog_cxx_openmp" != "x"; then
+     CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
+     AC_DEFINE(HAVE_OPENMP, 1 , Define to 1 if you have OpenMP )
+  fi
 else
    AC_MSG_NOTICE(We don't have OpenMP. Multithreaded operation is disabled)
 fi
