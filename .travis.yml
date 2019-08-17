@@ -134,6 +134,7 @@ before_install:
 install:
   - bash bootstrap.sh
   - ./configure $OPENMPFLAG
+  - cat config.h
   - cppcheck --enable=all --quiet --error-exitcode=0 .
   - $SCAN --status-bugs make
   - make
