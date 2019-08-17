@@ -141,3 +141,7 @@ install:
 
 script:
   - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib make check
+
+after_failure:
+  - cat config.h
+  - cat src/test-suite.log
