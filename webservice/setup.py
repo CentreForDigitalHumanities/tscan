@@ -32,7 +32,7 @@ setup(
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     ],
-    package_data = {'tscanservice':['tscanservice/*.wsgi','tscanservice/*.yml'] },
+    package_data = {'tscanservice':['*.wsgi','*.yml'] },
     include_package_data=True,
     install_requires=['CLAM >= 3.0']
 )
