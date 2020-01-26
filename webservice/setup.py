@@ -34,5 +34,5 @@ setup(
     ],
     package_data = {'tscanservice':['tscanservice/*.wsgi','tscanservice/*.yml'] },
     include_package_data=True,
-    install_requires=['CLAM >= 2.3']
+    install_requires=['CLAM >= 3.0']
 )
