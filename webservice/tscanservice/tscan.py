@@ -51,8 +51,6 @@ SYSTEM_EMAIL = "M.H.vanderKlis@uu.nl"
 
 SYSTEM_LICENSE = "GNU Affero General Public License v3"
 
-SYSTEM_COVER_URL = "https://languagemachines.github.io/frog/style/icon.png"
-
 
 # ======== LOCATION ===========
 
