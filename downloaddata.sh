@@ -20,7 +20,7 @@ echo ${mystat}
 echo "Downloading big data"
 PREDOWNLOAD=`$mystat tscan-bigdata.tar.bz2 2> /dev/null`
 echo pre=$PREDOWNLOAD
-wget -c -N https://resources.lab.hum.uu.nl/resources/tscan/tscan-bigdata.tar.bz2
+wget -c -N https://dhstatic.hum.uu.nl/tscan/tscan-bigdata.tar.bz2
 POSTDOWNLOAD=`$mystat tscan-bigdata.tar.bz2 2> /dev/null`
 echo post=$POSTDOWNLOAD
 
