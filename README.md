@@ -51,11 +51,11 @@ To install T-Scan in an existing LaMachine environment you may need to adapt you
 If you do not want to use LaMachine, first make sure you have **all** necessary dependencies and then compile/install as follows:
 
     $ bash bootstrap.sh
-    $ ./configure
+    $ ./configure --prefix=/path/to/installation/
     $ make
     $ sudo make install
     $ cd webservice
-    $ python3 setup.py install
+    $ sudo python3 setup.py install
 
 ## Usage
 
