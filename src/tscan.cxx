@@ -72,7 +72,8 @@ struct cf_data {
 };
 
 struct noun {
-  noun() : type( SEM::NO_SEMTYPE ), is_compound( false ), compound_parts( 0 ){};
+  noun() :
+      type( SEM::NO_SEMTYPE ), is_compound( false ), compound_parts( 0 ){};
   SEM::Type type;
   bool is_compound;
   string head;
@@ -547,18 +548,15 @@ bool fill_vzexpr( set<string> &vz2, set<string> &vz3, set<string> &vz4,
       case 2: {
         string line = vec[0] + " " + vec[1];
         vz2.insert( line );
-      }
-        break;
+      } break;
       case 3: {
         string line = vec[0] + " " + vec[1] + " " + vec[2];
         vz3.insert( line );
-      }
-        break;
+      } break;
       case 4: {
         string line = vec[0] + " " + vec[1] + " " + vec[2] + " " + vec[3];
         vz4.insert( line );
-      }
-        break;
+      } break;
       default:
         throw logic_error( "switch out of range" );
     }
@@ -1180,8 +1178,7 @@ Intensify::Type wordStats::checkIntensify( const xmlNode *alpWord ) const {
     res = sit->second;
 
     // Special case for BVBW: check if this is not a modifier
-    if ( res == Intensify::BVBW )
-    {
+    if ( res == Intensify::BVBW ) {
       if ( !checkModifier( alpWord ) ) res = Intensify::NO_INTENSIFY;
     }
   }
@@ -1352,26 +1349,26 @@ wordStats::wordStats( int index,
                       folia::Word *w,
                       const xmlNode *alpWord,
                       const set<size_t> &puncts,
-                      bool fail ) : 
-  basicStats( index, w, "word" ), parseFail( fail ), wwform( ::NO_VERB ),
-  isPersRef( false ), isPronRef( false ),
-  archaic( false ), isContent( false ), isContentStrict( false ),
-  isNominal( false ), isOnder( false ), isImperative( false ),
-  isBetr( false ), isPropNeg( false ), isMorphNeg( false ),
-  nerProp( NER::NONER ), connType( Conn::NOCONN ), isMultiConn( false ), sitType( Situation::NO_SIT ),
-  prevalenceP( NAN ), prevalenceZ( NAN ),
-  f50( false ), f65( false ), f77( false ), f80( false ),
-  top_freq( notFound ), word_freq( 0 ), lemma_freq( 0 ),
-  wordOverlapCnt( 0 ), lemmaOverlapCnt( 0 ),
-  word_freq_log( NAN ), lemma_freq_log( NAN ),
-  logprob10_fwd( NAN ), logprob10_bwd( NAN ),
-  prop( CGN::JUSTAWORD ), position( CGN::NOPOS ),
-  sem_type( SEM::NO_SEMTYPE ), intensify_type( Intensify::NO_INTENSIFY ),
-  general_noun_type( General::NO_GENERAL ), general_verb_type( General::NO_GENERAL ),
-  adverb_type( Adverb::NO_ADVERB ), adverb_sub_type( Adverb::NO_ADVERB_SUBTYPE ),
-  afkType( Afk::NO_A ), is_compound( false ), compound_parts( 0 ),
-  word_freq_log_head( NAN ), word_freq_log_sat( NAN ), word_freq_log_head_sat( NAN ), word_freq_log_corr( NAN ), on_stoplist( false )
-{
+                      bool fail ) :
+    basicStats( index, w, "word" ),
+    parseFail( fail ), wwform( ::NO_VERB ),
+    isPersRef( false ), isPronRef( false ),
+    archaic( false ), isContent( false ), isContentStrict( false ),
+    isNominal( false ), isOnder( false ), isImperative( false ),
+    isBetr( false ), isPropNeg( false ), isMorphNeg( false ),
+    nerProp( NER::NONER ), connType( Conn::NOCONN ), isMultiConn( false ), sitType( Situation::NO_SIT ),
+    prevalenceP( NAN ), prevalenceZ( NAN ),
+    f50( false ), f65( false ), f77( false ), f80( false ),
+    top_freq( notFound ), word_freq( 0 ), lemma_freq( 0 ),
+    wordOverlapCnt( 0 ), lemmaOverlapCnt( 0 ),
+    word_freq_log( NAN ), lemma_freq_log( NAN ),
+    logprob10_fwd( NAN ), logprob10_bwd( NAN ),
+    prop( CGN::JUSTAWORD ), position( CGN::NOPOS ),
+    sem_type( SEM::NO_SEMTYPE ), intensify_type( Intensify::NO_INTENSIFY ),
+    general_noun_type( General::NO_GENERAL ), general_verb_type( General::NO_GENERAL ),
+    adverb_type( Adverb::NO_ADVERB ), adverb_sub_type( Adverb::NO_ADVERB_SUBTYPE ),
+    afkType( Afk::NO_A ), is_compound( false ), compound_parts( 0 ),
+    word_freq_log_head( NAN ), word_freq_log_sat( NAN ), word_freq_log_head_sat( NAN ), word_freq_log_corr( NAN ), on_stoplist( false ) {
   icu::UnicodeString us = w->text();
   charCnt = us.length();
   word = TiCC::UnicodeToUTF8( us );
@@ -1399,8 +1396,7 @@ wordStats::wordStats( int index,
         //	cerr << "scheidbaar WW: " << full << endl;
         full_lemma = full;
       }
-      if ( ( prop == CGN::ISPVTGW || prop == CGN::ISPVVERL ) &&
-           wwform != PASSIVE_VERB ) {
+      if ( ( prop == CGN::ISPVTGW || prop == CGN::ISPVVERL ) && wwform != PASSIVE_VERB ) {
         isImperative = checkImp( alpWord );
       }
     }
@@ -1510,7 +1506,8 @@ double calculate_mtld( const vector<string> &v ) {
       token_count = 0;
       unique_tokens.clear();
 #ifdef DEBUG_MTLD
-      cerr << "\treset: token_factor = " << token_factor << endl << endl;
+      cerr << "\treset: token_factor = " << token_factor << endl
+           << endl;
 #endif
     }
     else if ( i == v.size() - 1 ) {
@@ -1688,7 +1685,8 @@ void orderWopr( const string &type, const string &txt, vector<double> &wordProbs
       vector<folia::Word *> wv = doc.words();
       if ( wv.size() != wordProbsV.size() ) {
         cerr << "unforseen mismatch between de number of words returned by WOPR"
-             << endl << " and the number of words in the input sentence. "
+             << endl
+             << " and the number of words in the input sentence. "
              << endl;
         return;
       }
@@ -1779,7 +1777,7 @@ void np_length( folia::Sentence *s, int &npcount, int &indefcount, int &size ) {
 }
 
 sentStats::sentStats( int index, folia::Sentence *s, const sentStats *pred ) :
-  structStats( index, s, "sent" ) {
+    structStats( index, s, "sent" ) {
   text = TiCC::UnicodeToUTF8( s->toktext() );
   cerr << "analyse tokenized sentence=" << text << endl;
   vector<folia::Word *> w = s->words();
@@ -2297,16 +2295,22 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats *pred ) :
           }
           switch ( ws->top_freq_head ) {
             case top1000:
-              top1000CntHead++; top1000CntNounCorr++; top1000CntCorr++;
+              top1000CntHead++;
+              top1000CntNounCorr++;
+              top1000CntCorr++;
               // fallthrough
             case top2000:
             case top3000:
             case top5000:
-              top5000CntHead++; top5000CntNounCorr++; top5000CntCorr++;
+              top5000CntHead++;
+              top5000CntNounCorr++;
+              top5000CntCorr++;
               // fallthrough
             case top10000:
             case top20000:
-              top20000CntHead++; top20000CntNounCorr++; top20000CntCorr++;
+              top20000CntHead++;
+              top20000CntNounCorr++;
+              top20000CntCorr++;
               // fallthrough
             default:
               break;
@@ -2344,16 +2348,22 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats *pred ) :
 
           switch ( ws->top_freq ) {
             case top1000:
-              top1000CntNonComp++; top1000CntNounCorr++; top1000CntCorr++;
+              top1000CntNonComp++;
+              top1000CntNounCorr++;
+              top1000CntCorr++;
               // fallthrough
             case top2000:
             case top3000:
             case top5000:
-              top5000CntNonComp++; top5000CntNounCorr++; top5000CntCorr++;
+              top5000CntNonComp++;
+              top5000CntNounCorr++;
+              top5000CntCorr++;
               // fallthrough
             case top10000:
             case top20000:
-              top20000CntNonComp++; top20000CntNounCorr++; top20000CntCorr++;
+              top20000CntNonComp++;
+              top20000CntNounCorr++;
+              top20000CntCorr++;
               // fallthrough
             default:
               break;
@@ -2377,11 +2387,14 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats *pred ) :
         }
 
         switch ( ws->top_freq ) {
-          case top1000: top1000CntCorr++;
+          case top1000:
+            top1000CntCorr++;
             // fallthrough
-          case top5000: top5000CntCorr++;
+          case top5000:
+            top5000CntCorr++;
             // fallthrough
-          case top20000: top20000CntCorr++;
+          case top20000:
+            top20000CntCorr++;
             // fallthrough
           default: break;
         }
@@ -2534,7 +2547,7 @@ void sentStats::resolveMultiWordAfks() {
       string multiword3 = multiword2 + " " + sv[i + 2]->text();
       Afk::Type at = Afk::NO_A;
       map<string, Afk::Type>::const_iterator sit
-        = settings.afkos.find( multiword3 );
+          = settings.afkos.find( multiword3 );
       if ( sit == settings.afkos.end() ) {
         sit = settings.afkos.find( multiword2 );
       }
@@ -2552,7 +2565,7 @@ void sentStats::resolveMultiWordAfks() {
     // don't forget the last 2 words
     string multiword2 = sv[sv.size() - 2]->text() + " " + sv[sv.size() - 1]->text();
     map<string, Afk::Type>::const_iterator sit
-      = settings.afkos.find( multiword2 );
+        = settings.afkos.find( multiword2 );
     if ( sit != settings.afkos.end() ) {
       cerr << "FOUND a 2-word AFK: '" << multiword2 << "'" << endl;
       Afk::Type at = sit->second;
@@ -2599,11 +2612,9 @@ void sentStats::resolveAdverbials( xmlDoc *alpDoc ) {
   // Check for adverbials consisting of a single node that has the 'GENERAL' type.
   for ( auto &node : nodes ) {
     string word = TiCC::getAttribute( node, "word" );
-    if ( word != "" )
-    {
+    if ( word != "" ) {
       word = TiCC::lowercase( word );
-      if ( checkAdverbType( word, CGN::BW ) == Adverb::GENERAL )
-      {
+      if ( checkAdverbType( word, CGN::BW ) == Adverb::GENERAL ) {
         vcModSingleCnt++;
       }
     }
@@ -2611,8 +2622,7 @@ void sentStats::resolveAdverbials( xmlDoc *alpDoc ) {
 }
 
 parStats::parStats( int index, folia::Paragraph *p ) :
-  structStats( index, p, "par" )
-{
+    structStats( index, p, "par" ) {
   sentCnt = 0;
   vector<folia::Sentence *> sents = p->sentences();
   sentStats *prev = 0;
@@ -2690,9 +2700,8 @@ void docStats::calculate_doc_overlap() {
 }
 
 docStats::docStats( folia::Document *doc ) :
-  structStats( 0, 0, "document" ),
-  doc_word_overlapCnt( 0 ), doc_lemma_overlapCnt( 0 )
-{
+    structStats( 0, 0, "document" ),
+    doc_word_overlapCnt( 0 ), doc_lemma_overlapCnt( 0 ) {
   sentCnt = 0;
   doc->declare( folia::AnnotationType::METRIC,
                 "metricset",
@@ -2869,14 +2878,12 @@ int main( int argc, char *argv[] ) {
     exit( EXIT_SUCCESS );
   }
 
-  if ( opts.extract( 'h' ) ||
-       opts.extract( "help" ) ) {
+  if ( opts.extract( 'h' ) || opts.extract( "help" ) ) {
     usage();
     exit( EXIT_SUCCESS );
   }
 
-  if ( opts.extract( 'V' ) ||
-       opts.extract( "version" ) ) {
+  if ( opts.extract( 'V' ) || opts.extract( "version" ) ) {
     exit( EXIT_SUCCESS );
   }
 
@@ -2920,8 +2927,7 @@ int main( int argc, char *argv[] ) {
   }
 
   opts.extract( "config", configFile );
-  if ( !configFile.empty() &&
-       config.fill( configFile ) ) {
+  if ( !configFile.empty() && config.fill( configFile ) ) {
     settings.init( config );
   }
   else {
