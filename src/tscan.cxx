@@ -2779,6 +2779,12 @@ folia::Document *getFrogResult( istream &is ) {
           continue;
         }
       }
+      
+      // cut off line after ###
+      size_t comment_match = line.find("###");
+      if (comment_match != string::npos) {
+        line = line.substr(0, comment_match);
+      }
     }
     if ( incomment )
       continue;
