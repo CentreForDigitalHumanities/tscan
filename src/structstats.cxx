@@ -287,7 +287,7 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
 }
 
 void structStats::sentDifficultiesToCSV( ostream& os ) const {
-  if ( parseFailCnt > 0 ) {
+  if ( isSentence() && parseFailCnt > 0 ) {
     os << "NA,";
   }
   else {
@@ -300,7 +300,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   os << proportion( wordInclCnt, npCnt ) << ",";
 
   double bijzinCnt = betrCnt + bijwCnt + complCnt;
-  if ( parseFailCnt > 0 ) {
+  if ( isSentence() && parseFailCnt > 0 ) {
     os << "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,";
   }
   else {
@@ -316,7 +316,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
     os << proportion( losBijwCnt, sentCnt ) << ",";
   }
 
-  if ( parseFailCnt > 0 ) {
+  if ( isSentence() && parseFailCnt > 0 ) { 
     os << "NA,NA,NA,NA,NA,NA,NA,";
   }
   else {
