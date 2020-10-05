@@ -64,6 +64,7 @@ double structStats::getHighestAL() const {
  */
 void structStats::CSVheader( ostream& os, const string& intro ) const {
   os << intro << ",Alpino_status,";
+  topPredictorsHeader( os );
   wordDifficultiesHeader( os );
   compoundHeader( os );
   sentDifficultiesHeader( os );
@@ -99,6 +100,7 @@ void structStats::toCSV( ostream& os ) const {
 
   os << parseFailCnt << ",";
 
+  topPredictorsToCSV( os );
   wordDifficultiesToCSV( os );
   compoundToCSV( os );
   sentDifficultiesToCSV( os );
@@ -114,6 +116,48 @@ void structStats::toCSV( ostream& os ) const {
   miscToCSV( os );
 
   os << endl;
+}
+
+void structStats::topPredictorsHeader( ostream& os ) const { 
+  os << "wrd_freq_log_zn_corr,wrd_freq_log_zn,"
+     << "Conc_nw_ruim_p,Conc_nw_strikt_p," 
+     << "Alg_nw_d,"
+     << "Pers_ref_d,"
+     << "Pers_vnw_d,"
+     << "Wrd_per_zin,"
+     << "Wrd_per_dz,"
+     << "Inhwrd_dz_zonder_abw,"
+     << "AL_max,"
+     << "Bijzin_per_zin,"
+     << "Bijv_bep_dz_zbijzin,"
+     << "Extra_KConj_dz,"
+     << "MTLD_inhwrd_zonder_abw,";
+}
+
+void structStats::topPredictorsToCSV( ostream& os ) const { 
+  os << proportion(word_freq_log_n_corr, contentCnt-nameCnt) << ","; //wrd_freq_log_zn_corr
+  os << "NA,"; //wrd_freq_log_zn
+
+  int coveredNouns = nounCnt+nameCnt-uncoveredNounCnt;
+  os << proportion( broadNounCnt, coveredNouns ) << ",";  //Conc_nw_ruim_p
+  os << proportion( strictNounCnt, coveredNouns ) << ","; //Conc_nw_strikt_p
+
+  os << density( generalNounCnt, wordCnt ) << ","; //Alg_nw_d
+  os << density( persRefCnt, wordInclCnt ) << ",";  //Pers_ref_d
+  os << density( pron1Cnt+pron2Cnt+pron3Cnt, wordInclCnt ) << ","; //Pers_vnw_d
+  os << proportion( wordInclCnt, sentCnt ) << ","; //Wrd_per_zin
+  os << proportion( wordInclCnt, correctedClauseCnt ) << ","; //Wrd_per_dz
+  os << proportion( contentStrictInclCnt, correctedClauseCnt ) << ",";  //Inhwrd_dz_zonder_abw
+  os << toMString( al_max ) << ","; //AL_max
+
+  double bijzinCnt = betrCnt + bijwCnt + complCnt;
+  os << proportion( bijzinCnt + infinComplCnt, sentCnt ) << ","; //Bijzin_per_zin
+
+  int npModCorrectedCnt = max(0, npModCnt - betrCnt);
+  os << proportion( npModCorrectedCnt, correctedClauseCnt ) << ",";  //Bijv_bep_dz_zbijzin
+
+  os << proportion( smallCnjExtraCnt, correctedClauseCnt ) << ",";  //Extra_KConj_dz
+  os << content_mtld_strict << ","; //MTLD_inhwrd_zonder_abw
 }
 
 void structStats::wordDifficultiesHeader( ostream& os ) const {
@@ -214,30 +258,30 @@ void structStats::compoundToCSV( ostream& os ) const {
   os << density(compoundCnt, wordCnt) << ",";
   os << proportion(compoundCnt, nounCnt) << ",";
   os << density(compound3Cnt, wordCnt) << ",";
-  os << proportion(compound3Cnt, nounCnt) << ",";
+  os << proportion(compound3Cnt, nounCnt) << ","; //Samenst3_p
   os << proportion(charCntNoun, nounCnt) << ",";
   os << proportion(charCntNonComp, nonCompoundCnt) << ",";
-  os << proportion(charCntComp, compoundCnt) << ",";
+  os << proportion(charCntComp, compoundCnt) << ","; //Let_per_wrd_sam
   os << proportion(charCntHead, compoundCnt) << ",";
-  os << proportion(charCntSat, compoundCnt) << ",";
+  os << proportion(charCntSat, compoundCnt) << ","; //Let_per_wrd_satwrd
   os << proportion(charCntNounCorr, nounCnt) << ",";
-  os << proportion(charCntCorr, wordCnt) << ",";
+  os << proportion(charCntCorr, wordCnt) << ","; //Let_per_wrd_corr
   os << proportion(word_freq_log_noun, nounCnt) << ",";
   os << proportion(word_freq_log_non_comp, nonCompoundCnt) << ",";
-  os << proportion(word_freq_log_comp, compoundCnt) << ",";
+  os << proportion(word_freq_log_comp, compoundCnt) << ","; //Wrd_freq_log_sam_nw
   os << proportion(word_freq_log_head, compoundCnt) << ",";
   os << proportion(word_freq_log_sat, compoundCnt) << ",";
-  os << proportion(word_freq_log_head_sat, compoundCnt) << ",";
+  os << proportion(word_freq_log_head_sat, compoundCnt) << ","; //Wrd_freq_log_(hfd_sat)
   os << proportion(word_freq_log_noun_corr, nounCnt) << ",";
-  os << proportion(word_freq_log_corr, contentCnt) << ",";
+  os << proportion(word_freq_log_corr, contentCnt) << ","; //Wrd_freq_log_corr
 
-  os << proportion(word_freq_log_n_corr, contentCnt-nameCnt) << ",";
-  os << proportion(word_freq_log_corr_strict, contentStrictCnt) << ",";
-  os << proportion(word_freq_log_n_corr_strict, contentStrictCnt-nameCnt) << ",";
+  os << proportion(word_freq_log_n_corr, contentCnt-nameCnt) << ","; //Wrd_freq_log_zn_corr
+  os << proportion(word_freq_log_corr_strict, contentStrictCnt) << ","; //Wrd_freq_log_corr_zonder_abw
+  os << proportion(word_freq_log_n_corr_strict, contentStrictCnt-nameCnt) << ","; //Wrd_freq_log_zn_corr_zonder_abw
 
   os << proportion(top1000CntNoun, nounCnt) << ",";
   os << proportion(top5000CntNoun, nounCnt) << ",";
-  os << proportion(top20000CntNoun, nounCnt) << ",";
+  os << proportion(top20000CntNoun, nounCnt) << ","; //Freq20000_nw
   os << proportion(top1000CntNonComp, nonCompoundCnt) << ",";
   os << proportion(top5000CntNonComp, nonCompoundCnt) << ",";
   os << proportion(top20000CntNonComp, nonCompoundCnt) << ",";
@@ -291,26 +335,26 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
     os << "NA,";
   }
   else {
-    os << proportion( wordInclCnt, sentCnt ) << ",";
+    os << proportion( wordInclCnt, sentCnt ) << ","; //Wrd_per_zin
   }
 
-  os << proportion( wordInclCnt, correctedClauseCnt ) << ",";
-  os << proportion( sentCnt, wordInclCnt )  << ",";
-  os << proportion( correctedClauseCnt, wordInclCnt )  << ",";
-  os << proportion( wordInclCnt, npCnt ) << ",";
+  os << proportion( wordInclCnt, correctedClauseCnt ) << ","; //Wrd_per_dz
+  os << proportion( sentCnt, wordInclCnt )  << ","; //Zin_per_wrd
+  os << proportion( correctedClauseCnt, wordInclCnt )  << ","; //Dzin_per_wrd
+  os << proportion( wordInclCnt, npCnt ) << ","; //Wrd_per_nwg
 
   double bijzinCnt = betrCnt + bijwCnt + complCnt;
   if ( parseFailCnt > 0 ) {
     os << "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,";
   }
   else {
-    os << proportion( betrCnt, sentCnt ) << ",";
-    os << proportion( bijwCnt, sentCnt ) << ",";
-    os << proportion( complCnt, sentCnt ) << ",";
-    os << proportion( bijzinCnt, sentCnt ) << ",";
-    os << proportion( mvFinInbedCnt, sentCnt ) << ",";
-    os << proportion( infinComplCnt, sentCnt ) << ",";
-    os << proportion( bijzinCnt + infinComplCnt, sentCnt ) << ",";
+    os << proportion( betrCnt, sentCnt ) << ","; //Betr_bijzin_per_zin
+    os << proportion( bijwCnt, sentCnt ) << ","; //Bijw_bijzin_per_zin
+    os << proportion( complCnt, sentCnt ) << ","; //Compl_bijzin_per_zin
+    os << proportion( bijzinCnt, sentCnt ) << ","; //Fin_bijzin_per_zin
+    os << proportion( mvFinInbedCnt, sentCnt ) << ","; //Mv_fin_inbed_per_zin
+    os << proportion( infinComplCnt, sentCnt ) << ","; //Infin_compl_per_zin
+    os << proportion( bijzinCnt + infinComplCnt, sentCnt ) << ","; //Bijzin_per_zin
     os << proportion( mvInbedCnt, sentCnt ) << ",";
     os << proportion( losBetrCnt, sentCnt ) << ",";
     os << proportion( losBijwCnt, sentCnt ) << ",";
@@ -366,7 +410,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   os << MMtoString( distances, VERB_MOD_BW ) << ",";
   os << MMtoString( distances, VERB_NOUN ) << ",";
   os << toMString( al_gem ) << ",";
-  os << toMString( al_max ) << ",";
+  os << toMString( al_max ) << ","; //AL_max
 }
 
 void structStats::infoHeader( ostream& os ) const {
@@ -392,56 +436,56 @@ void structStats::infoHeader( ostream& os ) const {
 }
 
 void structStats::informationDensityToCSV( ostream& os ) const {
-  os << density( vcModCnt, wordInclCnt ) << ",";
-  os << proportion( vcModCnt, correctedClauseCnt ) << ",";
+  os << density( vcModCnt, wordInclCnt ) << ","; //Bijw_bep_d
+  os << proportion( vcModCnt, correctedClauseCnt ) << ","; //Bijw_bep_dz
 
   int vcModCorrectedCnt = max(0, vcModCnt - bijwCnt);
-  os << proportion( vcModCorrectedCnt, correctedClauseCnt ) << ",";
+  os << proportion( vcModCorrectedCnt, correctedClauseCnt ) << ","; //Bijw_bep_dz_zbijzin
 
   os << density( vcModSingleCnt, wordInclCnt ) << ",";
-  os << proportion( vcModSingleCnt, correctedClauseCnt ) << ",";
+  os << proportion( vcModSingleCnt, correctedClauseCnt ) << ","; //Bijw_bep_alg_dz
 
-  os << density( npModCnt, wordInclCnt ) << ",";
-  os << proportion( npModCnt, correctedClauseCnt ) << ",";
+  os << density( npModCnt, wordInclCnt ) << ","; //Bijv_bep_d
+  os << proportion( npModCnt, correctedClauseCnt ) << ","; //Bijv_bep_dz
 
   int npModCorrectedCnt = max(0, npModCnt - betrCnt);
-  os << proportion( npModCorrectedCnt, correctedClauseCnt ) << ",";
+  os << proportion( npModCorrectedCnt, correctedClauseCnt ) << ","; //Bijv_bep_dz_zbijzin
 
   os << density( adjNpModCnt, wordInclCnt ) << ",";
-  os << proportion( adjNpModCnt, correctedClauseCnt ) << ",";
+  os << proportion( adjNpModCnt, correctedClauseCnt ) << ","; //Attr_bijv_nw_dz
 
   os << density( npModCnt-adjNpModCnt, wordInclCnt ) << ",";
-  os << proportion( npModCnt-adjNpModCnt, correctedClauseCnt ) << ",";
+  os << proportion( npModCnt-adjNpModCnt, correctedClauseCnt ) << ","; //Ov_bijv_bep_dz
 
-  os << proportion( smallCnjCnt, sentCnt ) << ",";
-  os << proportion( smallCnjExtraCnt, sentCnt ) << ",";
-  os << proportion( smallCnjCnt, correctedClauseCnt ) << ",";
-  os << proportion( smallCnjExtraCnt, correctedClauseCnt ) << ",";
+  os << proportion( smallCnjCnt, sentCnt ) << ","; //KConj_per_zin
+  os << proportion( smallCnjExtraCnt, sentCnt ) << ","; //Extra_KConj_per_zin
+  os << proportion( smallCnjCnt, correctedClauseCnt ) << ","; //KConj_dz
+  os << proportion( smallCnjExtraCnt, correctedClauseCnt ) << ","; //Extra_KConj_dz
 
   int propositionCount = vcModCorrectedCnt + npModCorrectedCnt + smallCnjExtraCnt;
   double propositionPr = proportion( propositionCount, correctedClauseCnt ).p + 1.0;
-  os << propositionPr << ",";
+  os << propositionPr << ","; //Props_dz_tot
 
-  os << proportion( unique_words.size(), wordInclCnt ) << ",";
-  os << word_mtld << ",";
+  os << proportion( unique_words.size(), wordInclCnt ) << ","; //TTR_wrd
+  os << word_mtld << ","; //MTLD_wrd
 
-  os << proportion( unique_lemmas.size(), wordInclCnt ) << ",";
-  os << lemma_mtld << ",";
+  os << proportion( unique_lemmas.size(), wordInclCnt ) << ","; //TTR_lem
+  os << lemma_mtld << ","; //MTLD_lem
 
   os << proportion( unique_names.size(), nameInclCnt ) << ",";
-  os << name_mtld << ",";
+  os << name_mtld << ","; //MTLD_namen
 
   os << proportion( unique_contents.size(), contentInclCnt ) << ",";
-  os << content_mtld << ",";
+  os << content_mtld << ","; //MTLD_inhwrd
 
-  os << proportion( unique_contents_strict.size(), contentStrictInclCnt ) << ",";
-  os << content_mtld_strict << ",";
+  os << proportion( unique_contents_strict.size(), contentStrictInclCnt ) << ","; //TTR_inhwrd_zonder_abw
+  os << content_mtld_strict << ","; //MTLD_inhwrd_zonder_abw
 
-  os << density( contentInclCnt, wordInclCnt ) << ",";
-  os << proportion( contentInclCnt, correctedClauseCnt ) << ",";
+  os << density( contentInclCnt, wordInclCnt ) << ","; //Inhwrd_d
+  os << proportion( contentInclCnt, correctedClauseCnt ) << ","; //Inhwrd_dz
 
-  os << density( contentStrictInclCnt, wordInclCnt ) << ",";
-  os << proportion( contentStrictInclCnt, correctedClauseCnt ) << ",";
+  os << density( contentStrictInclCnt, wordInclCnt ) << ","; //Inhwrd_d_zonder_abw
+  os << proportion( contentStrictInclCnt, correctedClauseCnt ) << ","; //Inhwrd_dz_zonder_abw
 
   double rare = rarity( rarityLevel );
   if (std::isnan(rare)) {
@@ -614,42 +658,42 @@ void structStats::concreetHeader( ostream& os ) const {
 
 void structStats::concreetToCSV( ostream& os ) const {
   int coveredNouns = nounCnt+nameCnt-uncoveredNounCnt;
-  os << proportion( strictNounCnt, coveredNouns ) << ",";
-  os << density( strictNounCnt, wordCnt ) << ",";
-  os << proportion( broadNounCnt, coveredNouns ) << ",";
-  os << density( broadNounCnt, wordCnt ) << ",";
+  os << proportion( strictNounCnt, coveredNouns ) << ","; //Conc_nw_strikt_p
+  os << density( strictNounCnt, wordCnt ) << ","; //Conc_nw_strikt_d
+  os << proportion( broadNounCnt, coveredNouns ) << ","; //Conc_nw_ruim_p
+  os << density( broadNounCnt, wordCnt ) << ","; //Conc_nw_ruim_d
   os << proportion( humanCnt, coveredNouns ) << ",";
-  os << density( humanCnt, wordCnt ) << ",";
+  os << density( humanCnt, wordCnt ) << ","; //Pers_nw_d
   os << proportion( nonHumanCnt, coveredNouns ) << ",";
-  os << density( nonHumanCnt, wordCnt ) << ",";
+  os << density( nonHumanCnt, wordCnt ) << ","; //PlantDier_nw_d
   os << proportion( artefactCnt, coveredNouns ) << ",";
-  os << density( artefactCnt, wordCnt ) << ",";
+  os << density( artefactCnt, wordCnt ) << ","; //Gebr_vw_nw_d
   os << proportion( substanceConcCnt, coveredNouns ) << ",";
-  os << density( substanceConcCnt, wordCnt ) << ",";
+  os << density( substanceConcCnt, wordCnt ) << ","; //Subst_conc_nw_d
   os << proportion( foodcareCnt, coveredNouns ) << ",";
-  os << density( foodcareCnt, wordCnt ) << ",";
+  os << density( foodcareCnt, wordCnt ) << ","; //Voed_verz_nw_d
   os << proportion( concrotherCnt, coveredNouns ) << ",";
-  os << density( concrotherCnt, wordCnt ) << ",";
+  os << density( concrotherCnt, wordCnt ) << ","; //Concr_ov_nw_d
   os << proportion( dynamicConcCnt, coveredNouns ) << ",";
-  os << density( dynamicConcCnt, wordCnt ) << ",";
+  os << density( dynamicConcCnt, wordCnt ) << ","; //Gebeuren_conc_nw_d
   os << proportion( placeCnt, coveredNouns ) << ",";
-  os << density( placeCnt, wordCnt ) << ",";
+  os << density( placeCnt, wordCnt ) << ","; //Plaats_nw_d
   os << proportion( timeCnt, coveredNouns ) << ",";
-  os << density( timeCnt, wordCnt ) << ",";
+  os << density( timeCnt, wordCnt ) << ","; //Tijd_nw_d
   os << proportion( measureCnt, coveredNouns ) << ",";
-  os << density( measureCnt, wordCnt ) << ",";
+  os << density( measureCnt, wordCnt ) << ","; //Maat_nw_d
   os << proportion( substanceAbstrCnt, coveredNouns ) << ",";
-  os << density( substanceAbstrCnt, wordCnt ) << ",";
+  os << density( substanceAbstrCnt, wordCnt ) << ","; //Subst_abstr_nw_d
   os << proportion( dynamicAbstrCnt, coveredNouns ) << ",";
-  os << density( dynamicAbstrCnt, wordCnt ) << ",";
+  os << density( dynamicAbstrCnt, wordCnt ) << ","; //Gebeuren_abstr_nw_d
   os << proportion( institutCnt, coveredNouns ) << ",";
-  os << density( institutCnt, wordCnt ) << ",";
+  os << density( institutCnt, wordCnt ) << ","; //Organisatie_nw_d
   os << proportion( nonDynamicCnt, coveredNouns ) << ",";
-  os << density( nonDynamicCnt, wordCnt ) << ",";
-  os << proportion( undefinedNounCnt, coveredNouns ) << ",";
-  os << proportion( coveredNouns, nounCnt + nameCnt ) << ",";
+  os << density( nonDynamicCnt, wordCnt ) << ","; //Ov_abstr_nw_d
+  os << proportion( undefinedNounCnt, coveredNouns ) << ","; //Undefined_nw_p
+  os << proportion( coveredNouns, nounCnt + nameCnt ) << ","; //Gedekte_nw_p
 
-  os << density( generalNounCnt, wordCnt ) << ",";
+  os << density( generalNounCnt, wordCnt ) << ","; //Alg_nw_d
   os << proportion( generalNounCnt, coveredNouns ) << ",";
   os << density( generalNounSepCnt, wordCnt ) << ",";
   os << proportion( generalNounSepCnt, coveredNouns ) << ",";
@@ -762,11 +806,11 @@ void structStats::persoonlijkheidHeader( ostream& os ) const {
 }
 
 void structStats::persoonlijkheidToCSV( ostream& os ) const {
-  os << density( persRefCnt, wordInclCnt ) << ",";
-  os << density( pron1Cnt, wordInclCnt ) << ",";
-  os << density( pron2Cnt, wordInclCnt ) << ",";
-  os << density( pron3Cnt, wordInclCnt ) << ",";
-  os << density( pron1Cnt+pron2Cnt+pron3Cnt, wordInclCnt ) << ",";
+  os << density( persRefCnt, wordInclCnt ) << ","; //Pers_ref_d
+  os << density( pron1Cnt, wordInclCnt ) << ","; //Pers_vnw1_d
+  os << density( pron2Cnt, wordInclCnt ) << ","; //Pers_vnw2_d
+  os << density( pron3Cnt, wordInclCnt ) << ","; //Pers_vnw3_d
+  os << density( pron1Cnt+pron2Cnt+pron3Cnt, wordInclCnt ) << ","; //Pers_vnw_d
 
   int val = at( ners, NER::PER_B );
   os << proportion( val, nerCnt ) << ",";
