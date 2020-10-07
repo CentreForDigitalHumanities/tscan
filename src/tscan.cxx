@@ -23,6 +23,7 @@
 #include <string>
 #include <fstream>
 #include <cmath>
+#include <regex>
 #include <algorithm>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -2756,11 +2757,23 @@ folia::Document *getFrogResult( istream &is ) {
 #ifdef DEBUG_FROG
     cerr << "read: '" << line << "'" << endl;
 #endif
+
+    // cut off line after ###
+    size_t match = line.find("###");
+    if (match != string::npos) {
+      line = line.substr(0, match);
+    }
+
+    //replace weird characters
+    std::regex opening ("[\{\[]");
+    line = regex_replace (line, opening, "(");
+
+    std::regex closing ("[\\}\\]]");
+    line = regex_replace (line, closing, ")");
+
     if ( line.length() > 2 ) {
       string start = line.substr( 0, 3 );
-      if ( start == "###" )
-        continue;
-      else if ( start == "<<<" ) {
+      if ( start == "<<<" ) {
         if ( incomment ) {
           cerr << "Nested comment (<<<) not allowed!" << endl;
           return 0;
@@ -2778,12 +2791,6 @@ folia::Document *getFrogResult( istream &is ) {
           incomment = false;
           continue;
         }
-      }
-      
-      // cut off line after ###
-      size_t comment_match = line.find("###");
-      if (comment_match != string::npos) {
-        line = line.substr(0, comment_match);
       }
     }
     if ( incomment )
