@@ -119,7 +119,7 @@ void structStats::toCSV( ostream& os ) const {
 }
 
 void structStats::topPredictorsHeader( ostream& os ) const { 
-  os << "wrd_freq_log_zn_corr,wrd_freq_log_zn,"
+  os << "wrd_freq_log_zn_corr,wrd_freq_zn_log,"
      << "Conc_nw_ruim_p,Conc_nw_strikt_p," 
      << "Alg_nw_d,"
      << "Pers_ref_d,"
@@ -136,7 +136,7 @@ void structStats::topPredictorsHeader( ostream& os ) const {
 
 void structStats::topPredictorsToCSV( ostream& os ) const { 
   os << proportion(word_freq_log_n_corr, contentCnt-nameCnt) << ","; //wrd_freq_log_zn_corr
-  os << "NA,"; //wrd_freq_log_zn
+  os << word_freq_log_n << ","; //wrd_freq_zn_log
 
   int coveredNouns = nounCnt+nameCnt-uncoveredNounCnt;
   os << proportion( broadNounCnt, coveredNouns ) << ",";  //Conc_nw_ruim_p
@@ -166,7 +166,7 @@ void structStats::wordDifficultiesHeader( ostream& os ) const {
      << "Namen_p,Namen_d,"
      << "Wrd_prev,Wrd_prev_z,Inhwrd_prev,Inhwrd_prev_z,Dekking_inhwrd_prev,"
      << "Freq50_staph,Freq65_Staph,Freq77_Staph,Freq80_Staph,"
-     << "Wrd_freq_log,Wrd_freq_zn_log,Lem_freq_log,Lem_freq_zn_log,"
+     << "Wrd_freq_log,Lem_freq_log,Lem_freq_zn_log,"
      << "Wrd_freq_log_zonder_abw,Wrd_freq_zn_log_zonder_abw,Lem_freq_log_zonder_abw,Lem_freq_zn_log_zonder_abw,"
      << "Freq1000,Freq2000,Freq3000,"
      << "Freq5000,Freq10000,Freq20000,"
@@ -181,29 +181,28 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
      << proportion( charCnt, wordCnt ) << ","
      << proportion( wordCnt, charCnt ) <<  ","
      << proportion( charCntExNames, (wordCnt-nameCnt) ) << ","
-     << proportion( (wordCnt - nameCnt), charCntExNames ) <<  ","
+     << proportion( (wordCnt - nameCnt), charCntExNames ) <<  "," //Wrd_per_let_zn
      << proportion( morphCnt, wordCnt ) << ","
      << proportion( wordCnt, morphCnt ) << ","
      << proportion( morphCntExNames, (wordCnt-nameCnt) ) << ","
-     << proportion( (wordCnt-nameCnt), morphCntExNames ) << ","
+     << proportion( (wordCnt-nameCnt), morphCntExNames ) << "," //Wrd_per_morf_zn
 
      << proportion( nameCnt, (nameCnt+nounCnt) ) << ","
-     << density( nameCnt, wordCnt ) << ",";
+     << density( nameCnt, wordCnt ) << ","; //Namen_d
 
   os << proportion( prevalenceP, prevalenceCovered ) << ",";
   os << proportion( prevalenceZ, prevalenceCovered ) << ",";
   os << proportion( prevalenceContentP, prevalenceContentCovered ) << ",";
   os << proportion( prevalenceContentZ, prevalenceContentCovered ) << ",";
-  os << proportion( prevalenceContentCovered, contentCnt ) << ",";
+  os << proportion( prevalenceContentCovered, contentCnt ) << ","; //Dekking_inhwrd_prev
 
   os << proportion( f50Cnt, wordCnt ) << ",";
   os << proportion( f65Cnt, wordCnt ) << ",";
   os << proportion( f77Cnt, wordCnt ) << ",";
-  os << proportion( f80Cnt, wordCnt ) << ",";
+  os << proportion( f80Cnt, wordCnt ) << ","; //Freq80_Staph
 
-  os << word_freq_log << ",";
-  os << word_freq_log_n << ",";
-  os << lemma_freq_log << ",";
+  os << word_freq_log << ","; //Wrd_freq_log
+  os << lemma_freq_log << ","; //Lem_freq_log
   os << lemma_freq_log_n << ",";
 
   os << word_freq_log_strict << ",";
