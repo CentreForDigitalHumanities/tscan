@@ -19,7 +19,7 @@ Martijn van der Klis (Utrecht University).
 ## Web application / Webservice
 
 This repository contains the T-Scan source code, allowing you to run it
-yourself on your own system. In addition, T-Scan is available as a web application and webservice through https://webservices-lst.science.ru.nl , register for a (free) account there first, and then access T-Scan through https://webservices-lst.science.ru.nl/tscan/ .
+yourself on your own system. In addition, T-Scan is available as a web application and webservice through https://webservices.cls.ru.nl/tscan , register for a (free) account there first, and then access T-Scan through https://webservices.cls.ru.nl/tscan/ .
 
 ## Documentation
 
