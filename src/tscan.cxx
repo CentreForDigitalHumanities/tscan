@@ -1088,7 +1088,7 @@ noun splitCompound(const string &lemma) {
     client.write( lemma + "," + method );
     string result;
     client.read(result);
-    cerr << "done with compound splitter" << endl;
+    //cerr << "done with compound splitter" << endl;
 
     // store result in noun struct
     vector<string> parts;
@@ -1097,7 +1097,12 @@ noun splitCompound(const string &lemma) {
       n.is_compound = true;
       n.head = parts[size -1];
       n.compound_parts = size;
-      //n.satellite_clean = ??;
+      
+      string sat = "";
+      for(size_t i=0;i!=size -1;++i)
+        sat=sat+parts[i];
+      
+      n.satellite_clean = sat;
     }
     else {
       n.is_compound = false;
@@ -1108,7 +1113,7 @@ noun splitCompound(const string &lemma) {
 
 void wordStats::checkNoun() {
   if ( tag == CGN::N ) {
-    cerr << "lookup " << lemma << endl;
+    //cerr << "lookup " << lemma << endl;
     map<string, noun>::const_iterator sit = settings.noun_sem.find( lemma );
     if ( sit != settings.noun_sem.end() ) {
       noun n = sit->second;
@@ -1136,13 +1141,13 @@ void wordStats::checkNoun() {
             is_compound = n.is_compound;
             compound_parts = n.compound_parts;
             compound_head = n.head;
-            //compound_sat = ??;
+            compound_sat = n.satellite_clean;
           }
         }
       }
       if (found_split == false) {
         // If we still haven't found a SEM::Type, add this to the problemfile
-        cerr << "unknown noun " << lemma << endl;
+        //cerr << "unknown noun " << lemma << endl;
         sem_type = SEM::UNFOUND_NOUN;
         if ( settings.showProblems ) {
           problemFile << "N," << word << ", " << lemma << endl;
