@@ -2764,7 +2764,12 @@ folia::Document *getFrogResult( istream &is ) {
       line = line.substr(0, match);
     }
 
-    //replace weird characters
+    //replace utf-8 BOM
+    if (line.compare(0, 3, "\xEF\xBB\xBF") == 0) {
+      line.erase(0, 3);
+    }
+
+    // replace brackets
     std::regex opening ("[\{\[]");
     line = regex_replace (line, opening, "(");
 
