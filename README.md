@@ -32,12 +32,12 @@ T-Scan heavily depends upon other sofware, such as Frog, Wopr and Alpino.
 Installation is not trivial, to be able to succesfully build T-Scan from the tarball, you need the following packages:
 - autotools
 - autoconf-archive
-- ticcutils
-- libfolia
-- Alpino
-- frog
-- wopr
-- CLAM
+- [ticcutils](https://github.com/LanguageMachines/ticcutils)
+- [libfolia](https://github.com/LanguageMachines/libfolia)
+- [Alpino](https://www.let.rug.nl/vannoord/alp/Alpino/)
+- [frog](https://github.com/LanguageMachines/frog)
+- [wopr](https://github.com/LanguageMachines/wopr)
+- [CLAM](https://github.com/proycon/clam)
 
 To facilitate installation, T-Scan is included as an extra option in [LaMachine](https://proycon.github.io/LaMachine)
 
