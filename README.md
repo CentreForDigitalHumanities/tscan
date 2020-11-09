@@ -48,6 +48,10 @@ To install T-Scan in an existing LaMachine environment you may need to adapt you
 
     (lamachine)$ lamachine-update --edit
 
+It is also possible to run this version of T-Scan directly from Docker locally using LaMachine:
+
+    $ docker-compose up
+
 If you do not want to use LaMachine, first make sure you have **all** necessary dependencies and then compile/install as follows:
 
     $ bash bootstrap.sh
@@ -65,7 +69,7 @@ If you use LaMachine as recommended, always activate the virtual environment fir
 
 Before you can use T-Scan you need to start the background servers (you may need to edit the scripts to set ports and paths):
 
-    $ cd tscan/webservices
+    $ cd tscan/webservice
     $ ./startalpino.sh
     $ ./startfrog.sh
     $ ./startwopr20.sh    (will start Wopr to calculate forwards probabilities)
@@ -84,7 +88,7 @@ Then either run T-Scan from the command-line, which will produce a FoLiA XML fil
 
 .. or manually with:
 
-    $ cd tscan/webservices/tscanservice
+    $ cd tscan/webservice/tscanservice
     $ clamservice tscanservice.tscan   #this starts the CLAM service for T-Scan
 
 And then navigate to the host and port specified.
