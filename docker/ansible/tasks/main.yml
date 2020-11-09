@@ -43,7 +43,7 @@
           with_items:
             - tscanservice
 
-        - name: Register tscan webservice
+        - name: Register tscan webservice (lm_base_url={{lm_base_url}})
           include_role:
               name: lamachine-register
           vars:

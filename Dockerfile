@@ -1,6 +1,8 @@
 FROM proycon/lamachine@sha256:e2c8530455187acdcc6bb45f1f4a84bd40a5c92237c7ebb7683969fb838f27c4
 # TODO: this is needed on the server, but is not the most convenient location
 RUN lamachine-config force_https yes
+RUN lamachine-config set http_port 443
+RUN lamachine-config set hostname tst.tscan.hum.uu.nl
 
 COPY docker/ /deployment/
 WORKDIR /deployment
