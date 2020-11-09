@@ -1,7 +1,7 @@
 # BUILD
 source lamachine-activate
 sudo chown -R lamachine:lamachine /usr/local/src/tscan
-cp -R /deployment/ansible/* /usr/local/src/LaMachine/roles/tscan
+cp -R /deployment/roles/* /usr/local/src/LaMachine/roles
 
 lamachine-add tscan
 lamachine-update --only tscan
