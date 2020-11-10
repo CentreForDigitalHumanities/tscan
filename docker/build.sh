@@ -1,4 +1,5 @@
 # BUILD
+
 source lamachine-activate
 sudo chown -R lamachine:lamachine /usr/local/src/tscan
 cp -R /deployment/roles/* /usr/local/src/LaMachine/roles
