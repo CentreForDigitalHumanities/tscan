@@ -5,7 +5,7 @@ WORKDIR /deployment
 RUN bash config.sh
 
 # TODO: this is probably some bug or configuration issue in LaMachine?
-RUN cp /usr/local/src/LaMachine/host_vars/develop.yml /usr/local/src/LaMachine/host_vars/localhost.yml
+RUN bash -c "cp /usr/local/src/LaMachine/host_vars/develop.yml /usr/local/src/LaMachine/host_vars/localhost.yml"
 RUN bash install-alpino.sh
 
 # TODO: from source
