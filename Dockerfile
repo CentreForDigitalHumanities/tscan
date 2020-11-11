@@ -6,12 +6,13 @@ RUN bash config.sh
 
 # TODO: this is probably some bug or configuration issue in LaMachine?
 RUN bash -c "cp /usr/local/src/LaMachine/host_vars/develop.yml /usr/local/src/LaMachine/host_vars/localhost.yml"
-RUN bash install-alpino.sh
 
 # TODO: from source
 WORKDIR /usr/local/src
 RUN git clone https://github.com/UUDigitalHumanitieslab/tscan.git
 COPY data/ /usr/local/src/tscan/data
+
+RUN bash install-alpino.sh
 
 WORKDIR /deployment
 RUN bash build.sh
