@@ -12,9 +12,8 @@ WORKDIR /usr/local/src
 RUN git clone https://github.com/UUDigitalHumanitieslab/tscan.git
 COPY data/ /usr/local/src/tscan/data
 
-RUN bash install-alpino.sh
-
 WORKDIR /deployment
+RUN bash install-alpino.sh
 RUN bash build.sh
 
 # these static files take up most of the space (1.6 GB)
