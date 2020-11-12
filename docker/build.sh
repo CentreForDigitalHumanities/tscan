@@ -13,7 +13,7 @@ else
 fi
 
 # Make the install.yml point to the right host
-cd usr/local/src/LaMachine
+cd /usr/local/src/LaMachine
 mv install.yml install.yml.bak
 sed "s/hosts: localhost/hosts: develop/g" install.yml.bak > install.yml
 
