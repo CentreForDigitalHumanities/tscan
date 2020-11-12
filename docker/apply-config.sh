@@ -1,5 +1,8 @@
 source lamachine-activate
 
+# overwrite roles
+cp -R /deployment/roles/* /usr/local/src/LaMachine/roles
+
 if [ ! -z "$PYTHONPATH" ]; then
     OLDPYTHONPATH="$PYTHONPATH"
     export PYTHONPATH=""

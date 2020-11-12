@@ -8,7 +8,6 @@ source lamachine-activate
 # forcehttps: true" | sudo tee /usr/local/etc/clam_base.config.yml
 
 sudo chown -R lamachine:lamachine /usr/local/src/tscan
-cp -R /deployment/roles/* /usr/local/src/LaMachine/roles
 
 lamachine-add tscan
 lamachine-update --only tscan
