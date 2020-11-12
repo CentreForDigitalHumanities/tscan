@@ -4,9 +4,6 @@ COPY docker/ /deployment/
 WORKDIR /deployment
 RUN bash config.sh
 
-# TODO: this is probably some bug or configuration issue in LaMachine?
-#RUN bash -c "cp /usr/local/src/LaMachine/host_vars/develop.yml /usr/local/src/LaMachine/host_vars/localhost.yml"
-
 # TODO: from source
 WORKDIR /usr/local/src
 RUN git clone https://github.com/UUDigitalHumanitieslab/tscan.git
