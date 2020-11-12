@@ -20,8 +20,7 @@ ansible-playbook -i "hosts.ini" "install.tmp.yml" -v --tags "webserver-start,web
 rc=${PIPESTATUS[0]}
 
 if [ $rc -eq 0 ]; then
-    echo "Updated!"
-    cat /usr/local/etc/clam_base.config.yml
+    echo "Applied configuration!"
 else
     echo "WARNING: applying configuration failed!"
 fi
