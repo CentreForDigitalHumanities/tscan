@@ -9,6 +9,6 @@ if [ -e /usr/local/src/tscan/data/alpino.tar.gz.o ]; then
     tar -xvzf /usr/local/src/tscan/data/alpino.tar.gz.o -C /usr/local/opt/
 fi
 
-# source lamachine-activate
-# lamachine-add alpino
-# lamachine-update --only alpino
+source lamachine-activate
+lamachine-add alpino
+lamachine-update --only alpino
