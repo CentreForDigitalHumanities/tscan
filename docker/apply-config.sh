@@ -13,8 +13,18 @@ echo "---
   roles: [ lamachine-core ]
 " > "install.tmp.yml"
 
-ansible-playbook -i "hosts.ini" "install.tmp.yml" -v --tags "webserver-start,webserver-clam-base" --extra-vars "ansible_python_interpreter='$(which python3)'"
+ansible-playbook -i "hosts.ini" "install.tmp.yml" -v --tags "webserver-start,webserver-clam-base" --extra-vars "ansible_python_interpreter='$(which python3)'" 2>&1
+rc=${PIPESTATUS[0]}
+
+if [ $rc -eq 0 ]; then
+    echo "Updated!"
+    cat /usr/local/etc/clam_base.config.yml
+else
+    echo "WARNING: applying configuration failed!"
+fi
 
 if [ ! -z "$OLDPYTHONPATH" ]; then
     export PYTHONPATH="$OLDPYTHONPATH"
 fi
+
+exit $rc
