@@ -3,7 +3,6 @@ FROM proycon/lamachine@sha256:e2c8530455187acdcc6bb45f1f4a84bd40a5c92237c7ebb768
 COPY docker/ /deployment/
 WORKDIR /deployment
 RUN bash config.sh
-RUN bash apply-config.sh
 
 # TODO: this is probably some bug or configuration issue in LaMachine?
 #RUN bash -c "cp /usr/local/src/LaMachine/host_vars/develop.yml /usr/local/src/LaMachine/host_vars/localhost.yml"
@@ -16,6 +15,7 @@ COPY data/ /usr/local/src/tscan/data
 WORKDIR /deployment
 RUN bash install-alpino.sh
 RUN bash build.sh
+RUN bash apply-config.sh
 
 # these static files take up most of the space (1.6 GB)
 # linked through a volume bind instead
