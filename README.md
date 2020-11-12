@@ -42,7 +42,7 @@ Installation is not trivial, to be able to succesfully build T-Scan from the tar
 To facilitate installation, T-Scan is included as an extra option in [LaMachine](https://proycon.github.io/LaMachine)
 
 We strongly recommend to use [LaMachine](https://proycon.github.io/LaMachine) to install T-scan. In addition, T-Scan also uses Alpino, which is also included in LaMachine. Be aware that T-scan and
-dependencies are memory intensive, we recommend at least 16GB RAM for proper operation.
+dependencies are memory intensive, we recommend at least 16GB RAM for proper operation. If WOPR is used (which is enabled by default!) more RAM is required: 32 GB is recommended.
 
 To install T-Scan in an existing LaMachine environment you may need to adapt your installation manifest, as it is **not** included by default:
 
