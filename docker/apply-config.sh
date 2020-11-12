@@ -5,9 +5,9 @@ if [ ! -z "$PYTHONPATH" ]; then
     export PYTHONPATH=""
 fi
 
-echo "---" > "install.tmp.yml"
-grep "hosts:" install.yml >> "install.tmp.yml"
-echo "  roles: [ lamachine-core ]"  >> "install.tmp.yml"
+echo "---
+- hosts: develop
+  roles: [ lamachine-core ]" > "install.tmp.yml"
 
 # Force updating the lamachine-core
 # (to update the start webserver script and CLAM configuration)
