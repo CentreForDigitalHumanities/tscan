@@ -10,7 +10,7 @@ RUN git clone https://github.com/UUDigitalHumanitieslab/tscan.git
 COPY data/ /usr/local/src/tscan/data
 
 WORKDIR /deployment
-RUN bash install-alpino.sh
+RUN bash add-alpino.sh
 RUN bash build.sh
 RUN bash apply-config.sh
 
