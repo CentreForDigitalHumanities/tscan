@@ -921,7 +921,8 @@ void structStats::miscHeader( ostream& os ) const {
   os << "Entropie_fwd,Entropie_fwd_norm,Perplexiteit_fwd,Perplexiteit_fwd_norm,";
   os << "Log_prob_bwd,Log_prob_bwd_inhwrd,Log_prob_bwd_zn,Log_prob_bwd_inhwrd_zn,";
   os << "Entropie_bwd,Entropie_bwd_norm,Perplexiteit_bwd,Perplexiteit_bwd_norm,";
-  os << "Eigen_classificatie";
+  os << "Eigen_classificatie,";
+  os << "LiNT_score1,LiNT_niveau1,LiNT_score2,LiNT_niveau2";
 }
 
 void structStats::miscToCSV( ostream& os ) const {
@@ -942,7 +943,46 @@ void structStats::miscToCSV( ostream& os ) const {
   os << proportion( perplexity_bwd, sentCnt ) << ",";
   os << proportion( perplexity_bwd_norm, sentCnt ) << ",";
 
-  os << "\"" << escape_quotes(toStringCounter(my_classification)) << "\"";
+  os << "\"" << escape_quotes(toStringCounter(my_classification)) << "\",";
+
+  /* LINT scores */
+  double wrd_freq_log_zn_corr = proportion(word_freq_log_n_corr_strict, contentStrictCnt-nameCnt).p;
+  double bijv_bep_dz_zbijzin = proportion( max(0, npModCnt - betrCnt), correctedClauseCnt).p ;
+  double alg_nw_d = density( generalNounCnt, wordCnt ).d;
+  double inhwrd_dz_zonder_abw = proportion( contentStrictInclCnt, correctedClauseCnt ).p;
+  double conc_nw_ruim_p = proportion( broadNounCnt, nounCnt+nameCnt-uncoveredNounCnt ).p;
+
+  double lint_score_1 = -14.857
+    +  19.487 * wrd_freq_log_zn_corr 
+    - 5.965 * bijv_bep_dz_zbijzin 
+    - 0.093 * alg_nw_d 
+    - 0.995 * al_max ;
+  double lint_score_2 = -9.925 
+    + 18.264 * wrd_freq_log_zn_corr 
+    - 3.766 * inhwrd_dz_zonder_abw 
+    + 13.796 * conc_nw_ruim_p 
+    - 1.126 * al_max;
+
+  double level1 = 34;
+  double level2 = 52.61;
+  double level3 = 61;
+
+  int lint_level_1;
+  if (lint_score_1 < level1) { lint_level_1 = 1; }
+  else if (lint_score_1 < level2) { lint_level_1 = 2; }
+  else if (lint_score_1 < level3) { lint_level_1 = 3; }
+  else { lint_level_1 = 4; }
+
+  int lint_level_2;
+  if (lint_score_2 < level1) { lint_level_2 = 1; }
+  else if (lint_score_2 < level2) { lint_level_2 = 2; }
+  else if (lint_score_2 < level3) { lint_level_2 = 3; }
+  else { lint_level_2 = 4; }
+  
+  os << lint_score_1 << ",";
+  os << lint_level_1 << ",";
+  os << lint_score_2 << ",";
+  os << lint_level_2 << ",";
 }
 
 /**************
