@@ -1,0 +1,439 @@
+# modified version of webserver.yml 6f9a1c6da118c2d891841de09a1d367c0fba0741
+---
+  - when: (ansible_distribution|lower == "macosx" and webservertype == "nginx")
+    block:
+      - name: Installing webserver (macOS)
+        homebrew:
+          name: nginx
+          state: latest
+
+      - name: Link nginx from global prefix
+        file:
+          src: "/usr/local/etc/nginx"
+          dest: "{{ lm_prefix }}/etc/nginx"
+          state: link
+
+      - name: Add nginx/conf.d directory
+        become: "{{lm_become}}"
+        become_user: root
+        file:
+            path: "{{ lm_prefix }}/etc/nginx/conf.d"
+            state: directory
+            owner: "{{unix_user}}"
+            group: "{{web_group}}"
+            mode: u+rwx,g+rwsx,a+rx
+
+      - name: Add nginx/sites-extra directory
+        become: "{{lm_become}}"
+        become_user: root
+        file:
+            path: "{{ lm_prefix }}/etc/nginx/sites-extra"
+            state: directory
+            owner: "{{unix_user}}"
+            group: "{{web_group}}"
+            mode: u+rwx,g+rwsx,a+rx
+
+      - name: Patch for macOS so uwsgi installation can work
+        file:
+            src: "{{ lm_prefix}}/lib/python{{python_version.stdout}}/config-{{python_version.stdout}}-darwin"
+            dest: "{{ lm_prefix}}/lib/python{{python_version.stdout}}/config-{{python_version.stdout}}"
+            state: link
+        ignore_errors: yes
+
+
+      - name: Installing uwsgi (Homebrew)
+        homebrew:
+          name: uwsgi
+          state: present
+          #install_options: "with-python"
+
+  - when: root and locality=="global"
+    block:
+
+      - when: webservertype == "nginx"
+        block:
+          - name: Installing webserver globally (Debian/Ubuntu)
+            become: true
+            become_user: root
+            apt:
+              name: nginx
+              state: latest
+            when: (ansible_distribution|lower == "debian" or ansible_distribution|lower == "ubuntu" or ansible_distribution|lower == "linux mint")
+
+          - name: Installing webserver globally (RedHat)
+            become: true
+            become_user: root
+            yum:
+              name: "{{item}}"
+              state: latest
+            with_items: [nginx]
+            when: (ansible_distribution|lower == "redhat" or ansible_distribution|lower == "centos" or ansible_distribution|lower == "fedora" or ansible_distribution|lower == "rhel")
+
+          - name: Installing webserver globally (Arch)
+            become: true
+            become_user: root
+            pacman:
+              name: nginx
+              state: latest
+            when: (ansible_distribution|lower == "archlinux")
+
+      - name: Installing uwsgi globally (Debian/Ubuntu)
+        become: true
+        become_user: root
+        apt:
+          name: [uwsgi-emperor, uwsgi, uwsgi-plugin-python3]
+          state: latest
+        when: (ansible_distribution|lower == "debian" or ansible_distribution|lower == "ubuntu" or ansible_distribution|lower == "linux mint")
+
+      - name: Installing uwsgi globally (RedHat)
+        become: true
+        become_user: root
+        pip:
+          name: "uwsgi"
+          state: latest
+          executable: "{{pip.stdout}}"
+        when: (ansible_distribution|lower == "redhat" or ansible_distribution|lower == "centos" or ansible_distribution|lower == "fedora" or ansible_distribution|lower == "rhel")
+
+
+      - name: Installing uwsgi globally (Arch)
+        become: true
+        become_user: root
+        pacman:
+          name: [uwsgi, uwsgi-plugin-python]
+          state: latest
+        when: (ansible_distribution|lower == "archlinux")
+
+
+      - name: "Ensure {{web_group}} group exists"
+        become: true
+        become_user: root
+        group:
+          name: "{{web_group}}"
+          state: present
+
+      - name: "Ensure {{web_user}} user exists"
+        become: true
+        become_user: root
+        user:
+          name: "{{web_user}}"
+          group: "{{web_group}}"
+          createhome: no
+          state: present
+
+      - name: "Ensure {{unix_user}} user is also in {{web_group}} group"
+        become: true
+        become_user: root
+        user:
+          name: "{{unix_user}}"
+          groups: "{{web_group}}"
+          append: yes
+
+      - name: Create webserver writable directories
+        become: "{{lm_become}}"
+        become_user: root
+        file:
+            path: "{{ lm_prefix }}/{{item}}"
+            state: directory
+            owner: "{{web_group}}"
+            group: "{{web_group}}"
+            mode: u+rwx,g+rwsx,a+rx
+        with_items:
+            - "var/log/uwsgi"
+            - "var/log/nginx"
+            - "var/log/lamastats"
+            - "var/tmp"
+
+      - name: Recursively setting log/tmp permissions
+        become: "{{lm_become}}"
+        become_user: root
+        file:
+            path: "{{ lm_prefix }}/{{item}}"
+            state: directory
+            owner: "{{web_user}}"
+            group: "{{web_group}}"
+            mode: u+rwX,g+rwX,a+rX
+            recurse: yes
+        with_items:
+            - "var/log/uwsgi"
+            - "var/log/nginx"
+            - "var/tmp"
+        ignore_errors: yes
+
+      - name: Create webserver data directory (writable)
+        become: "{{lm_become}}"
+        become_user: root
+        file:
+            path: "{{ www_data_path }}"
+            state: directory
+            owner: "{{unix_user}}"
+            group: "{{web_group}}"
+            mode: u+rwx,g+rwsx,a+rx
+
+      - name: Create webserver data subdirectories (writable)
+        become: "{{lm_become}}"
+        become_user: root
+        file:
+            path: "{{ www_data_path }}/{{item}}"
+            state: directory
+            owner: "{{unix_user}}"
+            group: "{{web_group}}"
+            mode: u+rwx,g+rwsx,a+rx
+        with_items:
+           - notebooks
+           - lamastats
+
+      - name: Symlink webserver data directory
+        become: "{{lm_become}}"
+        become_user: root
+        file:
+          src: "{{www_data_path}}"
+          dest: "{{lm_prefix}}/var/www-data"
+          state: link
+        when: shared_www_data|bool
+
+
+      - name: Link nginx from global prefix
+        file:
+          src: "/etc/nginx"
+          dest: "{{ lm_prefix }}/etc/nginx"
+          state: link
+        when: ansible_distribution|lower != "macosx"
+
+      - name: Add nginx/sites-extra directory
+        become: "{{lm_become}}"
+        become_user: root
+        file:
+            path: "{{ lm_prefix }}/etc/nginx/sites-extra"
+            state: directory
+            owner: "{{unix_user}}"
+            group: "{{web_group}}"
+            mode: u+rwx,g+rwsx,a+rx
+
+      - name: Link uwsgi-emperor from global prefix (debian)
+        file:
+          src: "/etc/uwsgi-emperor"
+          dest: "{{ lm_prefix }}/etc/uwsgi-emperor"
+          state: link
+        when: (ansible_distribution|lower == "debian" or ansible_distribution|lower == "ubuntu" or ansible_distribution|lower == "linux mint")
+
+      - name: Create webserver readable directories (global, non-debian)
+        file:
+            path: "{{ lm_prefix }}/{{item}}"
+            state: directory
+            owner: "{{unix_user}}"
+            mode: u+rwx,a+rx
+        with_items:
+            - "etc/uwsgi-emperor"
+            - "etc/uwsgi-emperor/vassals"
+        when: not (ansible_distribution|lower == "debian" or ansible_distribution|lower == "ubuntu" or ansible_distribution|lower == "linux mint")
+
+      - name: Add lamachine-move-www-data script
+        template:
+          src: "lamachine-move-www-data.sh"
+          dest: "{{lm_prefix}}/bin/lamachine-move-www-data"
+          force: yes
+          owner: "{{unix_user}}"
+          group: "{{unix_group}}"
+          mode: u+rwx,a+rx
+
+  - when: locality=="local"
+    block:
+      - name: Create writable directories for uwsgi (local)
+        file:
+            path: "{{ lm_prefix }}/{{item}}"
+            state: directory
+            owner: "{{unix_user}}"
+            mode: u+rwx,a+rx
+        with_items:
+            - "var/log/uwsgi"
+            - "etc/uwsgi-emperor"
+            - "etc/uwsgi-emperor/vassals"
+
+      - when: webservertype == "nginx"
+        block:
+          - name: "Finding nginx"
+            shell: which nginx
+            register: nginx
+            environment:
+                PATH: "{{local_prefix}}/bin:/usr/sbin:{{ansible_env.PATH}}"
+            failed_when: nginx.rc == 127
+
+          - name: Create webserver writable directories (local)
+            file:
+                path: "{{ lm_prefix }}/{{item}}"
+                state: directory
+                owner: "{{unix_user}}"
+                mode: u+rwx,a+rx
+            with_items:
+                - "var/log/nginx"
+                - "var/log/lamastats"
+                - "var/www-data"
+                - "var/www-data/tmp"
+                - "var/www-data/notebooks"
+                - "var/www-data/lamastats"
+                - "etc/nginx"
+                - "etc/nginx/conf.d"
+                - "etc/nginx/sites-extra"
+            ignore_errors: yes
+
+          - when: ansible_distribution|lower != "macosx" and (nginx.rc != 0 or (force is defined and force))
+            block:
+              - block:
+                  - name: Obtaining local nginx webserver from source
+                    hg:
+                      repo: https://hg.nginx.org/nginx
+                      dest: "{{source_path}}/nginx"
+                      force: "yes"
+                rescue:
+                  - name: Obtaining local nginx webserver from source (2nd attempt, insecure fallback)
+                    shell: hg clone --insecure https://hg.nginx.org/nginx
+                    args:
+                      chdir: "{{source_path}}"
+
+              - name: "Compiling and installing local nginx webserver"
+                shell: "auto/configure --prefix={{lm_prefix}} && make && make install"
+                args:
+                    chdir: "{{ source_path }}/nginx"
+                environment: "{{lm_env}}"
+
+              - name: Linking to nginx binary
+                file:
+                  src: "{{ lm_prefix}}/sbin/nginx"
+                  dest: "{{ lm_prefix }}/bin/nginx"
+                  state: link
+
+              - name: Copying extra configuration
+                copy:
+                  src: "{{source_path}}/nginx/conf/{{item}}"
+                  dest: "{{lm_prefix}}/etc/nginx/{{item}}"
+                with_items:
+                  - "mime.types"
+                  - "uwsgi_params"
+                ignore_errors: yes
+
+
+      - name: Installing uwsgi locally
+        pip:
+          name: "uwsgi"
+          state: latest
+          executable: "{{lm_prefix}}/bin/pip"
+        when: ansible_distribution|lower != "macosx"
+
+  - name: Install webserver configuration
+    become: "{{lm_become}}"
+    become_user: root
+    template:
+      src: "{{item}}"
+      dest: "{{lm_prefix}}/etc/nginx/{{item}}"
+      force: yes
+      owner: "{{unix_user}}"
+      group: "{{unix_group}}"
+    with_items:
+      - nginx.conf
+      - mime.types
+      - uwsgi_params
+    when: webservertype == "nginx"
+
+  - name: Adding webserver start script
+    become: "{{lm_become}}"
+    become_user: root
+    tags: webserver-start
+    template:
+      src: lamachine-start-webserver.sh
+      dest: "{{lm_prefix}}/bin/lamachine-start-webserver"
+      owner: "{{unix_user}}"
+      group: "{{unix_group}}"
+      mode: u+rwx,g+rwx,o-rwx
+
+  - name: Adding webserver stop script
+    become: "{{lm_become}}"
+    become_user: root
+    template:
+      src: lamachine-stop-webserver.sh
+      dest: "{{lm_prefix}}/bin/lamachine-stop-webserver"
+      owner: "{{unix_user}}"
+      group: "{{unix_group}}"
+      mode: u+rwx,g+rwx,o-rwx
+
+  - name: Install uwsgi-emperor configuration
+    become: "{{lm_become}}"
+    become_user: root
+    template:
+      src: emperor.ini
+      dest: "{{lm_prefix}}/etc/uwsgi-emperor/emperor.ini"
+      force: yes
+      backup: yes
+      owner: "{{unix_user}}"
+      group: "{{unix_group}}"
+      mode: u+rwx,g+rwx,o-rwx
+
+  - name: Create document root
+    become: "{{lm_become}}"
+    become_user: root
+    file:
+        path: "{{www_data_path}}/docroot"
+        state: directory
+        owner: "{{unix_user}}"
+        mode: u+rwx,a+rx
+
+  - name: Copy document root contents
+    become: "{{lm_become}}"
+    become_user: root
+    copy:
+      src: "{{item}}"
+      dest: "{{www_data_path}}/docroot"
+    with_fileglob:
+      - "{{lm_path}}/webserver/docroot/*"
+
+  - name: Move original global document root out of the way
+    become: "{{lm_become}}"
+    become_user: root
+    shell: |
+      if [ -d /var/www ] && [ ! -e /var/www.orig ]; then
+        mv -f /var/www /var/www.orig
+      fi
+    when: root and locality == "global"
+
+  - name: Symlink global document root data directory
+    become: "{{lm_become}}"
+    become_user: root
+    file:
+      src: "{{www_data_path}}/docroot"
+      dest: "/var/www"
+      state: link
+    when: root and locality == "global"
+
+  - name: Adding base configuration for CLAM
+    become: "{{lm_become}}"
+    become_user: root
+    tags: webserver-clam-base
+    template:
+      src: "clam_base.config.yml"
+      dest: "{{lm_prefix}}/etc/clam_base.config.yml"
+
+  - name: Installing lamastats for analytics
+    include_role:
+      name: lamachine-python-install
+    vars:
+      package: { github_user: "proycon", github_repo: "lamastats", pip: "lamastats" }
+
+  - name: Adding lamastats analytics to crontab
+    cron:
+      name: lamastats
+      minute: "0"
+      user: "{{unix_user}}"
+      job: "cd {{lm_prefix}}/var/log/lamastats && lamastats --outputdir {{lm_prefix}}/var/www-data/lamastats --trackclam --foliadocservelog {{lm_prefix}}/var/log/foliadocserve.log nginx:{{lm_prefix}}/var/log/nginx/access.log"
+    when: webservertype == "nginx" and locality == "global"
+
+  - name: Register lamastats webservice
+    include_role:
+        name: lamachine-register
+    vars:
+      update: "lamastats"
+      allow_failure: "yes" #in case the app is not installed
+      metadata: #add entrypoint metadata to registry
+          identifier: "lamastats"
+          entryPoints:
+            - { "@type": "EntryPoint",  urlTemplate: "{{lm_base_url}}/lamastats/", interfaceType: "WUI" }
+    when: webservertype == "nginx" and locality == "global"
+
