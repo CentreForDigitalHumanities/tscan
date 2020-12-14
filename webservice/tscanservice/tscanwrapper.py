@@ -84,6 +84,11 @@ if 'useWopr' in clamdata and clamdata['useWopr'] == 'yes':
     f.write("useWopr=1\n")
 else:
     f.write("useWopr=0\n")
+if 'compoundSplitterMethod' in clamdata and clamdata['compoundSplitterMethod'] != 'none':
+    f.write("useCompoundSplitter=1\n")
+else:
+    f.write("useCompoundSplitter=0\n")
+
 if 'sentencePerLine' in clamdata and clamdata['sentencePerLine'] == 'yes':
     f.write("sentencePerLine=1\n")
 else:
@@ -171,6 +176,13 @@ f.write("host_bwd=127.0.0.1\n\n")
 f.write("[[alpino]]\n")
 f.write("port=7003\n")
 f.write("host=127.0.0.1\n")
+
+if 'compoundSplitterMethod' in clamdata and clamdata['compoundSplitterMethod'] != 'none':
+    f.write("\n[[compound_splitter]]\n")
+    f.write("port=7005\n")
+    f.write("host=127.0.0.1\n")
+    method = clamdata['compoundSplitterMethod']
+    f.write('method="{}"\n'.format(method))
 
 f.close()
 
