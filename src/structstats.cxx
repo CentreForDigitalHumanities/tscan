@@ -330,10 +330,15 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
 void structStats::sentDifficultiesToCSV( ostream& os ) const {
   os << proportion( sentCnt, wordInclCnt )  << ","; //Zin_per_wrd
   os << proportion( correctedClauseCnt, wordInclCnt )  << ","; //Dzin_per_wrd
-  os << proportion( wordInclCnt, npCnt ) << ","; //Wrd_per_nwg
+  if ( isSentence() && parseFailCnt > 0 ) {
+    os << "NA,";
+  }
+  else {
+    os << proportion( wordInclCnt, sentCnt ) << ","; //Wrd_per_nwg
+  }
 
   double bijzinCnt = betrCnt + bijwCnt + complCnt;
-  if ( parseFailCnt > 0 ) {
+  if ( isSentence() && parseFailCnt > 0 ) {
     os << "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,";
   }
   else {
@@ -349,7 +354,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
     os << proportion( losBijwCnt, sentCnt ) << ","; //Bijw_compl_bijzin_los
   }
 
-  if ( parseFailCnt > 0 ) {
+  if ( isSentence() && parseFailCnt > 0 ) { 
     os << "NA,NA,NA,NA,NA,NA,NA,";
   }
   else {
