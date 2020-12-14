@@ -535,6 +535,8 @@ struct structStats: public basicStats {
  {};
   ~structStats();
   void addMetrics() const;
+  void topPredictorsHeader( std::ostream& ) const;
+  void topPredictorsToCSV( std::ostream& ) const;
   void wordDifficultiesHeader( std::ostream& ) const;
   void wordDifficultiesToCSV( std::ostream& ) const;
   void compoundHeader( std::ostream& ) const;
