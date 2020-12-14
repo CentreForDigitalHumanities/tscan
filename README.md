@@ -19,7 +19,7 @@ Martijn van der Klis (Utrecht University).
 ## Web application / Webservice
 
 This repository contains the T-Scan source code, allowing you to run it
-yourself on your own system. In addition, T-Scan is available as a web application and webservice through https://webservices-lst.science.ru.nl , register for a (free) account there first, and then access T-Scan through https://webservices-lst.science.ru.nl/tscan/ .
+yourself on your own system. In addition, T-Scan is available as a web application and webservice through https://webservices.cls.ru.nl/tscan , register for a (free) account there first, and then access T-Scan through https://webservices.cls.ru.nl/tscan/ .
 
 ## Documentation
 
@@ -32,30 +32,34 @@ T-Scan heavily depends upon other sofware, such as Frog, Wopr and Alpino.
 Installation is not trivial, to be able to succesfully build T-Scan from the tarball, you need the following packages:
 - autotools
 - autoconf-archive
-- ticcutils
-- libfolia
-- Alpino
-- frog
-- wopr
-- CLAM
+- [ticcutils](https://github.com/LanguageMachines/ticcutils)
+- [libfolia](https://github.com/LanguageMachines/libfolia)
+- [Alpino](https://www.let.rug.nl/vannoord/alp/Alpino/)
+- [frog](https://github.com/LanguageMachines/frog)
+- [wopr](https://github.com/LanguageMachines/wopr)
+- [CLAM](https://github.com/proycon/clam)
 
 To facilitate installation, T-Scan is included as an extra option in [LaMachine](https://proycon.github.io/LaMachine)
 
 We strongly recommend to use [LaMachine](https://proycon.github.io/LaMachine) to install T-scan. In addition, T-Scan also uses Alpino, which is also included in LaMachine. Be aware that T-scan and
-dependencies are memory intensive, we recommend at least 16GB RAM for proper operation.
+dependencies are memory intensive, we recommend at least 16GB RAM for proper operation. If WOPR is used (which is enabled by default!) more RAM is required: 32 GB is recommended.
 
 To install T-Scan in an existing LaMachine environment you may need to adapt your installation manifest, as it is **not** included by default:
 
     (lamachine)$ lamachine-update --edit
 
+It is also possible to run this version of T-Scan directly from Docker locally using LaMachine:
+
+    $ docker-compose up
+
 If you do not want to use LaMachine, first make sure you have **all** necessary dependencies and then compile/install as follows:
 
     $ bash bootstrap.sh
-    $ ./configure
+    $ ./configure --prefix=/path/to/installation/
     $ make
     $ sudo make install
     $ cd webservice
-    $ python3 setup.py install
+    $ sudo python3 setup.py install
 
 ## Usage
 
@@ -65,7 +69,7 @@ If you use LaMachine as recommended, always activate the virtual environment fir
 
 Before you can use T-Scan you need to start the background servers (you may need to edit the scripts to set ports and paths):
 
-    $ cd tscan/webservices
+    $ cd tscan/webservice
     $ ./startalpino.sh
     $ ./startfrog.sh
     $ ./startwopr20.sh    (will start Wopr to calculate forwards probabilities)
@@ -84,7 +88,7 @@ Then either run T-Scan from the command-line, which will produce a FoLiA XML fil
 
 .. or manually with:
 
-    $ cd tscan/webservices/tscanservice
+    $ cd tscan/webservice/tscanservice
     $ clamservice tscanservice.tscan   #this starts the CLAM service for T-Scan
 
 And then navigate to the host and port specified.

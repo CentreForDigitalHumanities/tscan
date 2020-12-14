@@ -1,0 +1,19 @@
+version: "3.6"
+
+services:
+  tscan:
+    build:
+      context: .
+    restart: unless-stopped
+    ports:
+      - 8830:80
+      - 8820:8820
+    volumes:
+      - type: bind
+        source: ../tscan/data
+        target: /usr/local/src/tscan/data
+    command: bash /deployment/command.sh
+    # Set the following to true for running bash
+    # use docker attach
+    stdin_open: true
+    tty: true

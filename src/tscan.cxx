@@ -23,6 +23,7 @@
 #include <string>
 #include <fstream>
 #include <cmath>
+#include <regex>
 #include <algorithm>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1072,9 +1073,48 @@ Situation::Type wordStats::checkSituation() const {
   return Situation::NO_SIT;
 }
 
+noun splitCompound(const string &lemma) {
+  noun n;
+  // open connection
+  string host = config.lookUp( "host", "compound_splitter" );
+  string port = config.lookUp( "port", "compound_splitter" );
+  string method = config.lookUp( "method", "compound_splitter" );
+  Sockets::ClientSocket client;
+  if ( !client.connect( host, port ) ) {
+    cerr << "failed to open compound splitter connection: " << host << ":" << port << endl;
+    cerr << "Reason: " << client.getMessage() << endl;
+  }
+  else {
+    cerr << "calling compound splitter for " << lemma << endl;
+    client.write( lemma + "," + method );
+    string result;
+    client.read(result);
+    //cerr << "done with compound splitter" << endl;
+
+    // store result in noun struct
+    vector<string> parts;
+    int size = TiCC::split_at( result, parts, "," );
+    if (size > 1) {
+      n.is_compound = true;
+      n.head = parts[size -1];
+      n.compound_parts = size;
+      
+      string sat = "";
+      for(size_t i=0;i!=size -1;++i)
+        sat=sat+parts[i];
+      
+      n.satellite_clean = sat;
+    }
+    else {
+      n.is_compound = false;
+    }
+  }
+  return n;
+}
+
 void wordStats::checkNoun() {
   if ( tag == CGN::N ) {
-    //    cerr << "lookup " << lemma << endl;
+    //cerr << "lookup " << lemma << endl;
     map<string, noun>::const_iterator sit = settings.noun_sem.find( lemma );
     if ( sit != settings.noun_sem.end() ) {
       noun n = sit->second;
@@ -1087,10 +1127,32 @@ void wordStats::checkNoun() {
       }
     }
     else {
-      // If we still haven't found a SEM::Type, add this to the problemfile
-      sem_type = SEM::UNFOUND_NOUN;
-      if ( settings.showProblems ) {
-        problemFile << "N," << word << ", " << lemma << endl;
+      // call compound splitter
+      bool found_split = false;
+      if (config.lookUp("useCompoundSplitter") == "1") {
+        noun n = splitCompound(lemma);
+        if ( n.is_compound ) {
+          // look for head in data
+          sit = settings.noun_sem.find( n.head );
+          if ( sit != settings.noun_sem.end() ) {
+            // if there is a match, fill in results
+            found_split = true;  
+            noun match = sit->second;
+            sem_type = match.type;
+            is_compound = n.is_compound;
+            compound_parts = n.compound_parts;
+            compound_head = n.head;
+            compound_sat = n.satellite_clean;
+          }
+        }
+      }
+      if (found_split == false) {
+        // If we still haven't found a SEM::Type, add this to the problemfile
+        //cerr << "unknown noun " << lemma << endl;
+        sem_type = SEM::UNFOUND_NOUN;
+        if ( settings.showProblems ) {
+          problemFile << "N," << word << ", " << lemma << endl;
+        }
       }
     }
   }
@@ -2756,11 +2818,28 @@ folia::Document *getFrogResult( istream &is ) {
 #ifdef DEBUG_FROG
     cerr << "read: '" << line << "'" << endl;
 #endif
+
+    // cut off line after ###
+    size_t match = line.find("###");
+    if (match != string::npos) {
+      line = line.substr(0, match);
+    }
+
+    //replace utf-8 BOM
+    if (line.compare(0, 3, "\xEF\xBB\xBF") == 0) {
+      line.erase(0, 3);
+    }
+
+    // replace brackets
+    std::regex opening ("[\{\[]");
+    line = regex_replace (line, opening, "(");
+
+    std::regex closing ("[\\}\\]]");
+    line = regex_replace (line, closing, ")");
+
     if ( line.length() > 2 ) {
       string start = line.substr( 0, 3 );
-      if ( start == "###" )
-        continue;
-      else if ( start == "<<<" ) {
+      if ( start == "<<<" ) {
         if ( incomment ) {
           cerr << "Nested comment (<<<) not allowed!" << endl;
           return 0;
