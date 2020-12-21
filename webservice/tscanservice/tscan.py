@@ -18,9 +18,17 @@ from clam.common.formats import *
 from clam.common.converters import *
 from clam.common.viewers import *
 from clam.common.data import *
+
+from compound_splitter.compound_splitter.splitter import list_methods
+
 import os
 from base64 import b64decode as D
 import glob
+
+
+def compound_methods():
+    for method in list_methods():
+        yield method['name']
 
 # DEBUG = True
 
@@ -345,7 +353,7 @@ PARAMETERS = [
         ChoiceParameter(id='top_freq_lex', name='Top Frequency List', description="Top frequency list",
                         choices=topfreqlist, default="SoNaR500.wordfreqlist20000.freq"),
         ChoiceParameter(id='compoundSplitterMethod', name='Compound split method', description='Method used by compound splitting module', choices=[
-                        'secos', 'compound-splitter-nl', 'none'], default='secos')
+                        list(compound_methods()), default='secos')
     ])
 ]
 
