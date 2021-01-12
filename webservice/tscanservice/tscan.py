@@ -62,6 +62,8 @@ if 'ALPINO_HOME' in os.environ:
 else:
     ALPINOHOME = ""
 
+SWITCHBOARD_FORWARD_URL = None
+
 #load external configuration file (see tscan.config.yml)
 loadconfig(__name__)
 
@@ -190,6 +192,7 @@ PROFILES = [
             FoLiAXMLFormat,
             'Output analysis',
             XSLTViewer(file=TSCANDIR + '/view/tscanview.xsl'),
+            ForwardViewer(id='switchboardforwarder',name="Open in CLARIN Switchboard",forwarder=Forwarder('switchboard','CLARIN Switchboard',SWITCHBOARD_FORWARD_URL),allowdefault=False) if SWITCHBOARD_FORWARD_URL else None,
             removeextension='.txt',  # remove prior to adding
             extension='.xml',
             multi=True
