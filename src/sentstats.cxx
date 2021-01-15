@@ -510,19 +510,51 @@ void sentStats::resolveRelativeClauses( xmlDoc *alpDoc ) {
   string relConjPath = ".//node[@rel='mod' and @cat='conj']//node[@rel='cnj' and (@cat='rel' or @cat='whrel')]" + hasDirectFiniteVerb;
   relNodes.merge(TiCC::FindNodes(alpDoc, relConjPath));
 
+  // *******************************************************************
   // Bijwoordelijke bijzinnen (zonder/met nevenschikking + licht afwijkende bijzinnen)
+  // a. het aantal knopen met categorielabel ssub of sv1:
+  //   i.  dat direct of indirect wordt gedomineerd door een knoop van
+  //       het type mod-cp; 
   list<xmlNode*> cpNodes = getNodesByRelCat(alpDoc, "mod", "cp", hasFiniteVerbSv1);
+  //   ii. of indirect wordt gedomineerd door mod-conj of sat-conj en
+  //       direct door cnj-cp.
+  //       Dat wil zeggen, het aantal bijzinnen met vervoegd werkwoord
+  //       dat hangt onder een bijwoordelijke bepaling gevormd door een
+  //       ‘complementizer phrase’.
+  //       Meestal gaat het om éen deelzin, maar er kan nevenschikking
+  //       optreden.
   string cpConjPath = ".//node[@rel='mod' and @cat='conj']//node[@rel='cnj' and @cat='cp']" + hasDirectFiniteVerbSv1;
   cpNodes.merge(TiCC::FindNodes(alpDoc, cpConjPath));
+  // b. het aantal knopen met categorielabel sv1 of cp dat links naast
+  //    een knoop met dependentielabel nucl hangt, tenzij direct of
+  //    indirect onder de cp-knoop nog knopen voorkomen van het type
+  //    cnj-ssub (want dan is 2d van toepassing);
   string cpNuclAExtra = "(@cat!='cp' or not(descendant::node[@rel='cnj' and @cat='ssub']))";
-  string nuclPath = "(following-sibling::node[@rel='nucl'])"; 
-  string cpNuclAPath = ".//node[(@cat='sv1' or @cat='cp') and " + nuclPath + " and " + cpNuclAExtra + "]";
+  string nuclPrePath = "(following-sibling::node[@rel='nucl'])"; 
+  string cpNuclAPath = ".//node[(@cat='sv1' or @cat='cp') and " + nuclPrePath + " and " + cpNuclAExtra + "]";
   cpNodes.merge(TiCC::FindNodes(alpDoc, cpNuclAPath));
+  // c.  het aantal knopen met cnj-sv1 dat valt onder een knoop met
+  //     dependentielabel sat die naast een knoop met dependentielabel
+  //     nucl hangt;
+  string nuclPath = "(preceding-sibling::node[@rel='nucl'] or following-sibling::node[@rel='nucl'])"; 
   string cpNuclBPath = ".//node[@rel='sat' and " + nuclPath + "]/node[@rel='cnj' and @cat='sv1']";
   cpNodes.merge(TiCC::FindNodes(alpDoc, cpNuclBPath));
+  // d.  het aantal knopen met cnj-ssub dat direct of indirect valt
+  //     onder een knoop met dependentielabel sat die naast een knoop
+  //     met dependentielabel nucl hangt.
   string cpNuclCPath = ".//node[@rel='sat' and " + nuclPath + "]//node[@rel='cnj' and @cat='ssub']";
   cpNodes.merge(TiCC::FindNodes(alpDoc, cpNuclCPath));
+  // De toevoeging onder b. is nodig om licht afwijkende bijzinnen te
+  // vatten zoals
+  //   1. ben je moe, ga dan naar huis,
+  //   2. als je moe bent dan ga je naar huis
+  //   3. al is hij klein, hij is sterk.
+  // De toevoeging onder c. is nodig voor zinnen als zie je hem niet
+  // lopen en haar niet fietsen, dan ga je naar huis.
+  // Toevoeging d. is nodig voor zinnen als als je hem niet ziet lopen
+  // en haar niet ziet fietsen, dan ga je naar huis.
 
+  // *******************************************************************
   // Finiete complementszinnen
   // Check whether the previous node is not the top node to prevent clashes with loose clauses below
   string notTop = ".//node[@cat!='top']";
