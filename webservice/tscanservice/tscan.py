@@ -19,16 +19,15 @@ from clam.common.converters import *
 from clam.common.viewers import *
 from clam.common.data import *
 
-from compound_splitter.compound_splitter.splitter import list_methods
-
 import os
 from base64 import b64decode as D
 import glob
 
-
-def compound_methods():
-    for method in list_methods():
-        yield method['name']
+try:
+    from compound_splitter.splitter import list_methods
+    compound_methods = list(method["name"] for method in list_methods())
+except ModuleNotFoundError:
+    compound_methods = None
 
 # DEBUG = True
 
@@ -330,8 +329,7 @@ for f in glob.glob(TSCANDIR + "/data/*20000.freq"):
     topfreqlist.append((os.path.basename(f), os.path.basename(f)))
 
 
-PARAMETERS = [
-    ('Parameters', [
+parameters_list = [
         IntegerParameter(id='overlapSize', name='Overlap Size',
                          description='Overlap Size', default=50),
         FloatParameter(id='frequencyClip', name='Frequency Clipping',
@@ -351,10 +349,16 @@ PARAMETERS = [
         ChoiceParameter(id='lemma_freq_lex', name='Lemma Frequency List', description="Lemma frequency list",
                         choices=lemmafreqlist, default="SoNaR500.wordfreqlist_lemma.freq"),
         ChoiceParameter(id='top_freq_lex', name='Top Frequency List', description="Top frequency list",
-                        choices=topfreqlist, default="SoNaR500.wordfreqlist20000.freq"),
-        ChoiceParameter(id='compoundSplitterMethod', name='Compound split method', description='Method used by compound splitting module', choices=[
-                        list(compound_methods()), default='secos')
-    ])
+                        choices=topfreqlist, default="SoNaR500.wordfreqlist20000.freq")
+    ]
+
+if compound_methods != None:
+    parameters_list.append(
+        ChoiceParameter(id='compoundSplitterMethod', name='Compound split method', description='Method used by compound splitting module',
+                        choices=compound_methods, default='secos'))
+
+PARAMETERS=[
+    ('Parameters', parameters_list)
 ]
 
 

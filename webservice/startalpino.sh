@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 export PORT=7003
 export TIMEOUT=300000
 export MEMLIMIT=1500M
