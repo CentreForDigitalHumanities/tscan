@@ -534,7 +534,7 @@ void sentStats::resolveRelativeClauses( xmlDoc *alpDoc ) {
   complNodes.merge(complementNodes(TiCC::FindNodes(alpDoc, complCpPath), cpNodes));
 
   // Infinietcomplementen
-  string infinComplPath = notTop + "/node[@cat='ti' and @rel!='mod']";
+  string infinComplPath = notTop + "/node[(@cat='ti' or @cat='oti') and @rel!='mod']";
   list<xmlNode*> tiNodes = TiCC::FindNodes(alpDoc, infinComplPath);
 
   // Save counts
