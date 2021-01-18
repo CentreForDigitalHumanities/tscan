@@ -10,8 +10,17 @@ services:
       - 8820:8820
     volumes:
       - type: bind
-        source: ../tscan/data
+        source: ./data
         target: /usr/local/src/tscan/data
+      - type: bind
+        source: ./docker/data
+        target: /data
+      - type: bind
+        source: ./docker/log
+        target: /usr/local/var/log
+      - type: bind
+        source: ./docker/log
+        target: /var/log
     command: bash /deployment/command.sh
     # Set the following to true for running bash
     # use docker attach

@@ -1,6 +1,6 @@
 FROM proycon/lamachine@sha256:e2c8530455187acdcc6bb45f1f4a84bd40a5c92237c7ebb7683969fb838f27c4
 
-COPY docker/ /deployment/
+COPY docker/deployment/ /deployment/
 WORKDIR /deployment
 RUN bash config.sh
 

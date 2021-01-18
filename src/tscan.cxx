@@ -1089,7 +1089,7 @@ noun splitCompound(const string &lemma) {
     client.write( lemma + "," + method );
     string result;
     client.read(result);
-    //cerr << "done with compound splitter" << endl;
+    cerr << " -> " << result << endl;
 
     // store result in noun struct
     vector<string> parts;
