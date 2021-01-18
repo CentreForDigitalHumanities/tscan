@@ -1,70 +1,95 @@
 {
-    "@context": [
-        "https://doi.org/10.5063/schema/codemeta-2.0",
-        "http://schema.org",
-        {
-            "entryPoints": { "@reverse": "schema:actionApplication" },
-            "interfaceType": { "@id": "codemeta:interfaceType" }
-        }
-    ],
-    "@type": "SoftwareSourceCode",
-    "identifier": "tscan",
-    "name": "T-Scan",
-    "version": "0.9.9",
-    "description": "T-Scan is an analysis tool for Dutch texts to assess the complexity of the text, and is based on original work by Rogier Kraf",
-    "license": "https://opensource.org/licenses/AGPL-3.0",
+	"@context": [
+		"https://doi.org/10.5063/schema/codemeta-2.0",
+		"http://schema.org",
+		{
+			"entryPoints": {
+				"@reverse": "schema:actionApplication"
+			},
+			"interfaceType": {
+				"@id": "codemeta:interfaceType"
+			}
+		}
+	],
+	"@type": "SoftwareSourceCode",
+	"identifier": "tscan",
+	"name": "T-Scan",
+	"version": "0.9.9",
+	"description": "T-Scan is an analysis tool for Dutch texts to assess the complexity of the text, and is based on original work by Rogier Kraf",
+	"license": "https://opensource.org/licenses/AGPL-3.0",
 	"url": "https://github.com/proycon/tscan",
-    "producer": [
-        {
-            "@id": "https://www.uu.nl/en/research/utrecht-institute-of-linguistics-ots",
-            "@type": "Organization",
-            "name": "Utrecht Institute of Linguistics OTS",
-            "url": "https://www.uu.nl/en/research/utrecht-institute-of-linguistics-ots",
-            "parentOrganization": {
-                "@id": "https://www.uu.nl",
-                "@type": "Organization",
-                "name": "Utrecht University",
-                "url": "https://www.uu.nl"
-            }
-        },
-        {
-            "@id": "https://www.ru.nl/clst",
-            "@type": "Organization",
-            "name": "Centre for Language and Speech Technology",
-            "url": "https://www.ru.nl/clst",
-            "parentOrganization": {
-                "@id": "https://www.ru.nl/cls",
-                "@type": "Organization",
-                "name": "Centre for Language Studies",
-                "url": "https://www.ru.nl/cls",
-                "parentOrganization": {
-                    "@id": "https://www.ru.nl",
-                    "name": "Radboud University",
-                    "@type": "Organization",
-                    "url": "https://www.ru.nl",
-                    "location": {
-                        "@type": "Place",
-                        "name": "Nijmegen"
-                    }
-                }
-
-            }
-       }
-    ],
-    "author": [
+	"producer": [
+		{
+			"@id": "https://www.uu.nl/en/research/utrecht-institute-of-linguistics-ots",
+			"@type": "Organization",
+			"name": "Utrecht Institute of Linguistics OTS",
+			"url": "https://www.uu.nl/en/research/utrecht-institute-of-linguistics-ots",
+			"parentOrganization": {
+				"@id": "https://www.uu.nl",
+				"@type": "Organization",
+				"name": "Utrecht University",
+				"url": "https://www.uu.nl"
+			}
+		},
+		{
+			"@id": "https://www.ru.nl/clst",
+			"@type": "Organization",
+			"name": "Centre for Language and Speech Technology",
+			"url": "https://www.ru.nl/clst",
+			"parentOrganization": {
+				"@id": "https://www.ru.nl/cls",
+				"@type": "Organization",
+				"name": "Centre for Language Studies",
+				"url": "https://www.ru.nl/cls",
+				"parentOrganization": {
+					"@id": "https://www.ru.nl",
+					"name": "Radboud University",
+					"@type": "Organization",
+					"url": "https://www.ru.nl",
+					"location": {
+						"@type": "Place",
+						"name": "Nijmegen"
+					}
+				}
+			}
+		}
+	],
+	"author": [
+		{
+			"@type": "Person",
+			"givenName": "Sheean",
+			"familyName": "Spoel",
+			"email": "s.j.j.spoel@uu.nl",
+			"affiliation": {
+				"@id": "https://dig.hum.uu.nl/"
+			}
+		},
+		{
+			"@type": "Person",
+			"givenName": "Luka",
+			"familyName": "van der Plas",
+			"email": "l.p.vanderplas@uu.nl",
+			"affiliation": {
+				"@id": "https://dig.hum.uu.nl/"
+			}
+		},
 		{
 			"@type": "Person",
 			"givenName": "Martijn",
 			"familyName": "van der Klis",
 			"email": "m.h.vanderklis@uu.nl",
-			"affiliation": { "@id": "https://www.uu.nl/en/research/utrecht-institute-of-linguistics-ots" }
+			"affiliation": {
+				"@id": "https://www.uu.nl/en/research/utrecht-institute-of-linguistics-ots"
+			}
 		},
 		{
 			"@type": "Person",
 			"givenName": "Ko",
 			"familyName": "van der Sloot",
 			"email": "ko.vandersloot@let.ru.nl",
-			"affiliation": { "@id": "https://www.ru.nl/clst" }
+			"affiliation": {
+				"@id": "https://www.ru.nl/clst"
+			}
 		},
 		{
 			"@id": "https://orcid.org/0000-0002-1046-0006",
@@ -72,10 +97,14 @@
 			"givenName": "Maarten",
 			"familyName": "van Gompel",
 			"email": "proycon@anaproy.nl",
-			"affiliation": { "@id": "https://www.ru.nl/clst" }
+			"affiliation": {
+				"@id": "https://www.ru.nl/clst"
+			}
 		}
 	],
-	"sourceOrganization": { "@id": "https://www.ru.nl/clst" },
+	"sourceOrganization": {
+		"@id": "https://www.ru.nl/clst"
+	},
 	"programmingLanguage": {
 		"@type": "ComputerLanguage",
 		"identifier": "c++",
@@ -83,28 +112,28 @@
 	},
 	"operatingSystem": "POSIX",
 	"codeRepository": "https://github.com/proycon/tscan",
-    "softwareRequirements": [
-        {
+	"softwareRequirements": [
+		{
 			"@type": "SoftwareApplication",
 			"identifier": "libfolia",
 			"name": "libfolia"
 		},
-        {
+		{
 			"@type": "SoftwareApplication",
 			"identifier": "wopr",
 			"name": "Wopr"
 		},
-        {
+		{
 			"@type": "SoftwareApplication",
 			"identifier": "ucto",
 			"name": "ucto"
 		},
-        {
+		{
 			"@type": "SoftwareApplication",
 			"identifier": "frog",
 			"name": "frog"
 		},
-        {
+		{
 			"@type": "SoftwareApplication",
 			"identifier": "alpino",
 			"name": "Alpino"
@@ -121,19 +150,38 @@
 	"contIntegration": "https://travis-ci.org/proycon/tscan",
 	"releaseNotes": "https://github.com/proycon/tscan/releases",
 	"developmentStatus": "active",
-	"keywords":  [ "nlp", "natural language processing", "readability", "feature extraction", "dutch" ],
-    "referencePublication": [
-        {
-            "@type": "TechArticle",
-            "name": "Handleiding T-Scan",
-            "author": [ "Henk Pander Maat", "Rogier Kraf", "Nick Dekker" ],
-            "url": "https://github.com/proycon/tscan/raw/master/docs/tscanhandleiding.pdf"
-        },
+	"keywords": [
+		"nlp",
+		"natural language processing",
+		"readability",
+		"feature extraction",
+		"dutch"
+	],
+	"referencePublication": [
 		{
-            "@id":  "http://hdl.handle.net/2066/134833",
+			"@type": "TechArticle",
+			"name": "Handleiding T-Scan",
+			"author": [
+				"Henk Pander Maat",
+				"Rogier Kraf",
+				"Nick Dekker"
+			],
+			"url": "https://github.com/proycon/tscan/raw/master/docs/tscanhandleiding.pdf"
+		},
+		{
+			"@id": "http://hdl.handle.net/2066/134833",
 			"@type": "ScholarlyArticle",
 			"name": "T-Scan: a new tool for analyzing Dutch text",
-			"author": [ "Henk Pander Maat", "Rogier Kraf", "Antal van den Bosch", "Maarten van Gompel", "Ko van der Sloot", "Nick Dekker", "Suzanne Kleijn", "Ted Sanders" ],
+			"author": [
+				"Henk Pander Maat",
+				"Rogier Kraf",
+				"Antal van den Bosch",
+				"Maarten van Gompel",
+				"Ko van der Sloot",
+				"Nick Dekker",
+				"Suzanne Kleijn",
+				"Ted Sanders"
+			],
 			"pageStart": "53",
 			"pageEnd": 74,
 			"isPartOf": {
@@ -147,13 +195,13 @@
 		}
 	],
 	"dateCreated": "2012-09-12",
-    "entryPoints": [
-        {
-            "@type": "EntryPoint",
-            "name": "tscan",
-            "urlTemplate": "file:///tscan",
-            "description": "Command-line interface",
-            "interfaceType": "CLI"
-        }
-    ]
+	"entryPoints": [
+		{
+			"@type": "EntryPoint",
+			"name": "tscan",
+			"urlTemplate": "file:///tscan",
+			"description": "Command-line interface",
+			"interfaceType": "CLI"
+		}
+	]
 }

@@ -46,16 +46,16 @@ SYSTEM_ID = "tscan"
 # System name, the way the system is presented to the world
 SYSTEM_NAME = "T-scan"
 
-SYSTEM_AUTHOR = "Ko van der Sloot, Martijn van der Klis, Maarten van Gompel"
+SYSTEM_AUTHOR = "Ko van der Sloot, Martijn van der Klis, Luka van der Plas, Sheean Spoel, Maarten van Gompel"
 
 SYSTEM_AFFILIATION = "Utrecht University"
 
 # An informative description for this system (this should be fairly short, about one paragraph, and may not contain HTML)
-SYSTEM_DESCRIPTION = "T-Scan is an analysis tool for dutch texts to assess the complexity of the text, and is based on original work by Rogier Kraf (Utrecht University) (see: Kraf et al., 2009). The code has been reimplemented and extended by Ko van der Sloot (Tilburg University), and is currently maintained and continued by Martijn van der Klis (Utrecht University)."
+SYSTEM_DESCRIPTION = "T-Scan is an analysis tool for dutch texts to assess the complexity of the text, and is based on original work by Rogier Kraf (Utrecht University) (see: Kraf et al., 2009). The code has been reimplemented and extended by Ko van der Sloot (Tilburg University), Martijn van der Klis (Utrecht University) and is currently maintained and continued by Sheean Spoel and Luka van der Plas (both Utrecht University)."
 
 SYSTEM_URL = "https://github.com/proycon/tscan"
 
-SYSTEM_EMAIL = "M.H.vanderKlis@uu.nl"
+SYSTEM_EMAIL = "s.j.j.spoel@uu.nl"
 
 SYSTEM_LICENSE = "GNU Affero General Public License v3"
 

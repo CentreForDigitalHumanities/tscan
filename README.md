@@ -13,8 +13,7 @@ T-Scan is distributed under the GNU Affero Public Licence (see the file COPYING)
 T-Scan is an analysis tool for dutch texts to assess the complexity of the
 text, and is based on original work by Rogier Kraf (Utrecht University) (see:
 Kraf et al., 2009). The code has been reimplemented and extended by Ko van der
-Sloot (Tilburg University), and is currently maintained and continued by
-Martijn van der Klis (Utrecht University).
+Sloot (Tilburg University), Martijn van der Klis (Utrecht University) and is currently maintained and continued by Luka van der Plas and Sheean Spoel (both Utrecht University).
 
 ## Web application / Webservice
 
