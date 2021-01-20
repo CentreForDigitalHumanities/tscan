@@ -1,4 +1,7 @@
-SPLITTERDIR=/data/compound-splitter
+#!/bin/bash
+source lamachine-activate
+export SRCDIR=${LM_PREFIX}/src
+export SPLITTERDIR=${SRCDIR}/compound-splitter
 
 # retrieve source again, make sure to clear prepared binaries
 # otherwise an old version of a splitter method might linger
@@ -7,17 +10,21 @@ then
     sudo rm -rf $SPLITTERDIR
 fi
 
-cd /data
+cd $SRCDIR
 git clone https://github.com/UUDigitalHumanitieslab/compound-splitter
 cd $SPLITTERDIR
 
-# put dependencies in shared folder
-# this way a restart doesn't need to retrieve all this data
-# from scratch again
-mkdir -p /data/compound-dependencies
-ln -s /data/compound-dependencies dependencies
+# dependencies might already have been retrieved in the tscan clone
+# itself (tscan/docker/data/compound-dependencies)
+# this way a rebuild doesn't need to retrieve all this data from
+# scratch again
+export DEPDIR=${SRCDIR}/tscan/docker/data/compound-dependencies
+mkdir -p $DEPDIR
+echo "Existing dependencies reused"
+ls -l $DEPDIR
+mkdir -p dependencies
+sudo mv $DEPDIR/* dependencies
 
-source lamachine-activate
 pip3 install -r requirements.txt
 
 python3 retrieve.py

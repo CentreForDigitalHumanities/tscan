@@ -1,4 +1,7 @@
+#!/bin/bash
 # BUILD
+
+bash /deployment/install-compound-splitter.sh
 
 source lamachine-activate
 

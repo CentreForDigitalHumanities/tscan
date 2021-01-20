@@ -1,11 +1,7 @@
 #!/bin/bash
 source lamachine-activate
 
-if [ -z "$(command -v compound-splitters-nl-socket)" ]; then
-    bash /deployment/install-compound-splitter.sh
-else
-    echo "Compound splitter already installed"
-fi
+bash /deployment/store-compound-splitter-dependencies.sh
 
 # work around for https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=934731
 sudo chmod -f 600 /run/uwsgi-emperor.pid
