@@ -19,11 +19,13 @@ cd $SPLITTERDIR
 # this way a rebuild doesn't need to retrieve all this data from
 # scratch again
 export DEPDIR=${SRCDIR}/tscan/docker/data/compound-dependencies
-mkdir -p $DEPDIR
-echo "Existing dependencies reused"
-ls -l $DEPDIR
-mkdir -p dependencies
-sudo mv $DEPDIR/* dependencies
+if [[ -d $DEPDIR ]]
+then
+    echo "Existing dependencies reused"
+    ls -l $DEPDIR
+    mkdir -p dependencies
+    sudo mv $DEPDIR/* dependencies
+fi
 
 pip3 install -r requirements.txt
 
