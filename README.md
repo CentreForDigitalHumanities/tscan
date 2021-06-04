@@ -51,6 +51,8 @@ It is also possible to run this version of T-Scan directly from Docker locally u
 
     $ docker-compose up
 
+Default address: http://localhost:8830
+
 If you do not want to use LaMachine, first make sure you have **all** necessary dependencies and then compile/install as follows:
 
     $ bash bootstrap.sh
