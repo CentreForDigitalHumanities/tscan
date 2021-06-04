@@ -325,7 +325,7 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
      << "AL_lidw_znw,AL_vz_znw,AL_ww_wwvc,"
      << "AL_vg_wwbijzin,AL_vg_conj,AL_vg_wwhoofdzin,AL_znw_bijzin,AL_ww_schdw,"
      << "AL_ww_znwpred,AL_ww_bnwpred,AL_ww_bnwbwp,AL_ww_bwbwp,AL_ww_znwbwp,"
-     << "AL_gem,AL_max,";
+     << "AL_gem,";
 }
 
 void structStats::sentDifficultiesToCSV( ostream& os ) const {
@@ -405,7 +405,6 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
   os << MMtoString( distances, VERB_MOD_BW ) << ",";
   os << MMtoString( distances, VERB_NOUN ) << ",";
   os << toMString( al_gem ) << ",";
-  os << toMString( al_max ) << ","; //AL_max
 }
 
 void structStats::infoHeader( ostream& os ) const {
