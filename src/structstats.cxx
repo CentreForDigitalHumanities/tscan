@@ -98,7 +98,7 @@ void structStats::toCSV( ostream& os ) const {
     os << "\"" << escape_quotes(text) << "\",";
   }
 
-  os << parseFailCnt << ",";
+  os << parseFailCnt << ","; // Alpino_status
 
   topPredictorsToCSV( os );
   wordDifficultiesToCSV( os );
@@ -305,6 +305,7 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
      << "Betr_bijzin_per_zin,Bijw_bijzin_per_zin,"
      << "Compl_bijzin_per_zin,Fin_bijzin_per_zin,"
      << "Mv_fin_inbed_per_zin,Infin_compl_per_zin,"
+     << "Infin_compl_bep_per_zin,"
      << "Bijzin_per_zin,"
      << "Mv_inbed_per_zin,"
      << "Betr_bijzin_los,Bijw_compl_bijzin_los,"
@@ -340,7 +341,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 
   double bijzinCnt = betrCnt + bijwCnt + complCnt;
   if ( isSentence() && parseFailCnt > 0 ) {
-    os << "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,";
+    os << "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,";
   }
   else {
     os << proportion( betrCnt, sentCnt ) << ","; //Betr_bijzin_per_zin
@@ -349,6 +350,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
     os << proportion( bijzinCnt, sentCnt ) << ","; //Fin_bijzin_per_zin
     os << proportion( mvFinInbedCnt, sentCnt ) << ","; //Mv_fin_inbed_per_zin
     os << proportion( infinComplCnt, sentCnt ) << ","; // Infin_compl_per_zin
+    os << proportion( infinComplBepCnt, sentCnt ) << ","; // Infin_compl_bep_per_zin
     os << proportion( bijzinCnt + infinComplCnt, sentCnt ) << ","; //Bijzin_per_zin
     os << proportion( mvInbedCnt, sentCnt ) << ","; //Mv_inbed_per_zin
     os << proportion( losBetrCnt, sentCnt ) << ","; //Betr_bijzin_los
@@ -1388,6 +1390,7 @@ void structStats::merge( structStats *ss ){
   complCnt += ss->complCnt;
   mvFinInbedCnt += ss->mvFinInbedCnt;
   infinComplCnt += ss->infinComplCnt;
+  infinComplBepCnt += ss->infinComplBepCnt;
   mvInbedCnt += ss->mvInbedCnt;
   losBetrCnt += ss->losBetrCnt;
   losBijwCnt += ss->losBijwCnt;

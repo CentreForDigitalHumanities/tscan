@@ -569,11 +569,15 @@ void sentStats::resolveRelativeClauses( xmlDoc *alpDoc ) {
   string infinComplPath = notTop + "/node[(@cat='ti' or @cat='oti') and @rel!='mod']";
   list<xmlNode*> tiNodes = TiCC::FindNodes(alpDoc, infinComplPath);
 
+  string infinComplBepPath = notTop + "/node[@cat='ti']";
+  list<xmlNode*> tiBepNodes = TiCC::FindNodes(alpDoc, infinComplBepPath);
+
   // Save counts
   betrCnt = relNodes.size();
   bijwCnt = cpNodes.size();
   complCnt = complNodes.size();
   infinComplCnt = tiNodes.size();
+  infinComplBepCnt = tiBepNodes.size();
 
   // Checks for embedded finite clauses
   list<xmlNode*> allRelNodes (relNodes);

@@ -2831,7 +2831,7 @@ folia::Document *getFrogResult( istream &is ) {
     }
 
     // replace brackets
-    std::regex opening ("[\{\[]");
+    std::regex opening ("[\\{\\[]");
     line = regex_replace (line, opening, "(");
 
     std::regex closing ("[\\}\\]]");
