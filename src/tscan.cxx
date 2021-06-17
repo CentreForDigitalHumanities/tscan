@@ -890,6 +890,10 @@ void settingData::init( const TiCC::Configuration &cf ) {
                         cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
+  // ignore created lemma total, as it contains many duplicates
+  // note: this assumes the frequency lists have the same actual total
+  // i.e.: they are derived from the same corpora
+  lemma_total = word_total;
   val = cf.lookUp( "top_freq_lex" );
   if ( !val.empty() ) {
     if ( !fill_topvals( top_freq_lex, cf.configDir() + "/" + val ) )
