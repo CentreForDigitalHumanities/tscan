@@ -1136,6 +1136,11 @@ void wordStats::checkNoun() {
       if (config.lookUp("useCompoundSplitter") == "1") {
         noun n = splitCompound(lemma);
         if ( n.is_compound ) {
+          is_compound = n.is_compound;
+          compound_parts = n.compound_parts;
+          compound_head = n.head;
+          compound_sat = n.satellite_clean;
+
           // look for head in data
           sit = settings.noun_sem.find( n.head );
           if ( sit != settings.noun_sem.end() ) {
@@ -1143,10 +1148,6 @@ void wordStats::checkNoun() {
             found_split = true;  
             noun match = sit->second;
             sem_type = match.type;
-            is_compound = n.is_compound;
-            compound_parts = n.compound_parts;
-            compound_head = n.head;
-            compound_sat = n.satellite_clean;
           }
         }
       }
