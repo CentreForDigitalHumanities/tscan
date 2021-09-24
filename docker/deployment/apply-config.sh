@@ -9,7 +9,7 @@ fi
 # (to update the start webserver script and CLAM configuration)
 cd "/usr/local/src/LaMachine"
 echo "---
-- hosts: develop
+- hosts: ${LM_NAME}
   roles: [ lamachine-core ]
 " > "install.tmp.yml"
 

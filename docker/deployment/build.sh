@@ -18,7 +18,7 @@ fi
 # Make the install.yml point to the right host
 cd /usr/local/src/LaMachine
 mv install.yml install.yml.bak
-sed "s/hosts: localhost/hosts: develop/g" install.yml.bak > install.yml
+sed "s/hosts: localhost/hosts: ${LM_NAME}/g" install.yml.bak > install.yml
 
 # overwrite roles (needed for lamachine-update)
 cp -R /deployment/roles/* /usr/local/src/LaMachine/roles
