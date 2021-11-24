@@ -3,6 +3,11 @@
 
 bash /deployment/install-compound-splitter.sh
 
+# dependencies for textract
+sudo apt-get update
+sudo apt-get -y install python-dev libxml2-dev libxslt1-dev antiword unrtf poppler-utils pstotext tesseract-ocr \
+flac ffmpeg lame libmad0 libsox-fmt-mp3 sox libjpeg-dev swig
+
 source lamachine-activate
 
 sudo chown -R lamachine:lamachine /usr/local/src/tscan

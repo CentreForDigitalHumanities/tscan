@@ -34,5 +34,5 @@ setup(
     ],
     package_data = {'tscanservice':['*.wsgi','*.yml'] },
     include_package_data=True,
-    install_requires=['CLAM >= 3.0']
+    install_requires=['CLAM >= 3.0', 'textract']
 )

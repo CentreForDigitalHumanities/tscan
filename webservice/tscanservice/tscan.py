@@ -17,7 +17,7 @@ from clam.common.parameters import *
 from clam.common.formats import *
 from clam.common.converters import *
 from clam.common.viewers import *
-from clam.common.data import *
+from clam.common.data import *  # AbstractConverter
 
 import os
 from base64 import b64decode as D
@@ -29,7 +29,59 @@ try:
 except ModuleNotFoundError:
     compound_methods = None
 
+try:
+    import textract
+    use_text_converter = True
+except ModuleNotFoundError:
+    use_text_converter = False
+
 # DEBUG = True
+
+
+class DocumentTextConverter(AbstractConverter):
+    acceptforinput = [clam.common.formats.PlainTextFormat]
+
+    converttool = 'textract'
+
+    def __init__(self, id,  **kwargs):
+        super(DocumentTextConverter, self).__init__(id, **kwargs)
+
+    def convertforinput(self, filepath, metadata=None):
+        super(DocumentTextConverter, self).convertforinput(filepath, metadata)
+
+        head, ext = os.path.splitext(filepath)
+        head, ext = os.path.splitext(head)
+
+        # need the original file extension for processing
+        # filepath is something like document.pdf.txt
+        if ext.lower() == '':
+            # don't process files which are already .txt
+            return True
+
+        try:
+            if ext.lower() == 'doc':
+                # settings for Antiword
+                old_environ = dict(os.environ)
+                try:
+                    os.environ['ANTIWORDHOME'] = '/usr/share/antiword'
+                    os.environ['LC_ALL'] = 'nl_NL@euro IS-8859-15'
+                    text += textract.process(filepath, extension=ext, encoding='utf_8').encode()
+                finally:
+                    os.environ.clear()
+                    os.environ.update(old_environ)
+            else:
+                text = textract.process(filepath, extension=ext, encoding='utf_8')
+            success = True
+        except Exception as error:
+            text = f"Unexpected {type(error)}: {error}"
+            success = False
+
+        # overwrite the source file, CLAM assumes the source and target
+        # location are the same
+        with open(filepath, 'wb') as target:
+            target.write(text if type(text) == bytes else text.encode('utf-8'))
+
+        return success
 
 
 REQUIRE_VERSION = 2.3
@@ -136,6 +188,8 @@ PROFILES = [
             'Text Input',
             StaticParameter(id='encoding', name='Encoding',
                             description='The character encoding of the file', value='utf-8'),
+            DocumentTextConverter(
+                id='docconv', label='Convert from DOC/DOCX/ODT') if use_text_converter else None,
             # PDFtoTextConverter(id='pdfconv',label='Convert from PDF Document'),
             # MSWordConverter(id='docconv',label='Convert from MS Word Document'),
             extension='.txt',
@@ -205,7 +259,8 @@ PROFILES = [
             FoLiAXMLFormat,
             'Output analysis',
             XSLTViewer(file=TSCANDIR + '/view/tscanview.xsl'),
-            ForwardViewer(id='switchboardforwarder',name="Open in CLARIN Switchboard",forwarder=Forwarder('switchboard','CLARIN Switchboard',SWITCHBOARD_FORWARD_URL),allowdefault=False) if SWITCHBOARD_FORWARD_URL else None,
+            ForwardViewer(id='switchboardforwarder', name="Open in CLARIN Switchboard", forwarder=Forwarder(
+                'switchboard', 'CLARIN Switchboard', SWITCHBOARD_FORWARD_URL), allowdefault=False) if SWITCHBOARD_FORWARD_URL else None,
             removeextension='.txt',  # remove prior to adding
             extension='.xml',
             multi=True
@@ -333,34 +388,34 @@ for f in glob.glob(TSCANDIR + "/data/*20000.freq"):
 
 
 parameters_list = [
-        IntegerParameter(id='overlapSize', name='Overlap Size',
-                         description='Overlap Size', default=50),
-        FloatParameter(id='frequencyClip', name='Frequency Clipping',
-                       description='Frequency Clipping', default=99),
-        FloatParameter(id='mtldThreshold', name='MTLD factor size',
-                       description='MTLD factor size', default=0.720),
-        ChoiceParameter(id='useAlpino', name='Use Alpino parser',
-                        description='Use Alpino parser?', choices=['yes', 'no'], default='yes'),
-        ChoiceParameter(id='useWopr', name='Use Wopr', description='Use Wopr?', choices=[
-                        'yes', 'no'], default='yes'),
-        ChoiceParameter(id='sentencePerLine', name='One sentence per line',
-                        description='Are the input texts already split per line?', choices=['yes', 'no'], default='no'),
-        ChoiceParameter(id='prevalence', name='Prevalence data', description='Use prevalence data (http://crr.ugent.be/programs-data/word-prevalence-values) for',
-                        choices=[('nl', 'The Netherlands'), ('be', 'Belgium')], default='nl'),
-        ChoiceParameter(id='word_freq_lex', name='Word Frequency List', description="Word frequency list",
-                        choices=wordfreqlist, default="SoNaR500.wordfreqlist_words.freq"),
-        ChoiceParameter(id='lemma_freq_lex', name='Lemma Frequency List', description="Lemma frequency list",
-                        choices=lemmafreqlist, default="SoNaR500.wordfreqlist_lemma.freq"),
-        ChoiceParameter(id='top_freq_lex', name='Top Frequency List', description="Top frequency list",
-                        choices=topfreqlist, default="SoNaR500.wordfreqlist20000.freq")
-    ]
+    IntegerParameter(id='overlapSize', name='Overlap Size',
+                     description='Overlap Size', default=50),
+    FloatParameter(id='frequencyClip', name='Frequency Clipping',
+                   description='Frequency Clipping', default=99),
+    FloatParameter(id='mtldThreshold', name='MTLD factor size',
+                   description='MTLD factor size', default=0.720),
+    ChoiceParameter(id='useAlpino', name='Use Alpino parser',
+                    description='Use Alpino parser?', choices=['yes', 'no'], default='yes'),
+    ChoiceParameter(id='useWopr', name='Use Wopr', description='Use Wopr?', choices=[
+        'yes', 'no'], default='yes'),
+    ChoiceParameter(id='sentencePerLine', name='One sentence per line',
+                    description='Are the input texts already split per line?', choices=['yes', 'no'], default='no'),
+    ChoiceParameter(id='prevalence', name='Prevalence data', description='Use prevalence data (http://crr.ugent.be/programs-data/word-prevalence-values) for',
+                    choices=[('nl', 'The Netherlands'), ('be', 'Belgium')], default='nl'),
+    ChoiceParameter(id='word_freq_lex', name='Word Frequency List', description="Word frequency list",
+                    choices=wordfreqlist, default="SoNaR500.wordfreqlist_words.freq"),
+    ChoiceParameter(id='lemma_freq_lex', name='Lemma Frequency List', description="Lemma frequency list",
+                    choices=lemmafreqlist, default="SoNaR500.wordfreqlist_lemma.freq"),
+    ChoiceParameter(id='top_freq_lex', name='Top Frequency List', description="Top frequency list",
+                    choices=topfreqlist, default="SoNaR500.wordfreqlist20000.freq")
+]
 
 if compound_methods != None:
     parameters_list.append(
         ChoiceParameter(id='compoundSplitterMethod', name='Compound split method', description='Method used by compound splitting module',
                         choices=compound_methods, default='secos'))
 
-PARAMETERS=[
+PARAMETERS = [
     ('Parameters', parameters_list)
 ]
 
