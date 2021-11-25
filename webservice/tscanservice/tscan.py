@@ -50,7 +50,11 @@ class DocumentTextConverter(AbstractConverter):
         super(DocumentTextConverter, self).convertforinput(filepath, metadata)
 
         head, ext = os.path.splitext(filepath)
-        head, ext = os.path.splitext(head)
+
+        # when unpacking zip-files the file names
+        # are left as-is
+        if ext.lower() == '.txt':
+            head, ext = os.path.splitext(head)
 
         # need the original file extension for processing
         # filepath is something like document.pdf.txt
@@ -59,13 +63,13 @@ class DocumentTextConverter(AbstractConverter):
             return True
 
         try:
-            if ext.lower() == 'doc':
+            if ext.lower() == '.doc':
                 # settings for Antiword
                 old_environ = dict(os.environ)
                 try:
                     os.environ['ANTIWORDHOME'] = '/usr/share/antiword'
                     os.environ['LC_ALL'] = 'nl_NL@euro IS-8859-15'
-                    text += textract.process(filepath, extension=ext, encoding='utf_8').encode()
+                    text = textract.process(filepath, extension=ext, encoding='utf_8')
                 finally:
                     os.environ.clear()
                     os.environ.update(old_environ)
