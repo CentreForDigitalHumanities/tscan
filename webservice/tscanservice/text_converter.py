@@ -17,29 +17,15 @@ def text_convert(filepath: str) -> bool:
 
     mimetype = magic.from_file(filepath)
 
-    # always add an .txt-extension if it is missing
-    head, ext = path.splitext(filepath)
-    if ext.lower() != '.txt':
-        rename(filepath, filepath + '.txt')
-        try:
-            dirname = path.dirname(filepath)
-            filename = path.basename(filepath)
-            rename(
-                path.join(
-                    dirname,
-                    f".{filename}.METADATA"),
-                path.join(
-                    dirname,
-                    f".{filename}.txt.METADATA"))
-        except FileNotFoundError:
-            pass
-        filepath += '.txt'
-
-    head, ext = path.splitext(filepath[:-4])
-
     if mimetype == "text/plain":
         # text is already plaintext, we're done!
         return True
+
+    # always add an .txt-extension if it is missing
+    head, ext = path.splitext(filepath)
+    if ext.lower() == '.txt':
+        # when unpacking a ZIP-archive, the filenames don't change
+        head, ext = path.splitext(filepath[:-4])
 
     try:
         if ext.lower() == '.doc':
