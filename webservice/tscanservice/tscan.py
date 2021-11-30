@@ -139,7 +139,7 @@ CUSTOM_FORMATS_MODULE = None
 #    InputSource(id='sampledocs',label='Sample texts',path=ROOT+'/inputsources/sampledata',defaultmetadata=PlainTextFormat(None, encoding='utf-8') ),
 # ]
 
-CUSTOMHTML_INDEX = CUSTOMHTML_PROJECTSTART = "<p>Please consult the <a href=\"https://github.com/proycon/tscan/raw/master/docs/tscanhandleiding.pdf\">Handleiding</a> when using T-Scan.</p>"
+CUSTOMHTML_INDEX = CUSTOMHTML_PROJECTSTART = f"<p>Please consult the <a href=\"{SYSTEM_URL}/raw/master/docs/tscanhandleiding.pdf\">Handleiding</a> when using T-Scan.</p>"
 
 # ======== PROFILE DEFINITIONS ===========
 
