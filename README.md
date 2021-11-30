@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/proycon/tscan.svg?branch=master)](https://travis-ci.org/proycon/tscan) [![Language Machines Badge](http://applejack.science.ru.nl/lamabadge.php/tscan)](http://applejack.science.ru.nl/languagemachines/) [![DOI](https://zenodo.org/badge/36359165.svg)](https://zenodo.org/badge/latestdoi/36359165)
+[![Build Status](https://travis-ci.org/proycon/tscan.svg?branch=master)](https://travis-ci.org/proycon/tscan) [![Language Machines Badge](https://applejack.science.ru.nl/lamabadge.php/tscan)](http://applejack.science.ru.nl/languagemachines/) [![DOI](https://zenodo.org/badge/36359165.svg)](https://zenodo.org/badge/latestdoi/36359165)
 
 # T-Scan
 
@@ -26,9 +26,9 @@ Extensive documentation (in Dutch) can be found in [``docs/tscanhandleiding.pdf`
 
 ## Installation
 
-T-Scan heavily depends upon other sofware, such as Frog, Wopr and Alpino.
+T-Scan heavily depends upon other software, such as Frog, Wopr and Alpino.
 
-Installation is not trivial, to be able to succesfully build T-Scan from the tarball, you need the following packages:
+Installation is not trivial, to be able to successfully build T-Scan from the tarball, you need the following packages:
 - autotools
 - autoconf-archive
 - [ticcutils](https://github.com/LanguageMachines/ticcutils)
