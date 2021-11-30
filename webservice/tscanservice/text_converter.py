@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os
+from os import path, rename, environ
 try:
     import textract
     from magic import Magic
@@ -18,12 +18,24 @@ def text_convert(filepath: str) -> bool:
     mimetype = magic.from_file(filepath)
 
     # always add an .txt-extension if it is missing
-    head, ext = os.path.splitext(filepath)
+    head, ext = path.splitext(filepath)
     if ext.lower() != '.txt':
-        os.rename(filepath, filepath + '.txt')
+        rename(filepath, filepath + '.txt')
+        try:
+            dirname = path.dirname(filepath)
+            filename = path.basename(filepath)
+            rename(
+                path.join(
+                    dirname,
+                    f".{filename}.METADATA"),
+                path.join(
+                    dirname,
+                    f".{filename}.txt.METADATA"))
+        except FileNotFoundError:
+            pass
         filepath += '.txt'
 
-    head, ext = os.path.splitext(filepath[:-4])
+    head, ext = path.splitext(filepath[:-4])
 
     if mimetype == "text/plain":
         # text is already plaintext, we're done!
@@ -32,15 +44,15 @@ def text_convert(filepath: str) -> bool:
     try:
         if ext.lower() == '.doc':
             # settings for Antiword
-            old_environ = dict(os.environ)
+            old_environ = dict(environ)
             try:
-                os.environ['ANTIWORDHOME'] = '/usr/share/antiword'
-                os.environ['LC_ALL'] = 'nl_NL@euro IS-8859-15'
+                environ['ANTIWORDHOME'] = '/usr/share/antiword'
+                environ['LC_ALL'] = 'nl_NL@euro IS-8859-15'
                 text = textract.process(
                     filepath, extension=ext, encoding='utf_8')
             finally:
-                os.environ.clear()
-                os.environ.update(old_environ)
+                environ.clear()
+                environ.update(old_environ)
         else:
             text = textract.process(filepath, extension=ext, encoding='utf_8')
         success = True
