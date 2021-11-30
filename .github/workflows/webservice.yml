@@ -25,7 +25,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        sudo apt install libmagic
+        sudo apt install libmagic-dev
         python -m pip install --upgrade pip
         pip install flake8 textract python-magic
     - name: Lint with flake8
