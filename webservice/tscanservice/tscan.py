@@ -23,17 +23,13 @@ import os
 from base64 import b64decode as D
 import glob
 
+from .text_converter import text_convert
+
 try:
     from compound_splitter.splitter import list_methods
     compound_methods = list(method["name"] for method in list_methods())
 except ModuleNotFoundError:
     compound_methods = None
-
-try:
-    import textract
-    use_text_converter = True
-except ModuleNotFoundError:
-    use_text_converter = False
 
 # DEBUG = True
 
@@ -48,44 +44,7 @@ class DocumentTextConverter(AbstractConverter):
 
     def convertforinput(self, filepath, metadata=None):
         super(DocumentTextConverter, self).convertforinput(filepath, metadata)
-
-        head, ext = os.path.splitext(filepath)
-
-        # when unpacking zip-files the file names
-        # are left as-is
-        if ext.lower() == '.txt':
-            head, ext = os.path.splitext(head)
-
-        # need the original file extension for processing
-        # filepath is something like document.pdf.txt
-        if ext.lower() == '':
-            # don't process files which are already .txt
-            return True
-
-        try:
-            if ext.lower() == '.doc':
-                # settings for Antiword
-                old_environ = dict(os.environ)
-                try:
-                    os.environ['ANTIWORDHOME'] = '/usr/share/antiword'
-                    os.environ['LC_ALL'] = 'nl_NL@euro IS-8859-15'
-                    text = textract.process(filepath, extension=ext, encoding='utf_8')
-                finally:
-                    os.environ.clear()
-                    os.environ.update(old_environ)
-            else:
-                text = textract.process(filepath, extension=ext, encoding='utf_8')
-            success = True
-        except Exception as error:
-            text = f"Unexpected {type(error)}: {error}"
-            success = False
-
-        # overwrite the source file, CLAM assumes the source and target
-        # location are the same
-        with open(filepath, 'wb') as target:
-            target.write(text if type(text) == bytes else text.encode('utf-8'))
-
-        return success
+        return text_convert(filepath)
 
 
 REQUIRE_VERSION = 2.3
