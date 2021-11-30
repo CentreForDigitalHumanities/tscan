@@ -17,11 +17,18 @@ class TestTextConverter(unittest.TestCase):
         shutil.rmtree(output, ignore_errors=True)
         shutil.copytree(data, output)
 
+        failures = []
         # convert all data in output directory
         for file in glob(path.join(output, "*")):
-            self.assertTrue(text_convert(file), f"Failed converting {file}")
+            success = text_convert(file)
+            if not success:
+                failures.append(file)
 
         # check the files!
         for file in glob(path.join(output, "*")):
             with open(file) as content:
                 self.assertEqual(path.basename(file), content.read().strip())
+
+        if failures:
+            files = str.join(", ", failures)
+            self.fail(f"Failed converting {files}")
