@@ -4,10 +4,10 @@ try:
     import textract
     from magic import Magic
     use_text_converter = True
+
+    magic = Magic(mime=True)
 except ModuleNotFoundError:
     use_text_converter = False
-
-magic = Magic(mime=True)
 
 
 def text_convert(filepath: str) -> bool:

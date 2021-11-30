@@ -23,7 +23,7 @@ import os
 from base64 import b64decode as D
 import glob
 
-from .text_converter import text_convert
+from .text_converter import text_convert, use_text_converter
 
 try:
     from compound_splitter.splitter import list_methods
