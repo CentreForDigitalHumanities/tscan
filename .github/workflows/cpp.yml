@@ -12,7 +12,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast: false
       matrix:
@@ -20,17 +20,17 @@ jobs:
         compiler:
           - { 
               compiler: GNU,
-              CC: gcc-10,
-              CXX: g++-10,
-              GCOV: gcov-10,
+              CC: gcc-7.5,
+              CXX: g++-7.5,
+              GCOV: gcov-7.5,
               env: {
                 SCAN: echo
               }
             }
           - {
               compiler: LLVM,
-              CC: clang-10,
-              CXX: clang++-10,
+              CC: clang-7,
+              CXX: clang++-7,
               env: {
                 SCAN: scan-build,
                 OPENMPFLAG: --disable-openmp
@@ -41,8 +41,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install dependencies
       run: |
-        sudo apt-get update;
-        sudo apt install -y libcppunit-dev
+        sudo apt-get update
         sudo apt install -y pkg-config autoconf-archive autotools-dev ccache
         sudo apt install -y cppcheck libicu-dev libxml2-dev libbz2-dev
         sudo apt install -y zlib1g-dev libtar-dev expect libexttextcat-dev
@@ -127,4 +126,4 @@ jobs:
       if: always()
       run: |
         cat config.h
-        cat src/test-suite.log
+        [ -f src/test-suite.log ] && cat src/test-suite.log
