@@ -994,20 +994,20 @@ void structStats::miscToCSV( ostream& os ) const {
     + 13.796 * conc_nw_ruim_p 
     - 1.126 * al_max);
 
-  double level1 = 33.959156785;
-  double level2 = 52.612612613;
-  double level3 = 60.971089696;
+  double level1 = 36;
+  double level2 = 51;
+  double level3 = 61.5;
 
   int lint_level_1;
-  if (lint_score_1 < level1) { lint_level_1 = 1; }
-  else if (lint_score_1 < level2) { lint_level_1 = 2; }
-  else if (lint_score_1 < level3) { lint_level_1 = 3; }
+  if (lint_score_1 <= level1) { lint_level_1 = 1; }
+  else if (lint_score_1 <= level2) { lint_level_1 = 2; }
+  else if (lint_score_1 <= level3) { lint_level_1 = 3; }
   else { lint_level_1 = 4; }
 
   int lint_level_2;
-  if (lint_score_2 < level1) { lint_level_2 = 1; }
-  else if (lint_score_2 < level2) { lint_level_2 = 2; }
-  else if (lint_score_2 < level3) { lint_level_2 = 3; }
+  if (lint_score_2 <= level1) { lint_level_2 = 1; }
+  else if (lint_score_2 <= level2) { lint_level_2 = 2; }
+  else if (lint_score_2 <= level3) { lint_level_2 = 3; }
   else { lint_level_2 = 4; }
   
   os << lint_score_1 << ",";
