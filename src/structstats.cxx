@@ -477,7 +477,7 @@ void structStats::informationDensityToCSV( ostream& os ) const {
 
   os << density( contentStrictInclCnt, wordInclCnt ) << ","; //Inhwrd_d_zonder_abw
 
-  double rare = rarity( rarityLevel );
+  double rare = rarity( rarityLevel ); //Zeldz_index
   if (std::isnan(rare)) {
     os << "NA" << ",";
   }
