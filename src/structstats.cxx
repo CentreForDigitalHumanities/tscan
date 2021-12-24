@@ -306,7 +306,6 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
      << "Compl_bijzin_per_zin,Fin_bijzin_per_zin,"
      << "Mv_fin_inbed_per_zin,Infin_compl_per_zin,"
      << "Infin_compl_bep_per_zin,"
-     << "Bijzin_per_zin,"
      << "Mv_inbed_per_zin,"
      << "Betr_bijzin_los,Bijw_compl_bijzin_los,"
      << "Pv_hzin_per_zin,Pv_bijzin_per_zin,Pv_ww1_per_zin,"
@@ -341,7 +340,7 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
 
   double bijzinCnt = betrCnt + bijwCnt + complCnt;
   if ( isSentence() && parseFailCnt > 0 ) {
-    os << "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,";
+    os << "NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,";
   }
   else {
     os << proportion( betrCnt, sentCnt ) << ","; //Betr_bijzin_per_zin
@@ -351,7 +350,6 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
     os << proportion( mvFinInbedCnt, sentCnt ) << ","; //Mv_fin_inbed_per_zin
     os << proportion( infinComplCnt, sentCnt ) << ","; // Infin_compl_per_zin
     os << proportion( infinComplBepCnt, sentCnt ) << ","; // Infin_compl_bep_per_zin
-    os << proportion( bijzinCnt + infinComplCnt, sentCnt ) << ","; //Bijzin_per_zin
     os << proportion( mvInbedCnt, sentCnt ) << ","; //Mv_inbed_per_zin
     os << proportion( losBetrCnt, sentCnt ) << ","; //Betr_bijzin_los
     os << proportion( losBijwCnt, sentCnt ) << ","; //Bijw_compl_bijzin_los
