@@ -6,7 +6,7 @@ if [ `hostname` == "mlp01" ]; then
 elif [ ! -z "$LM_PREFIX" ]; then
     #LaMachine v2
     FROGPATH="$LM_PREFIX"
-    LOGFILE="/tmp/frog-tscan.log"
+    LOGFILE="$LM_PREFIX/var/log/frog-tscan.log"
 else
     FROGPATH="/usr/local/"
     LOGFILE="/tmp/frog-tscan.log"

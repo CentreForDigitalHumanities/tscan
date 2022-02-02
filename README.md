@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/proycon/tscan.svg?branch=master)](https://travis-ci.org/proycon/tscan) [![Language Machines Badge](http://applejack.science.ru.nl/lamabadge.php/tscan)](http://applejack.science.ru.nl/languagemachines/) [![DOI](https://zenodo.org/badge/36359165.svg)](https://zenodo.org/badge/latestdoi/36359165)
+[![Build Status](https://travis-ci.org/proycon/tscan.svg?branch=master)](https://travis-ci.org/proycon/tscan) [![Language Machines Badge](https://applejack.science.ru.nl/lamabadge.php/tscan)](http://applejack.science.ru.nl/languagemachines/) [![DOI](https://zenodo.org/badge/36359165.svg)](https://zenodo.org/badge/latestdoi/36359165)
 
 # T-Scan
 
@@ -13,8 +13,7 @@ T-Scan is distributed under the GNU Affero Public Licence (see the file COPYING)
 T-Scan is an analysis tool for dutch texts to assess the complexity of the
 text, and is based on original work by Rogier Kraf (Utrecht University) (see:
 Kraf et al., 2009). The code has been reimplemented and extended by Ko van der
-Sloot (Tilburg University), and is currently maintained and continued by
-Martijn van der Klis (Utrecht University).
+Sloot (Tilburg University), Martijn van der Klis (Utrecht University) and is currently maintained and continued by Luka van der Plas and Sheean Spoel (both Utrecht University).
 
 ## Web application / Webservice
 
@@ -27,9 +26,9 @@ Extensive documentation (in Dutch) can be found in [``docs/tscanhandleiding.pdf`
 
 ## Installation
 
-T-Scan heavily depends upon other sofware, such as Frog, Wopr and Alpino.
+T-Scan heavily depends upon other software, such as Frog, Wopr and Alpino.
 
-Installation is not trivial, to be able to succesfully build T-Scan from the tarball, you need the following packages:
+Installation is not trivial, to be able to successfully build T-Scan from the tarball, you need the following packages:
 - autotools
 - autoconf-archive
 - [ticcutils](https://github.com/LanguageMachines/ticcutils)
@@ -51,6 +50,8 @@ To install T-Scan in an existing LaMachine environment you may need to adapt you
 It is also possible to run this version of T-Scan directly from Docker locally using LaMachine:
 
     $ docker-compose up
+
+Default address: http://localhost:8830
 
 If you do not want to use LaMachine, first make sure you have **all** necessary dependencies and then compile/install as follows:
 

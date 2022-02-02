@@ -1,13 +1,14 @@
-FROM proycon/lamachine@sha256:e2c8530455187acdcc6bb45f1f4a84bd40a5c92237c7ebb7683969fb838f27c4
+# pinned to this version of develop (known to work)
+FROM proycon/lamachine@sha256:469c97a7344cbe6de8c316177b2614de6e0e73990e1deee0a3745e94bbf3b745
 
-COPY docker/ /deployment/
+# fallback for old configuration location
+COPY docker/*config.* /deployment/
+COPY docker/deployment/ /deployment/
 WORKDIR /deployment
 RUN bash config.sh
 
-# TODO: from source
 WORKDIR /usr/local/src
-RUN git clone https://github.com/UUDigitalHumanitieslab/tscan.git
-COPY data/ /usr/local/src/tscan/data
+COPY . /usr/local/src/tscan
 
 WORKDIR /deployment
 RUN bash add-alpino.sh

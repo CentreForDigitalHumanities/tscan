@@ -890,6 +890,10 @@ void settingData::init( const TiCC::Configuration &cf ) {
                         cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
+  // ignore created lemma total, as it contains many duplicates
+  // note: this assumes the frequency lists have the same actual total
+  // i.e.: they are derived from the same corpora
+  lemma_total = word_total;
   val = cf.lookUp( "top_freq_lex" );
   if ( !val.empty() ) {
     if ( !fill_topvals( top_freq_lex, cf.configDir() + "/" + val ) )
@@ -1089,7 +1093,7 @@ noun splitCompound(const string &lemma) {
     client.write( lemma + "," + method );
     string result;
     client.read(result);
-    //cerr << "done with compound splitter" << endl;
+    cerr << " -> " << result << endl;
 
     // store result in noun struct
     vector<string> parts;
@@ -1132,6 +1136,11 @@ void wordStats::checkNoun() {
       if (config.lookUp("useCompoundSplitter") == "1") {
         noun n = splitCompound(lemma);
         if ( n.is_compound ) {
+          is_compound = n.is_compound;
+          compound_parts = n.compound_parts;
+          compound_head = n.head;
+          compound_sat = n.satellite_clean;
+
           // look for head in data
           sit = settings.noun_sem.find( n.head );
           if ( sit != settings.noun_sem.end() ) {
@@ -1139,10 +1148,6 @@ void wordStats::checkNoun() {
             found_split = true;  
             noun match = sit->second;
             sem_type = match.type;
-            is_compound = n.is_compound;
-            compound_parts = n.compound_parts;
-            compound_head = n.head;
-            compound_sat = n.satellite_clean;
           }
         }
       }
@@ -2831,7 +2836,7 @@ folia::Document *getFrogResult( istream &is ) {
     }
 
     // replace brackets
-    std::regex opening ("[\{\[]");
+    std::regex opening ("[\\{\\[]");
     line = regex_replace (line, opening, "(");
 
     std::regex closing ("[\\}\\]]");

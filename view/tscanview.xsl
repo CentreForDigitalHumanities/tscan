@@ -356,7 +356,17 @@
 		    <xsl:apply-templates />
 		    
 		    <div id="footer">
-                <strong>T-scan</strong> is ontworpen en ontwikkeld door <strong>Rogier Kraf</strong> (Universiteit Utrecht) &amp; <strong>Ko van der Sloot</strong> (Universiteit Tilburg), <strong>Martijn van der Klis</strong> (Universiteit Utrecht),<a href="http://proycon.github.com/folia">FoLiA</a> interface en <a href="http://proycon.github.com/clam">CLAM</a> webservice door <strong>Maarten van Gompel</strong> (Radboud Universiteit Nijmegen). Supervisie door Antal van den Bosch (Radboud Universiteit Nijmegen) en Henk Pander Maat (Universiteit Utrecht). Dit maakt deel uit van het NWO-project Leesbaarheidsindex Nederlands (LIN). T-scan is gelicenseerd onder de <a href="http://www.gnu.org/licenses/agpl.html">GNU Affero Publieke Licentie v3</a>, de broncode is <a href="https://github.com/proycon/tscan">hier</a> te verkrijgen. T-scan bouwt voort op ander open-source software als Frog, Wopr, Alpino, FoLiA en CLAM.
+				<strong>T-scan</strong> is ontworpen en ontwikkeld door <strong>Rogier Kraf</strong> (Universiteit Utrecht) &amp;
+				<strong>Ko van der Sloot</strong> (Universiteit Tilburg).
+				Verder ontwikkeld en uitgebreid door <strong>Martijn van der Klis</strong> (Universiteit Utrecht),
+				<strong>Luka van der Plas</strong> (Universiteit Utrecht) &amp;
+				<strong>Sheean Spoel</strong> (Universiteit Utrecht).
+				<a href="http://proycon.github.com/folia">FoLiA</a> interface en <a href="http://proycon.github.com/clam">CLAM</a> webservice door <strong>Maarten van Gompel</strong> (Radboud Universiteit Nijmegen).
+				Supervisie door Antal van den Bosch (Radboud Universiteit Nijmegen) en Henk Pander Maat (Universiteit Utrecht).
+				Dit maakt deel uit van het NWO-project Leesbaarheidsindex Nederlands (LIN).
+				T-scan is gelicenseerd onder de <a href="http://www.gnu.org/licenses/agpl.html">GNU Affero Publieke Licentie v3</a>,
+				de broncode is <a href="https://github.com/proycon/tscan">hier</a> te verkrijgen.
+				T-scan bouwt voort op ander open-source software als Frog, Wopr, Alpino, FoLiA en CLAM.
 		    </div>
         </div>
         
@@ -593,4 +603,3 @@
 </xsl:template>
 
 </xsl:stylesheet>
-

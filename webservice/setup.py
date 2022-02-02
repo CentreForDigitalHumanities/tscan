@@ -11,8 +11,8 @@ from setuptools import setup
 setup(
     name = "tscan",
     version = "0.9.9", #also change in ../configure.ac and ../codemeta.json!
-    author = "Martijn van der Klis, Ko van der Sloot, Maarten van Gompel",
-    author_email = "m.h.vanderklis@uu.nl",
+    author = "Sheean Spoel, Luka van der Plas, Martijn van der Klis, Ko van der Sloot, Maarten van Gompel",
+    author_email = "s.j.j.spoel@uu.nl",
     description = ("Webservice for T-scan"),
     license = "AGPL",
     keywords = "rest nlp computational_linguistics rest",
@@ -34,5 +34,5 @@ setup(
     ],
     package_data = {'tscanservice':['*.wsgi','*.yml'] },
     include_package_data=True,
-    install_requires=['CLAM >= 3.0']
+    install_requires=['CLAM >= 3.0', 'textract', 'python-magic']
 )

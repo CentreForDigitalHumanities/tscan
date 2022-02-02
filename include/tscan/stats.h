@@ -303,6 +303,7 @@ struct structStats: public basicStats {
     complCnt(0),
     mvFinInbedCnt(0),
     infinComplCnt(0),
+    infinComplBepCnt(0),
     mvInbedCnt(0),
     losBetrCnt(0),
     losBijwCnt(0),
@@ -535,6 +536,8 @@ struct structStats: public basicStats {
  {};
   ~structStats();
   void addMetrics() const;
+  void topPredictorsHeader( std::ostream& ) const;
+  void topPredictorsToCSV( std::ostream& ) const;
   void wordDifficultiesHeader( std::ostream& ) const;
   void wordDifficultiesToCSV( std::ostream& ) const;
   void compoundHeader( std::ostream& ) const;
@@ -636,6 +639,7 @@ struct structStats: public basicStats {
   int complCnt;
   int mvFinInbedCnt;
   int infinComplCnt;
+  int infinComplBepCnt;
   int mvInbedCnt;
   int losBetrCnt;
   int losBijwCnt;

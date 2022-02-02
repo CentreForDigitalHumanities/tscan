@@ -1,0 +1,129 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Compile C++
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ linux ]
+        compiler:
+          - { 
+              compiler: GNU,
+              CC: gcc-7.5,
+              CXX: g++-7.5,
+              GCOV: gcov-7.5,
+              env: {
+                SCAN: echo
+              }
+            }
+          - {
+              compiler: LLVM,
+              CC: clang-7,
+              CXX: clang++-7,
+              env: {
+                SCAN: scan-build,
+                OPENMPFLAG: --disable-openmp
+              }
+            }
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt install -y pkg-config autoconf-archive autotools-dev ccache
+        sudo apt install -y cppcheck libicu-dev libxml2-dev libbz2-dev
+        sudo apt install -y zlib1g-dev libtar-dev expect libexttextcat-dev
+    - name: Before install
+      run: |
+        git clone https://github.com/LanguageMachines/ticcutils
+        cd ticcutils
+        bash bootstrap.sh
+        ./configure $OPENMPFLAG
+        make
+        sudo make install
+        cd ..
+        git clone https://github.com/LanguageMachines/libfolia
+        cd libfolia
+        bash bootstrap.sh
+        ./configure $OPENMPFLAG
+        make
+        sudo make install
+        cd ..
+        git clone https://github.com/LanguageMachines/uctodata
+        cd uctodata
+        bash bootstrap.sh
+        ./configure $OPENMPFLAG
+        make
+        sudo make install
+        cd ..
+        git clone https://github.com/LanguageMachines/ucto
+        cd ucto
+        bash bootstrap.sh
+        ./configure $OPENMPFLAG
+        make
+        sudo make install
+        cd ..
+        git clone https://github.com/LanguageMachines/timbl
+        cd timbl
+        bash bootstrap.sh
+        ./configure $OPENMPFLAG
+        make
+        sudo make install
+        cd ..
+        git clone https://github.com/LanguageMachines/mbt
+        cd mbt
+        bash bootstrap.sh
+        ./configure $OPENMPFLAG
+        make
+        sudo make install
+        cd ..
+        git clone https://github.com/LanguageMachines/mbtserver
+        cd mbtserver
+        bash bootstrap.sh
+        ./configure $OPENMPFLAG
+        make
+        sudo make install
+        cd ..
+        git clone https://github.com/LanguageMachines/frogdata
+        cd frogdata
+        bash bootstrap.sh
+        ./configure $OPENMPFLAG
+        make
+        sudo make install
+        cd ..
+        git clone https://github.com/LanguageMachines/frog
+        cd frog
+        bash bootstrap.sh
+        ./configure $OPENMPFLAG
+        make
+        sudo make install
+        cd ..
+    - name: Install
+      run: |
+        bash bootstrap.sh
+        ./configure $OPENMPFLAG
+        cat config.h
+        cppcheck --enable=all --quiet --error-exitcode=0 .
+        $SCAN --status-bugs make
+        make
+        sudo make install
+    - name: Run unit tests
+      run: |
+        LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib make check
+    - name: Debug information
+      if: always()
+      run: |
+        cat config.h
+        [ -f src/test-suite.log ] && cat src/test-suite.log
