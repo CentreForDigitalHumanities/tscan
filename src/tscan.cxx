@@ -1077,7 +1077,7 @@ Situation::Type wordStats::checkSituation() const {
   return Situation::NO_SIT;
 }
 
-noun splitCompound(const string &lemma) {
+noun splitCompound(const string &word) {
   noun n;
   // open connection
   string host = config.lookUp( "host", "compound_splitter" );
@@ -1089,8 +1089,8 @@ noun splitCompound(const string &lemma) {
     cerr << "Reason: " << client.getMessage() << endl;
   }
   else {
-    cerr << "calling compound splitter for " << lemma << endl;
-    client.write( lemma + "," + method );
+    cerr << "calling compound splitter for " << word << endl;
+    client.write( word + "," + method );
     string result;
     client.read(result);
     cerr << " -> " << result << endl;
@@ -1119,7 +1119,7 @@ noun splitCompound(const string &lemma) {
 void wordStats::checkNoun() {
   if ( tag == CGN::N ) {
     //cerr << "lookup " << lemma << endl;
-    map<string, noun>::const_iterator sit = settings.noun_sem.find( lemma );
+    map<string, noun>::const_iterator sit = settings.noun_sem.find( word );
     if ( sit != settings.noun_sem.end() ) {
       noun n = sit->second;
       sem_type = n.type;
@@ -1134,7 +1134,7 @@ void wordStats::checkNoun() {
       // call compound splitter
       bool found_split = false;
       if (config.lookUp("useCompoundSplitter") == "1") {
-        noun n = splitCompound(lemma);
+        noun n = splitCompound(word);
         if ( n.is_compound ) {
           is_compound = n.is_compound;
           compound_parts = n.compound_parts;
@@ -1153,10 +1153,10 @@ void wordStats::checkNoun() {
       }
       if (found_split == false) {
         // If we still haven't found a SEM::Type, add this to the problemfile
-        //cerr << "unknown noun " << lemma << endl;
+        //cerr << "unknown noun " << word << endl;
         sem_type = SEM::UNFOUND_NOUN;
         if ( settings.showProblems ) {
-          problemFile << "N," << word << ", " << lemma << endl;
+          problemFile << "N," << word << ", " << word << endl;
         }
       }
     }
