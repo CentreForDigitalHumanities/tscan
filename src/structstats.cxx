@@ -975,7 +975,7 @@ void structStats::miscToCSV( ostream& os ) const {
   os << "\"" << escape_quotes(toStringCounter(my_classification)) << "\",";
 
   /* LINT scores */
-  double wrd_freq_log_zn_corr = proportion(word_freq_log_n_corr_strict, contentStrictCnt-nameCnt).p;
+  double wrd_freq_log_zn_corr = proportion(word_freq_log_n_corr, contentCnt-nameCnt).p;
   double bijv_bep_dz_zbijzin = proportion( max(0, npModCnt - betrCnt), correctedClauseCnt).p ;
   double alg_nw_d = density( generalNounCnt, wordCnt ).d;
   double inhwrd_dz_zonder_abw = proportion( contentStrictInclCnt, correctedClauseCnt ).p;
