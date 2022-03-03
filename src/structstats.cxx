@@ -203,12 +203,12 @@ void structStats::wordDifficultiesToCSV( ostream& os ) const {
 
   os << word_freq_log << ","; //Wrd_freq_log
   os << lemma_freq_log << ","; //Lem_freq_log
-  os << lemma_freq_log_n << ",";
+  os << lemma_freq_log_n << ","; //Lem_freq_zn_log
 
-  os << word_freq_log_strict << ",";
-  os << word_freq_log_n_strict << ",";
-  os << lemma_freq_log_strict << ",";
-  os << lemma_freq_log_n_strict << ",";
+  os << word_freq_log_strict << ","; //Wrd_freq_log_zonder_abw
+  os << word_freq_log_n_strict << ","; //Wrd_freq_zn_log_zonder_abw
+  os << lemma_freq_log_strict << ","; //Lem_freq_log_zonder_abw
+  os << lemma_freq_log_n_strict << ","; //Lem_freq_zn_log_zonder_abw
 
   os << proportion( top1000Cnt, wordCnt ) << ",";
   os << proportion( top2000Cnt, wordCnt ) << ",";
@@ -975,7 +975,7 @@ void structStats::miscToCSV( ostream& os ) const {
   os << "\"" << escape_quotes(toStringCounter(my_classification)) << "\",";
 
   /* LINT scores */
-  double wrd_freq_log_zn_corr = proportion(word_freq_log_n_corr_strict, contentStrictCnt-nameCnt).p;
+  double wrd_freq_log_zn_corr = proportion(word_freq_log_n_corr, contentCnt-nameCnt).p;
   double bijv_bep_dz_zbijzin = proportion( max(0, npModCnt - betrCnt), correctedClauseCnt).p ;
   double alg_nw_d = density( generalNounCnt, wordCnt ).d;
   double inhwrd_dz_zonder_abw = proportion( contentStrictInclCnt, correctedClauseCnt ).p;
