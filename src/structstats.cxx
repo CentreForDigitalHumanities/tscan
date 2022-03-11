@@ -981,12 +981,12 @@ void structStats::miscToCSV( ostream& os ) const {
   double inhwrd_dz_zonder_abw = proportion( contentStrictInclCnt, correctedClauseCnt ).p;
   double conc_nw_ruim_p = proportion( broadNounCnt, nounCnt+nameCnt-uncoveredNounCnt ).p;
 
-  double lint_score_1 = min(100, max(0, 100 - (-14.857
+  double lint_score_1 = min(100.0, max(0.0, 100 - (-14.857
     +  19.487 * wrd_freq_log_zn_corr 
     - 5.965 * bijv_bep_dz_zbijzin 
     - 0.093 * alg_nw_d 
     - 0.995 * al_max)));
-  double lint_score_2 = min(100, max(0, 100 - (-9.925 
+  double lint_score_2 = min(100.0, max(0.0, 100 - (-9.925 
     + 18.264 * wrd_freq_log_zn_corr 
     - 3.766 * inhwrd_dz_zonder_abw 
     + 13.796 * conc_nw_ruim_p 
