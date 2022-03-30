@@ -77,6 +77,7 @@ void structStats::CSVheader( ostream& os, const string& intro ) const {
   wordSortHeader( os );
   prepPhraseHeader( os );
   intensHeader( os );
+  formalHeader( os );
   miscHeader( os );
   os << endl;
 }
@@ -113,6 +114,7 @@ void structStats::toCSV( ostream& os ) const {
   wordSortToCSV( os );
   prepPhraseToCSV( os );
   intensToCSV( os );
+  formalToCSV( os );
   miscToCSV( os );
 
   os << endl;
@@ -935,14 +937,38 @@ void structStats::intensHeader( ostream& os ) const {
 }
 
 void structStats::intensToCSV( ostream& os ) const {
-  os << density( intensCnt, wordInclCnt ) << ",";
-  os << density( intensBvnwCnt, wordInclCnt ) << ",";
-  os << density( intensBvbwCnt, wordInclCnt ) << ",";
-  os << density( intensBwCnt, wordInclCnt ) << ",";
-  os << density( intensCombiCnt, wordInclCnt ) << ",";
-  os << density( intensNwCnt, wordInclCnt ) << ",";
-  os << density( intensTussCnt, wordInclCnt ) << ",";
-  os << density( intensWwCnt, wordInclCnt ) << ",";
+  os << density( intensCnt, wordInclCnt ) << ","; // Int_d
+  os << density( intensBvnwCnt, wordInclCnt ) << ","; // Int_bvnw_d
+  os << density( intensBvbwCnt, wordInclCnt ) << ","; // Int_bvbw_d
+  os << density( intensBwCnt, wordInclCnt ) << ","; // Int_bw_d
+  os << density( intensCombiCnt, wordInclCnt ) << ","; // Int_combi_d
+  os << density( intensNwCnt, wordInclCnt ) << ","; // Int_nw_d
+  os << density( intensTussCnt, wordInclCnt ) << ","; // Int_tuss_d
+  os << density( intensWwCnt, wordInclCnt ) << ","; // Int_ww_d
+}
+
+void structStats::formalHeader( ostream& os ) const {
+  os << "Form_d,";
+  os << "Form_bvnw_d,";
+  os << "Form_bw_d,";
+  os << "Form_vgw_d,";
+  os << "Form_vnw_d,";
+  os << "Form_vz_d,";
+  os << "Form_vzg_d,";
+  os << "Form_ww_d,";
+  os << "Form_znw_d,";
+}
+
+void structStats::formalToCSV( ostream& os ) const {
+  os << density( formalCnt, wordInclCnt ) << ","; // Form
+  os << density( formalBvnwCnt, wordInclCnt ) << ","; // Form_bvnw_d
+  os << density( formalBwCnt, wordInclCnt ) << ","; // Form_bw_d
+  os << density( formalVgwCnt, wordInclCnt ) << ","; // Form_vgw_d
+  os << density( formalVnwCnt, wordInclCnt ) << ","; // Form_vnw_d
+  os << density( formalVzCnt, wordInclCnt ) << ","; // Form_vz_d
+  os << density( formalVzgCnt, wordInclCnt ) << ","; // Form_vzg_d
+  os << density( formalWwCnt, wordInclCnt ) << ","; // Form_ww_d
+  os << density( formalZnwCnt, wordInclCnt ) << ","; // Form_znw_d
 }
 
 void structStats::miscHeader( ostream& os ) const {
@@ -1232,6 +1258,16 @@ void structStats::addMetrics( ) const {
   addOneMetric( doc, el, "intens_tuss_count", TiCC::toString(intensTussCnt) );
   addOneMetric( doc, el, "intens_ww_count", TiCC::toString(intensWwCnt) );
 
+  addOneMetric( doc, el, "formal_count", TiCC::toString(formalCnt) );
+  addOneMetric( doc, el, "formal_bvnw_count", TiCC::toString(formalBvnwCnt) );
+  addOneMetric( doc, el, "formal_bw_count", TiCC::toString(formalBwCnt) );
+  addOneMetric( doc, el, "formal_vgw_count", TiCC::toString(formalVgwCnt) );
+  addOneMetric( doc, el, "formal_vnw_count", TiCC::toString(formalVnwCnt) );
+  addOneMetric( doc, el, "formal_vz_count", TiCC::toString(formalVzCnt) );
+  addOneMetric( doc, el, "formal_vzg_count", TiCC::toString(formalVzgCnt) );
+  addOneMetric( doc, el, "formal_ww_count", TiCC::toString(formalWwCnt) );
+  addOneMetric( doc, el, "formal_znw_count", TiCC::toString(formalZnwCnt) );  
+
   addOneMetric( doc, el, "general_noun_count", TiCC::toString(generalNounCnt) );
   addOneMetric( doc, el, "general_noun_sep_count", TiCC::toString(generalNounSepCnt) );
   addOneMetric( doc, el, "general_noun_rel_count", TiCC::toString(generalNounRelCnt) );
@@ -1479,6 +1515,17 @@ void structStats::merge( structStats *ss ){
   intensNwCnt += ss->intensNwCnt;
   intensTussCnt += ss->intensTussCnt;
   intensWwCnt += ss->intensWwCnt;
+
+  formalCnt += ss->formalCnt;
+  formalBvnwCnt += ss->formalBvnwCnt;
+  formalBwCnt += ss->formalBwCnt;
+  formalVgwCnt += ss->formalVgwCnt;
+  formalVnwCnt += ss->formalVnwCnt;
+  formalVzCnt += ss->formalVzCnt;
+  formalVzgCnt += ss->formalVzgCnt;
+  formalWwCnt += ss->formalWwCnt;
+  formalZnwCnt += ss->formalZnwCnt;
+
   generalNounCnt += ss->generalNounCnt;
   generalNounSepCnt += ss->generalNounSepCnt;
   generalNounRelCnt += ss->generalNounRelCnt;

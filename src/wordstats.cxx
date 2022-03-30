@@ -651,7 +651,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
 
 
 void wordStats::miscHeader( ostream& os ) const {
-  os << "Ww_vorm,Ww_tt,Vol_dw,Onvol_dw,Infin,Archaisch,Log_prob_fwd,Log_prob_bwd,Intens,Op_stoplijst,Eigen_classificatie";
+  os << "Ww_vorm,Ww_tt,Vol_dw,Onvol_dw,Infin,Archaisch,Log_prob_fwd,Log_prob_bwd,Intens,Formeel,Op_stoplijst,Eigen_classificatie";
 }
 
 void wordStats::miscToCSV( ostream& os ) const {
@@ -675,6 +675,7 @@ void wordStats::miscToCSV( ostream& os ) const {
   else
     os << logprob10_bwd << ",";
   os << (intensify_type != Intensify::NO_INTENSIFY ? "1," : "0,");
+  os << Formal::toString(formal_type) << ",";
   os << (on_stoplist ? "1" : "0") << ",";
   os << my_classification << ",";
 }
@@ -770,6 +771,8 @@ void wordStats::addMetrics( ) const {
     addOneMetric( doc, el, "semtype", SEM::toString(sem_type) );
   if ( intensify_type != Intensify::NO_INTENSIFY )
     addOneMetric( doc, el, "intensifytype", Intensify::toString(intensify_type) );
+  if ( formal_type != Formal::NOT_FORMAL )
+    addOneMetric( doc, el, "formalType", Formal::toString(formal_type) );
   if ( general_noun_type != General::NO_GENERAL )
     addOneMetric( doc, el, "generalnountype", General::toString(general_noun_type) );
   if ( general_verb_type != General::NO_GENERAL )

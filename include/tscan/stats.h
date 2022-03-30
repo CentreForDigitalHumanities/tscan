@@ -12,6 +12,7 @@
 #include "tscan/cgn.h"
 #include "tscan/sem.h"
 #include "tscan/intensify.h"
+#include "tscan/formal.h"
 #include "tscan/conn.h"
 #include "tscan/general.h"
 #include "tscan/situation.h"
@@ -68,6 +69,8 @@ struct basicStats {
   virtual void prepPhraseToCSV( std::ostream& ) const = 0;
   virtual void intensHeader( std::ostream& ) const = 0;
   virtual void intensToCSV( std::ostream& ) const = 0;
+  virtual void formalHeader( std::ostream& ) const = 0;
+  virtual void formalToCSV( std::ostream& ) const = 0;
   virtual void miscToCSV( std::ostream& ) const = 0;
   virtual void miscHeader( std::ostream& ) const = 0;
   virtual double rarity( int ) const { return NAN; };
@@ -132,6 +135,8 @@ struct wordStats : public basicStats {
   void prepPhraseToCSV( std::ostream& ) const {};
   void intensHeader( std::ostream& ) const {};
   void intensToCSV( std::ostream& ) const {};
+  void formalHeader( std::ostream& ) const {};
+  void formalToCSV( std::ostream& ) const {};
   void miscHeader( std::ostream& os ) const;
   void miscToCSV( std::ostream& ) const;
   void toCSV( std::ostream& ) const;
@@ -156,6 +161,7 @@ struct wordStats : public basicStats {
   void checkNoun();
   SEM::Type checkSemProps() const;
   Intensify::Type checkIntensify(const xmlNode*) const;
+  Formal::Type checkFormal(const xmlNode*) const;
   General::Type checkGeneralNoun() const;
   General::Type checkGeneralVerb() const;
   Afk::Type checkAfk() const;
@@ -164,6 +170,7 @@ struct wordStats : public basicStats {
   bool checkPropNeg() const;
   bool checkMorphNeg() const;
   void prevalenceLookup();
+  void formalLookup();
   void staphFreqLookup();
   top_val topFreqLookup(const std::string&) const;
   int wordFreqLookup(const std::string&) const;
@@ -214,6 +221,7 @@ struct wordStats : public basicStats {
   CGN::Position position;
   SEM::Type sem_type;
   Intensify::Type intensify_type;
+  Formal::Type formal_type;
   General::Type general_noun_type;
   General::Type general_verb_type;
   Adverb::Type adverb_type;
@@ -393,6 +401,15 @@ struct structStats: public basicStats {
     intensNwCnt(0),
     intensTussCnt(0),
     intensWwCnt(0),
+    formalCnt(0),
+    formalBvnwCnt(0),
+    formalBwCnt(0),
+    formalVgwCnt(0),
+    formalVnwCnt(0),
+    formalVzCnt(0),
+    formalVzgCnt(0),
+    formalWwCnt(0),
+    formalZnwCnt(0),
     generalNounCnt(0),
     generalNounSepCnt(0),
     generalNounRelCnt(0),
@@ -562,6 +579,8 @@ struct structStats: public basicStats {
   void prepPhraseToCSV( std::ostream& ) const;
   void intensHeader( std::ostream& ) const;
   void intensToCSV( std::ostream& ) const;
+  void formalHeader( std::ostream& ) const;
+  void formalToCSV( std::ostream& ) const;
   void miscHeader( std::ostream& ) const;
   void miscToCSV( std::ostream& ) const;
   void CSVheader( std::ostream&, const std::string& ) const;
@@ -729,6 +748,15 @@ struct structStats: public basicStats {
   int intensNwCnt;
   int intensTussCnt;
   int intensWwCnt;
+  int formalCnt;
+  int formalBvnwCnt;
+  int formalBwCnt;
+  int formalVgwCnt;
+  int formalVnwCnt;
+  int formalVzCnt;
+  int formalVzgCnt;
+  int formalWwCnt;
+  int formalZnwCnt;
   int generalNounCnt;
   int generalNounSepCnt;
   int generalNounRelCnt;

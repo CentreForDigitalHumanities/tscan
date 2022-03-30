@@ -161,6 +161,7 @@ prevalence = 'nl'
 if 'prevalence' in clamdata:
     prevalence = clamdata['prevalence']
 f.write("prevalence=\"prevalence_" + prevalence + ".data\"\n")
+f.write("formal=\"formal.data\"\n")
 
 
 f.write("[[frog]]\n")  # Frog server should already be runnning, start manually
