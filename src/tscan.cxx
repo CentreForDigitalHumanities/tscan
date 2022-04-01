@@ -46,6 +46,7 @@
 #include "tscan/cgn.h"
 #include "tscan/sem.h"
 #include "tscan/intensify.h"
+#include "tscan/formal.h"
 #include "tscan/conn.h"
 #include "tscan/general.h"
 #include "tscan/situation.h"
@@ -109,6 +110,7 @@ struct settingData {
   map<string, noun> noun_sem;
   map<string, SEM::Type> verb_sem;
   map<string, Intensify::Type> intensify;
+  map<string, Formal::Type> formal;
   map<string, General::Type> general_nouns;
   map<string, General::Type> general_verbs;
   map<string, Adverb::adverb> adverbs;
@@ -670,6 +672,40 @@ bool fill_prevalences( map<string, prevalence> &prevalences, const string &filen
   return false;
 }
 
+bool fill_formal( map<string, Formal::Type> &formal, istream &is ) {
+  string line;
+  while ( safe_getline( is, line ) ) {
+    // a line is supposed to be :
+    // a comment, starting with '#'
+    // like: '# comment'
+    // OR: a lemma which is formal with their type in column 2
+    line = TiCC::trim( line );
+    if ( line.empty() || line[0] == '#' )
+      continue;
+    vector<string> vec;
+    int n = TiCC::split_at_first_of( line, vec, " \t" );
+    if ( n != 2 ) {
+      cerr << "skip line: " << line << " (expected 2 values, got " << n << ")" << endl;
+      continue;
+    }
+    else {
+      formal[vec[0]] = Formal::classify( TiCC::lowercase(vec[1]) );
+    }
+  }
+  return true;
+}
+
+bool fill_formal( map<string, Formal::Type> &formal, const string &filename ) {
+  ifstream is( filename.c_str() );
+  if ( is ) {
+    return fill_formal( formal, is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
 bool fill_stop_lemmata( map<CGN::Type, set<string>> &stop_lemmata, istream &is ) {
   string line;
   while ( safe_getline( is, line ) ) {
@@ -966,6 +1002,11 @@ void settingData::init( const TiCC::Configuration &cf ) {
     if ( !fill_prevalences( prevalences, cf.configDir() + "/" + val ) )
       exit( EXIT_FAILURE );
   }
+  val = cf.lookUp( "formal" );
+  if ( !val.empty() ) {
+    if ( !fill_formal( formal, cf.configDir() + "/" + val ) )
+      exit( EXIT_FAILURE );
+  }
 
   val = cf.lookUp( "stop_lemmata" );
   if ( !val.empty() ) {
@@ -1077,7 +1118,7 @@ Situation::Type wordStats::checkSituation() const {
   return Situation::NO_SIT;
 }
 
-noun splitCompound(const string &lemma) {
+noun splitCompound(const string &word) {
   noun n;
   // open connection
   string host = config.lookUp( "host", "compound_splitter" );
@@ -1089,8 +1130,8 @@ noun splitCompound(const string &lemma) {
     cerr << "Reason: " << client.getMessage() << endl;
   }
   else {
-    cerr << "calling compound splitter for " << lemma << endl;
-    client.write( lemma + "," + method );
+    cerr << "calling compound splitter for " << word << endl;
+    client.write( word + "," + method );
     string result;
     client.read(result);
     cerr << " -> " << result << endl;
@@ -1119,7 +1160,7 @@ noun splitCompound(const string &lemma) {
 void wordStats::checkNoun() {
   if ( tag == CGN::N ) {
     //cerr << "lookup " << lemma << endl;
-    map<string, noun>::const_iterator sit = settings.noun_sem.find( lemma );
+    map<string, noun>::const_iterator sit = settings.noun_sem.find( word );
     if ( sit != settings.noun_sem.end() ) {
       noun n = sit->second;
       sem_type = n.type;
@@ -1134,7 +1175,7 @@ void wordStats::checkNoun() {
       // call compound splitter
       bool found_split = false;
       if (config.lookUp("useCompoundSplitter") == "1") {
-        noun n = splitCompound(lemma);
+        noun n = splitCompound(word);
         if ( n.is_compound ) {
           is_compound = n.is_compound;
           compound_parts = n.compound_parts;
@@ -1153,10 +1194,10 @@ void wordStats::checkNoun() {
       }
       if (found_split == false) {
         // If we still haven't found a SEM::Type, add this to the problemfile
-        //cerr << "unknown noun " << lemma << endl;
+        //cerr << "unknown noun " << word << endl;
         sem_type = SEM::UNFOUND_NOUN;
         if ( settings.showProblems ) {
-          problemFile << "N," << word << ", " << lemma << endl;
+          problemFile << "N," << word << ", " << word << endl;
         }
       }
     }
@@ -1248,6 +1289,25 @@ Intensify::Type wordStats::checkIntensify( const xmlNode *alpWord ) const {
     if ( res == Intensify::BVBW ) {
       if ( !checkModifier( alpWord ) ) res = Intensify::NO_INTENSIFY;
     }
+  }
+  return res;
+}
+
+// Looks up the Formal type for a word, or NOT_FORMAL if not found
+Formal::Type wordStats::checkFormal( const xmlNode *alpWord ) const {
+  Formal::Type res = Formal::NOT_FORMAL;
+
+  // First check the full lemma (if available), then the normal lemma
+  map<string, Formal::Type>::const_iterator sit = settings.formal.end();
+  if ( !full_lemma.empty() ) {
+    sit = settings.formal.find( full_lemma );
+  }
+  if ( sit == settings.formal.end() ) {
+    sit = settings.formal.find( lemma );
+  }
+
+  if ( sit != settings.formal.end() ) {
+    res = sit->second;
   }
   return res;
 }
@@ -1432,6 +1492,7 @@ wordStats::wordStats( int index,
     logprob10_fwd( NAN ), logprob10_bwd( NAN ),
     prop( CGN::JUSTAWORD ), position( CGN::NOPOS ),
     sem_type( SEM::NO_SEMTYPE ), intensify_type( Intensify::NO_INTENSIFY ),
+    formal_type( Formal::NOT_FORMAL ),
     general_noun_type( General::NO_GENERAL ), general_verb_type( General::NO_GENERAL ),
     adverb_type( Adverb::NO_ADVERB ), adverb_sub_type( Adverb::NO_ADVERB_SUBTYPE ),
     afkType( Afk::NO_A ), is_compound( false ), compound_parts( 0 ),
@@ -1512,6 +1573,7 @@ wordStats::wordStats( int index,
     sem_type = checkSemProps();
     checkNoun();
     intensify_type = checkIntensify( alpWord );
+    formal_type = checkFormal( alpWord );
     general_noun_type = checkGeneralNoun();
     general_verb_type = checkGeneralVerb();
     adverb_type = checkAdverbType( l_word, tag );

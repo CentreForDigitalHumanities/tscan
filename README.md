@@ -22,7 +22,7 @@ yourself on your own system. In addition, T-Scan is available as a web applicati
 
 ## Documentation
 
-Extensive documentation (in Dutch) can be found in [``docs/tscanhandleiding.pdf``](https://github.com/proycon/tscan/raw/master/docs/tscanhandleiding.pdf).
+Extensive documentation (in Dutch) can be found in [``docs/tscanhandleiding.pdf``](./docs/tscanhandleiding.pdf).
 
 ## Installation
 

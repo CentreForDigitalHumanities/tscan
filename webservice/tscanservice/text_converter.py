@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from os import path, rename, environ
+import re
+from os import path, environ
 try:
     import textract
     from magic import Magic
@@ -46,9 +47,17 @@ def text_convert(filepath: str) -> bool:
         text = f"Unexpected {type(error)}: {error}"
         success = False
 
+    if type(text) == bytes:
+        text = text.decode('utf-8')
+
+    # combine consecutive newlines
+    # 1 x \n = newline within paragraph
+    # 2 x \n = paragraph separation
+    text = re.sub(r'\n{3,}', '\n\n', text)
+
     # overwrite the source file, CLAM assumes the source and target
     # location are the same
     with open(filepath, 'wb') as target:
-        target.write(text if type(text) == bytes else text.encode('utf-8'))
+        target.write(text.encode('utf-8'))
 
     return success

@@ -191,6 +191,44 @@ void sentStats::setCommonCounts(wordStats *ws) {
       break;
   }
 
+  // Counts for formal words
+  switch (ws->formal_type) {
+    case Formal::BVNW:
+      formalBvnwCnt++;
+      formalCnt++;
+      break;
+    case Formal::BW:
+      formalBwCnt++;
+      formalCnt++;
+      break;
+    case Formal::VGW:
+      formalVgwCnt++;
+      formalCnt++;
+      break;
+    case Formal::VNW:
+      formalVnwCnt++;
+      formalCnt++;
+      break;
+    case Formal::VZ:
+      formalVzCnt++;
+      formalCnt++;
+      break;
+    case Formal::VZG:
+      formalVzgCnt++;
+      formalCnt++;
+      break;
+    case Formal::WW:
+      formalWwCnt++;
+      formalCnt++;
+      break;
+    case Formal::ZNW:
+      formalZnwCnt++;
+      formalCnt++;
+      break;
+    default:
+      break;
+  }
+
   // My classification
   if ( !ws->my_classification.empty() ) {
     ++my_classification[ws->my_classification];
