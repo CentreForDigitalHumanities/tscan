@@ -7,7 +7,7 @@
 namespace Formal {
 
     enum Type {
-        BVNW, BW, VGW, VNW, VZ, VZG, WW, ZNW, NOT_FORMAL, INVALID
+        BVNW, BW, VGW, VNW, VZ, VZG, WW, ZNW, INVALID, NOT_FORMAL
     };
     std::string toString(Type);
     Type classify(const std::string&);

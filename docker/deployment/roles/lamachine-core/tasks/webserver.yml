@@ -1,4 +1,4 @@
-# modified version of webserver.yml 6f9a1c6da118c2d891841de09a1d367c0fba0741
+# modified version of webserver.yml da68c5f183ad9fd145bc144b1f8bec94520ebba4
 ---
   - when: (ansible_distribution|lower == "macosx" and webservertype == "nginx")
     block:
@@ -410,6 +410,10 @@
     template:
       src: "clam_base.config.yml"
       dest: "{{lm_prefix}}/etc/clam_base.config.yml"
+      force: yes
+      owner: "{{unix_user}}"
+      group: "{{unix_group}}"
+      mode: u+rw,g+rw,o+r
 
   - name: Installing lamastats for analytics
     include_role:
@@ -422,7 +426,7 @@
       name: lamastats
       minute: "0"
       user: "{{unix_user}}"
-      job: "cd {{lm_prefix}}/var/log/lamastats && lamastats --outputdir {{lm_prefix}}/var/www-data/lamastats --trackclam --foliadocservelog {{lm_prefix}}/var/log/foliadocserve.log nginx:{{lm_prefix}}/var/log/nginx/access.log"
+      job: "cd {{lm_prefix}}/var/log/lamastats && {{lm_prefix}}/bin/lamastats --outputdir {{lm_prefix}}/var/www-data/lamastats --trackclam --foliadocservelog {{lm_prefix}}/var/log/foliadocserve.log nginx:{{lm_prefix}}/var/log/nginx/access.log > {{lm_prefix}}/var/log/lamastats.log 2>&1"
     when: webservertype == "nginx" and locality == "global"
 
   - name: Register lamastats webservice

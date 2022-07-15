@@ -32,4 +32,4 @@ pip3 install -r requirements.txt
 python3 retrieve.py
 python3 prepare.py
 
-sudo python3 setup.py install
+# compound-splitter runs from the src-folder (startcompound.sh)

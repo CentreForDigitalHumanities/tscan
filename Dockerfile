@@ -1,5 +1,5 @@
 # pinned to this version of develop (known to work)
-FROM proycon/lamachine@sha256:469c97a7344cbe6de8c316177b2614de6e0e73990e1deee0a3745e94bbf3b745
+FROM proycon/lamachine@sha256:8eacbcba4cbd2b73de2148f1353f0661bbbd7db4742b90684cc0ac3449f1774a
 
 # fallback for old configuration location
 COPY docker/*config.* /deployment/
