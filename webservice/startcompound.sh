@@ -9,6 +9,8 @@ fi
 export SRCDIR=${LM_PREFIX}/src
 export SPLITTERDIR=${SRCDIR}/compound-splitter
 
+sudo touch ${LOGDIR}/compound-splitter.log
+sudo chown $(whoami) ${LOGDIR}/compound-splitter.log
 # start API (localhost:7005)
 if [ ! -d $SPLITTERDIR ]
 then
