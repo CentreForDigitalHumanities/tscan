@@ -1,16 +1,14 @@
 #!/bin/bash
-source lamachine-activate
 if [[ -z $LM_PREFIX ]]
 then
     export LOGDIR=/tmp
 else
     export LOGDIR=${LM_PREFIX}/var/log
 fi
+source lamachine-activate
 export SRCDIR=${LM_PREFIX}/src
 export SPLITTERDIR=${SRCDIR}/compound-splitter
 
-sudo touch ${LOGDIR}/compound-splitter.log
-sudo chown $(whoami) ${LOGDIR}/compound-splitter.log
 # start API (localhost:7005)
 if [ ! -d $SPLITTERDIR ]
 then
