@@ -50,7 +50,7 @@ namespace Formal {
             return VZ;
         else if (s == "voorzetselgroep")
             return VZG;
-        else if (s == "ww")
+        else if (s == "werkwoord")
             return WW;
         else if (s == "zelfstandig naamwoord")
             return ZNW;

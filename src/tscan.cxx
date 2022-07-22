@@ -683,7 +683,7 @@ bool fill_formal( map<string, Formal::Type> &formal, istream &is ) {
     if ( line.empty() || line[0] == '#' )
       continue;
     vector<string> vec;
-    int n = TiCC::split_at_first_of( line, vec, " \t" );
+    int n = TiCC::split_at( line, vec, "\t" );
     if ( n != 2 ) {
       cerr << "skip line: " << line << " (expected 2 values, got " << n << ")" << endl;
       continue;

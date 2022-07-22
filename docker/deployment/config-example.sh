@@ -4,4 +4,5 @@ source lamachine-activate
 lamachine-config lm_base_url http://localhost:8830
 # lamachine-config lm_base_url https://tst.tscan.hum.uu.nl
 # Will store the data outside the container
-# lamachine-config move_share_www_data true
+lamachine-config shared_www_data true
+lamachine-config move_share_www_data true
