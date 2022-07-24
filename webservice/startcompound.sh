@@ -17,6 +17,5 @@ then
     echo "Compound splitters not found!" > ${LOGDIR}/compound-splitter.log
 else
     echo "Compound splitters started..." > ${LOGDIR}/compound-splitter.log
-    cd $SPLITTERDIR
-    python3 -m compound_splitter.socket_server >> ${LOGDIR}/compound-splitter.log 2>&1
+    compound-splitters-nl-socket >> ${LOGDIR}/compound-splitter.log 2>&1
 fi
