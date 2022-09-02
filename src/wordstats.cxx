@@ -501,6 +501,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
     os << "NA,";
   else
     os << word_freq_log_corr << ",";
+  // Wrd_freq_zn_log_corr
   if ( prop == CGN::ISNAME || std::isnan(word_freq_log_corr) )
     os << "NA" << ",";
   else
