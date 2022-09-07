@@ -2739,12 +2739,12 @@ Situation::Type sentStats::checkMultiSituations( const string &mword ) {
 void sentStats::resolveMultiWordIntensify() {
   size_t max_length_intensify = 5;
   for ( size_t i = 0; i < sv.size() - 1; ++i ) {
-    string startword = sv[i]->text();
+    string startword = sv[i]->ltext();
     string multiword = startword;
 
     for ( size_t j = 1; i + j < sv.size() && j < max_length_intensify; ++j ) {
       // Attach the next word to the expression
-      multiword += " " + sv[i + j]->text();
+      multiword += " " + sv[i + j]->ltext();
 
       // Look for the expression in the list of intensifiers
       map<string, Intensify::Type>::const_iterator sit;
@@ -2764,9 +2764,9 @@ void sentStats::resolveMultiWordIntensify() {
 void sentStats::resolveMultiWordAfks() {
   if ( sv.size() > 1 ) {
     for ( size_t i = 0; i < sv.size() - 2; ++i ) {
-      string word = sv[i]->text();
-      string multiword2 = word + " " + sv[i + 1]->text();
-      string multiword3 = multiword2 + " " + sv[i + 2]->text();
+      string word = sv[i]->ltext();
+      string multiword2 = word + " " + sv[i + 1]->ltext();
+      string multiword3 = multiword2 + " " + sv[i + 2]->ltext();
       Afk::Type at = Afk::NO_A;
       map<string, Afk::Type>::const_iterator sit
           = settings.afkos.find( multiword3 );
@@ -2785,7 +2785,7 @@ void sentStats::resolveMultiWordAfks() {
       }
     }
     // don't forget the last 2 words
-    string multiword2 = sv[sv.size() - 2]->text() + " " + sv[sv.size() - 1]->text();
+    string multiword2 = sv[sv.size() - 2]->ltext() + " " + sv[sv.size() - 1]->ltext();
     map<string, Afk::Type>::const_iterator sit
         = settings.afkos.find( multiword2 );
     if ( sit != settings.afkos.end() ) {
