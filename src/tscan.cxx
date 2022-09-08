@@ -1387,7 +1387,7 @@ Intensify::Type wordStats::checkIntensify( const xmlNode *alpWord ) const {
 }
 
 // Looks up the Formal type for a word, or NOT_FORMAL if not found
-Formal::Type wordStats::checkFormal( const xmlNode *alpWord ) const {
+Formal::Type wordStats::checkFormal() const {
   Formal::Type res = Formal::NOT_FORMAL;
 
   // First check the full lemma (if available), then the normal lemma
@@ -1666,7 +1666,7 @@ wordStats::wordStats( int index,
     sem_type = checkSemProps();
     checkNoun();
     intensify_type = checkIntensify( alpWord );
-    formal_type = checkFormal( alpWord );
+    formal_type = checkFormal();
     general_noun_type = checkGeneralNoun();
     general_verb_type = checkGeneralVerb();
     adverb_type = checkAdverbType( l_word, tag );
@@ -2649,6 +2649,7 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats *pred ) :
   resolveMultiWordIntensify();
   // Disabled for now
   //  resolveMultiWordAfks();
+  resolveMultiWordFormal();
   resolvePrepExpr();
   if ( question )
     questCnt = 1;
@@ -2758,6 +2759,40 @@ void sentStats::resolveMultiWordIntensify() {
         break;
       }
     }
+  }
+}
+
+void sentStats::resolveMultiWordFormal() {
+  size_t max_length_formal = 5;
+  for ( size_t i = 0; i < sv.size() - 1; ++i ) {
+    string startword = sv[i]->ltext();
+    string multiword = startword;
+
+    for ( size_t j = 1; i + j < sv.size() && j < max_length_formal; ++j ) {
+      // Attach the next word to the expression
+      multiword += " " + sv[i + j]->ltext();
+
+      // Look for the expression in the list of formal expression
+      map<string, Formal::Type>::const_iterator sit;
+      sit = settings.formal.find( multiword );
+      // If found, assign all the words this formal type, if not, continue
+      if ( sit != settings.formal.end() ) {
+        for ( size_t k = i; k <= j; k++ ) {
+          wordStats *word = (wordStats *)sv[k];
+          word->formal_type = sit->second;
+        }
+        // Break and skip to the first word after this expression
+        i += j;
+        break;
+      }
+    }
+
+    sentStats::setFormalCounts( (wordStats *)sv[i] );
+  }
+
+    // don't forget the last word
+  if ( sv.size() > 0 ) {
+    sentStats::setFormalCounts( (wordStats *)sv[sv.size() - 1] );
   }
 }
 

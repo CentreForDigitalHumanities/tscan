@@ -161,7 +161,7 @@ struct wordStats : public basicStats {
   void checkNoun();
   SEM::Type checkSemProps() const;
   Intensify::Type checkIntensify(const xmlNode*) const;
-  Formal::Type checkFormal(const xmlNode*) const;
+  Formal::Type checkFormal() const;
   General::Type checkGeneralNoun() const;
   General::Type checkGeneralVerb() const;
   Afk::Type checkAfk() const;
@@ -927,6 +927,7 @@ struct sentStats : public structStats {
   void resolveConnectives();
   void resolveSituations();
   void resolveMultiWordIntensify();
+  void resolveMultiWordFormal();
   void resolveMultiWordAfks();
   void addMetrics() const;
   bool checkAls( size_t );
@@ -941,6 +942,7 @@ struct sentStats : public structStats {
   void resolveConjunctions( xmlDoc* );
   void resolveSmallConjunctions( xmlDoc* );
   void setCommonCounts( wordStats* );
+  void setFormalCounts( wordStats* );
 };
 
 

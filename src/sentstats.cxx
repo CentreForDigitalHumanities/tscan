@@ -191,6 +191,13 @@ void sentStats::setCommonCounts(wordStats *ws) {
       break;
   }
 
+  // My classification
+  if ( !ws->my_classification.empty() ) {
+    ++my_classification[ws->my_classification];
+  }
+}
+
+void sentStats::setFormalCounts(wordStats *ws) {
   // Counts for formal words
   switch (ws->formal_type) {
     case Formal::BVNW:
@@ -227,11 +234,6 @@ void sentStats::setCommonCounts(wordStats *ws) {
       break;
     default:
       break;
-  }
-
-  // My classification
-  if ( !ws->my_classification.empty() ) {
-    ++my_classification[ws->my_classification];
   }
 }
 
