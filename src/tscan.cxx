@@ -1241,7 +1241,7 @@ void wordStats::checkNoun() {
     // cerr << "lookup " << lemma << endl;
     // semantic type is determined by lemma
     // frequency however, is determined by the actual word form
-    map<string, noun>::const_iterator sit = settings.noun_sem.find( lemma );
+    map<string, noun>::const_iterator sit = findInflected( settings.noun_sem, lemma );
     if ( sit != settings.noun_sem.end() ) {
       noun n = sit->second;
       sem_type = n.type;
@@ -1267,14 +1267,14 @@ void wordStats::checkNoun() {
           compound_sat = n.satellite_clean;
 
           // look for head in data
-          sit = settings.noun_sem.find( n.head );
+          sit = findInflected( settings.noun_sem, n.head );
 
           // retry lemmatization just this head
           if ( sit == settings.noun_sem.end() ) {
             cerr << " re-lemmatize head using Frog:";
             string head_lemma = lemmatize( n.head );
             cerr << " " << n.head << " -> " << head_lemma << endl;
-            sit = settings.noun_sem.find( head_lemma );
+            sit = findInflected( settings.noun_sem, head_lemma );
           }
 
           if ( sit != settings.noun_sem.end() ) {
@@ -1310,11 +1310,11 @@ SEM::Type wordStats::checkSemProps() const {
   else if ( tag == CGN::ADJ ) {
     //    cerr << "ADJ check semtype " << l_lemma << endl;
     SEM::Type sem = SEM::UNFOUND_ADJ;
-    map<string, SEM::Type>::const_iterator sit = settings.adj_sem.find( l_lemma );
+    map<string, SEM::Type>::const_iterator sit = findInflected( settings.adj_sem, l_lemma );
     if ( sit == settings.adj_sem.end() ) {
       // lemma not found. maybe the whole word?
       //      cerr << "ADJ check semtype " << word << endl;
-      sit = settings.adj_sem.find( l_word );
+      sit = findInflected( settings.adj_sem, l_word );
     }
     if ( sit != settings.adj_sem.end() ) {
       sem = sit->second;
@@ -1393,10 +1393,10 @@ Formal::Type wordStats::checkFormal() const {
   // First check the full lemma (if available), then the normal lemma
   map<string, Formal::Type>::const_iterator sit = settings.formal.end();
   if ( !full_lemma.empty() ) {
-    sit = settings.formal.find( full_lemma );
+    sit = findInflected( settings.formal, full_lemma );
   }
   if ( sit == settings.formal.end() ) {
-    sit = settings.formal.find( lemma );
+    sit = findInflected( settings.formal, lemma );
   }
 
   if ( sit != settings.formal.end() ) {

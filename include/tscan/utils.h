@@ -1,5 +1,5 @@
 #ifndef UTILS_H
-#define	UTILS_H
+#define UTILS_H
 
 #include <map>
 #include <cmath>
@@ -17,6 +17,39 @@ void updateCounter( std::map<std::string, int>&, std::map<std::string, int>);
 std::string toStringCounter( std::map<std::string, int>);
 std::string toMString( double d );
 std::string escape_quotes(const std::string &before);
+
+/**
+ * Search a maps for the passed word and also tries searching it
+ * using common inflection endings if no match is found.
+ * @tparam T the mapped type
+ * @param map the map to search
+ * @param val the word or lemma to search
+ * @return map<string, T>::const_iterator
+ */
+template <typename T>
+typename std::map<std::string, T>::const_iterator findInflected( const std::map<std::string, T> &m, const std::string &val ) {
+  typename std::map<std::string, T>::const_iterator sit;
+  sit = m.find( val );
+  static std::string suffixesArray[] = { "e", "en", "s" };
+  static std::vector<std::string> suffixes = std::vector<std::string>(
+      suffixesArray,
+      suffixesArray + sizeof( suffixesArray ) / sizeof( std::string ) );
+  size_t i = 0;
+  while ( sit == m.end() && i < suffixes.size() ) {
+    std::string suffix = suffixes[i];
+    if ( val.length() > suffix.length() && 0 == val.compare( val.length() - suffix.length(), suffix.length(), suffix ) ) {
+      // maybe it's in the map without this suffix?
+      sit = m.find( val.substr( 0, val.length() - suffix.length() ) );
+    }
+    else {
+      // maybe it's in the map with this suffix?
+      sit = m.find( val + suffix );
+    }
+    ++i;
+  }
+
+  return sit;
+}
 
 template<class T> int at( const std::map<T,int>& m, const T key ) {
   typename std::map<T,int>::const_iterator it = m.find( key );
