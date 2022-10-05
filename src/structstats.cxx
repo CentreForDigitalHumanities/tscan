@@ -949,6 +949,7 @@ void structStats::intensToCSV( ostream& os ) const {
 
 void structStats::formalHeader( ostream& os ) const {
   os << "Form_d,";
+  os << "Form_d_z_vnw,";
   os << "Form_bvnw_d,";
   os << "Form_bw_d,";
   os << "Form_vgw_d,";
@@ -960,7 +961,8 @@ void structStats::formalHeader( ostream& os ) const {
 }
 
 void structStats::formalToCSV( ostream& os ) const {
-  os << density( formalCnt, wordInclCnt ) << ","; // Form
+  os << density( formalCnt, wordInclCnt ) << ","; // Form_d
+  os << density( formalCnt-formalVnwCnt, wordInclCnt ) << ","; // Form_d_z_vnw
   os << density( formalBvnwCnt, wordInclCnt ) << ","; // Form_bvnw_d
   os << density( formalBwCnt, wordInclCnt ) << ","; // Form_bw_d
   os << density( formalVgwCnt, wordInclCnt ) << ","; // Form_vgw_d
