@@ -2754,6 +2754,10 @@ void sentStats::resolveMultiWordIntensify() {
       if ( sit != settings.intensify.end() ) {
         intensCombiCnt += j + 1;
         intensCnt += j + 1;
+        for ( size_t k = i; k <= i+j; k++ ) {
+          wordStats *word = (wordStats *)sv[k];
+          word->intensify_type = sit->second;
+        }
         // Break and skip to the first word after this expression
         i += j;
         break;
@@ -2777,7 +2781,9 @@ void sentStats::resolveMultiWordFormal() {
       sit = settings.formal.find( multiword );
       // If found, assign all the words this formal type, if not, continue
       if ( sit != settings.formal.end() ) {
-        for ( size_t k = i; k <= j; k++ ) {
+        formalVzgCnt += j + 1;
+        formalCnt += j + 1;
+        for ( size_t k = i; k <= i+j; k++ ) {
           wordStats *word = (wordStats *)sv[k];
           word->formal_type = sit->second;
         }

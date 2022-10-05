@@ -642,7 +642,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << (prop == CGN::ISPPRON2 ) << ","
      << (prop == CGN::ISPPRON3 ) << ","
      << (prop == CGN::ISPPRON1 || prop == CGN::ISPPRON2 || prop == CGN::ISPPRON3) << ",";
-  os << (prop == CGN::ISNAME) << ",";
+  os << (prop == CGN::ISNAME) << ","; // Naam_POS
   if ( nerProp == NER::NONER )
     os << "0,";
   else
