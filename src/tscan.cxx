@@ -2781,8 +2781,9 @@ void sentStats::resolveMultiWordFormal() {
       sit = settings.formal.find( multiword );
       // If found, assign all the words this formal type, if not, continue
       if ( sit != settings.formal.end() ) {
-        formalVzgCnt += j + 1;
-        formalCnt += j + 1;
+        // first word is counted by setFormalCounts
+        formalVzgCnt += j;
+        formalCnt += j;
         for ( size_t k = i; k <= i+j; k++ ) {
           wordStats *word = (wordStats *)sv[k];
           word->formal_type = sit->second;
