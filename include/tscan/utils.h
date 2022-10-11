@@ -10,6 +10,8 @@
 #include "ticcutils/StringOps.h"
 #include "libfolia/folia.h"
 
+static std::string suffixesArray[] = { "e", "en", "s" };
+
 void addOneMetric( folia::Document*, folia::FoliaElement*, const std::string&, const std::string& );
 void argument_overlap( const std::string&, const std::vector<std::string>&, int& );
 std::istream& safe_getline( std::istream&, std::string& );
@@ -28,18 +30,19 @@ std::string escape_quotes(const std::string &before);
  */
 template <typename T>
 typename std::map<std::string, T>::const_iterator findInflected( const std::map<std::string, T> &m, const std::string &val ) {
-  typename std::map<std::string, T>::const_iterator sit;
-  sit = m.find( val );
-  static std::string suffixesArray[] = { "e", "en", "s" };
+  auto sit = m.find( val );
   static std::vector<std::string> suffixes = std::vector<std::string>(
       suffixesArray,
       suffixesArray + sizeof( suffixesArray ) / sizeof( std::string ) );
   size_t i = 0;
+  size_t val_length = val.length();
   while ( sit == m.end() && i < suffixes.size() ) {
     std::string suffix = suffixes[i];
-    if ( val.length() > suffix.length() && 0 == val.compare( val.length() - suffix.length(), suffix.length(), suffix ) ) {
+    size_t suffix_length = suffix.length();
+    size_t suffix_start = val_length - suffix_length;
+    if ( val_length > suffix_length && 0 == val.compare( suffix_start, suffix_length, suffix ) ) {
       // maybe it's in the map without this suffix?
-      sit = m.find( val.substr( 0, val.length() - suffix.length() ) );
+      sit = m.find( val.substr( 0, suffix_start ) );
     }
     else {
       // maybe it's in the map with this suffix?

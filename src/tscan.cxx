@@ -62,6 +62,11 @@ const string frog_pos_set = "http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn";
 const string frog_lemma_set = "http://ilk.uvt.nl/folia/sets/frog-mblem-nl";
 const string frog_morph_set = "http://ilk.uvt.nl/folia/sets/frog-mbma-nl";
 
+// ignore very small files as these are probably gibberish
+const int min_file_length = 10;
+const size_t max_length_intensify = 5;
+const size_t max_length_formal = 5;
+
 string configFile = "tscan.cfg";
 string probFilename = "problems.log";
 ofstream problemFile;
@@ -1220,16 +1225,18 @@ string lemmatize( const string &word ) {
   }
 
   folia::Document *doc = 0;
-  if ( !result.empty() && result.size() > 10 ) {
+  if ( !result.empty() && result.size() > min_file_length ) {
     doc = new folia::Document();
     try {
       doc->readFromString( result );
       return doc->words()[0]->lemma();
     }
     catch ( std::exception &e ) {
-      cerr << "FoLiaParsing failed:" << endl
+      cerr << "Frog parsing failed:" << endl
            << e.what() << endl;
     }
+  } else {
+    cerr << "Empty result from frog for " << word << endl;
   }
 
   // failed
@@ -1894,7 +1901,7 @@ void orderWopr( const string &type, const string &txt, vector<double> &wordProbs
 #ifdef DEBUG_WOPR
   cerr << "received data [" << result << "]" << endl;
 #endif
-  if ( !result.empty() && result.size() > 10 ) {
+  if ( !result.empty() && result.size() > min_file_length ) {
 #ifdef DEBUG_WOPR
     cerr << "start FoLiA parsing" << endl;
 #endif
@@ -1967,7 +1974,7 @@ xmlDoc *AlpinoServerParse( folia::Sentence * );
 void fill_word_lemma_buffers( const sentStats *ss,
                               vector<string> &wv,
                               vector<string> &lv ) {
-  vector<basicStats *> bv = ss->sv;
+  auto bv = ss->sv;
   for ( size_t i = 0; i < bv.size(); ++i ) {
     wordStats *w = dynamic_cast<wordStats *>( bv[i] );
     if ( w->isOverlapCandidate() ) {
@@ -2738,7 +2745,6 @@ Situation::Type sentStats::checkMultiSituations( const string &mword ) {
 }
 
 void sentStats::resolveMultiWordIntensify() {
-  size_t max_length_intensify = 5;
   for ( size_t i = 0; i < sv.size() - 1; ++i ) {
     string startword = sv[i]->ltext();
     string multiword = startword;
@@ -2755,7 +2761,7 @@ void sentStats::resolveMultiWordIntensify() {
         intensCombiCnt += j + 1;
         intensCnt += j + 1;
         for ( size_t k = i; k <= i+j; k++ ) {
-          wordStats *word = (wordStats *)sv[k];
+          wordStats *word = dynamic_cast<wordStats *>( sv[k] );
           word->intensify_type = sit->second;
         }
         // Break and skip to the first word after this expression
@@ -2767,7 +2773,6 @@ void sentStats::resolveMultiWordIntensify() {
 }
 
 void sentStats::resolveMultiWordFormal() {
-  size_t max_length_formal = 5;
   for ( size_t i = 0; i < sv.size() - 1; ++i ) {
     string startword = sv[i]->ltext();
     string multiword = startword;
@@ -2785,7 +2790,7 @@ void sentStats::resolveMultiWordFormal() {
         formalVzgCnt += j;
         formalCnt += j;
         for ( size_t k = i; k <= i+j; k++ ) {
-          wordStats *word = (wordStats *)sv[k];
+          wordStats *word = dynamic_cast<wordStats *>( sv[k] );
           word->formal_type = sit->second;
         }
         // Break and skip to the first word after this expression
@@ -3082,7 +3087,7 @@ folia::Document *getFrogResult( istream &is ) {
   cerr << "received data [" << result << "]" << endl;
 #endif
   folia::Document *doc = 0;
-  if ( !result.empty() && result.size() > 10 ) {
+  if ( !result.empty() && result.size() > min_file_length ) {
 #ifdef DEBUG_FROG
     cerr << "start FoLiA parsing" << endl;
 #endif
@@ -3097,6 +3102,8 @@ folia::Document *getFrogResult( istream &is ) {
       cerr << "FoLiaParsing failed:" << endl
            << e.what() << endl;
     }
+  } else {
+    cerr << "Empty result for FoLiaParsing " << endl;
   }
   return doc;
 }
