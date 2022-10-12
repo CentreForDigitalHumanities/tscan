@@ -2745,66 +2745,24 @@ Situation::Type sentStats::checkMultiSituations( const string &mword ) {
 }
 
 void sentStats::resolveMultiWordIntensify() {
-  for ( size_t i = 0; i < sv.size() - 1; ++i ) {
-    string startword = sv[i]->ltext();
-    string multiword = startword;
+  auto assign = [this]( wordStats *word, Intensify::Type type ) {
+    ++intensCombiCnt;
+    ++intensCnt;
+    word->intensify_type = type;
+  };
 
-    for ( size_t j = 1; i + j < sv.size() && j < max_length_intensify; ++j ) {
-      // Attach the next word to the expression
-      multiword += " " + sv[i + j]->ltext();
-
-      // Look for the expression in the list of intensifiers
-      map<string, Intensify::Type>::const_iterator sit;
-      sit = settings.intensify.find( multiword );
-      // If found, update the counts, if not, continue
-      if ( sit != settings.intensify.end() ) {
-        intensCombiCnt += j + 1;
-        intensCnt += j + 1;
-        for ( size_t k = i; k <= i+j; k++ ) {
-          wordStats *word = dynamic_cast<wordStats *>( sv[k] );
-          word->intensify_type = sit->second;
-        }
-        // Break and skip to the first word after this expression
-        i += j;
-        break;
-      }
-    }
-  }
+  resolveMultiWord(sv, settings.intensify, max_length_intensify, assign);
 }
 
 void sentStats::resolveMultiWordFormal() {
-  for ( size_t i = 0; i < sv.size() - 1; ++i ) {
-    string startword = sv[i]->ltext();
-    string multiword = startword;
+  auto assign = []( wordStats *word, Formal::Type type ) {
+    word->formal_type = type;
+  };
 
-    for ( size_t j = 1; i + j < sv.size() && j < max_length_formal; ++j ) {
-      // Attach the next word to the expression
-      multiword += " " + sv[i + j]->ltext();
+  resolveMultiWord(sv, settings.formal, max_length_formal, assign);
 
-      // Look for the expression in the list of formal expression
-      map<string, Formal::Type>::const_iterator sit;
-      sit = settings.formal.find( multiword );
-      // If found, assign all the words this formal type, if not, continue
-      if ( sit != settings.formal.end() ) {
-        // first word is counted by setFormalCounts
-        formalVzgCnt += j;
-        formalCnt += j;
-        for ( size_t k = i; k <= i+j; k++ ) {
-          wordStats *word = dynamic_cast<wordStats *>( sv[k] );
-          word->formal_type = sit->second;
-        }
-        // Break and skip to the first word after this expression
-        i += j;
-        break;
-      }
-    }
-
-    sentStats::setFormalCounts( (wordStats *)sv[i] );
-  }
-
-    // don't forget the last word
-  if ( sv.size() > 0 ) {
-    sentStats::setFormalCounts( (wordStats *)sv[sv.size() - 1] );
+  for ( size_t i = 0; i < sv.size(); ++i ) {
+    sentStats::setFormalCounts( dynamic_cast<wordStats *>sv[i] );
   }
 }
 

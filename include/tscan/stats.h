@@ -246,7 +246,6 @@ struct wordStats : public basicStats {
   std::string my_classification;
 };
 
-
 struct structStats: public basicStats {
   structStats( int index, folia::FoliaElement* el, const std::string& cat ):
     basicStats( index, el, cat ),
@@ -965,5 +964,32 @@ struct docStats : public structStats {
   int doc_lemma_overlapCnt;
   double rarity_index;
 };
+
+template <class T, typename F>
+void resolveMultiWord( const std::vector<basicStats *> &sv, const std::map<std::string, T> &m, const size_t &max_length, F &&assign ) {
+
+  for ( size_t i = 0; i < sv.size() - 1; ++i ) {
+    std::string startword = sv[i]->ltext();
+    std::string multiword = startword;
+
+    for ( size_t j = 1; i + j < sv.size() && j < max_length; ++j ) {
+      // Attach the next word to the expression
+      multiword += " " + sv[i + j]->ltext();
+
+      // Look for the expression in the list
+      auto sit = m.find( multiword );
+      // If found, update the counts, if not, continue
+      if ( sit != m.end() ) {
+        for ( size_t k = i; k <= i + j; k++ ) {
+          auto word = dynamic_cast<wordStats *>( sv[k] );
+          assign( word, sit->second );
+        }
+        // Break and skip to the first word after this expression
+        i += j;
+        break;
+      }
+    }
+  }
+}
 
 #endif /* STATS_H */
