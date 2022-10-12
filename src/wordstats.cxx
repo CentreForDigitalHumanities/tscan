@@ -501,7 +501,7 @@ void wordStats::wordDifficultiesToCSV( ostream& os ) const {
     os << "NA,";
   else
     os << word_freq_log_corr << ",";
-  // Wrd_freq_zn_log_corr
+  // column: Wrd_freq_zn_log_corr
   if ( prop == CGN::ISNAME || std::isnan(word_freq_log_corr) )
     os << "NA" << ",";
   else
@@ -642,7 +642,7 @@ void wordStats::persoonlijkheidToCSV( ostream& os ) const {
      << (prop == CGN::ISPPRON2 ) << ","
      << (prop == CGN::ISPPRON3 ) << ","
      << (prop == CGN::ISPPRON1 || prop == CGN::ISPPRON2 || prop == CGN::ISPPRON3) << ",";
-  os << (prop == CGN::ISNAME) << ","; // Naam_POS
+  os << (prop == CGN::ISNAME) << ","; // column: Naam_POS
   if ( nerProp == NER::NONER )
     os << "0,";
   else
