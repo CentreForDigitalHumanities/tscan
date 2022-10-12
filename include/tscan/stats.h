@@ -161,7 +161,7 @@ struct wordStats : public basicStats {
   void checkNoun();
   SEM::Type checkSemProps() const;
   Intensify::Type checkIntensify(const xmlNode*) const;
-  Formal::Type checkFormal(const xmlNode*) const;
+  Formal::Type checkFormal() const;
   General::Type checkGeneralNoun() const;
   General::Type checkGeneralVerb() const;
   Afk::Type checkAfk() const;
@@ -245,7 +245,6 @@ struct wordStats : public basicStats {
   bool on_stoplist;
   std::string my_classification;
 };
-
 
 struct structStats: public basicStats {
   structStats( int index, folia::FoliaElement* el, const std::string& cat ):
@@ -927,6 +926,7 @@ struct sentStats : public structStats {
   void resolveConnectives();
   void resolveSituations();
   void resolveMultiWordIntensify();
+  void resolveMultiWordFormal();
   void resolveMultiWordAfks();
   void addMetrics() const;
   bool checkAls( size_t );
@@ -941,6 +941,7 @@ struct sentStats : public structStats {
   void resolveConjunctions( xmlDoc* );
   void resolveSmallConjunctions( xmlDoc* );
   void setCommonCounts( wordStats* );
+  void setFormalCounts( wordStats* );
 };
 
 
@@ -963,5 +964,32 @@ struct docStats : public structStats {
   int doc_lemma_overlapCnt;
   double rarity_index;
 };
+
+template <class T, typename F>
+void resolveMultiWord( const std::vector<basicStats *> &sv, const std::map<std::string, T> &m, const size_t &max_length, F &&assign ) {
+
+  for ( size_t i = 0; i < sv.size() - 1; ++i ) {
+    std::string startword = sv[i]->ltext();
+    std::string multiword = startword;
+
+    for ( size_t j = 1; i + j < sv.size() && j < max_length; ++j ) {
+      // Attach the next word to the expression
+      multiword += " " + sv[i + j]->ltext();
+
+      // Look for the expression in the list
+      auto sit = m.find( multiword );
+      // If found, update the counts, if not, continue
+      if ( sit != m.end() ) {
+        for ( size_t k = i; k <= i + j; k++ ) {
+          auto word = dynamic_cast<wordStats *>( sv[k] );
+          assign( word, sit->second );
+        }
+        // Break and skip to the first word after this expression
+        i += j;
+        break;
+      }
+    }
+  }
+}
 
 #endif /* STATS_H */

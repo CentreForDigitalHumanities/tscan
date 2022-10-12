@@ -650,40 +650,40 @@ void structStats::concreetHeader( ostream& os ) const {
 
 void structStats::concreetToCSV( ostream& os ) const {
   int coveredNouns = nounCnt+nameCnt-uncoveredNounCnt;
-  os << density( strictNounCnt, wordCnt ) << ","; //Conc_nw_strikt_d
-  os << density( broadNounCnt, wordCnt ) << ","; //Conc_nw_ruim_d
+  os << density( strictNounCnt, wordCnt ) << ","; // column: Conc_nw_strikt_d
+  os << density( broadNounCnt, wordCnt ) << ","; // column: Conc_nw_ruim_d
   os << proportion( humanCnt, coveredNouns ) << ",";
-  os << density( humanCnt, wordCnt ) << ","; //Pers_nw_d
+  os << density( humanCnt, wordCnt ) << ","; // column: Pers_nw_d
   os << proportion( nonHumanCnt, coveredNouns ) << ",";
-  os << density( nonHumanCnt, wordCnt ) << ","; //PlantDier_nw_d
+  os << density( nonHumanCnt, wordCnt ) << ","; // column: PlantDier_nw_d
   os << proportion( artefactCnt, coveredNouns ) << ",";
-  os << density( artefactCnt, wordCnt ) << ","; //Gebr_vw_nw_d
+  os << density( artefactCnt, wordCnt ) << ","; // column: Gebr_vw_nw_d
   os << proportion( substanceConcCnt, coveredNouns ) << ",";
-  os << density( substanceConcCnt, wordCnt ) << ","; //Subst_conc_nw_d
+  os << density( substanceConcCnt, wordCnt ) << ","; // column: Subst_conc_nw_d
   os << proportion( foodcareCnt, coveredNouns ) << ",";
-  os << density( foodcareCnt, wordCnt ) << ","; //Voed_verz_nw_d
+  os << density( foodcareCnt, wordCnt ) << ","; // column: Voed_verz_nw_d
   os << proportion( concrotherCnt, coveredNouns ) << ",";
-  os << density( concrotherCnt, wordCnt ) << ","; //Concr_ov_nw_d
+  os << density( concrotherCnt, wordCnt ) << ","; // column: Concr_ov_nw_d
   os << proportion( dynamicConcCnt, coveredNouns ) << ",";
-  os << density( dynamicConcCnt, wordCnt ) << ","; //Gebeuren_conc_nw_d
+  os << density( dynamicConcCnt, wordCnt ) << ","; // column: Gebeuren_conc_nw_d
   os << proportion( placeCnt, coveredNouns ) << ",";
-  os << density( placeCnt, wordCnt ) << ","; //Plaats_nw_d
+  os << density( placeCnt, wordCnt ) << ","; // column: Plaats_nw_d
   os << proportion( timeCnt, coveredNouns ) << ",";
-  os << density( timeCnt, wordCnt ) << ","; //Tijd_nw_d
+  os << density( timeCnt, wordCnt ) << ","; // column: Tijd_nw_d
   os << proportion( measureCnt, coveredNouns ) << ",";
-  os << density( measureCnt, wordCnt ) << ","; //Maat_nw_d
+  os << density( measureCnt, wordCnt ) << ","; // column: Maat_nw_d
   os << proportion( substanceAbstrCnt, coveredNouns ) << ",";
-  os << density( substanceAbstrCnt, wordCnt ) << ","; //Subst_abstr_nw_d
+  os << density( substanceAbstrCnt, wordCnt ) << ","; // column: Subst_abstr_nw_d
   os << proportion( dynamicAbstrCnt, coveredNouns ) << ",";
-  os << density( dynamicAbstrCnt, wordCnt ) << ","; //Gebeuren_abstr_nw_d
+  os << density( dynamicAbstrCnt, wordCnt ) << ","; // column: Gebeuren_abstr_nw_d
   os << proportion( institutCnt, coveredNouns ) << ",";
-  os << density( institutCnt, wordCnt ) << ","; //Organisatie_nw_d
+  os << density( institutCnt, wordCnt ) << ","; // column: Organisatie_nw_d
   os << proportion( nonDynamicCnt, coveredNouns ) << ",";
-  os << density( nonDynamicCnt, wordCnt ) << ","; //Ov_abstr_nw_d
-  os << proportion( undefinedNounCnt, coveredNouns ) << ","; //Undefined_nw_p
-  os << proportion( coveredNouns, nounCnt + nameCnt ) << ","; //Gedekte_nw_p
+  os << density( nonDynamicCnt, wordCnt ) << ","; // column: Ov_abstr_nw_d
+  os << proportion( undefinedNounCnt, coveredNouns ) << ","; // column: Undefined_nw_p
+  os << proportion( coveredNouns, nounCnt + nameCnt ) << ","; // column: Gedekte_nw_p
 
-  os << proportion( generalNounCnt, coveredNouns ) << ","; //Alg_nw_p
+  os << proportion( generalNounCnt, coveredNouns ) << ","; // column: Alg_nw_p
   os << density( generalNounSepCnt, wordCnt ) << ",";
   os << proportion( generalNounSepCnt, coveredNouns ) << ",";
   os << density( generalNounRelCnt, wordCnt ) << ",";
@@ -795,9 +795,9 @@ void structStats::persoonlijkheidHeader( ostream& os ) const {
 }
 
 void structStats::persoonlijkheidToCSV( ostream& os ) const {
-  os << density( pron1Cnt, wordInclCnt ) << ","; //Pers_vnw1_d
-  os << density( pron2Cnt, wordInclCnt ) << ","; //Pers_vnw2_d
-  os << density( pron3Cnt, wordInclCnt ) << ","; //Pers_vnw3_d
+  os << density( pron1Cnt, wordInclCnt ) << ","; // column: Pers_vnw1_d
+  os << density( pron2Cnt, wordInclCnt ) << ","; // column: Pers_vnw2_d
+  os << density( pron3Cnt, wordInclCnt ) << ","; // column: Pers_vnw3_d
 
   int val = at( ners, NER::PER_B );
   os << proportion( val, nerCnt ) << ",";
@@ -937,18 +937,19 @@ void structStats::intensHeader( ostream& os ) const {
 }
 
 void structStats::intensToCSV( ostream& os ) const {
-  os << density( intensCnt, wordInclCnt ) << ","; // Int_d
-  os << density( intensBvnwCnt, wordInclCnt ) << ","; // Int_bvnw_d
-  os << density( intensBvbwCnt, wordInclCnt ) << ","; // Int_bvbw_d
-  os << density( intensBwCnt, wordInclCnt ) << ","; // Int_bw_d
-  os << density( intensCombiCnt, wordInclCnt ) << ","; // Int_combi_d
-  os << density( intensNwCnt, wordInclCnt ) << ","; // Int_nw_d
-  os << density( intensTussCnt, wordInclCnt ) << ","; // Int_tuss_d
-  os << density( intensWwCnt, wordInclCnt ) << ","; // Int_ww_d
+  os << density( intensCnt, wordInclCnt ) << ","; // column: Int_d
+  os << density( intensBvnwCnt, wordInclCnt ) << ","; /// column: Int_bvnw_d
+  os << density( intensBvbwCnt, wordInclCnt ) << ","; // column: Int_bvbw_d
+  os << density( intensBwCnt, wordInclCnt ) << ","; // column: Int_bw_d
+  os << density( intensCombiCnt, wordInclCnt ) << ","; // column: Int_combi_d
+  os << density( intensNwCnt, wordInclCnt ) << ","; // column: Int_nw_d
+  os << density( intensTussCnt, wordInclCnt ) << ","; // column: Int_tuss_d
+  os << density( intensWwCnt, wordInclCnt ) << ","; // column: Int_ww_d
 }
 
 void structStats::formalHeader( ostream& os ) const {
   os << "Form_d,";
+  os << "Form_d_z_vnw,";
   os << "Form_bvnw_d,";
   os << "Form_bw_d,";
   os << "Form_vgw_d,";
@@ -960,15 +961,16 @@ void structStats::formalHeader( ostream& os ) const {
 }
 
 void structStats::formalToCSV( ostream& os ) const {
-  os << density( formalCnt, wordInclCnt ) << ","; // Form
-  os << density( formalBvnwCnt, wordInclCnt ) << ","; // Form_bvnw_d
-  os << density( formalBwCnt, wordInclCnt ) << ","; // Form_bw_d
-  os << density( formalVgwCnt, wordInclCnt ) << ","; // Form_vgw_d
-  os << density( formalVnwCnt, wordInclCnt ) << ","; // Form_vnw_d
-  os << density( formalVzCnt, wordInclCnt ) << ","; // Form_vz_d
-  os << density( formalVzgCnt, wordInclCnt ) << ","; // Form_vzg_d
-  os << density( formalWwCnt, wordInclCnt ) << ","; // Form_ww_d
-  os << density( formalZnwCnt, wordInclCnt ) << ","; // Form_znw_d
+  os << density( formalCnt, wordInclCnt ) << ","; // column: Form_d
+  os << density( formalCnt-formalVnwCnt, wordInclCnt ) << ","; // column: Form_d_z_vnw
+  os << density( formalBvnwCnt, wordInclCnt ) << ","; // column: Form_bvnw_d
+  os << density( formalBwCnt, wordInclCnt ) << ","; // column: Form_bw_d
+  os << density( formalVgwCnt, wordInclCnt ) << ","; // column: Form_vgw_d
+  os << density( formalVnwCnt, wordInclCnt ) << ","; // column: Form_vnw_d
+  os << density( formalVzCnt, wordInclCnt ) << ","; // column: Form_vz_d
+  os << density( formalVzgCnt, wordInclCnt ) << ","; // column: Form_vzg_d
+  os << density( formalWwCnt, wordInclCnt ) << ","; // column: Form_ww_d
+  os << density( formalZnwCnt, wordInclCnt ) << ","; // column: Form_znw_d
 }
 
 void structStats::miscHeader( ostream& os ) const {

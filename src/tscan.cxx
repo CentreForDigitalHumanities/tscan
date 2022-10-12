@@ -62,6 +62,11 @@ const string frog_pos_set = "http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn";
 const string frog_lemma_set = "http://ilk.uvt.nl/folia/sets/frog-mblem-nl";
 const string frog_morph_set = "http://ilk.uvt.nl/folia/sets/frog-mbma-nl";
 
+// ignore very small files as these are probably gibberish
+const int min_file_length = 10;
+const size_t max_length_intensify = 5;
+const size_t max_length_formal = 5;
+
 string configFile = "tscan.cfg";
 string probFilename = "problems.log";
 ofstream problemFile;
@@ -689,7 +694,7 @@ bool fill_formal( map<string, Formal::Type> &formal, istream &is ) {
       continue;
     }
     else {
-      formal[vec[0]] = Formal::classify( TiCC::lowercase(vec[1]) );
+      formal[vec[0]] = Formal::classify( TiCC::lowercase( vec[1] ) );
     }
   }
   return true;
@@ -1118,7 +1123,7 @@ Situation::Type wordStats::checkSituation() const {
   return Situation::NO_SIT;
 }
 
-noun splitCompound(const string &word) {
+noun splitCompound( const string &word ) {
   noun n;
   // open connection
   string host = config.lookUp( "host", "compound_splitter" );
@@ -1133,21 +1138,22 @@ noun splitCompound(const string &word) {
     cerr << "calling compound splitter for " << word << endl;
     client.write( word + "," + method );
     string result;
-    client.read(result);
+    client.read( result );
     cerr << " -> " << result << endl;
 
     // store result in noun struct
     vector<string> parts;
     int size = TiCC::split_at( result, parts, "," );
-    if (size > 1) {
+    if ( size > 1 ) {
       n.is_compound = true;
-      n.head = parts[size -1];
+      n.head = parts[size - 1];
       n.compound_parts = size;
-      
+
       string sat = "";
-      for(size_t i=0;i!=size -1;++i)
-        sat=sat+parts[i];
-      
+      for ( size_t i = 0; i != size - 1; ++i ) {
+        sat = sat + parts[i];
+      }
+
       n.satellite_clean = sat;
     }
     else {
@@ -1157,47 +1163,141 @@ noun splitCompound(const string &word) {
   return n;
 }
 
+// finds the probable word form of the head of a compounded lemma
+string formForHead( const string &complete_word, const string &head_lemma ) {
+  int match_start = 0;
+  int match_length = 0;
+
+  int candidate_start = 0;
+  int candidate_length = 0;
+
+  for ( int i = 0; i <= complete_word.size(); i++ ) {
+    candidate_start = i;
+    candidate_length = 0;
+    for ( int j = 0; j < head_lemma.size() && i + j < complete_word.size(); j++ ) {
+      if ( complete_word[i + j] == head_lemma[j] ) {
+        candidate_length++;
+      }
+      else {
+        break;
+      }
+    }
+
+    // prefer match at the end of the word
+    if ( candidate_length >= match_length ) {
+      match_start = candidate_start;
+      match_length = candidate_length;
+    }
+  }
+
+  // this found the largest match, e.g. for:
+  // complete word: waterschapsraden
+  // head lemma: raad
+  // match:
+  // ___________ra
+  // use start of match in the complete form to get the word form:
+  // ___________raden
+
+  string word = complete_word.substr( match_start );
+
+  cerr << " word form: (" << complete_word.substr( 0, match_start ) << ")" << word << ", head lemma: " << head_lemma << endl;
+
+  return word;
+}
+
+string lemmatize( const string &word ) {
+  string host = config.lookUp( "host", "frog" );
+  string port = config.lookUp( "port", "frog" );
+  Sockets::ClientSocket client;
+  if ( !client.connect( host, port ) ) {
+    cerr << "failed to open Frog connection: " << host << ":" << port << endl;
+    cerr << "Reason: " << client.getMessage() << endl;
+    return 0;
+  }
+
+  client.write( word + "\nEOT\n" );
+  string result;
+  string s;
+  while ( client.read( s ) ) {
+    if ( s == "READY" )
+      break;
+    result += s + "\n";
+  }
+
+  folia::Document *doc = 0;
+  if ( !result.empty() && result.size() > min_file_length ) {
+    doc = new folia::Document();
+    try {
+      doc->readFromString( result );
+      return doc->words()[0]->lemma();
+    }
+    catch ( std::exception &e ) {
+      cerr << "Frog parsing failed:" << endl
+           << e.what() << endl;
+    }
+  } else {
+    cerr << "Empty result from frog for " << word << endl;
+  }
+
+  // failed
+  return word;
+}
+
 void wordStats::checkNoun() {
   if ( tag == CGN::N ) {
-    //cerr << "lookup " << lemma << endl;
-    map<string, noun>::const_iterator sit = settings.noun_sem.find( word );
+    // cerr << "lookup " << lemma << endl;
+    // semantic type is determined by lemma
+    // frequency however, is determined by the actual word form
+    map<string, noun>::const_iterator sit = findInflected( settings.noun_sem, lemma );
     if ( sit != settings.noun_sem.end() ) {
       noun n = sit->second;
       sem_type = n.type;
       if ( n.is_compound ) {
         is_compound = n.is_compound;
         compound_parts = n.compound_parts;
-        compound_head = n.head;
+        // word form is needed here for the frequency lookup
+        compound_head = formForHead( word, n.head );
         compound_sat = n.satellite_clean;
       }
     }
     else {
       // call compound splitter
       bool found_split = false;
-      if (config.lookUp("useCompoundSplitter") == "1") {
-        noun n = splitCompound(word);
+      if ( config.lookUp( "useCompoundSplitter" ) == "1" ) {
+        // lemmatization is already done by Frog
+        noun n = splitCompound( lemma );
         if ( n.is_compound ) {
           is_compound = n.is_compound;
           compound_parts = n.compound_parts;
-          compound_head = n.head;
+          // word form is needed here for the frequency lookup
+          compound_head = formForHead( word, n.head );
           compound_sat = n.satellite_clean;
 
           // look for head in data
-          sit = settings.noun_sem.find( n.head );
+          sit = findInflected( settings.noun_sem, n.head );
+
+          // retry lemmatization just this head
+          if ( sit == settings.noun_sem.end() ) {
+            cerr << " re-lemmatize head using Frog:";
+            string head_lemma = lemmatize( n.head );
+            cerr << " " << n.head << " -> " << head_lemma << endl;
+            sit = findInflected( settings.noun_sem, head_lemma );
+          }
+
           if ( sit != settings.noun_sem.end() ) {
             // if there is a match, fill in results
-            found_split = true;  
+            found_split = true;
             noun match = sit->second;
             sem_type = match.type;
           }
         }
       }
-      if (found_split == false) {
-        // If we still haven't found a SEM::Type, add this to the problemfile
-        //cerr << "unknown noun " << word << endl;
+      if ( found_split == false ) {
+        // If we still haven't found a SEM::Type, add this to the problem file
+        // cerr << "unknown noun " << word << endl;
         sem_type = SEM::UNFOUND_NOUN;
         if ( settings.showProblems ) {
-          problemFile << "N," << word << ", " << word << endl;
+          problemFile << "N," << word << ", " << lemma << endl;
         }
       }
     }
@@ -1217,11 +1317,11 @@ SEM::Type wordStats::checkSemProps() const {
   else if ( tag == CGN::ADJ ) {
     //    cerr << "ADJ check semtype " << l_lemma << endl;
     SEM::Type sem = SEM::UNFOUND_ADJ;
-    map<string, SEM::Type>::const_iterator sit = settings.adj_sem.find( l_lemma );
+    map<string, SEM::Type>::const_iterator sit = findInflected( settings.adj_sem, l_lemma );
     if ( sit == settings.adj_sem.end() ) {
       // lemma not found. maybe the whole word?
       //      cerr << "ADJ check semtype " << word << endl;
-      sit = settings.adj_sem.find( l_word );
+      sit = findInflected( settings.adj_sem, l_word );
     }
     if ( sit != settings.adj_sem.end() ) {
       sem = sit->second;
@@ -1294,16 +1394,16 @@ Intensify::Type wordStats::checkIntensify( const xmlNode *alpWord ) const {
 }
 
 // Looks up the Formal type for a word, or NOT_FORMAL if not found
-Formal::Type wordStats::checkFormal( const xmlNode *alpWord ) const {
+Formal::Type wordStats::checkFormal() const {
   Formal::Type res = Formal::NOT_FORMAL;
 
   // First check the full lemma (if available), then the normal lemma
   map<string, Formal::Type>::const_iterator sit = settings.formal.end();
   if ( !full_lemma.empty() ) {
-    sit = settings.formal.find( full_lemma );
+    sit = findInflected( settings.formal, full_lemma );
   }
   if ( sit == settings.formal.end() ) {
-    sit = settings.formal.find( lemma );
+    sit = findInflected( settings.formal, lemma );
   }
 
   if ( sit != settings.formal.end() ) {
@@ -1573,7 +1673,7 @@ wordStats::wordStats( int index,
     sem_type = checkSemProps();
     checkNoun();
     intensify_type = checkIntensify( alpWord );
-    formal_type = checkFormal( alpWord );
+    formal_type = checkFormal();
     general_noun_type = checkGeneralNoun();
     general_verb_type = checkGeneralVerb();
     adverb_type = checkAdverbType( l_word, tag );
@@ -1801,7 +1901,7 @@ void orderWopr( const string &type, const string &txt, vector<double> &wordProbs
 #ifdef DEBUG_WOPR
   cerr << "received data [" << result << "]" << endl;
 #endif
-  if ( !result.empty() && result.size() > 10 ) {
+  if ( !result.empty() && result.size() > min_file_length ) {
 #ifdef DEBUG_WOPR
     cerr << "start FoLiA parsing" << endl;
 #endif
@@ -1874,7 +1974,7 @@ xmlDoc *AlpinoServerParse( folia::Sentence * );
 void fill_word_lemma_buffers( const sentStats *ss,
                               vector<string> &wv,
                               vector<string> &lv ) {
-  vector<basicStats *> bv = ss->sv;
+  auto bv = ss->sv;
   for ( size_t i = 0; i < bv.size(); ++i ) {
     wordStats *w = dynamic_cast<wordStats *>( bv[i] );
     if ( w->isOverlapCandidate() ) {
@@ -2556,6 +2656,7 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats *pred ) :
   resolveMultiWordIntensify();
   // Disabled for now
   //  resolveMultiWordAfks();
+  resolveMultiWordFormal();
   resolvePrepExpr();
   if ( question )
     questCnt = 1;
@@ -2644,36 +2745,33 @@ Situation::Type sentStats::checkMultiSituations( const string &mword ) {
 }
 
 void sentStats::resolveMultiWordIntensify() {
-  size_t max_length_intensify = 5;
-  for ( size_t i = 0; i < sv.size() - 1; ++i ) {
-    string startword = sv[i]->text();
-    string multiword = startword;
+  auto assign = [this]( wordStats *word, Intensify::Type type ) {
+    ++intensCombiCnt;
+    ++intensCnt;
+    word->intensify_type = type;
+  };
 
-    for ( size_t j = 1; i + j < sv.size() && j < max_length_intensify; ++j ) {
-      // Attach the next word to the expression
-      multiword += " " + sv[i + j]->text();
+  resolveMultiWord(sv, settings.intensify, max_length_intensify, assign);
+}
 
-      // Look for the expression in the list of intensifiers
-      map<string, Intensify::Type>::const_iterator sit;
-      sit = settings.intensify.find( multiword );
-      // If found, update the counts, if not, continue
-      if ( sit != settings.intensify.end() ) {
-        intensCombiCnt += j + 1;
-        intensCnt += j + 1;
-        // Break and skip to the first word after this expression
-        i += j;
-        break;
-      }
-    }
+void sentStats::resolveMultiWordFormal() {
+  auto assign = []( wordStats *word, Formal::Type type ) {
+    word->formal_type = type;
+  };
+
+  resolveMultiWord(sv, settings.formal, max_length_formal, assign);
+
+  for ( size_t i = 0; i < sv.size(); ++i ) {
+    sentStats::setFormalCounts( dynamic_cast<wordStats *>sv[i] );
   }
 }
 
 void sentStats::resolveMultiWordAfks() {
   if ( sv.size() > 1 ) {
     for ( size_t i = 0; i < sv.size() - 2; ++i ) {
-      string word = sv[i]->text();
-      string multiword2 = word + " " + sv[i + 1]->text();
-      string multiword3 = multiword2 + " " + sv[i + 2]->text();
+      string word = sv[i]->ltext();
+      string multiword2 = word + " " + sv[i + 1]->ltext();
+      string multiword3 = multiword2 + " " + sv[i + 2]->ltext();
       Afk::Type at = Afk::NO_A;
       map<string, Afk::Type>::const_iterator sit
           = settings.afkos.find( multiword3 );
@@ -2692,7 +2790,7 @@ void sentStats::resolveMultiWordAfks() {
       }
     }
     // don't forget the last 2 words
-    string multiword2 = sv[sv.size() - 2]->text() + " " + sv[sv.size() - 1]->text();
+    string multiword2 = sv[sv.size() - 2]->ltext() + " " + sv[sv.size() - 1]->ltext();
     map<string, Afk::Type>::const_iterator sit
         = settings.afkos.find( multiword2 );
     if ( sit != settings.afkos.end() ) {
@@ -2887,22 +2985,22 @@ folia::Document *getFrogResult( istream &is ) {
 #endif
 
     // cut off line after ###
-    size_t match = line.find("###");
-    if (match != string::npos) {
-      line = line.substr(0, match);
+    size_t match = line.find( "###" );
+    if ( match != string::npos ) {
+      line = line.substr( 0, match );
     }
 
-    //replace utf-8 BOM
-    if (line.compare(0, 3, "\xEF\xBB\xBF") == 0) {
-      line.erase(0, 3);
+    // replace utf-8 BOM
+    if ( line.compare( 0, 3, "\xEF\xBB\xBF" ) == 0 ) {
+      line.erase( 0, 3 );
     }
 
     // replace brackets
-    std::regex opening ("[\\{\\[]");
-    line = regex_replace (line, opening, "(");
+    std::regex opening( "[\\{\\[]" );
+    line = regex_replace( line, opening, "(" );
 
-    std::regex closing ("[\\}\\]]");
-    line = regex_replace (line, closing, ")");
+    std::regex closing( "[\\}\\]]" );
+    line = regex_replace( line, closing, ")" );
 
     if ( line.length() > 2 ) {
       string start = line.substr( 0, 3 );
@@ -2947,7 +3045,7 @@ folia::Document *getFrogResult( istream &is ) {
   cerr << "received data [" << result << "]" << endl;
 #endif
   folia::Document *doc = 0;
-  if ( !result.empty() && result.size() > 10 ) {
+  if ( !result.empty() && result.size() > min_file_length ) {
 #ifdef DEBUG_FROG
     cerr << "start FoLiA parsing" << endl;
 #endif
@@ -2962,6 +3060,8 @@ folia::Document *getFrogResult( istream &is ) {
       cerr << "FoLiaParsing failed:" << endl
            << e.what() << endl;
     }
+  } else {
+    cerr << "Empty result for FoLiaParsing " << endl;
   }
   return doc;
 }
