@@ -2762,7 +2762,7 @@ void sentStats::resolveMultiWordFormal() {
   resolveMultiWord(sv, settings.formal, max_length_formal, assign);
 
   for ( size_t i = 0; i < sv.size(); ++i ) {
-    sentStats::setFormalCounts( dynamic_cast<wordStats *>sv[i] );
+    sentStats::setFormalCounts( dynamic_cast<wordStats *>( sv[i] ) );
   }
 }
 
