@@ -1,13 +1,12 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# This workflow will install C++ dependencies, run tests and lint with a variety of C++ versions
 
 name: Compile C++
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ master, develop ]
-  pull_request:
-    branches: [ master, develop ]
+    paths-ignore:
+      - '**.md'
 
 jobs:
   build:
@@ -20,110 +19,139 @@ jobs:
         compiler:
           - { 
               compiler: GNU,
-              CC: gcc-7.5,
-              CXX: g++-7.5,
-              GCOV: gcov-7.5,
-              env: {
-                SCAN: echo
-              }
+              CC: gcc,
+              CXX: g++,
+              GCOV: gcov,
+              SCAN: echo
             }
           - {
               compiler: LLVM,
-              CC: clang-7,
-              CXX: clang++-7,
-              env: {
-                SCAN: scan-build,
-                OPENMPFLAG: --disable-openmp
-              }
+              CC: clang,
+              CXX: clang++,
+              SCAN: scan-build,
+              OPENMPFLAG: --disable-openmp
             }
+        dependencies: [ pinned, latest ]
+        include:
+          - dependencies: latest
+            alpino: Alpino-x86_64-Linux-glibc-2.17-git819-sicstus
+          # versions known to works
+          - dependencies: pinned
+            alpino: Alpino-x86_64-Linux-glibc-2.17-git819-sicstus
+            ticcutils: fd408a4db606ded411b002c04c96369120449a0f # 0.30
+            libfolia: 2722c53122d7e47028a999a919fd0bbc6e58a664 # 2.12
+            uctodata: a8be6cf7512998f4c8963d1021f402b8b1290085 # 0.9.1
+            ucto: 58766ef94740e6c9277c8ad77eda80f4df115443 # 0.26
+            timbl: 7dca5c783c4730f48da0be27de8e54450f3e509d # 6.8
+            mbt: 3bebc5512edf4fda9e6c38ef106567546c434c30 # 3.8
+            mbtserver: f4ef14850e242ecb60db0f99070435fe79f5d6fd # 0.16
+            frogdata: 6c8cd0bee122d2703d61395ff527592268192785 # 0.22
+            frog: 7818ce301dfdfdc026e36474adf83e3e0d769ac6 # 0.26
+    env:
+      CC: ${{ matrix.compiler.CC }}
+      CXX: ${{ matrix.compiler.CXX }}
+      GCOV: ${{ matrix.compiler.GCOV }}
+      OPENMPFLAG: ${{ matrix.compiler.OPENMPFLAG }}
 
     steps:
     - uses: actions/checkout@v2
+    - name: Show compiler versions
+      run: |
+        $CC --version
+        $CXX --version
+    - name: Install clang-tools
+      if: ${{ matrix.compiler.compiler == 'LLVM' }}
+      run: sudo apt install clang-tools
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt install -y pkg-config autoconf-archive autotools-dev ccache
-        sudo apt install -y cppcheck libicu-dev libxml2-dev libbz2-dev
-        sudo apt install -y zlib1g-dev libtar-dev expect libexttextcat-dev
-    - name: Before install
+        sudo apt install -y pkg-config autoconf-archive autotools-dev ccache \
+          cppcheck libicu-dev libxml2-dev libbz2-dev \
+          zlib1g-dev libtar-dev expect libexttextcat-dev
+    - name: Cache T-Scan dependencies
+      id: cache-tscan-dependencies
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-tscan-dependencies
+      with:
+        path: |
+          ~/.tscan-deps
+          data
+        key: ${{ runner.os }}-build-${{ matrix.compiler.compiler }}-${{ matrix.dependencies }}-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ matrix.compiler.compiler }}-${{ matrix.dependencies }}-${{ github.sha }}
+          ${{ runner.os }}-build-${{ matrix.compiler.compiler }}-${{ matrix.dependencies }}-
+          ${{ runner.os }}-build-${{ matrix.compiler.compiler }}-
+
+    - name: List the state of T-scan dependencies
+      continue-on-error: true
       run: |
-        git clone https://github.com/LanguageMachines/ticcutils
-        cd ticcutils
-        bash bootstrap.sh
-        ./configure $OPENMPFLAG
-        make
-        sudo make install
-        cd ..
-        git clone https://github.com/LanguageMachines/libfolia
-        cd libfolia
-        bash bootstrap.sh
-        ./configure $OPENMPFLAG
-        make
-        sudo make install
-        cd ..
-        git clone https://github.com/LanguageMachines/uctodata
-        cd uctodata
-        bash bootstrap.sh
-        ./configure $OPENMPFLAG
-        make
-        sudo make install
-        cd ..
-        git clone https://github.com/LanguageMachines/ucto
-        cd ucto
-        bash bootstrap.sh
-        ./configure $OPENMPFLAG
-        make
-        sudo make install
-        cd ..
-        git clone https://github.com/LanguageMachines/timbl
-        cd timbl
-        bash bootstrap.sh
-        ./configure $OPENMPFLAG
-        make
-        sudo make install
-        cd ..
-        git clone https://github.com/LanguageMachines/mbt
-        cd mbt
-        bash bootstrap.sh
-        ./configure $OPENMPFLAG
-        make
-        sudo make install
-        cd ..
-        git clone https://github.com/LanguageMachines/mbtserver
-        cd mbtserver
-        bash bootstrap.sh
-        ./configure $OPENMPFLAG
-        make
-        sudo make install
-        cd ..
-        git clone https://github.com/LanguageMachines/frogdata
-        cd frogdata
-        bash bootstrap.sh
-        ./configure $OPENMPFLAG
-        make
-        sudo make install
-        cd ..
-        git clone https://github.com/LanguageMachines/frog
-        cd frog
-        bash bootstrap.sh
-        ./configure $OPENMPFLAG
-        make
-        sudo make install
-        cd ..
+        mkdir -p ~/.tscan-deps
+        ls -la ~/.tscan-deps
+
+    - name: Install Alpino
+      env:
+        ALPINO_VERSION: ${{ matrix.alpino }}
+      run: |
+        .github/workflows/cpp-prep-alpino.sh $ALPINO_VERSION
+
+    - name: Install dependencies
+      env:
+        TICCUTILS_VERSION: ${{ matrix.ticcutils }}
+        LIBFOLIA_VERSION: ${{ matrix.libfolia }}
+        UCTODATA_VERSION: ${{ matrix.uctodata }}
+        UCTO_VERSION: ${{ matrix.ucto }}
+        TIMBL_VERSION: ${{ matrix.timbl }}
+        MBT_VERSION: ${{ matrix.mbt }}
+        MBTSERVER_VERSION: ${{ matrix.mbtserver }}
+        FROGDATA_VERSION: ${{ matrix.frogdata }}
+        FROG_VERSION: ${{ matrix.frog }}
+      run: |
+        .github/workflows/cpp-prep-dep.sh ticcutils https://github.com/LanguageMachines/ticcutils $TICCUTILS_VERSION
+        .github/workflows/cpp-prep-dep.sh libfolia https://github.com/LanguageMachines/libfolia $LIBFOLIA_VERSION
+        .github/workflows/cpp-prep-dep.sh uctodata https://github.com/LanguageMachines/uctodata $UCTODATA_VERSION
+        .github/workflows/cpp-prep-dep.sh ucto https://github.com/LanguageMachines/ucto $UCTO_VERSION
+        .github/workflows/cpp-prep-dep.sh timbl https://github.com/LanguageMachines/timbl $TIMBL_VERSION
+        .github/workflows/cpp-prep-dep.sh mbt https://github.com/LanguageMachines/mbt $MBT_VERSION
+        .github/workflows/cpp-prep-dep.sh mbtserver https://github.com/LanguageMachines/mbtserver $MBTSERVER_VERSION
+        .github/workflows/cpp-prep-dep.sh frogdata https://github.com/LanguageMachines/frogdata $FROGDATA_VERSION
+        .github/workflows/cpp-prep-dep.sh frog https://github.com/LanguageMachines/frog $FROG_VERSION
     - name: Install
       run: |
         bash bootstrap.sh
         ./configure $OPENMPFLAG
         cat config.h
-        cppcheck --enable=all --quiet --error-exitcode=0 .
-        $SCAN --status-bugs make
+        cppcheck -I include --enable=all --quiet --error-exitcode=0 --suppressions-list=cppcheck-suppressions-list.txt .
+        ${{ matrix.compiler.SCAN }} --status-bugs make
         make
         sudo make install
+    - name: Start services
+      run: |
+        export ALPINO_HOME=~/.tscan-deps/Alpino
+        export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+        cd webservice
+        ls -la ~/.tscan-deps/Alpino
+        ./startalpino.sh &
+        ./startfrog.sh &
+    - name: Services up?
+      run: |
+        .github/workflows/cpp-check-service.sh 7001
+        .github/workflows/cpp-check-service.sh 7003
+        sleep 1
     - name: Run unit tests
       run: |
-        LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib make check
+        make check
+    - name: Clear extracted Alpino files
+      run: |
+        rm -rf ~/.tscan-deps/Alpino
     - name: Debug information
-      if: always()
+      if: ${{ !success() }}
       run: |
         cat config.h
         [ -f src/test-suite.log ] && cat src/test-suite.log
+        [ -f src/test.sh.log ] && cat src/test.sh.log
+        tests/logdiffs.sh
+        echo "*** ALPINO LOG ***"
+        cat /tmp/alpino_server.log
+        echo "*** FROG LOG ***"
+        cat /tmp/frog-tscan.log
