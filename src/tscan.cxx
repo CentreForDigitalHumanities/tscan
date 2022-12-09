@@ -509,7 +509,7 @@ bool fill_connectors( map<CGN::Type, set<string>> &c1,
     if ( n == 1 ) {
       c1[tag].insert( vec[0] );
     }
-    else if ( n > 1 && tag != CGN::UNASS ) {
+    else if ( tag != CGN::UNASS ) {
       cerr << "skip line: " << line
            << " (no GCN tag info allowed for multiword entries) " << endl;
       continue;
@@ -552,18 +552,19 @@ bool fill_vzexpr( set<string> &vz2, set<string> &vz3, set<string> &vz4,
            << n << ")" << endl;
       continue;
     }
+    string expression;
     switch ( n ) {
       case 2: {
-        string line = vec[0] + " " + vec[1];
-        vz2.insert( line );
+        expression = vec[0] + " " + vec[1];
+        vz2.insert( expression );
       } break;
       case 3: {
-        string line = vec[0] + " " + vec[1] + " " + vec[2];
-        vz3.insert( line );
+        expression = vec[0] + " " + vec[1] + " " + vec[2];
+        vz3.insert( expression );
       } break;
       case 4: {
-        string line = vec[0] + " " + vec[1] + " " + vec[2] + " " + vec[3];
-        vz4.insert( line );
+        expression = vec[0] + " " + vec[1] + " " + vec[2] + " " + vec[3];
+        vz4.insert( expression );
       } break;
       default:
         throw logic_error( "switch out of range" );
@@ -587,6 +588,7 @@ bool fill_vzexpr( set<string> &vz2, set<string> &vz3, set<string> &vz4,
 bool fill( map<string, Afk::Type> &afkos, istream &is ) {
   string line;
   while ( safe_getline( is, line ) ) {
+    Afk::Type afkType;
     // a line is supposed to be :
     // a comment, starting with '#'
     // like: '# comment'
@@ -602,22 +604,22 @@ bool fill( map<string, Afk::Type> &afkos, istream &is ) {
       continue;
     }
     if ( n == 2 ) {
-      Afk::Type at = Afk::classify( vec[1] );
-      if ( at != Afk::NO_A )
-        afkos[vec[0]] = at;
+      afkType = Afk::classify( vec[1] );
+      if ( afkType != Afk::NO_A )
+        afkos[vec[0]] = afkType;
     }
     else if ( n == 3 ) {
-      Afk::Type at = Afk::classify( vec[2] );
-      if ( at != Afk::NO_A ) {
+      afkType = Afk::classify( vec[2] );
+      if ( afkType != Afk::NO_A ) {
         string s = vec[0] + " " + vec[1];
-        afkos[s] = at;
+        afkos[s] = afkType;
       }
     }
     else if ( n == 4 ) {
-      Afk::Type at = Afk::classify( vec[3] );
-      if ( at != Afk::NO_A ) {
+      afkType = Afk::classify( vec[3] );
+      if ( afkType != Afk::NO_A ) {
         string s = vec[0] + " " + vec[1] + " " + vec[2];
-        afkos[s] = at;
+        afkos[s] = afkType;
       }
     }
     else {
@@ -1168,12 +1170,9 @@ string formForHead( const string &complete_word, const string &head_lemma ) {
   int match_start = 0;
   int match_length = 0;
 
-  int candidate_start = 0;
-  int candidate_length = 0;
-
   for ( int i = 0; i <= complete_word.size(); i++ ) {
-    candidate_start = i;
-    candidate_length = 0;
+    int candidate_start = i;
+    int candidate_length = 0;
     for ( int j = 0; j < head_lemma.size() && i + j < complete_word.size(); j++ ) {
       if ( complete_word[i + j] == head_lemma[j] ) {
         candidate_length++;
@@ -1224,8 +1223,8 @@ string lemmatize( const string &word ) {
     result += s + "\n";
   }
 
-  folia::Document *doc = 0;
   if ( !result.empty() && result.size() > min_file_length ) {
+    folia::Document *doc;
     doc = new folia::Document();
     try {
       doc->readFromString( result );
@@ -1344,9 +1343,12 @@ SEM::Type wordStats::checkSemProps() const {
            && ( prop == CGN::ISVD || prop == CGN::ISOD ) ) {
         // might be a 'hidden' adj!
         //	cerr << "lookup a probable ADJ " << prop << " (" << word << ") " << endl;
-        sit = settings.adj_sem.find( l_word );
-        if ( sit == settings.adj_sem.end() )
+        map<string, SEM::Type>::const_iterator adj_sit;
+        adj_sit = settings.adj_sem.find( l_word );
+        if ( adj_sit == settings.adj_sem.end() )
           sit = settings.verb_sem.end();
+        else
+          sit = adj_sit;
       }
     }
     if ( sit == settings.verb_sem.end() ) {
@@ -1442,7 +1444,7 @@ General::Type wordStats::checkGeneralVerb() const {
   return General::NO_GENERAL;
 }
 
-Adverb::Type checkAdverbType( string word, CGN::Type tag ) {
+Adverb::Type checkAdverbType( const string &word, CGN::Type tag ) {
   if ( tag == CGN::BW ) {
     map<string, Adverb::adverb>::const_iterator sit = settings.adverbs.find( word );
     if ( sit != settings.adverbs.end() ) {
@@ -1452,7 +1454,7 @@ Adverb::Type checkAdverbType( string word, CGN::Type tag ) {
   return Adverb::NO_ADVERB;
 }
 
-Adverb::SubType checkAdverbSubType( string word, CGN::Type tag ) {
+Adverb::SubType checkAdverbSubType( const string &word, CGN::Type tag ) {
   if ( tag == CGN::BW ) {
     map<string, Adverb::adverb>::const_iterator sit = settings.adverbs.find( word );
     if ( sit != settings.adverbs.end() ) {
@@ -2766,40 +2768,40 @@ void sentStats::resolveMultiWordFormal() {
   }
 }
 
-void sentStats::resolveMultiWordAfks() {
-  if ( sv.size() > 1 ) {
-    for ( size_t i = 0; i < sv.size() - 2; ++i ) {
-      string word = sv[i]->ltext();
-      string multiword2 = word + " " + sv[i + 1]->ltext();
-      string multiword3 = multiword2 + " " + sv[i + 2]->ltext();
-      Afk::Type at = Afk::NO_A;
-      map<string, Afk::Type>::const_iterator sit
-          = settings.afkos.find( multiword3 );
-      if ( sit == settings.afkos.end() ) {
-        sit = settings.afkos.find( multiword2 );
-      }
-      else {
-        cerr << "FOUND a 3-word AFK: '" << multiword3 << "'" << endl;
-      }
-      if ( sit != settings.afkos.end() ) {
-        cerr << "FOUND a 2-word AFK: '" << multiword2 << "'" << endl;
-        at = sit->second;
-      }
-      if ( at != Afk::NO_A ) {
-        ++afks[at];
-      }
-    }
-    // don't forget the last 2 words
-    string multiword2 = sv[sv.size() - 2]->ltext() + " " + sv[sv.size() - 1]->ltext();
-    map<string, Afk::Type>::const_iterator sit
-        = settings.afkos.find( multiword2 );
-    if ( sit != settings.afkos.end() ) {
-      cerr << "FOUND a 2-word AFK: '" << multiword2 << "'" << endl;
-      Afk::Type at = sit->second;
-      ++afks[at];
-    }
-  }
-}
+// void sentStats::resolveMultiWordAfks() {
+//   if ( sv.size() > 1 ) {
+//     for ( size_t i = 0; i < sv.size() - 2; ++i ) {
+//       string word = sv[i]->ltext();
+//       string multiword2 = word + " " + sv[i + 1]->ltext();
+//       string multiword3 = multiword2 + " " + sv[i + 2]->ltext();
+//       Afk::Type at = Afk::NO_A;
+//       map<string, Afk::Type>::const_iterator sit
+//           = settings.afkos.find( multiword3 );
+//       if ( sit == settings.afkos.end() ) {
+//         sit = settings.afkos.find( multiword2 );
+//       }
+//       else {
+//         cerr << "FOUND a 3-word AFK: '" << multiword3 << "'" << endl;
+//       }
+//       if ( sit != settings.afkos.end() ) {
+//         cerr << "FOUND a 2-word AFK: '" << multiword2 << "'" << endl;
+//         at = sit->second;
+//       }
+//       if ( at != Afk::NO_A ) {
+//         ++afks[at];
+//       }
+//     }
+//     // don't forget the last 2 words
+//     string multiword2 = sv[sv.size() - 2]->ltext() + " " + sv[sv.size() - 1]->ltext();
+//     map<string, Afk::Type>::const_iterator sit
+//         = settings.afkos.find( multiword2 );
+//     if ( sit != settings.afkos.end() ) {
+//       cerr << "FOUND a 2-word AFK: '" << multiword2 << "'" << endl;
+//       Afk::Type at = sit->second;
+//       ++afks[at];
+//     }
+//   }
+// }
 
 void sentStats::resolvePrepExpr() {
   if ( sv.size() > 2 ) {

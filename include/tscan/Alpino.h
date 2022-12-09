@@ -73,9 +73,9 @@ void mod_stats( xmlDoc *, int&, int& );
 int get_d_level( const folia::Sentence *s, xmlDoc *alp );
 int indef_npcount( xmlDoc *alp );
 WWform classifyVerb( const xmlNode *, const std::string&, std::string& );
-std::multimap<DD_type,int> getDependencyDist( const xmlNode *,
-					      const std::set<size_t>& );
-bool isSmallCnj( const xmlNode *);
+std::multimap<DD_type, int> getDependencyDist( const xmlNode *,
+                                               const std::set<size_t> & );
+// bool isSmallCnj( const xmlNode *);
 
 std::list<xmlNode*> getAdverbialNodes( xmlDoc* );
 std::list<xmlNode*> getNodesByCat( xmlDoc*, const std::string&, const std::string& = "" );

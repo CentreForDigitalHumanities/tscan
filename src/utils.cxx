@@ -109,26 +109,26 @@ istream& safe_getline( istream& is, string& t ){
   // The sentry object performs various tasks,
   // such as thread synchronization and updating the stream state.
 
-  istream::sentry se(is, true);
-  streambuf* sb = is.rdbuf();
+  istream::sentry ( is, true );
+  streambuf *sb = is.rdbuf();
 
-  for(;;) {
+  for ( ;; ) {
     int c = sb->sbumpc();
-    switch (c) {
-    case '\n':
-      return is;
-    case '\r':
-      if(sb->sgetc() == '\n'){
-	sb->sbumpc();
-      }
-      return is;
-    case EOF:
-      // Also handle the case when the last line has no line ending
-      if(t.empty())
-	is.setstate(std::ios::eofbit);
-      return is;
-    default:
-      t += (char)c;
+    switch ( c ) {
+      case '\n':
+        return is;
+      case '\r':
+        if ( sb->sgetc() == '\n' ) {
+          sb->sbumpc();
+        }
+        return is;
+      case EOF:
+        // Also handle the case when the last line has no line ending
+        if ( t.empty() )
+          is.setstate( std::ios::eofbit );
+        return is;
+      default:
+        t += (char)c;
     }
   }
 }
