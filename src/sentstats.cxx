@@ -372,44 +372,49 @@ bool sentStats::checkAls( size_t index ) {
           opsomAlsList + sizeof(opsomAlsList)/sizeof(string) );
 
   string als = sv[index]->ltext();
-  if ( als == "als" ){
-    if ( index == 0 ){
+  if ( als == "als" ) {
+    if ( index == 0 ) {
       // eerste woord, terugkijken kan dus niet
       sv[0]->setConnType( Conn::CAUSAAL );
     }
     else {
-      for ( size_t i = index-1; ; --i ) {
-  string word = sv[i]->ltext();
-  if ( compAlsSet.find( word ) != compAlsSet.end() ){
-    // kijk naar "evenmin ... als" constructies
-    sv[i]->setConnType( Conn::COMPARATIEF );
-    sv[index]->setConnType( Conn::COMPARATIEF );
-    //  cerr << "ALS comparatief:" << word << endl;
-    return true;
-  }
-  else if ( opsomAlsSet.find( word ) != opsomAlsSet.end() ){
-    // kijk naar "zowel ... als" constructies
-    sv[i]->setConnType( Conn::OPSOMMEND_WG );
-    sv[index]->setConnType( Conn::OPSOMMEND_WG );
-    //  cerr << "ALS opsommend:" << word << endl;
-    return true;
-  }
+      for ( size_t i = index - 1;; --i ) {
+        cerr << i << endl;
+        string word = sv[i]->ltext();
+        if ( compAlsSet.find( word ) != compAlsSet.end() ) {
+            // kijk naar "evenmin ... als" constructies
+            sv[i]->setConnType( Conn::COMPARATIEF );
+            sv[index]->setConnType( Conn::COMPARATIEF );
+            //  cerr << "ALS comparatief:" << word << endl;
+            return true;
+        }
+        else if ( opsomAlsSet.find( word ) != opsomAlsSet.end() ) {
+            // kijk naar "zowel ... als" constructies
+            sv[i]->setConnType( Conn::OPSOMMEND_WG );
+            sv[index]->setConnType( Conn::OPSOMMEND_WG );
+            //  cerr << "ALS opsommend:" << word << endl;
+            return true;
+        }
+        if ( i == 0) {
+          // it does not exist
+          break;
+        }
       }
-      if ( sv[index]->postag() == CGN::VG ){
-  if ( sv[index-1]->postag() == CGN::ADJ ){
-    // "groter als"
-    //  cerr << "ALS comparatief: ADJ: " << sv[index-1]->text() << endl;
-    sv[index]->setConnType( Conn::COMPARATIEF );
-  }
-  else {
-    //  cerr << "ALS causaal: " << sv[index-1]->text() << endl;
-    sv[index]->setConnType( Conn::CAUSAAL );
-  }
-  return true;
+      if ( sv[index]->postag() == CGN::VG ) {
+        if ( sv[index - 1]->postag() == CGN::ADJ ) {
+            // "groter als"
+            //  cerr << "ALS comparatief: ADJ: " << sv[index-1]->text() << endl;
+            sv[index]->setConnType( Conn::COMPARATIEF );
+        }
+        else {
+            //  cerr << "ALS causaal: " << sv[index-1]->text() << endl;
+            sv[index]->setConnType( Conn::CAUSAAL );
+        }
+        return true;
       }
     }
-    if ( index < sv.size() &&
-   sv[index+1]->postag() == CGN::TW ){
+    if ( index < sv.size() - 1 &&
+          sv[index+1]->postag() == CGN::TW ) {
       // "als eerste" "als dertigste"
       sv[index]->setConnType( Conn::COMPARATIEF );
       return true;
