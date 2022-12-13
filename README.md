@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/proycon/tscan.svg?branch=master)](https://travis-ci.org/proycon/tscan) [![Language Machines Badge](https://applejack.science.ru.nl/lamabadge.php/tscan)](http://applejack.science.ru.nl/languagemachines/) [![DOI](https://zenodo.org/badge/36359165.svg)](https://zenodo.org/badge/latestdoi/36359165)
+[![Actions Status](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/cpp.yml/badge.svg)](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/cpp.yml) [![Actions Status](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/webservice.yml/badge.svg)](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/webservice.yml) [![Language Machines Badge](https://applejack.science.ru.nl/lamabadge.php/tscan)](http://applejack.science.ru.nl/languagemachines/) [![DOI](https://zenodo.org/badge/36359165.svg)](https://zenodo.org/badge/latestdoi/36359165)
 
 # T-Scan
 
@@ -18,7 +18,7 @@ Sloot (Tilburg University), Martijn van der Klis (Utrecht University) and is cur
 ## Web application / Webservice
 
 This repository contains the T-Scan source code, allowing you to run it
-yourself on your own system. In addition, T-Scan is available as a web application and webservice through https://webservices.cls.ru.nl/tscan , register for a (free) account there first, and then access T-Scan through https://webservices.cls.ru.nl/tscan/ .
+yourself on your own system. In addition, T-Scan is available as a web application and webservice through https://tscan.hum.uu.nl/tscan/. Please [contact us](https://dig.hum.uu.nl/contact-and-links/) for an account.
 
 ## Documentation
 
