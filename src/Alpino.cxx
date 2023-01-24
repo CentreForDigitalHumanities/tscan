@@ -1061,11 +1061,10 @@ list<xmlNode*> getNodesByRelCat( xmlNode *node, const string& rel, const string&
 }
 
 // Returns the id attribute for each xmlNode in the list.
-list<string> getNodeIds( list<xmlNode*> nodes ) {
+list<string> getNodeIds( list<xmlNode *> nodes ) {
   list<string> ids;
-  for (auto& node : nodes)
-  {
-    ids.push_back(TiCC::getAttribute(node, "id"));
+  for ( const auto &node : nodes ) {
+    ids.push_back( TiCC::getAttribute( node, "id" ) );
   }
   return ids;
 }

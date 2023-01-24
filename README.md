@@ -94,6 +94,18 @@ Then either run T-Scan from the command-line, which will produce a FoLiA XML fil
 
 And then navigate to the host and port specified.
 
+## Tests
+
+Tests can be run using `make check`. This requires running the Alpino and Frog services:
+
+```bash
+cd webservice
+./startalpino.sh &
+./startfrog.sh &
+```
+
+Note: the output can change when a different version of Alpino or Frog is used.
+
 ## Data
 
 [Word prevalence values](http://crr.ugent.be/programs-data/word-prevalence-values) (in `data/prevalence_nl.data` and `data/prevalence_be.data`) courtesy of Keuleers et al., Center for Reading Research, Ghent University.

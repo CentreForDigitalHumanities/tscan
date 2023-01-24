@@ -1640,7 +1640,7 @@ wordStats::wordStats( int index,
     size_t max = 0;
     size_t pos = 0;
     size_t match_pos = 0;
-    for ( auto const s : mv ) {
+    for ( const auto s : mv ) {
       vector<string> parts;
       TiCC::split_at_first_of( s, parts, "[]" );
       if ( parts.size() > max ) {
