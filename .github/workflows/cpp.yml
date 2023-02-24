@@ -95,27 +95,33 @@ jobs:
       run: |
         .github/workflows/cpp-prep-alpino.sh $ALPINO_VERSION
 
-    - name: Install dependencies
-      env:
-        TICCUTILS_VERSION: ${{ matrix.ticcutils }}
-        LIBFOLIA_VERSION: ${{ matrix.libfolia }}
-        UCTODATA_VERSION: ${{ matrix.uctodata }}
-        UCTO_VERSION: ${{ matrix.ucto }}
-        TIMBL_VERSION: ${{ matrix.timbl }}
-        MBT_VERSION: ${{ matrix.mbt }}
-        MBTSERVER_VERSION: ${{ matrix.mbtserver }}
-        FROGDATA_VERSION: ${{ matrix.frogdata }}
-        FROG_VERSION: ${{ matrix.frog }}
+    - name: Install ticcutils
       run: |
-        .github/workflows/cpp-prep-dep.sh ticcutils https://github.com/LanguageMachines/ticcutils $TICCUTILS_VERSION
-        .github/workflows/cpp-prep-dep.sh libfolia https://github.com/LanguageMachines/libfolia $LIBFOLIA_VERSION
-        .github/workflows/cpp-prep-dep.sh uctodata https://github.com/LanguageMachines/uctodata $UCTODATA_VERSION
-        .github/workflows/cpp-prep-dep.sh ucto https://github.com/LanguageMachines/ucto $UCTO_VERSION
-        .github/workflows/cpp-prep-dep.sh timbl https://github.com/LanguageMachines/timbl $TIMBL_VERSION
-        .github/workflows/cpp-prep-dep.sh mbt https://github.com/LanguageMachines/mbt $MBT_VERSION
-        .github/workflows/cpp-prep-dep.sh mbtserver https://github.com/LanguageMachines/mbtserver $MBTSERVER_VERSION
-        .github/workflows/cpp-prep-dep.sh frogdata https://github.com/LanguageMachines/frogdata $FROGDATA_VERSION
-        .github/workflows/cpp-prep-dep.sh frog https://github.com/LanguageMachines/frog $FROG_VERSION
+        .github/workflows/cpp-prep-dep.sh ticcutils https://github.com/LanguageMachines/ticcutils "${{ matrix.ticcutils }}"
+    - name: Install libfolia
+      run: |
+        .github/workflows/cpp-prep-dep.sh libfolia https://github.com/LanguageMachines/libfolia "${{ matrix.libfolia }}"
+    - name: Install uctodata
+      run: |
+        .github/workflows/cpp-prep-dep.sh uctodata https://github.com/LanguageMachines/uctodata "${{ matrix.uctodata }}"
+    - name: Install ucto
+      run: |
+        .github/workflows/cpp-prep-dep.sh ucto https://github.com/LanguageMachines/ucto "${{ matrix.ucto }}"
+    - name: Install timbl
+      run: |
+        .github/workflows/cpp-prep-dep.sh timbl https://github.com/LanguageMachines/timbl "${{ matrix.timbl }}"
+    - name: Install mbt
+      run: |
+        .github/workflows/cpp-prep-dep.sh mbt https://github.com/LanguageMachines/mbt "${{ matrix.mbt }}"
+    - name: Install mbtserver
+      run: |
+        .github/workflows/cpp-prep-dep.sh mbtserver https://github.com/LanguageMachines/mbtserver "${{ matrix.mbtserver }}"
+    - name: Install frogdata
+      run: |
+        .github/workflows/cpp-prep-dep.sh frogdata https://github.com/LanguageMachines/frogdata "${{ matrix.frogdata }}"
+    - name: Install frog
+      run: |
+        .github/workflows/cpp-prep-dep.sh frog https://github.com/LanguageMachines/frog "${{ matrix.frog }}"
     - name: Install
       run: |
         bash bootstrap.sh

@@ -1,26 +1,23 @@
 #!/usr/bin/env bash
+set -e
 directory=$1
 repository=$2
 version=$3
 
 cd ~/.tscan-deps
-if [ -d $directory ];
+if [ ! -d $directory ];
 then
-    cd $directory
-    old_commit_hash=$(git rev-parse HEAD)
-    if [[ -z $version || $version != $old_commit_hash ]];
-    then
-        git pull
-    fi
-else
     git clone $repository
-    old_commit_hash='NEW'
-    cd $directory
 fi
-if [[ ! -z $version && $version != $old_commit_hash ]];
+cd $directory
+old_commit_hash=$(git rev-parse HEAD)
+if [[ $version != $old_commit_hash ]];
 then
     echo "Resetting to $version"
+    git pull
     git reset --hard $version
+else
+    echo "No need to reset: $old_commit_hash"
 fi
 
 commit_hash=$(git rev-parse HEAD)
