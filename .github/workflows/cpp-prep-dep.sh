@@ -8,7 +8,7 @@ if [ -d $directory ];
 then
     cd $directory
     old_commit_hash=$(git rev-parse HEAD)
-    if [ -z $version || $version != $old_commit_hash ];
+    if [[ -z $version || $version != $old_commit_hash ]];
     then
         git pull
     fi
@@ -17,7 +17,7 @@ else
     old_commit_hash='NEW'
     cd $directory
 fi
-if [ ! -z $version && $version != $old_commit_hash ];
+if [[ ! -z $version && $version != $old_commit_hash ]];
 then
     echo "Resetting to $version"
     git reset --hard $version
@@ -25,7 +25,7 @@ fi
 
 commit_hash=$(git rev-parse HEAD)
 # only build if something changed
-if [ $commit_hash != $old_commit_hash ]; then
+if [[ $commit_hash != $old_commit_hash ]]; then
     echo "Building $1..."
     bash bootstrap.sh
     ./configure $OPENMPFLAG
