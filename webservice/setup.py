@@ -16,7 +16,7 @@ setup(
     description = ("Webservice for T-scan"),
     license = "AGPL",
     keywords = "rest nlp computational_linguistics rest",
-    url = "https://github.com/proycon/tscan",
+    url = "https://github.com/UUDigitalHumanitieslab/tscan",
     packages=['tscanservice'],
     long_description="Feature extraction on dutch texts",
     classifiers=[

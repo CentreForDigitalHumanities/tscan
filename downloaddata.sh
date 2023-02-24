@@ -29,7 +29,7 @@ if [ "$PREDOWNLOAD" != "$POSTDOWNLOAD" ]; then
     tar -xvjf tscan-bigdata.tar.bz2
 fi
 
-#Dummies for RBN-derived data, not redistributable due to overly restrictive license (http://tst.inl.nl/producten/rbn/toonlicentie.php)
+#Dummies for RBN-derived data, not redistributable due to overly restrictive license (https://taalmaterialen.ivdnt.org/download/tstc-referentiebestand-nederlands/)
 RESTRICTEDDATA="adjs_semtype.data general_nouns.data general_verbs.data intensiveringen.data nouns_semtype.data verbs_semtype.data"
 for file in $RESTRICTEDDATA; do
     if [ ! -f $file ]; then

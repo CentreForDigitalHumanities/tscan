@@ -9,7 +9,13 @@ then echo "tscan_bin not set";
      exit;
 fi
 
+result=0
 for file in *.example
-do ./testone.sh $file
+     do ./testone.sh $file
+     if [ $? -ne 0 ];
+     then
+          result=1
+     fi
 done
 
+exit $result

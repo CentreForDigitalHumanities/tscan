@@ -372,44 +372,49 @@ bool sentStats::checkAls( size_t index ) {
           opsomAlsList + sizeof(opsomAlsList)/sizeof(string) );
 
   string als = sv[index]->ltext();
-  if ( als == "als" ){
-    if ( index == 0 ){
+  if ( als == "als" ) {
+    if ( index == 0 ) {
       // eerste woord, terugkijken kan dus niet
       sv[0]->setConnType( Conn::CAUSAAL );
     }
     else {
-      for ( size_t i = index-1; i+1 != 0; --i ){
-  string word = sv[i]->ltext();
-  if ( compAlsSet.find( word ) != compAlsSet.end() ){
-    // kijk naar "evenmin ... als" constructies
-    sv[i]->setConnType( Conn::COMPARATIEF );
-    sv[index]->setConnType( Conn::COMPARATIEF );
-    //  cerr << "ALS comparatief:" << word << endl;
-    return true;
-  }
-  else if ( opsomAlsSet.find( word ) != opsomAlsSet.end() ){
-    // kijk naar "zowel ... als" constructies
-    sv[i]->setConnType( Conn::OPSOMMEND_WG );
-    sv[index]->setConnType( Conn::OPSOMMEND_WG );
-    //  cerr << "ALS opsommend:" << word << endl;
-    return true;
-  }
+      for ( size_t i = index - 1;; --i ) {
+        cerr << i << endl;
+        string word = sv[i]->ltext();
+        if ( compAlsSet.find( word ) != compAlsSet.end() ) {
+            // kijk naar "evenmin ... als" constructies
+            sv[i]->setConnType( Conn::COMPARATIEF );
+            sv[index]->setConnType( Conn::COMPARATIEF );
+            //  cerr << "ALS comparatief:" << word << endl;
+            return true;
+        }
+        else if ( opsomAlsSet.find( word ) != opsomAlsSet.end() ) {
+            // kijk naar "zowel ... als" constructies
+            sv[i]->setConnType( Conn::OPSOMMEND_WG );
+            sv[index]->setConnType( Conn::OPSOMMEND_WG );
+            //  cerr << "ALS opsommend:" << word << endl;
+            return true;
+        }
+        if ( i == 0) {
+          // it does not exist
+          break;
+        }
       }
-      if ( sv[index]->postag() == CGN::VG ){
-  if ( sv[index-1]->postag() == CGN::ADJ ){
-    // "groter als"
-    //  cerr << "ALS comparatief: ADJ: " << sv[index-1]->text() << endl;
-    sv[index]->setConnType( Conn::COMPARATIEF );
-  }
-  else {
-    //  cerr << "ALS causaal: " << sv[index-1]->text() << endl;
-    sv[index]->setConnType( Conn::CAUSAAL );
-  }
-  return true;
+      if ( sv[index]->postag() == CGN::VG ) {
+        if ( sv[index - 1]->postag() == CGN::ADJ ) {
+            // "groter als"
+            //  cerr << "ALS comparatief: ADJ: " << sv[index-1]->text() << endl;
+            sv[index]->setConnType( Conn::COMPARATIEF );
+        }
+        else {
+            //  cerr << "ALS causaal: " << sv[index-1]->text() << endl;
+            sv[index]->setConnType( Conn::CAUSAAL );
+        }
+        return true;
       }
     }
-    if ( index < sv.size() &&
-   sv[index+1]->postag() == CGN::TW ){
+    if ( index < sv.size() - 1 &&
+          sv[index+1]->postag() == CGN::TW ) {
       // "als eerste" "als dertigste"
       sv[index]->setConnType( Conn::COMPARATIEF );
       return true;
@@ -432,80 +437,78 @@ void sentStats::resolveSituations() {
       //      cerr << "zoek 4 op '" << multiword4 << "'" << endl;
       Situation::Type sit = checkMultiSituations( multiword4 );
       if ( sit != Situation::NO_SIT ){
-	//	cerr << "found " << sit << "-situation: " << multiword4 << endl;
-	sv[i]->setSitType( Situation::NO_SIT );
-	sv[i+1]->setSitType( Situation::NO_SIT );
-	sv[i+2]->setSitType( Situation::NO_SIT );
-	sv[i+3]->setSitType( sit );
-	i += 3;
+        // cerr << "found " << sit << "-situation: " << multiword4 << endl;
+        sv[i]->setSitType( Situation::NO_SIT );
+        sv[i + 1]->setSitType( Situation::NO_SIT );
+        sv[i + 2]->setSitType( Situation::NO_SIT );
+        sv[i + 3]->setSitType( sit );
+        i += 3;
       }
       else {
-	//cerr << "zoek 3 op '" << multiword3 << "'" << endl;
-	sit = checkMultiSituations( multiword3 );
-	if ( sit != Situation::NO_SIT ){
-	  // cerr << "found " << sit << "-situation: " << multiword3 << endl;
-	  sv[i]->setSitType( Situation::NO_SIT );
-	  sv[i+1]->setSitType( Situation::NO_SIT );
-	  sv[i+2]->setSitType( sit );
-	  i += 2;
-	}
-	else {
-	  //cerr << "zoek 2 op '" << multiword2 << "'" << endl;
-	  sit = checkMultiSituations( multiword2 );
-	  if ( sit != Situation::NO_SIT ){
-	    //	    cerr << "found " << sit << "-situation: " << multiword2 << endl;
-	    sv[i]->setSitType( Situation::NO_SIT);
-	    sv[i+1]->setSitType( sit );
-	    i += 1;
-	  }
-	}
+        // cerr << "zoek 3 op '" << multiword3 << "'" << endl;
+        sit = checkMultiSituations( multiword3 );
+        if ( sit != Situation::NO_SIT ) {
+          // cerr << "found " << sit << "-situation: " << multiword3 << endl;
+          sv[i]->setSitType( Situation::NO_SIT );
+          sv[i + 1]->setSitType( Situation::NO_SIT );
+          sv[i + 2]->setSitType( sit );
+          i += 2;
+        }
+        else {
+          // cerr << "zoek 2 op '" << multiword2 << "'" << endl;
+          sit = checkMultiSituations( multiword2 );
+          if ( sit != Situation::NO_SIT ) {
+            //	    cerr << "found " << sit << "-situation: " << multiword2 << endl;
+            sv[i]->setSitType( Situation::NO_SIT );
+            sv[i + 1]->setSitType( sit );
+            i += 1;
+          }
+        }
       }
     }
     // don't forget the last 2 and 3 words
     Situation::Type sit = Situation::NO_SIT;
     if ( sv.size() > 2 ){
-      string multiword3 = sv[sv.size()-3]->Lemma() + " "
-	+ sv[sv.size()-2]->Lemma() + " " + sv[sv.size()-1]->Lemma();
-      //cerr << "zoek final 3 op '" << multiword3 << "'" << endl;
+      string multiword3 = sv[sv.size() - 3]->Lemma() + " "
+                   + sv[sv.size() - 2]->Lemma() + " " + sv[sv.size() - 1]->Lemma();
+      // cerr << "zoek final 3 op '" << multiword3 << "'" << endl;
       sit = checkMultiSituations( multiword3 );
-      if ( sit != Situation::NO_SIT ){
-	//	cerr << "found " << sit << "-situation: " << multiword3 << endl;
-	sv[sv.size()-3]->setSitType( Situation::NO_SIT );
-	sv[sv.size()-2]->setSitType( Situation::NO_SIT );
-	sv[sv.size()-1]->setSitType( sit );
+      if ( sit != Situation::NO_SIT ) {
+        //	cerr << "found " << sit << "-situation: " << multiword3 << endl;
+        sv[sv.size() - 3]->setSitType( Situation::NO_SIT );
+        sv[sv.size() - 2]->setSitType( Situation::NO_SIT );
+        sv[sv.size() - 1]->setSitType( sit );
       }
       else {
-	string multiword2 = sv[sv.size()-3]->Lemma() + " "
-	  + sv[sv.size()-2]->Lemma();
-	//cerr << "zoek first final 2 op '" << multiword2 << "'" << endl;
-	sit = checkMultiSituations( multiword2 );
-	if ( sit != Situation::NO_SIT ){
-	  //	  cerr << "found " << sit << "-situation: " << multiword2 << endl;
-	  sv[sv.size()-3]->setSitType( Situation::NO_SIT);
-	  sv[sv.size()-2]->setSitType( sit );
-	}
-	else {
-	  string multiword2 = sv[sv.size()-2]->Lemma() + " "
-	    + sv[sv.size()-1]->Lemma();
-	  //cerr << "zoek second final 2 op '" << multiword2 << "'" << endl;
-	  sit = checkMultiSituations( multiword2 );
-	  if ( sit != Situation::NO_SIT ){
-	    //	    cerr << "found " << sit << "-situation: " << multiword2 << endl;
-	    sv[sv.size()-2]->setSitType( Situation::NO_SIT);
-	    sv[sv.size()-1]->setSitType( sit );
-	  }
-	}
+        string multiword2 = sv[sv.size() - 3]->Lemma() + " " + sv[sv.size() - 2]->Lemma();
+        // cerr << "zoek first final 2 op '" << multiword2 << "'" << endl;
+        sit = checkMultiSituations( multiword2 );
+        if ( sit != Situation::NO_SIT ) {
+          //	  cerr << "found " << sit << "-situation: " << multiword2 << endl;
+          sv[sv.size() - 3]->setSitType( Situation::NO_SIT );
+          sv[sv.size() - 2]->setSitType( sit );
+        }
+        else {
+          multiword2 = sv[sv.size() - 2]->Lemma() + " " + sv[sv.size() - 1]->Lemma();
+          // cerr << "zoek second final 2 op '" << multiword2 << "'" << endl;
+          sit = checkMultiSituations( multiword2 );
+          if ( sit != Situation::NO_SIT ) {
+            //	    cerr << "found " << sit << "-situation: " << multiword2 << endl;
+            sv[sv.size() - 2]->setSitType( Situation::NO_SIT );
+            sv[sv.size() - 1]->setSitType( sit );
+          }
+        }
       }
     }
     else {
-      string multiword2 = sv[sv.size()-2]->Lemma() + " "
-	+ sv[sv.size()-1]->Lemma();
+      string multiword2 = sv[sv.size() - 2]->Lemma() + " "
+                   + sv[sv.size() - 1]->Lemma();
       // cerr << "zoek second final 2 op '" << multiword2 << "'" << endl;
       sit = checkMultiSituations( multiword2 );
       if ( sit != Situation::NO_SIT ){
-	//	cerr << "found " << sit << "-situation: " << multiword2 << endl;
-	sv[sv.size()-2]->setSitType( Situation::NO_SIT);
-	sv[sv.size()-1]->setSitType( sit );
+        // cerr << "found " << sit << "-situation: " << multiword2 << endl;
+        sv[sv.size() - 2]->setSitType( Situation::NO_SIT );
+        sv[sv.size() - 1]->setSitType( sit );
       }
     }
   }

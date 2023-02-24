@@ -365,7 +365,7 @@
 				Supervisie door Antal van den Bosch (Radboud Universiteit Nijmegen) en Henk Pander Maat (Universiteit Utrecht).
 				Dit maakt deel uit van het NWO-project Leesbaarheidsindex Nederlands (LIN).
 				T-scan is gelicenseerd onder de <a href="http://www.gnu.org/licenses/agpl.html">GNU Affero Publieke Licentie v3</a>,
-				de broncode is <a href="https://github.com/proycon/tscan">hier</a> te verkrijgen.
+				de broncode is <a href="https://github.com/UUDigitalHumanitieslab/tscan">hier</a> te verkrijgen.
 				T-scan bouwt voort op ander open-source software als Frog, Wopr, Alpino, FoLiA en CLAM.
 		    </div>
         </div>

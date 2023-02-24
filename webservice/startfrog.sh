@@ -18,5 +18,5 @@ ID=tscan
 
 mv $LOGFILE $LOGFILE.sav # poor mans solution
 
-frog -X --id=${ID} --skip=mp -S"${PORT}" 2> $LOGFILE
+frog -X --deep-morph --id=${ID} --skip=mp -S"${PORT}" 2> $LOGFILE
 

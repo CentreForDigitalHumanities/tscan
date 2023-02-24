@@ -304,241 +304,241 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
       for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
       it != head_siblings.end();
       ++it ){
-  folia::KWargs args = folia::getAttributes( *it );
-  //  cerr << "bekijk " << args << endl;
-  if ( args["rel"] == "su" || args["rel"] == "sup" ){
-    if ( !(*it)->children ){
-      //      cerr << "geval 1 " << endl;
-      xmlNode *target = *it;
-      if ( args["index"] != "" &&
-     args["pos"] == "" && args["cat"] == "" ){
-        //        cerr << "geval 2 " << endl;
-        vector<xmlNode*> inodes = getIndexNodes( head_node->doc );
-        for ( size_t i=0; i < inodes.size(); ++i ){
-    folia::KWargs iatts = folia::getAttributes(inodes[i]);
-    if ( iatts["index"] == args["index"] ){
-      target = inodes[i];
-      break;
-    }
+        folia::KWargs args = folia::getAttributes( *it );
+        //  cerr << "bekijk " << args << endl;
+        if ( args["rel"] == "su" || args["rel"] == "sup" ) {
+          if ( !( *it )->children ) {
+            //      cerr << "geval 1 " << endl;
+            xmlNode *target = *it;
+            if ( args["index"] != "" &&
+                 args["pos"] == "" && args["cat"] == "" ) {
+              //        cerr << "geval 2 " << endl;
+              vector<xmlNode *> inodes = getIndexNodes( head_node->doc );
+              for ( size_t i = 0; i < inodes.size(); ++i ) {
+                folia::KWargs iatts = folia::getAttributes( inodes[i] );
+                if ( iatts["index"] == args["index"] ) {
+                  target = inodes[i];
+                  break;
+                }
+              }
+              if ( target->children ) {
+                xmlNode *res = node_search( target, "rel", "cnj" );
+                if ( res ) {
+                  //      cerr << "geval 3 " << endl;
+                  string root = TiCC::getAttribute( res, "root" );
+                  if ( !root.empty() ) {
+                    //        cerr << "geval 3A " << endl;
+                    target = res;
+                  }
+                }
+                else {
+                  //      cerr << "geval 4 " << endl;
+                  res = node_search( target, "rel", "hd" );
+                  if ( res ) {
+                    //        cerr << "geval 4A " << endl;
+                    target = res;
+                  }
+                }
+              }
+            }
+            store_result( result, SUB_VERB, head_node, target, puncts );
+          }
+          else {
+            //      cerr << "geval 6 " << endl;
+            xmlNode *res = node_search( *it, "rel", "hd" );
+            if ( res ) {
+              store_result( result, SUB_VERB, head_node, res, puncts );
+            }
+            res = node_search( *it, "rel", "cnj" );
+            if ( res ) {
+              store_result( result, SUB_VERB, head_node, res, puncts );
+            }
+          }
         }
-        if ( target->children ){
-    xmlNode *res = node_search( target , "rel", "cnj" );
-    if ( res ){
-      //      cerr << "geval 3 " << endl;
-      string root = TiCC::getAttribute( res, "root" );
-      if ( !root.empty() ){
-        //        cerr << "geval 3A " << endl;
-        target = res;
-      }
-    }
-    else {
-      //      cerr << "geval 4 " << endl;
-      xmlNode *res = node_search( target , "rel", "hd" );
-      if ( res ){
-        //        cerr << "geval 4A " << endl;
-        target = res;
-      }
-    }
+        else if ( args["rel"] == "obj1" ) {
+          if ( !( *it )->children ) {
+            xmlNode *target = *it;
+            if ( args["index"] != "" &&
+                 args["pos"] == "" && args["cat"] == "" ) {
+              vector<xmlNode *> inodes = getIndexNodes( head_node->doc );
+              for ( size_t i = 0; i < inodes.size(); ++i ) {
+                string myindex = TiCC::getAttribute( inodes[i], "index" );
+                if ( args["index"] == myindex ) {
+                  target = inodes[i];
+                  break;
+                }
+              }
+              if ( target->children ) {
+                xmlNode *res = node_search( target, "rel", "cnj" );
+                if ( res ) {
+                  string root = TiCC::getAttribute( res, "root" );
+                  if ( !root.empty() ) {
+                    target = res;
+                  }
+                }
+                else {
+                  res = node_search( target, "rel", "hd" );
+                  if ( res ) {
+                    target = res;
+                  }
+                }
+              }
+            }
+            store_result( result, OBJ1_VERB, head_node, target, puncts );
+          }
+          else {
+            xmlNode *res = node_search( *it, "rel", "hd" );
+            if ( res ) {
+              store_result( result, OBJ1_VERB, head_node, res, puncts );
+            }
+            res = node_search( *it, "rel", "cnj" );
+            if ( res ) {
+              store_result( result, OBJ1_VERB, head_node, res, puncts );
+            }
+          }
         }
-      }
-      store_result( result, SUB_VERB, head_node, target, puncts );
-    }
-    else {
-      //      cerr << "geval 6 " << endl;
-      xmlNode *res = node_search( *it, "rel", "hd" );
-      if ( res ){
-        store_result( result, SUB_VERB, head_node, res, puncts );
-      }
-      res = node_search( *it, "rel", "cnj" );
-      if ( res ){
-        store_result( result, SUB_VERB, head_node, res, puncts );
-      }
-    }
-  }
-  else if ( args["rel"] == "obj1" ){
-    if ( !(*it)->children ){
-      xmlNode *target = *it;
-      if ( args["index"] != "" &&
-     args["pos"] == "" && args["cat"] == "" ){
-        vector<xmlNode*> inodes = getIndexNodes( head_node->doc );
-        for ( size_t i=0; i < inodes.size(); ++i ){
-    string myindex = TiCC::getAttribute( inodes[i], "index" );
-    if ( args["index"] == myindex ){
-      target = inodes[i];
-      break;
-    }
+        else if ( args["rel"] == "obj2" ){
+          if ( !( *it )->children ) {
+            xmlNode *target = *it;
+            if ( args["index"] != "" &&
+                 args["pos"] == "" && args["cat"] == "" ) {
+              vector<xmlNode *> inodes = getIndexNodes( head_node->doc );
+              for ( size_t i = 0; i < inodes.size(); ++i ) {
+                string myindex = TiCC::getAttribute( inodes[i], "index" );
+                if ( args["index"] == myindex ) {
+                  target = inodes[i];
+                  break;
+                }
+              }
+              if ( target->children ) {
+                xmlNode *res = node_search( target, "rel", "cnj" );
+                if ( res ) {
+                  string root = TiCC::getAttribute( res, "root" );
+                  if ( !root.empty() ) {
+                    target = res;
+                  }
+                }
+                else {
+                  res = node_search( target, "rel", "hd" );
+                  if ( res ) {
+                    target = res;
+                  }
+                }
+              }
+            }
+            store_result( result, OBJ2_VERB, head_node, target, puncts );
+          }
+          else {
+            xmlNode *res = node_search( *it, "rel", "hd" );
+            if ( res ) {
+              store_result( result, OBJ2_VERB, head_node, res, puncts );
+            }
+            res = node_search( *it, "rel", "cnj" );
+            if ( res ) {
+              store_result( result, OBJ2_VERB, head_node, res, puncts );
+            }
+          }
         }
-        if ( target->children ){
-    xmlNode *res = node_search( target , "rel", "cnj" );
-    if ( res ){
-      string root = TiCC::getAttribute( res, "root" );
-      if ( !root.empty() ){
-        target = res;
-      }
-    }
-    else {
-      xmlNode *res = node_search( target , "rel", "hd" );
-      if ( res ){
-        target = res;
-      }
-    }
+        else if ( args["rel"] == "vc" ) {
+          xmlNode *res = node_search( *it, "rel", "hd" );
+          if ( res ) {
+            store_result( result, VERB_VC, head_node, res, puncts );
+          }
         }
-      }
-      store_result( result, OBJ1_VERB, head_node, target, puncts );
-    }
-    else {
-      xmlNode *res = node_search( *it, "rel", "hd" );
-      if ( res ){
-        store_result( result, OBJ1_VERB, head_node, res, puncts );
-      }
-      res = node_search( *it, "rel", "cnj" );
-      if ( res ){
-        store_result( result, OBJ1_VERB, head_node, res, puncts );
-      }
-    }
-  }
-  else if ( args["rel"] == "obj2" ){
-    if ( !(*it)->children ){
-      xmlNode *target = *it;
-      if ( args["index"] != "" &&
-     args["pos"] == "" && args["cat"] == "" ){
-        vector<xmlNode*> inodes = getIndexNodes( head_node->doc);
-        for ( size_t i=0; i < inodes.size(); ++i ){
-    string myindex = TiCC::getAttribute( inodes[i], "index" );
-    if ( args["index"] == myindex ){
-      target = inodes[i];
-      break;
-    }
+        else if ( args["rel"] == "svp" ) {
+          if ( args["lcat"] == "part" )
+            store_result( result, VERB_SVP, head_node, *it, puncts );
         }
-        if ( target->children ){
-    xmlNode *res = node_search( target , "rel", "cnj" );
-    if ( res ){
-      string root = TiCC::getAttribute( res, "root" );
-      if ( !root.empty() ){
-        target = res;
-      }
-    }
-    else {
-      xmlNode *res = node_search( target , "rel", "hd" );
-      if ( res ){
-        target = res;
-      }
-    }
+        else if ( args["rel"] == "predc" ) {
+          if ( args["lcat"] == "np" ) {
+            store_result( result, VERB_PREDC_N, head_node, *it, puncts );
+          }
+          else if ( args["lcat"] == "ap" ) {
+            store_result( result, VERB_PREDC_A, head_node, *it, puncts );
+          }
+          xmlNode *res = node_search( *it, "rel", "hd" );
+          if ( res ) {
+            string lcat = TiCC::getAttribute( res, "lcat" );
+            if ( lcat == "np" ) {
+              store_result( result, VERB_PREDC_N, head_node, res, puncts );
+            }
+            else if ( lcat == "ap" ) {
+              store_result( result, VERB_PREDC_A, head_node, res, puncts );
+            }
+          }
         }
-      }
-      store_result( result, OBJ2_VERB, head_node, target, puncts );
-    }
-    else {
-      xmlNode *res = node_search( *it, "rel", "hd" );
-      if ( res ){
-        store_result( result, OBJ2_VERB, head_node, res, puncts );
-      }
-      res = node_search( *it, "rel", "cnj" );
-      if ( res ){
-        store_result( result, OBJ2_VERB, head_node, res, puncts );
-      }
-    }
-  }
-  else if ( args["rel"] == "vc" ){
-    xmlNode *res = node_search( *it, "rel", "hd" );
-    if ( res ){
-      store_result( result, VERB_VC, head_node, res, puncts );
-    }
-  }
-  else if ( args["rel"] == "svp" ){
-    if ( args["lcat"] == "part" )
-      store_result( result, VERB_SVP, head_node, *it, puncts );
-  }
-  else if ( args["rel"] == "predc" ){
-    if ( args["lcat"] == "np" ){
-      store_result( result, VERB_PREDC_N, head_node, *it, puncts );
-    }
-    else if ( args["lcat"] == "ap" ){
-      store_result( result, VERB_PREDC_A, head_node, *it, puncts );
-    }
-    xmlNode *res = node_search( *it, "rel", "hd" );
-    if ( res ){
-      string lcat = TiCC::getAttribute( res, "lcat" );
-      if ( lcat == "np" ){
-        store_result( result, VERB_PREDC_N, head_node, res, puncts );
-      }
-      else if ( lcat == "ap" ){
-        store_result( result, VERB_PREDC_A, head_node, res, puncts );
-      }
-    }
-  }
-  else if ( args["rel"] == "mod" ){
-    if ( args["lcat"] == "advp" ){
-      store_result( result, VERB_MOD_BW, head_node, *it, puncts );
-    }
-    else if ( args["lcat"] == "ap" ){
-      store_result( result, VERB_MOD_A, head_node, *it, puncts );
-    }
-    else if ( args["lcat"] == "np" ){
-      store_result( result, VERB_NOUN, head_node, *it, puncts );
-    }
-    xmlNode *res = node_search( *it, "rel", "hd" );
-    if ( res ){
-      string lcat = TiCC::getAttribute( res, "lcat" );
-      if ( lcat == "advp" ){
-        store_result( result, VERB_MOD_BW, head_node, res, puncts );
-      }
-      else if ( lcat == "ap" ){
-        store_result( result, VERB_MOD_A, head_node, res, puncts );
-      }
-      else if ( lcat == "np" ){
-        store_result( result, VERB_NOUN, head_node, res, puncts );
-      }
-    }
-  }
-  if ( args["cat"] == "cp" ){
-    xmlNode *res = node_search( *it, "rel", "cmp" );
-    if ( res ){
-      store_result( result, VERB_COMP, head_node, res, puncts );
-    }
-  }
-  else if ( args["cat"] == "pp" ){
-    xmlNode *res = node_search( *it, "rel", "hd" );
-    if ( res ){
-      store_result( result, VERB_PP, head_node, res, puncts );
-    }
-  }
+        else if ( args["rel"] == "mod" ) {
+          if ( args["lcat"] == "advp" ) {
+            store_result( result, VERB_MOD_BW, head_node, *it, puncts );
+          }
+          else if ( args["lcat"] == "ap" ) {
+            store_result( result, VERB_MOD_A, head_node, *it, puncts );
+          }
+          else if ( args["lcat"] == "np" ) {
+            store_result( result, VERB_NOUN, head_node, *it, puncts );
+          }
+          xmlNode *res = node_search( *it, "rel", "hd" );
+          if ( res ) {
+            string lcat = TiCC::getAttribute( res, "lcat" );
+            if ( lcat == "advp" ) {
+              store_result( result, VERB_MOD_BW, head_node, res, puncts );
+            }
+            else if ( lcat == "ap" ) {
+              store_result( result, VERB_MOD_A, head_node, res, puncts );
+            }
+            else if ( lcat == "np" ) {
+              store_result( result, VERB_NOUN, head_node, res, puncts );
+            }
+          }
+        }
+        if ( args["cat"] == "cp" ) {
+          xmlNode *res = node_search( *it, "rel", "cmp" );
+          if ( res ) {
+            store_result( result, VERB_COMP, head_node, res, puncts );
+          }
+        }
+        else if ( args["cat"] == "pp" ) {
+          xmlNode *res = node_search( *it, "rel", "hd" );
+          if ( res ) {
+            store_result( result, VERB_PP, head_node, res, puncts );
+          }
+        }
       }
     }
     else if ( head_rel == "hd" && head_pos == "noun" &&
         TiCC::getAttribute( head_node->parent, "cat" ) == "np" ){
       vector< xmlNode *> head_siblings = getSibblings( head_node );
-      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
-      it != head_siblings.end();
-      ++it ){
-  folia::KWargs args = folia::getAttributes( *it );
-  //  cerr << "bekijk " << args << endl;
-  if ( args["rel"] == "det" ){
-    if ( !(*it)->children ){
-      store_result( result, NOUN_DET, head_node, *it, puncts );
-    }
-    else {
-      xmlNode *res = node_search( *it, "rel", "hd" );
-      if ( res ){
-        store_result( result, NOUN_DET, head_node, res, puncts );
-      }
-      res = node_search( *it, "rel", "mpw" );
-      // determiners kunnen voor Alpino net als een onderwerp of lijdend
-      // voorwerp samengesteld zijn uit meerdere woorden...
-      // weet alleen even geen voorbeeld...
-      if ( res ){
-        string root = TiCC::getAttribute( *it, "root" );
-        if ( !root.empty() )
-    store_result( result, NOUN_DET, head_node, res, puncts );
-      }
-    }
-  }
-  if ( args["rel"] == "vc" ){
-    xmlNode *res = node_search( *it, "rel", "hd" );
-    if ( res ){
-      store_result( result, NOUN_VC, head_node, res, puncts );
-    }
-  }
+      for ( vector< xmlNode *>::const_iterator it = head_siblings.begin();
+            it != head_siblings.end();
+            ++it ) {
+        folia::KWargs args = folia::getAttributes( *it );
+        //  cerr << "bekijk " << args << endl;
+        if ( args["rel"] == "det" ) {
+          if ( !( *it )->children ) {
+            store_result( result, NOUN_DET, head_node, *it, puncts );
+          }
+          else {
+            xmlNode *res = node_search( *it, "rel", "hd" );
+            if ( res ) {
+              store_result( result, NOUN_DET, head_node, res, puncts );
+            }
+            res = node_search( *it, "rel", "mpw" );
+            // determiners kunnen voor Alpino net als een onderwerp of lijdend
+            // voorwerp samengesteld zijn uit meerdere woorden...
+            // weet alleen even geen voorbeeld...
+            if ( res ) {
+              string root = TiCC::getAttribute( *it, "root" );
+              if ( !root.empty() )
+                store_result( result, NOUN_DET, head_node, res, puncts );
+            }
+          }
+        }
+        if ( args["rel"] == "vc" ) {
+          xmlNode *res = node_search( *it, "rel", "hd" );
+          if ( res ) {
+            store_result( result, NOUN_VC, head_node, res, puncts );
+          }
+        }
       }
     }
     else if ( head_rel == "hd" && head_pos == "prep"
@@ -547,66 +547,66 @@ multimap<DD_type, int> getDependencyDist( const xmlNode *head_node,
       for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
       it != head_siblings.end();
       ++it ){
-  folia::KWargs args = folia::getAttributes( *it );
-  //  cerr << "bekijk " << args << endl;
-  if ( args["rel"] == "obj1" ){
-    if ( !(*it)->children ){
-      store_result( result, PREP_OBJ1, head_node, *it, puncts );
-    }
-    else {
-      xmlNode *res = node_search( *it, "rel", "hd" );
-      if ( res ){
-        store_result( result, PREP_OBJ1, head_node, res, puncts );
-      }
-      res = node_search( *it, "rel", "cnj" );
-      if ( res ){
-        if ( TiCC::getAttribute( res, "root" ) != "" )
-    store_result( result, NOUN_DET, head_node, res, puncts );
-      }
-    }
-  }
+        folia::KWargs args = folia::getAttributes( *it );
+        //  cerr << "bekijk " << args << endl;
+        if ( args["rel"] == "obj1" ) {
+          if ( !( *it )->children ) {
+            store_result( result, PREP_OBJ1, head_node, *it, puncts );
+          }
+          else {
+            xmlNode *res = node_search( *it, "rel", "hd" );
+            if ( res ) {
+              store_result( result, PREP_OBJ1, head_node, res, puncts );
+            }
+            res = node_search( *it, "rel", "cnj" );
+            if ( res ) {
+              if ( TiCC::getAttribute( res, "root" ) != "" )
+                store_result( result, NOUN_DET, head_node, res, puncts );
+            }
+          }
+        }
       }
     }
     else if ( head_rel == "crd" ){
       vector< xmlNode *> head_siblings = getSibblings( head_node );
-      for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
-      it != head_siblings.end();
-      ++it ){
-  folia::KWargs args = folia::getAttributes( *it );
-  //  cerr << "bekijk " << args << endl;
-  if ( args["rel"] == "cnj" ){
-    if ( !(*it)->children ){
-      store_result( result, CRD_CNJ, head_node, *it, puncts );
-    }
-    else {
-      xmlNode *res = node_search( *it, "rel", "hd" );
-      if ( res ){
-        store_result( result, CRD_CNJ, head_node, res, puncts );
-      }
-    }
-  }
+      for ( vector<xmlNode *>::const_iterator it = head_siblings.begin();
+            it != head_siblings.end();
+            ++it ) {
+        folia::KWargs args = folia::getAttributes( *it );
+        //  cerr << "bekijk " << args << endl;
+        if ( args["rel"] == "cnj" ) {
+          if ( !( *it )->children ) {
+            store_result( result, CRD_CNJ, head_node, *it, puncts );
+          }
+          else {
+            xmlNode *res = node_search( *it, "rel", "hd" );
+            if ( res ) {
+              store_result( result, CRD_CNJ, head_node, res, puncts );
+            }
+          }
+        }
       }
     }
     else if ( head_rel == "cmp" &&
         ( head_pos == "comp" || head_pos == "comparative" ) ){
       string word = TiCC::getAttribute( head_node, "word" );
       if ( word != "te" ){
-  vector< xmlNode *> head_siblings = getSibblings( head_node );
-  for ( vector< xmlNode *>::const_iterator it=head_siblings.begin();
-        it != head_siblings.end();
-        ++it ){
-    folia::KWargs args = folia::getAttributes( *it );
-    if ( args["rel"] == "body" ){
-      xmlNode *res = node_search( *it, "rel", "hd" );
-      if ( res ){
-        store_result( result, COMP_BODY, head_node, res, puncts );
-      }
-      res = node_search( *it, "rel", "cnj" );
-      if ( res ){
-        store_result( result, COMP_BODY, head_node, res, puncts );
-      }
-    }
-  }
+        vector<xmlNode *> head_siblings = getSibblings( head_node );
+        for ( vector<xmlNode *>::const_iterator it = head_siblings.begin();
+              it != head_siblings.end();
+              ++it ) {
+          folia::KWargs args = folia::getAttributes( *it );
+          if ( args["rel"] == "body" ) {
+            xmlNode *res = node_search( *it, "rel", "hd" );
+            if ( res ) {
+              store_result( result, COMP_BODY, head_node, res, puncts );
+            }
+            res = node_search( *it, "rel", "cnj" );
+            if ( res ) {
+              store_result( result, COMP_BODY, head_node, res, puncts );
+            }
+          }
+        }
       }
     }
   }
@@ -743,14 +743,14 @@ int get_d_level( const folia::Sentence *s, xmlDoc *alp ){
       //      cerr << "WW " << pa->xmlstring() << endl;
       string wvorm = pa->feat("wvorm");
       if( wvorm == "pv" )
-  ++pv_counter;
+        ++pv_counter;
       //      cerr << "pv_counter= " << pv_counter << endl;
     }
     if ( pos == "VG" ){
       //      cerr << "VG " << pa->xmlstring() << endl;
       string cp = pa->feat("conjtype");
       if ( cp == "neven" )
-  ++neven_counter;
+        ++neven_counter;
       //      cerr << "neven_counter= " << neven_counter << endl;
     }
   }
@@ -776,13 +776,13 @@ int get_d_level( const folia::Sentence *s, xmlDoc *alp ){
       folia::KWargs attsp = folia::getAttributes( node->parent );
       //      cerr << "parent: " << attsp << endl;
       if ( attsp["rel"] == "su" )
-  return 6;
+        return 6;
     }
     else if ( atts["rel"] == "su" &&
         ( atts["cat"] == "cp"
-    || atts["cat"] == "whsub" || atts["cat"] == "whrel"
-    || atts["cat"] == "ti"  || atts["cat"] == "oti"
-    || atts["cat"] == "inf" ) ){
+          || atts["cat"] == "whsub" || atts["cat"] == "whrel"
+          || atts["cat"] == "ti"  || atts["cat"] == "oti"
+          || atts["cat"] == "inf" ) ){
       //      cerr << "HIT SU node " << atts << endl;
       return 6;
     }
@@ -791,7 +791,7 @@ int get_d_level( const folia::Sentence *s, xmlDoc *alp ){
       folia::KWargs attsp = folia::getAttributes( node->parent );
       //      cerr << "parent: " << attsp << endl;
       if ( attsp["rel"] == "su" && attsp["cat"] == "np" )
-  return 6;
+        return 6;
     }
     ++nit;
   }
@@ -805,8 +805,8 @@ int get_d_level( const folia::Sentence *s, xmlDoc *alp ){
     if ( pos == "VG" ){
       string cp = poslist[i]->feat("conjtype");
       if ( cp == "onder" ){
-  if ( poslist[i]->parent()->text() != "dat" )
-    return 5;
+        if ( poslist[i]->parent()->text() != "dat" )
+          return 5;
       }
     }
   }
@@ -838,21 +838,21 @@ int get_d_level( const folia::Sentence *s, xmlDoc *alp ){
     string index;
     while ( pnt ){
       if ( pnt->type == XML_ELEMENT_NODE ){
-  folia::KWargs atts = folia::getAttributes( pnt );
-  string index = atts["index"];
-  if ( !index.empty() && atts["rel"] == "su" ){
-    found4 = true;
-    break;
-  }
+        folia::KWargs atts = folia::getAttributes( pnt );
+        index = atts["index"];
+        if ( !index.empty() && atts["rel"] == "su" ) {
+          found4 = true;
+          break;
+        }
       }
       pnt = pnt->next;
     }
     if ( found4 ){
       vector< xmlNode *> siblinglist = getSibblings( node );
-      for ( size_t i=0; i < siblinglist.size(); ++i ){
-  folia::KWargs atts = folia::getAttributes( siblinglist[i] );
-  if ( atts["index"] == index && atts["rel"] == "obj" )
-    return 4;
+      for ( size_t j = 0; j < siblinglist.size(); ++j ) {
+        folia::KWargs atts = folia::getAttributes( siblinglist[j] );
+        if ( atts["index"] == index && atts["rel"] == "obj" )
+          return 4;
       }
     }
   }
@@ -877,18 +877,18 @@ int get_d_level( const folia::Sentence *s, xmlDoc *alp ){
       folia::KWargs attsp = folia::getAttributes( (*nit)->parent );
       //      cerr << "bekijk " << attsp << endl;
       if ( attsp["rel"] == "obj1" )
-  return 3;
+        return 3;
     }
     else if ( atts["pos"] == "verb" ){
       //      cerr << "case VERB " << endl;
       folia::KWargs attsp = folia::getAttributes( (*nit)->parent );
       //      cerr << "bekijk " << attsp << endl;
       if ( attsp["rel"] == "obj1" && attsp["cat"] == "np" )
-  return 3;
+        return 3;
     }
     else if ( atts["rel"] == "vc" &&
         ( atts["cat"] == "cp" ||
-    atts["cat"] == "whsub" ) ){
+          atts["cat"] == "whsub" ) ){
       //      cerr << "case VC" << endl;
       return 3;
     }
@@ -910,7 +910,7 @@ int get_d_level( const folia::Sentence *s, xmlDoc *alp ){
     if ( pos == "VG" ){
       string cp = poslist[i]->feat("conjtype");
       if ( cp == "neven" )
-  return 2;
+        return 2;
     }
   }
 
@@ -925,25 +925,25 @@ int get_d_level( const folia::Sentence *s, xmlDoc *alp ){
     if ( atts["rel"] == "vc" ){
       //      cerr << "VC node " << atts << endl;
       if ( atts["cat"] == "ti"
-     || atts["cat"] == "oti"
-     || atts["cat"] == "inf" ){
-  xmlNode *su_node = node_search( *nit, "rel", "su" );
-  if ( su_node ){
-    folia::KWargs atts1 = folia::getAttributes( su_node );
-    //    cerr << "su node 1 " << atts1 << endl;
-    string node_index = atts1["index"];
-    if ( !node_index.empty() ){
-      vector< xmlNode *> siblinglist = getSibblings( *nit );
-      for ( size_t i=0; i < siblinglist.size(); ++i ){
-        folia::KWargs atts2 = folia::getAttributes( siblinglist[i] );
-        if ( atts2["rel"] == "su" ){
-    //    cerr << "su node 2 " << atts2 << endl;
-    if ( atts2["index"] == node_index )
-      return 1;
+        || atts["cat"] == "oti"
+        || atts["cat"] == "inf" ) {
+        xmlNode *su_node = node_search( *nit, "rel", "su" );
+        if ( su_node ) {
+          folia::KWargs atts1 = folia::getAttributes( su_node );
+          //    cerr << "su node 1 " << atts1 << endl;
+          string node_index = atts1["index"];
+          if ( !node_index.empty() ) {
+            vector<xmlNode *> siblinglist = getSibblings( *nit );
+            for ( size_t i = 0; i < siblinglist.size(); ++i ) {
+              folia::KWargs atts2 = folia::getAttributes( siblinglist[i] );
+              if ( atts2["rel"] == "su" ) {
+                //    cerr << "su node 2 " << atts2 << endl;
+                if ( atts2["index"] == node_index )
+                  return 1;
+              }
+            }
+          }
         }
-      }
-    }
-  }
       }
     }
     ++nit;
@@ -995,31 +995,31 @@ void mod_stats( xmlDoc *doc, int& adjNpMod, int& npMod ) {
   }
 }
 
-bool isSmallCnj( const xmlNode *eNode ){
-  // determine if this is a 'small' conjunction
-  vector< xmlNode *> sl = getSibblings( eNode );
-  string pos;
-  for ( size_t i=0; i < sl.size(); ++i ){
-    //    cerr << "sibbling: " << folia::getAttributes( sl[i] ) << endl;
-    if ( sl[i] == eNode )
-      continue;
-    string the_pos = TiCC::getAttribute( sl[i], "pos" );
-    if ( the_pos.empty() )
-      continue;
-    if ( the_pos == pos ){
-      // cerr << "POS = " << the_pos
-      //     << " equals previous ==> Small conjunct detected" << endl;
-      return true;
-    }
-    else {
-    }
-    if ( pos.empty() ){
-      pos = the_pos;
-    }
-  }
-  //  cerr << "No small conjunct detected" << endl;
-  return false;
-}
+// bool isSmallCnj( const xmlNode *eNode ){
+//   // determine if this is a 'small' conjunction
+//   vector< xmlNode *> sl = getSibblings( eNode );
+//   string pos;
+//   for ( size_t i=0; i < sl.size(); ++i ){
+//     //    cerr << "sibbling: " << folia::getAttributes( sl[i] ) << endl;
+//     if ( sl[i] == eNode )
+//       continue;
+//     string the_pos = TiCC::getAttribute( sl[i], "pos" );
+//     if ( the_pos.empty() )
+//       continue;
+//     if ( the_pos == pos ){
+//       // cerr << "POS = " << the_pos
+//       //     << " equals previous ==> Small conjunct detected" << endl;
+//       return true;
+//     }
+//     else {
+//     }
+//     if ( pos.empty() ){
+//       pos = the_pos;
+//     }
+//   }
+//   //  cerr << "No small conjunct detected" << endl;
+//   return false;
+// }
 
 // Returns adverbial nodes: "mod" or "predm" directly below a verb (or folia::Sentence) instance.
 list<xmlNode*> getAdverbialNodes( xmlDoc *doc ) {
@@ -1061,11 +1061,10 @@ list<xmlNode*> getNodesByRelCat( xmlNode *node, const string& rel, const string&
 }
 
 // Returns the id attribute for each xmlNode in the list.
-list<string> getNodeIds( list<xmlNode*> nodes ) {
+list<string> getNodeIds( list<xmlNode *> nodes ) {
   list<string> ids;
-  for (auto& node : nodes)
-  {
-    ids.push_back(TiCC::getAttribute(node, "id"));
+  for ( const auto &node : nodes ) {
+    ids.push_back( TiCC::getAttribute( node, "id" ) );
   }
   return ids;
 }

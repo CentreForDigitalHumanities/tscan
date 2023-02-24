@@ -1,18 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="tscanview.xsl"?>
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="libfolia-v1.13" version="1.5.1">
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="tscan" generator="" version="">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2018-04-04T16:39:09" set="tscan-tokconfig-nld"/>
-      <pos-annotation annotator="frog-mbpos-1.0" annotatortype="auto" datetime="2018-04-04T16:39:09" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
-      <lemma-annotation annotator="frog-mblem-1.1" annotatortype="auto" datetime="2018-04-04T16:39:09" set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl"/>
-      <morphological-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2018-04-04T16:39:09" set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl"/>
-      <pos-annotation annotator="frog-mbma-1.0" annotatortype="auto" datetime="2018-04-04T16:39:09" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-      <chunking-annotation annotator="frog-chunker-2.0" annotatortype="auto" datetime="2018-04-04T16:39:09" set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl"/>
-      <entity-annotation annotator="frog-ner-2.0" annotatortype="auto" datetime="2018-04-04T16:39:09" set="http://ilk.uvt.nl/folia/sets/frog-ner-nl"/>
+      <token-annotation alias="tokconfig-nld" set="https://raw.githubusercontent.com/LanguageMachines/uctodata/master/setdefinitions/tokconfig-nld.foliaset.ttl">
+        <annotator processor="ucto.1"/>
+      </token-annotation>
+      <paragraph-annotation>
+        <annotator processor="ucto.1"/>
+      </paragraph-annotation>
+      <sentence-annotation>
+        <annotator processor="ucto.1"/>
+      </sentence-annotation>
+      <quote-annotation>
+        <annotator processor="ucto.1"/>
+      </quote-annotation>
+      <pos-annotation set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
+        <annotator processor="tagger.1"/>
+      </pos-annotation>
+      <lemma-annotation set="http://ilk.uvt.nl/folia/sets/frog-mblem-nl">
+        <annotator processor="mblem.1"/>
+      </lemma-annotation>
+      <morphological-annotation set="http://ilk.uvt.nl/folia/sets/frog-mbma-nl">
+        <annotator processor="mbma.1"/>
+      </morphological-annotation>
+      <pos-annotation set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex">
+        <annotator processor="mbma.1"/>
+      </pos-annotation>
+      <chunking-annotation set="http://ilk.uvt.nl/folia/sets/frog-chunker-nl">
+        <annotator processor="IOB.1"/>
+      </chunking-annotation>
+      <entity-annotation set="http://ilk.uvt.nl/folia/sets/frog-ner-nl">
+        <annotator processor="NER.1"/>
+      </entity-annotation>
+      <text-annotation set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/text.foliaset.ttl"/>
+      <alternative-annotation/>
       <metric-annotation annotator="tscan" set="metricset"/>
       <pos-annotation annotator="tscan" set="tscan-set"/>
     </annotations>
+    <provenance>
+      <processor xml:id="frog.1" begindatetime="stripped" command="stripped" folia_version="stripped" host="stripped" name="frog" user="stripped" version="stripped">
+        <processor xml:id="frog.1.generator" folia_version="stripped" name="stripped" type="generator" version="stripped"/>
+        <processor xml:id="ucto.1" begindatetime="stripped" name="ucto" version="stripped">
+          <processor xml:id="uctodata.1" name="uctodata" type="datasource" version="stripped">
+            <processor xml:id="uctodata.1.1" name="tokconfig-nld" type="datasource" version="stripped"/>
+          </processor>
+        </processor>
+        <processor xml:id="tagger.1" begindatetime="stripped" name="tagger" version="stripped"/>
+        <processor xml:id="mblem.1" begindatetime="stripped" name="mblem" version="stripped"/>
+        <processor xml:id="mbma.1" begindatetime="stripped" name="mbma" version="stripped"/>
+        <processor xml:id="IOB.1" begindatetime="stripped" name="IOB" version="stripped"/>
+        <processor xml:id="NER.1" begindatetime="stripped" name="NER" version="stripped"/>
+      </processor>
+    </provenance>
+    <meta id="language">nld</meta>
   </metadata>
   <text xml:id="tscan.text">
     <p xml:id="tscan.p.1">
@@ -35,6 +76,7 @@
               <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>ik</t>
+                <feat class="[ik]pronoun" subset="structure"/>
                 <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -51,8 +93,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.8563"/>
-          <metric class="lprob10_bwd" value="-0.390303"/>
           <metric class="property" value="voornaamwoord_1"/>
         </w>
         <w xml:id="tscan.p.1.s.1.w.2" class="WORD">
@@ -70,6 +110,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>zijn</t>
+                <feat class="[zijn]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -87,6 +128,7 @@
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 <morpheme class="stem">
                   <t>zijn</t>
+                  <feat class="[zijn]verb" subset="structure"/>
                   <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 </morpheme>
                 <morpheme class="inflection">
@@ -109,16 +151,15 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.964535"/>
-          <metric class="lprob10_bwd" value="-3.36964"/>
           <metric class="property" value="tegenwoordige_tijd"/>
           <metric class="semtype" value="abstract-toestand"/>
         </w>
         <w xml:id="tscan.p.1.s.1.w.3" class="WORD">
           <t>Romy</t>
-          <pos class="SPEC(deeleigen)" confidence="1" head="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
+          <pos class="SPEC(deeleigen)" confidence="1.0" head="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="deeleigen" subset="spectype"/>
           </pos>
+          <lemma class="Romy"/>
           <morphology>
             <morpheme class="stem">
               <t>Romy</t>
@@ -126,18 +167,15 @@
               <pos class="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
-          <lemma class="romy"/>
           <metric class="pers_ref" value="true"/>
           <metric class="content_word" value="true"/>
           <metric class="content_word_strict" value="true"/>
-          <metric class="word_freq" value="515"/>
-          <metric class="log_word_freq" value="3.03266"/>
-          <metric class="lemma_freq" value="470"/>
-          <metric class="log_lemma_freq" value="3.03738"/>
+          <metric class="word_freq" value="0"/>
+          <metric class="log_word_freq" value="3.71464"/>
+          <metric class="lemma_freq" value="0"/>
+          <metric class="log_lemma_freq" value="3.71464"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-5.65805"/>
-          <metric class="lprob10_bwd" value="-5.65805"/>
           <metric class="property" value="naam"/>
           <metric class="semtype" value="persoon"/>
         </w>
@@ -154,6 +192,7 @@
               <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>en</t>
+                <feat class="[en]conjunction" subset="structure"/>
                 <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -169,8 +208,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.91908"/>
-          <metric class="lprob10_bwd" value="-1.16303"/>
         </w>
         <w xml:id="tscan.p.1.s.1.w.5" class="WORD">
           <t>ik</t>
@@ -190,6 +227,7 @@
               <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>ik</t>
+                <feat class="[ik]pronoun" subset="structure"/>
                 <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -206,8 +244,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.6024"/>
-          <metric class="lprob10_bwd" value="-1.00625"/>
           <metric class="property" value="voornaamwoord_1"/>
         </w>
         <w xml:id="tscan.p.1.s.1.w.6" class="WORD">
@@ -225,6 +261,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>doe</t>
+                <feat class="[doe]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -242,6 +279,7 @@
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 <morpheme class="stem">
                   <t>doe</t>
+                  <feat class="[doe]verb" subset="structure"/>
                   <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 </morpheme>
                 <morpheme class="inflection">
@@ -262,14 +300,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="126173"/>
-          <metric class="log_word_freq" value="5.42098"/>
-          <metric class="lemma_freq" value="14571"/>
-          <metric class="log_lemma_freq" value="4.52788"/>
+          <metric class="word_freq" value="64"/>
+          <metric class="log_word_freq" value="5.52755"/>
+          <metric class="lemma_freq" value="16"/>
+          <metric class="log_lemma_freq" value="4.94509"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.2017"/>
-          <metric class="lprob10_bwd" value="-2.25816"/>
           <metric class="property" value="tegenwoordige_tijd"/>
           <metric class="semtype" value="abstract-actie"/>
         </w>
@@ -296,8 +332,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.4183"/>
-          <metric class="lprob10_bwd" value="-2.12618"/>
         </w>
         <w xml:id="tscan.p.1.s.1.w.8" class="WORD">
           <t>aan</t>
@@ -312,6 +346,7 @@
               <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>aan</t>
+                <feat class="[aan]preposition" subset="structure"/>
                 <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -327,8 +362,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.447158"/>
-          <metric class="lprob10_bwd" value="-2.31092"/>
         </w>
         <w xml:id="tscan.p.1.s.1.w.9" class="WORD">
           <t>de</t>
@@ -345,6 +378,7 @@
               <pos class="D" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>de</t>
+                <feat class="[de]article" subset="structure"/>
                 <pos class="D" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -360,8 +394,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.342231"/>
-          <metric class="lprob10_bwd" value="-0.60206"/>
         </w>
         <w xml:id="tscan.p.1.s.1.w.10" class="WORD" space="no">
           <t>spaaractie</t>
@@ -382,10 +414,12 @@
               </pos>
               <morpheme class="stem">
                 <t>spaar</t>
+                <feat class="[spaar]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="stem">
                 <t>actie</t>
+                <feat class="[actie]noun" subset="structure"/>
                 <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -396,19 +430,18 @@
           <metric class="content_word" value="true"/>
           <metric class="content_word_strict" value="true"/>
           <metric class="nominalization" value="true"/>
-          <metric class="word_freq" value="77"/>
-          <metric class="log_word_freq" value="2.2121"/>
-          <metric class="lemma_freq" value="105"/>
-          <metric class="log_lemma_freq" value="2.38967"/>
+          <metric class="word_freq" value="0"/>
+          <metric class="log_word_freq" value="3.71464"/>
+          <metric class="lemma_freq" value="0"/>
+          <metric class="log_lemma_freq" value="3.71464"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-6.98027"/>
-          <metric class="lprob10_bwd" value="-6.98027"/>
           <metric class="semtype" value="abstract-gebeuren"/>
         </w>
         <w xml:id="tscan.p.1.s.1.w.11" class="PUNCTUATION">
           <t>.</t>
-          <pos class="LET()" confidence="0.999956" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <pos class="LET()" confidence="1.0" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <lemma class="."/>
           <morphology>
             <morpheme class="stem">
               <t>.</t>
@@ -416,47 +449,44 @@
               <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
-          <lemma class="."/>
           <metric class="word_freq" value="0"/>
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.27864"/>
-          <metric class="lprob10_bwd" value="-0.0927787"/>
           <metric class="property" value="punctuatie"/>
         </w>
-        <entities xml:id="tscan.p.1.s.1.entities.1">
-          <entity xml:id="tscan.p.1.s.1.entities.1.entity.1" class="per" confidence="0.772736">
-            <wref id="tscan.p.1.s.1.w.3" t="Romy"/>
-          </entity>
-        </entities>
         <chunking xml:id="tscan.p.1.s.1.chunking.1">
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.1" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.1" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.1.w.1" t="Ik"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.2" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.2" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.1.w.2" t="ben"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.3" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.3" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.1.w.3" t="Romy"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.4" class="CONJP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.4" class="CONJP" confidence="1.0">
             <wref id="tscan.p.1.s.1.w.4" t="en"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.5" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.5" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.1.w.5" t="ik"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.6" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.6" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.1.w.6" t="doe"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.7" class="PP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.7" class="PP" confidence="1.0">
             <wref id="tscan.p.1.s.1.w.8" t="aan"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.8" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.1.chunking.1.chunk.8" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.1.w.9" t="de"/>
             <wref id="tscan.p.1.s.1.w.10" t="spaaractie"/>
           </chunk>
         </chunking>
+        <entities xml:id="tscan.p.1.s.1.entities.1">
+          <entity xml:id="tscan.p.1.s.1.entities.1.entity.1" class="per" confidence="1.0">
+            <wref id="tscan.p.1.s.1.w.3" t="Romy"/>
+          </entity>
+        </entities>
         <metric class="word_count" value="10"/>
         <metric class="word_count_incl_stopwords" value="10"/>
         <metric class="bv_vd_count" value="0"/>
@@ -554,24 +584,18 @@
         <metric class="top5000StrictContent" value="1"/>
         <metric class="top10000StrictContent" value="1"/>
         <metric class="top20000StrictContent" value="1"/>
-        <metric class="word_freq" value="10.6657"/>
-        <metric class="word_freq_no_names" value="7.63309"/>
-        <metric class="log_word_freq" value="3.55525"/>
-        <metric class="log_word_freq_no_names" value="3.81654"/>
-        <metric class="lemma_freq" value="9.95493"/>
-        <metric class="lemma_freq_no_names" value="6.91755"/>
-        <metric class="log_lemma_freq" value="3.31831"/>
-        <metric class="log_lemma_freq_no_names" value="3.45877"/>
-        <metric class="log_word_freq_strict" value="3.55525"/>
-        <metric class="log_word_freq_no_names_strict" value="3.81654"/>
-        <metric class="log_lemma_freq_strict" value="3.31831"/>
-        <metric class="log_lemma_freq_no_names_strict" value="3.45877"/>
-        <metric class="wopr_logprob_fwd" value="-2.42442"/>
-        <metric class="wopr_entropy_fwd" value="1.87971"/>
-        <metric class="wopr_perplexity_fwd" value="3.68001"/>
-        <metric class="wopr_logprob_bwd" value="-2.35979"/>
-        <metric class="wopr_entropy_bwd" value="2.00823"/>
-        <metric class="wopr_perplexity_bwd" value="4.02288"/>
+        <metric class="word_freq" value="12.9568"/>
+        <metric class="word_freq_no_names" value="9.24219"/>
+        <metric class="log_word_freq" value="4.31895"/>
+        <metric class="log_word_freq_no_names" value="4.6211"/>
+        <metric class="lemma_freq" value="12.3744"/>
+        <metric class="lemma_freq_no_names" value="8.65973"/>
+        <metric class="log_lemma_freq" value="4.12479"/>
+        <metric class="log_lemma_freq_no_names" value="4.32987"/>
+        <metric class="log_word_freq_strict" value="4.31895"/>
+        <metric class="log_word_freq_no_names_strict" value="4.6211"/>
+        <metric class="log_lemma_freq_strict" value="4.12479"/>
+        <metric class="log_lemma_freq_no_names_strict" value="4.32987"/>
         <metric class="broad_adj" value="0"/>
         <metric class="strict_adj" value="0"/>
         <metric class="human_adj_count" value="0"/>
@@ -604,6 +628,15 @@
         <metric class="intens_nw_count" value="0"/>
         <metric class="intens_tuss_count" value="0"/>
         <metric class="intens_ww_count" value="0"/>
+        <metric class="formal_count" value="0"/>
+        <metric class="formal_bvnw_count" value="0"/>
+        <metric class="formal_bw_count" value="0"/>
+        <metric class="formal_vgw_count" value="0"/>
+        <metric class="formal_vnw_count" value="0"/>
+        <metric class="formal_vz_count" value="0"/>
+        <metric class="formal_vzg_count" value="0"/>
+        <metric class="formal_ww_count" value="0"/>
+        <metric class="formal_znw_count" value="0"/>
         <metric class="general_noun_count" value="0"/>
         <metric class="general_noun_sep_count" value="0"/>
         <metric class="general_noun_rel_count" value="0"/>
@@ -699,6 +732,7 @@
               <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>ik</t>
+                <feat class="[ik]pronoun" subset="structure"/>
                 <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -715,8 +749,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="1"/>
           <metric class="lemma_overlap_count" value="1"/>
-          <metric class="lprob10_fwd" value="-1.8563"/>
-          <metric class="lprob10_bwd" value="-0.101747"/>
           <metric class="property" value="voornaamwoord_1"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.2" class="WORD">
@@ -734,6 +766,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>heb</t>
+                <feat class="[heb]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -751,6 +784,7 @@
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 <morpheme class="stem">
                   <t>heb</t>
+                  <feat class="[heb]verb" subset="structure"/>
                   <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 </morpheme>
                 <morpheme class="inflection">
@@ -772,20 +806,18 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="795524"/>
-          <metric class="log_word_freq" value="6.22066"/>
-          <metric class="lemma_freq" value="4005447"/>
-          <metric class="log_lemma_freq" value="6.96701"/>
+          <metric class="word_freq" value="294"/>
+          <metric class="log_word_freq" value="6.18446"/>
+          <metric class="lemma_freq" value="2177"/>
+          <metric class="log_lemma_freq" value="7.0527"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.81437"/>
-          <metric class="lprob10_bwd" value="-2.69033"/>
           <metric class="property" value="tegenwoordige_tijd"/>
           <metric class="semtype" value="abstract-toestand"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.3" class="WORD">
           <t>al</t>
-          <pos class="BW()" confidence="0.90383" head="BW" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <pos class="BW()" confidence="0.903833" head="BW" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
           <lemma class="al"/>
           <morphology>
             <morpheme class="complex">
@@ -794,6 +826,7 @@
               <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>al</t>
+                <feat class="[al]adverb" subset="structure"/>
                 <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -806,14 +839,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="1357651"/>
-          <metric class="log_word_freq" value="6.4528"/>
-          <metric class="lemma_freq" value="1254381"/>
-          <metric class="log_lemma_freq" value="6.46279"/>
+          <metric class="word_freq" value="540"/>
+          <metric class="log_word_freq" value="6.44784"/>
+          <metric class="lemma_freq" value="542"/>
+          <metric class="log_lemma_freq" value="6.44944"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.85438"/>
-          <metric class="lprob10_bwd" value="-2.7858"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.4" class="NUMBER">
           <t>8</t>
@@ -822,6 +853,7 @@
             <feat class="prenom" subset="positie"/>
             <feat class="stan" subset="naamval"/>
           </pos>
+          <lemma class="8"/>
           <morphology>
             <morpheme class="stem">
               <t>8</t>
@@ -829,14 +861,11 @@
               <pos class="Q" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
-          <lemma class="8"/>
           <metric class="top1000" value="true"/>
           <metric class="word_freq" value="0"/>
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-3.97865"/>
-          <metric class="lprob10_bwd" value="-2.74481"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.5" class="WORD" space="no">
           <t>punten</t>
@@ -853,6 +882,7 @@
               <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>punt</t>
+                <feat class="[punt]noun" subset="structure"/>
                 <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -866,19 +896,18 @@
           <metric class="prevalenceP" value="0.999546"/>
           <metric class="prevalenceZ" value="3.31772"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="90748"/>
-          <metric class="log_word_freq" value="5.27785"/>
-          <metric class="lemma_freq" value="154550"/>
-          <metric class="log_lemma_freq" value="5.55343"/>
+          <metric class="word_freq" value="14"/>
+          <metric class="log_word_freq" value="4.89073"/>
+          <metric class="lemma_freq" value="34"/>
+          <metric class="log_lemma_freq" value="5.25871"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-3.88327"/>
-          <metric class="lprob10_bwd" value="-3.88327"/>
           <metric class="semtype" value="ongedefinieerd"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.6" class="PUNCTUATION">
           <t>,</t>
-          <pos class="LET()" confidence="0.999925" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <pos class="LET()" confidence="1.0" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <lemma class=","/>
           <morphology>
             <morpheme class="stem">
               <t>,</t>
@@ -886,13 +915,10 @@
               <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
-          <lemma class=","/>
           <metric class="word_freq" value="0"/>
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.954243"/>
-          <metric class="lprob10_bwd" value="-0.718534"/>
           <metric class="property" value="punctuatie"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.7" class="WORD">
@@ -908,6 +934,7 @@
               <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>toen</t>
+                <feat class="[toen]conjunction" subset="structure"/>
                 <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -926,8 +953,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-3.22324"/>
-          <metric class="lprob10_bwd" value="-1.40226"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.8" class="WORD">
           <t>ik</t>
@@ -947,6 +972,7 @@
               <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>ik</t>
+                <feat class="[ik]pronoun" subset="structure"/>
                 <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -963,8 +989,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="1"/>
           <metric class="lemma_overlap_count" value="1"/>
-          <metric class="lprob10_fwd" value="-1.37242"/>
-          <metric class="lprob10_bwd" value="-2.39479"/>
           <metric class="property" value="voornaamwoord_1"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.9" class="WORD">
@@ -980,6 +1004,7 @@
               <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>naar</t>
+                <feat class="[naar]preposition" subset="structure"/>
                 <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -995,8 +1020,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.64795"/>
-          <metric class="lprob10_bwd" value="-1.25728"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.10" class="WORD">
           <t>de</t>
@@ -1013,6 +1036,7 @@
               <pos class="D" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>de</t>
+                <feat class="[de]article" subset="structure"/>
                 <pos class="D" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -1028,8 +1052,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.769635"/>
-          <metric class="lprob10_bwd" value="-0.273401"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.11" class="WORD">
           <t>winkel</t>
@@ -1048,6 +1070,7 @@
               <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>winkel</t>
+                <feat class="[winkel]noun" subset="structure"/>
                 <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -1062,14 +1085,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="33438"/>
-          <metric class="log_word_freq" value="4.84426"/>
-          <metric class="lemma_freq" value="50305"/>
-          <metric class="log_lemma_freq" value="5.06598"/>
+          <metric class="word_freq" value="21"/>
+          <metric class="log_word_freq" value="5.05706"/>
+          <metric class="lemma_freq" value="31"/>
+          <metric class="log_lemma_freq" value="5.21979"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.72646"/>
-          <metric class="lprob10_bwd" value="-4.37041"/>
           <metric class="semtype" value="plaats"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.12" class="WORD">
@@ -1085,6 +1106,7 @@
               <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>toe</t>
+                <feat class="[toe]preposition" subset="structure"/>
                 <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -1102,8 +1124,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-3.27422"/>
-          <metric class="lprob10_bwd" value="-2.56532"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.13" class="WORD">
           <t>ging</t>
@@ -1120,6 +1140,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>gaan</t>
+                <feat class="[gaan]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -1137,14 +1158,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="207522"/>
-          <metric class="log_word_freq" value="5.63708"/>
-          <metric class="lemma_freq" value="1386334"/>
-          <metric class="log_lemma_freq" value="6.50623"/>
+          <metric class="word_freq" value="179"/>
+          <metric class="log_word_freq" value="5.96991"/>
+          <metric class="lemma_freq" value="1085"/>
+          <metric class="log_lemma_freq" value="6.75047"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.72544"/>
-          <metric class="lprob10_bwd" value="-3.4372"/>
           <metric class="property" value="verleden_tijd"/>
           <metric class="semtype" value="ongedefinieerd-proces"/>
         </w>
@@ -1163,6 +1182,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>wil</t>
+                <feat class="[wil]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -1181,8 +1201,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-5.40049"/>
-          <metric class="lprob10_bwd" value="-4.20168"/>
           <metric class="property" value="verleden_tijd"/>
           <metric class="semtype" value="abstract-toestand"/>
         </w>
@@ -1204,6 +1222,7 @@
               <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>ik</t>
+                <feat class="[ik]pronoun" subset="structure"/>
                 <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -1220,8 +1239,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="1"/>
           <metric class="lemma_overlap_count" value="1"/>
-          <metric class="lprob10_fwd" value="-1.40083"/>
-          <metric class="lprob10_bwd" value="-3.83651"/>
           <metric class="property" value="voornaamwoord_1"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.16" class="NUMBER">
@@ -1246,8 +1263,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-3.41081"/>
-          <metric class="lprob10_bwd" value="-3.41081"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.17" class="WORD">
           <t>repen</t>
@@ -1264,6 +1279,7 @@
               <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>reep</t>
+                <feat class="[reep]noun" subset="structure"/>
                 <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -1276,14 +1292,12 @@
           <metric class="content_word_strict" value="true"/>
           <metric class="prevalenceP" value="0.999662"/>
           <metric class="prevalenceZ" value="3.39923"/>
-          <metric class="word_freq" value="566"/>
-          <metric class="log_word_freq" value="3.07359"/>
-          <metric class="lemma_freq" value="1953"/>
-          <metric class="log_lemma_freq" value="3.65528"/>
+          <metric class="word_freq" value="0"/>
+          <metric class="log_word_freq" value="3.71464"/>
+          <metric class="lemma_freq" value="11"/>
+          <metric class="log_lemma_freq" value="4.79382"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-5.93888"/>
-          <metric class="lprob10_bwd" value="-5.93888"/>
           <metric class="semtype" value="ongedefinieerd"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.18" class="WORD" space="no">
@@ -1301,6 +1315,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>koop</t>
+                <feat class="[koop]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -1318,20 +1333,19 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="58519"/>
-          <metric class="log_word_freq" value="5.08731"/>
-          <metric class="lemma_freq" value="105129"/>
-          <metric class="log_lemma_freq" value="5.38609"/>
+          <metric class="word_freq" value="45"/>
+          <metric class="log_word_freq" value="5.3774"/>
+          <metric class="lemma_freq" value="76"/>
+          <metric class="log_lemma_freq" value="5.60113"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-4.0734"/>
-          <metric class="lprob10_bwd" value="-3.15077"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="abstract-actie"/>
+          <metric class="semtype" value="niet-gevonden"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.19" class="PUNCTUATION">
           <t>,</t>
-          <pos class="LET()" confidence="0.999925" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <pos class="LET()" confidence="1.0" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <lemma class=","/>
           <morphology>
             <morpheme class="stem">
               <t>,</t>
@@ -1339,13 +1353,10 @@
               <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
-          <lemma class=","/>
           <metric class="word_freq" value="0"/>
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.825817"/>
-          <metric class="lprob10_bwd" value="-0.0357156"/>
           <metric class="property" value="punctuatie"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.20" class="WORD">
@@ -1373,8 +1384,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.879178"/>
-          <metric class="lprob10_bwd" value="-0.861833"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.21" class="WORD">
           <t>er</t>
@@ -1394,6 +1403,7 @@
               <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>er</t>
+                <feat class="[er]pronoun" subset="structure"/>
                 <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -1409,8 +1419,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.83784"/>
-          <metric class="lprob10_bwd" value="-0.79588"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.22" class="WORD">
           <t>waren</t>
@@ -1427,6 +1435,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>zijn</t>
+                <feat class="[zijn]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -1448,8 +1457,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.54562"/>
-          <metric class="lprob10_bwd" value="-2.68517"/>
           <metric class="property" value="verleden_tijd"/>
           <metric class="semtype" value="abstract-toestand"/>
         </w>
@@ -1483,8 +1490,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.08368"/>
-          <metric class="lprob10_bwd" value="-1.86629"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.24" class="WORD">
           <t>punten</t>
@@ -1501,6 +1506,7 @@
               <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>punt</t>
+                <feat class="[punt]noun" subset="structure"/>
                 <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -1514,14 +1520,12 @@
           <metric class="prevalenceP" value="0.999546"/>
           <metric class="prevalenceZ" value="3.31772"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="90748"/>
-          <metric class="log_word_freq" value="5.27785"/>
-          <metric class="lemma_freq" value="154550"/>
-          <metric class="log_lemma_freq" value="5.55343"/>
+          <metric class="word_freq" value="14"/>
+          <metric class="log_word_freq" value="4.89073"/>
+          <metric class="lemma_freq" value="34"/>
+          <metric class="log_lemma_freq" value="5.25871"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-3.4463"/>
-          <metric class="lprob10_bwd" value="-3.51047"/>
           <metric class="semtype" value="ongedefinieerd"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.25" class="WORD">
@@ -1537,6 +1541,7 @@
               <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>op</t>
+                <feat class="[op]preposition" subset="structure"/>
                 <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -1552,8 +1557,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.11394"/>
-          <metric class="lprob10_bwd" value="-0.437387"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.26" class="WORD">
           <t>de</t>
@@ -1570,6 +1573,7 @@
               <pos class="D" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>de</t>
+                <feat class="[de]article" subset="structure"/>
                 <pos class="D" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -1585,8 +1589,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.787106"/>
-          <metric class="lprob10_bwd" value="-0.273001"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.27" class="WORD" space="no">
           <t>verpakking</t>
@@ -1617,6 +1619,7 @@
                   </morpheme>
                   <morpheme class="stem">
                     <t>pak</t>
+                    <feat class="[pak]noun" subset="structure"/>
                     <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                   </morpheme>
                 </morpheme>
@@ -1636,19 +1639,18 @@
           <metric class="prevalenceP" value="0.997822"/>
           <metric class="prevalenceZ" value="2.85114"/>
           <metric class="top10000" value="true"/>
-          <metric class="word_freq" value="5999"/>
-          <metric class="log_word_freq" value="4.09816"/>
-          <metric class="lemma_freq" value="8343"/>
-          <metric class="log_lemma_freq" value="4.28573"/>
+          <metric class="word_freq" value="0"/>
+          <metric class="log_word_freq" value="3.71464"/>
+          <metric class="lemma_freq" value="0"/>
+          <metric class="log_lemma_freq" value="3.71464"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-3.10535"/>
-          <metric class="lprob10_bwd" value="-4.6653"/>
-          <metric class="semtype" value="gebruiksvoorwerp"/>
+          <metric class="semtype" value="niet-gevonden"/>
         </w>
         <w xml:id="tscan.p.1.s.2.w.28" class="PUNCTUATION">
           <t>.</t>
-          <pos class="LET()" confidence="0.999956" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <pos class="LET()" confidence="1.0" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <lemma class="."/>
           <morphology>
             <morpheme class="stem">
               <t>.</t>
@@ -1656,73 +1658,70 @@
               <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
-          <lemma class="."/>
           <metric class="word_freq" value="0"/>
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.839897"/>
-          <metric class="lprob10_bwd" value="-0.0927787"/>
           <metric class="property" value="punctuatie"/>
         </w>
         <chunking xml:id="tscan.p.1.s.2.chunking.1">
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.1" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.1" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.1" t="Ik"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.2" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.2" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.2" t="heb"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.3" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.3" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.3" t="al"/>
             <wref id="tscan.p.1.s.2.w.4" t="8"/>
             <wref id="tscan.p.1.s.2.w.5" t="punten"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.4" class="SBAR" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.4" class="SBAR" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.7" t="toen"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.5" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.5" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.8" t="ik"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.6" class="PP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.6" class="PP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.9" t="naar"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.7" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.7" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.10" t="de"/>
             <wref id="tscan.p.1.s.2.w.11" t="winkel"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.8" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.8" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.13" t="ging"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.9" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.9" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.14" t="wou"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.10" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.10" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.15" t="ik"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.11" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.11" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.16" t="2"/>
             <wref id="tscan.p.1.s.2.w.17" t="repen"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.12" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.12" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.18" t="kopen"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.13" class="CONJP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.13" class="CONJP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.20" t="maar"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.14" class="ADVP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.14" class="ADVP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.21" t="er"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.15" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.15" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.22" t="waren"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.16" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.16" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.23" t="geen"/>
             <wref id="tscan.p.1.s.2.w.24" t="punten"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.17" class="PP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.17" class="PP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.25" t="op"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.18" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.2.chunking.1.chunk.18" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.2.w.26" t="de"/>
             <wref id="tscan.p.1.s.2.w.27" t="verpakking"/>
           </chunk>
@@ -1824,24 +1823,18 @@
         <metric class="top5000StrictContent" value="6"/>
         <metric class="top10000StrictContent" value="7"/>
         <metric class="top20000StrictContent" value="7"/>
-        <metric class="word_freq" value="45.9696"/>
-        <metric class="word_freq_no_names" value="45.9696"/>
-        <metric class="log_word_freq" value="5.10773"/>
-        <metric class="log_word_freq_no_names" value="5.10773"/>
-        <metric class="lemma_freq" value="49.436"/>
-        <metric class="lemma_freq_no_names" value="49.436"/>
-        <metric class="log_lemma_freq" value="5.49289"/>
-        <metric class="log_lemma_freq_no_names" value="5.49289"/>
-        <metric class="log_word_freq_strict" value="4.9396"/>
-        <metric class="log_word_freq_no_names_strict" value="4.9396"/>
-        <metric class="log_lemma_freq_strict" value="5.37165"/>
-        <metric class="log_lemma_freq_no_names_strict" value="5.37165"/>
-        <metric class="wopr_logprob_fwd" value="-2.3132"/>
-        <metric class="wopr_entropy_fwd" value="4.38424"/>
-        <metric class="wopr_perplexity_fwd" value="20.8828"/>
-        <metric class="wopr_logprob_bwd" value="-2.29956"/>
-        <metric class="wopr_entropy_bwd" value="4.04506"/>
-        <metric class="wopr_perplexity_bwd" value="16.5076"/>
+        <metric class="word_freq" value="46.2474"/>
+        <metric class="word_freq_no_names" value="46.2474"/>
+        <metric class="log_word_freq" value="5.1386"/>
+        <metric class="log_word_freq_no_names" value="5.1386"/>
+        <metric class="lemma_freq" value="50.0994"/>
+        <metric class="lemma_freq_no_names" value="50.0994"/>
+        <metric class="log_lemma_freq" value="5.5666"/>
+        <metric class="log_lemma_freq_no_names" value="5.5666"/>
+        <metric class="log_word_freq_strict" value="4.97495"/>
+        <metric class="log_word_freq_no_names_strict" value="4.97495"/>
+        <metric class="log_lemma_freq_strict" value="5.45625"/>
+        <metric class="log_lemma_freq_no_names_strict" value="5.45625"/>
         <metric class="broad_adj" value="0"/>
         <metric class="strict_adj" value="0"/>
         <metric class="human_adj_count" value="0"/>
@@ -1874,6 +1867,15 @@
         <metric class="intens_nw_count" value="0"/>
         <metric class="intens_tuss_count" value="0"/>
         <metric class="intens_ww_count" value="0"/>
+        <metric class="formal_count" value="0"/>
+        <metric class="formal_bvnw_count" value="0"/>
+        <metric class="formal_bw_count" value="0"/>
+        <metric class="formal_vgw_count" value="0"/>
+        <metric class="formal_vnw_count" value="0"/>
+        <metric class="formal_vz_count" value="0"/>
+        <metric class="formal_vzg_count" value="0"/>
+        <metric class="formal_ww_count" value="0"/>
+        <metric class="formal_znw_count" value="0"/>
         <metric class="general_noun_count" value="0"/>
         <metric class="general_noun_sep_count" value="0"/>
         <metric class="general_noun_rel_count" value="0"/>
@@ -1890,11 +1892,11 @@
         <metric class="general_verb_deve_count" value="0"/>
         <metric class="general_adverb_count" value="0"/>
         <metric class="specific_adverb_count" value="0"/>
-        <metric class="broad_noun" value="2"/>
-        <metric class="strict_noun" value="1"/>
+        <metric class="broad_noun" value="1"/>
+        <metric class="strict_noun" value="0"/>
         <metric class="human_nouns_count" value="0"/>
         <metric class="nonhuman_nouns_count" value="0"/>
-        <metric class="artefact_nouns_count" value="1"/>
+        <metric class="artefact_nouns_count" value="0"/>
         <metric class="concrother_nouns_count" value="0"/>
         <metric class="substance_conc_nouns_count" value="0"/>
         <metric class="foodcare_nouns_count" value="0"/>
@@ -1907,24 +1909,24 @@
         <metric class="nondynamic_nouns_count" value="0"/>
         <metric class="institut_nouns_count" value="0"/>
         <metric class="undefined_nouns_count" value="3"/>
-        <metric class="covered_nouns_count" value="5"/>
-        <metric class="uncovered_nouns_count" value="0"/>
-        <metric class="abstract_ww" value="4"/>
+        <metric class="covered_nouns_count" value="4"/>
+        <metric class="uncovered_nouns_count" value="1"/>
+        <metric class="abstract_ww" value="3"/>
         <metric class="concrete_ww" value="0"/>
         <metric class="undefined_ww" value="1"/>
         <metric class="undefined_ATP" value="0"/>
         <metric class="state_count" value="3"/>
-        <metric class="action_count" value="1"/>
+        <metric class="action_count" value="0"/>
         <metric class="process_count" value="1"/>
-        <metric class="covered_verb_count" value="5"/>
-        <metric class="uncovered_verb_count" value="0"/>
+        <metric class="covered_verb_count" value="4"/>
+        <metric class="uncovered_verb_count" value="1"/>
         <metric class="indef_np_count" value="0"/>
         <metric class="np_count" value="8"/>
         <metric class="np_size" value="14"/>
         <metric class="vc_modifier_count" value="3"/>
         <metric class="vc_modifier_single_count" value="0"/>
         <metric class="adj_np_modifier_count" value="0"/>
-        <metric class="np_modifier_count" value="2"/>
+        <metric class="np_modifier_count" value="3"/>
         <metric class="character_count" value="90"/>
         <metric class="character_count_min_names" value="90"/>
         <metric class="morpheme_count" value="32"/>
@@ -1934,7 +1936,7 @@
         <metric class="sub_verb_dist" value="1.4"/>
         <metric class="obj_verb_dist" value="1"/>
         <metric class="lijdend_verb_dist" value="NA"/>
-        <metric class="verb_pp_dist" value="2.5"/>
+        <metric class="verb_pp_dist" value="3"/>
         <metric class="noun_det_dist" value="0"/>
         <metric class="prep_obj_dist" value="1"/>
         <metric class="verb_vc_dist" value="3"/>
@@ -1948,7 +1950,7 @@
         <metric class="verb_bw_mod_dist" value="0"/>
         <metric class="verb_adv_mod_dist" value="NA"/>
         <metric class="verb_noun_dist" value="NA"/>
-        <metric class="deplen" value="2.25"/>
+        <metric class="deplen" value="2.26087"/>
         <metric class="max_deplen" value="15"/>
       </s>
       <s xml:id="tscan.p.1.s.3">
@@ -1965,6 +1967,7 @@
               <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>en</t>
+                <feat class="[en]conjunction" subset="structure"/>
                 <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -1980,8 +1983,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.78521"/>
-          <metric class="lprob10_bwd" value="-1.37204"/>
         </w>
         <w xml:id="tscan.p.1.s.3.w.2" class="WORD">
           <t>ik</t>
@@ -2001,6 +2002,7 @@
               <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>ik</t>
+                <feat class="[ik]pronoun" subset="structure"/>
                 <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -2017,8 +2019,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="1"/>
           <metric class="lemma_overlap_count" value="1"/>
-          <metric class="lprob10_fwd" value="-1.67831"/>
-          <metric class="lprob10_bwd" value="-1.6851"/>
           <metric class="property" value="voornaamwoord_1"/>
         </w>
         <w xml:id="tscan.p.1.s.3.w.3" class="WORD">
@@ -2036,6 +2036,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>wil</t>
+                <feat class="[wil]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -2053,6 +2054,7 @@
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 <morpheme class="stem">
                   <t>wil</t>
+                  <feat class="[wil]verb" subset="structure"/>
                   <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 </morpheme>
                 <morpheme class="inflection">
@@ -2071,6 +2073,7 @@
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 <morpheme class="stem">
                   <t>wil</t>
+                  <feat class="[wil]verb" subset="structure"/>
                   <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 </morpheme>
                 <morpheme class="inflection">
@@ -2090,6 +2093,7 @@
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 <morpheme class="stem">
                   <t>wil</t>
+                  <feat class="[wil]verb" subset="structure"/>
                   <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 </morpheme>
                 <morpheme class="inflection">
@@ -2111,8 +2115,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.40339"/>
-          <metric class="lprob10_bwd" value="-0.80618"/>
           <metric class="property" value="tegenwoordige_tijd"/>
           <metric class="semtype" value="abstract-toestand"/>
         </w>
@@ -2131,6 +2133,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>weet</t>
+                <feat class="[weet]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -2148,14 +2151,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="190328"/>
-          <metric class="log_word_freq" value="5.59952"/>
-          <metric class="lemma_freq" value="545152"/>
-          <metric class="log_lemma_freq" value="6.10088"/>
+          <metric class="word_freq" value="117"/>
+          <metric class="log_word_freq" value="5.78652"/>
+          <metric class="lemma_freq" value="462"/>
+          <metric class="log_lemma_freq" value="6.38022"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.10769"/>
-          <metric class="lprob10_bwd" value="-1.78176"/>
           <metric class="property" value="infinitief"/>
           <metric class="semtype" value="abstract-toestand"/>
         </w>
@@ -2178,14 +2179,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="203244"/>
-          <metric class="log_word_freq" value="5.62803"/>
-          <metric class="lemma_freq" value="171487"/>
-          <metric class="log_lemma_freq" value="5.59859"/>
+          <metric class="word_freq" value="101"/>
+          <metric class="log_word_freq" value="5.72324"/>
+          <metric class="lemma_freq" value="101"/>
+          <metric class="log_lemma_freq" value="5.72324"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.22917"/>
-          <metric class="lprob10_bwd" value="-3.31868"/>
         </w>
         <w xml:id="tscan.p.1.s.3.w.6" class="WORD">
           <t>niet</t>
@@ -2198,6 +2197,7 @@
               <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>niet</t>
+                <feat class="[niet]adverb" subset="structure"/>
                 <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -2211,14 +2211,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="3946037"/>
-          <metric class="log_word_freq" value="6.91617"/>
-          <metric class="lemma_freq" value="3497791"/>
-          <metric class="log_lemma_freq" value="6.90815"/>
+          <metric class="word_freq" value="1974"/>
+          <metric class="log_word_freq" value="7.01021"/>
+          <metric class="lemma_freq" value="1974"/>
+          <metric class="log_lemma_freq" value="7.01021"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.80618"/>
-          <metric class="lprob10_bwd" value="-2.76305"/>
         </w>
         <w xml:id="tscan.p.1.s.3.w.7" class="WORD">
           <t>want</t>
@@ -2233,6 +2231,7 @@
               <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>want</t>
+                <feat class="[want]conjunction" subset="structure"/>
                 <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -2248,8 +2247,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-3.4371"/>
-          <metric class="lprob10_bwd" value="-1.47952"/>
         </w>
         <w xml:id="tscan.p.1.s.3.w.8" class="WORD">
           <t>het</t>
@@ -2270,6 +2267,7 @@
               <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>het</t>
+                <feat class="[het]pronoun" subset="structure"/>
                 <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -2285,8 +2283,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.08111"/>
-          <metric class="lprob10_bwd" value="-1.54821"/>
         </w>
         <w xml:id="tscan.p.1.s.3.w.9" class="WORD">
           <t>is</t>
@@ -2303,6 +2299,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>zijn</t>
+                <feat class="[zijn]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -2324,8 +2321,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.704248"/>
-          <metric class="lprob10_bwd" value="-1.08739"/>
           <metric class="property" value="tegenwoordige_tijd"/>
           <metric class="semtype" value="abstract-toestand"/>
         </w>
@@ -2340,6 +2335,7 @@
               <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>nog</t>
+                <feat class="[nog]adverb" subset="structure"/>
                 <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -2353,14 +2349,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="1865802"/>
-          <metric class="log_word_freq" value="6.59088"/>
-          <metric class="lemma_freq" value="1627102"/>
-          <metric class="log_lemma_freq" value="6.57578"/>
+          <metric class="word_freq" value="838"/>
+          <metric class="log_word_freq" value="6.6384"/>
+          <metric class="lemma_freq" value="838"/>
+          <metric class="log_lemma_freq" value="6.6384"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.6329"/>
-          <metric class="lprob10_bwd" value="-0.330993"/>
         </w>
         <w xml:id="tscan.p.1.s.3.w.11" class="WORD">
           <t>geen</t>
@@ -2392,8 +2386,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="1"/>
           <metric class="lemma_overlap_count" value="1"/>
-          <metric class="lprob10_fwd" value="-1.3157"/>
-          <metric class="lprob10_bwd" value="-2.721"/>
         </w>
         <w xml:id="tscan.p.1.s.3.w.12" class="NUMBER">
           <t>30</t>
@@ -2414,14 +2406,13 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.68163"/>
-          <metric class="lprob10_bwd" value="-1.56378"/>
         </w>
         <w xml:id="tscan.p.1.s.3.w.13" class="WORD" space="no">
           <t>april</t>
-          <pos class="SPEC(deeleigen)" confidence="1" head="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
+          <pos class="SPEC(deeleigen)" confidence="1.0" head="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="deeleigen" subset="spectype"/>
           </pos>
+          <lemma class="april"/>
           <morphology>
             <morpheme class="stem">
               <t>april</t>
@@ -2429,26 +2420,24 @@
               <pos class="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
-          <lemma class="april"/>
           <metric class="content_word" value="true"/>
           <metric class="content_word_strict" value="true"/>
           <metric class="prevalenceP" value="0.998431"/>
           <metric class="prevalenceZ" value="2.95385"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="69437"/>
-          <metric class="log_word_freq" value="5.16161"/>
-          <metric class="lemma_freq" value="67012"/>
-          <metric class="log_lemma_freq" value="5.19052"/>
+          <metric class="word_freq" value="6"/>
+          <metric class="log_word_freq" value="4.55974"/>
+          <metric class="lemma_freq" value="6"/>
+          <metric class="log_lemma_freq" value="4.55974"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-3.89507"/>
-          <metric class="lprob10_bwd" value="-3.8127"/>
           <metric class="property" value="naam"/>
           <metric class="semtype" value="tijd"/>
         </w>
         <w xml:id="tscan.p.1.s.3.w.14" class="PUNCTUATION">
           <t>.</t>
-          <pos class="LET()" confidence="0.999956" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <pos class="LET()" confidence="1.0" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <lemma class="."/>
           <morphology>
             <morpheme class="stem">
               <t>.</t>
@@ -2456,45 +2445,42 @@
               <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
-          <lemma class="."/>
           <metric class="word_freq" value="0"/>
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.1383"/>
-          <metric class="lprob10_bwd" value="-0.0927787"/>
           <metric class="property" value="punctuatie"/>
         </w>
         <chunking xml:id="tscan.p.1.s.3.chunking.1">
-          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.1" class="PP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.1" class="PP" confidence="1.0">
             <wref id="tscan.p.1.s.3.w.1" t="En"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.2" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.2" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.3.w.2" t="ik"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.3" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.3" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.3.w.3" t="wil"/>
             <wref id="tscan.p.1.s.3.w.4" t="weten"/>
           </chunk>
           <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.4" class="SBAR" confidence="0.737711">
             <wref id="tscan.p.1.s.3.w.5" t="waarom"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.5" class="ADVP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.5" class="ADVP" confidence="1.0">
             <wref id="tscan.p.1.s.3.w.6" t="niet"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.6" class="CONJP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.6" class="CONJP" confidence="1.0">
             <wref id="tscan.p.1.s.3.w.7" t="want"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.7" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.7" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.3.w.8" t="het"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.8" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.8" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.3.w.9" t="is"/>
           </chunk>
           <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.9" class="ADVP" confidence="0.607745">
             <wref id="tscan.p.1.s.3.w.10" t="nog"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.10" class="NP" confidence="0.770914">
+          <chunk xml:id="tscan.p.1.s.3.chunking.1.chunk.10" class="NP" confidence="0.770915">
             <wref id="tscan.p.1.s.3.w.11" t="geen"/>
             <wref id="tscan.p.1.s.3.w.12" t="30"/>
             <wref id="tscan.p.1.s.3.w.13" t="april"/>
@@ -2597,24 +2583,18 @@
         <metric class="top5000StrictContent" value="2"/>
         <metric class="top10000StrictContent" value="2"/>
         <metric class="top20000StrictContent" value="2"/>
-        <metric class="word_freq" value="29.8962"/>
-        <metric class="word_freq_no_names" value="24.7346"/>
-        <metric class="log_word_freq" value="5.97924"/>
-        <metric class="log_word_freq_no_names" value="6.18365"/>
-        <metric class="lemma_freq" value="30.3739"/>
-        <metric class="lemma_freq_no_names" value="25.1834"/>
-        <metric class="log_lemma_freq" value="6.07478"/>
-        <metric class="log_lemma_freq_no_names" value="6.29585"/>
-        <metric class="log_word_freq_strict" value="5.38056"/>
-        <metric class="log_word_freq_no_names_strict" value="5.59952"/>
-        <metric class="log_lemma_freq_strict" value="5.6457"/>
-        <metric class="log_lemma_freq_no_names_strict" value="6.10088"/>
-        <metric class="wopr_logprob_fwd" value="-1.84972"/>
-        <metric class="wopr_entropy_fwd" value="2.18477"/>
-        <metric class="wopr_perplexity_fwd" value="4.54655"/>
-        <metric class="wopr_logprob_bwd" value="-1.74023"/>
-        <metric class="wopr_entropy_bwd" value="2.37338"/>
-        <metric class="wopr_perplexity_bwd" value="5.18154"/>
+        <metric class="word_freq" value="29.7181"/>
+        <metric class="word_freq_no_names" value="25.1584"/>
+        <metric class="log_word_freq" value="5.94362"/>
+        <metric class="log_word_freq_no_names" value="6.28959"/>
+        <metric class="lemma_freq" value="30.3118"/>
+        <metric class="lemma_freq_no_names" value="25.7521"/>
+        <metric class="log_lemma_freq" value="6.06236"/>
+        <metric class="log_lemma_freq_no_names" value="6.43802"/>
+        <metric class="log_word_freq_strict" value="5.17313"/>
+        <metric class="log_word_freq_no_names_strict" value="5.78652"/>
+        <metric class="log_lemma_freq_strict" value="5.46998"/>
+        <metric class="log_lemma_freq_no_names_strict" value="6.38022"/>
         <metric class="broad_adj" value="0"/>
         <metric class="strict_adj" value="0"/>
         <metric class="human_adj_count" value="0"/>
@@ -2647,6 +2627,15 @@
         <metric class="intens_nw_count" value="0"/>
         <metric class="intens_tuss_count" value="0"/>
         <metric class="intens_ww_count" value="0"/>
+        <metric class="formal_count" value="0"/>
+        <metric class="formal_bvnw_count" value="0"/>
+        <metric class="formal_bw_count" value="0"/>
+        <metric class="formal_vgw_count" value="0"/>
+        <metric class="formal_vnw_count" value="0"/>
+        <metric class="formal_vz_count" value="0"/>
+        <metric class="formal_vzg_count" value="0"/>
+        <metric class="formal_ww_count" value="0"/>
+        <metric class="formal_znw_count" value="0"/>
         <metric class="general_noun_count" value="0"/>
         <metric class="general_noun_sep_count" value="0"/>
         <metric class="general_noun_rel_count" value="0"/>
@@ -2702,7 +2691,7 @@
         <metric class="character_count_min_names" value="40"/>
         <metric class="morpheme_count" value="14"/>
         <metric class="morpheme_count_min_names" value="13"/>
-        <metric class="d_level" value="2"/>
+        <metric class="d_level" value="3"/>
         <metric class="sub_verb_dist" value="0.333333"/>
         <metric class="obj_verb_dist" value="NA"/>
         <metric class="lijdend_verb_dist" value="NA"/>
@@ -2720,7 +2709,7 @@
         <metric class="verb_bw_mod_dist" value="0"/>
         <metric class="verb_adv_mod_dist" value="NA"/>
         <metric class="verb_noun_dist" value="NA"/>
-        <metric class="deplen" value="0.625"/>
+        <metric class="deplen" value="0.714286"/>
         <metric class="max_deplen" value="3"/>
       </s>
       <s xml:id="tscan.p.1.s.4">
@@ -2742,6 +2731,7 @@
               <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>ik</t>
+                <feat class="[ik]pronoun" subset="structure"/>
                 <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -2758,8 +2748,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="1"/>
           <metric class="lemma_overlap_count" value="1"/>
-          <metric class="lprob10_fwd" value="-1.8563"/>
-          <metric class="lprob10_bwd" value="-0.198368"/>
           <metric class="property" value="voornaamwoord_1"/>
         </w>
         <w xml:id="tscan.p.1.s.4.w.2" class="WORD">
@@ -2777,6 +2765,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>heb</t>
+                <feat class="[heb]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -2794,6 +2783,7 @@
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 <morpheme class="stem">
                   <t>heb</t>
+                  <feat class="[heb]verb" subset="structure"/>
                   <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 </morpheme>
                 <morpheme class="inflection">
@@ -2817,8 +2807,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.81437"/>
-          <metric class="lprob10_bwd" value="-3.20564"/>
           <metric class="property" value="tegenwoordige_tijd"/>
           <metric class="semtype" value="abstract-toestand"/>
         </w>
@@ -2833,6 +2821,7 @@
               <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>dus</t>
+                <feat class="[dus]adverb" subset="structure"/>
                 <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -2845,14 +2834,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="570809"/>
-          <metric class="log_word_freq" value="6.0765"/>
-          <metric class="lemma_freq" value="459319"/>
-          <metric class="log_lemma_freq" value="6.02648"/>
+          <metric class="word_freq" value="185"/>
+          <metric class="log_word_freq" value="5.98415"/>
+          <metric class="lemma_freq" value="185"/>
+          <metric class="log_lemma_freq" value="5.98415"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.67254"/>
-          <metric class="lprob10_bwd" value="-3.56396"/>
         </w>
         <w xml:id="tscan.p.1.s.4.w.4" class="NUMBER">
           <t>8</t>
@@ -2874,12 +2861,10 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-4.23475"/>
-          <metric class="lprob10_bwd" value="-3.97865"/>
         </w>
         <w xml:id="tscan.p.1.s.4.w.5" class="WORD">
           <t>punten</t>
-          <pos class="N(soort,mv,basis)" confidence="0.997993" head="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
+          <pos class="N(soort,mv,basis)" confidence="0.997994" head="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="soort" subset="ntype"/>
             <feat class="mv" subset="getal"/>
             <feat class="basis" subset="graad"/>
@@ -2892,6 +2877,7 @@
               <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>punt</t>
+                <feat class="[punt]noun" subset="structure"/>
                 <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -2905,14 +2891,12 @@
           <metric class="prevalenceP" value="0.999546"/>
           <metric class="prevalenceZ" value="3.31772"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="90748"/>
-          <metric class="log_word_freq" value="5.27785"/>
-          <metric class="lemma_freq" value="154550"/>
-          <metric class="log_lemma_freq" value="5.55343"/>
+          <metric class="word_freq" value="14"/>
+          <metric class="log_word_freq" value="4.89073"/>
+          <metric class="lemma_freq" value="34"/>
+          <metric class="log_lemma_freq" value="5.25871"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-3.88327"/>
-          <metric class="lprob10_bwd" value="-3.88327"/>
           <metric class="semtype" value="ongedefinieerd"/>
         </w>
         <w xml:id="tscan.p.1.s.4.w.6" class="WORD">
@@ -2928,6 +2912,7 @@
               <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>en</t>
+                <feat class="[en]conjunction" subset="structure"/>
                 <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -2943,8 +2928,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.78209"/>
-          <metric class="lprob10_bwd" value="-1.8174"/>
         </w>
         <w xml:id="tscan.p.1.s.4.w.7" class="NUMBER">
           <t>2</t>
@@ -2968,8 +2951,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-3.41081"/>
-          <metric class="lprob10_bwd" value="-3.41081"/>
         </w>
         <w xml:id="tscan.p.1.s.4.w.8" class="WORD">
           <t>repen</t>
@@ -2986,6 +2967,7 @@
               <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>reep</t>
+                <feat class="[reep]noun" subset="structure"/>
                 <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -2998,14 +2980,12 @@
           <metric class="content_word_strict" value="true"/>
           <metric class="prevalenceP" value="0.999662"/>
           <metric class="prevalenceZ" value="3.39923"/>
-          <metric class="word_freq" value="566"/>
-          <metric class="log_word_freq" value="3.07359"/>
-          <metric class="lemma_freq" value="1953"/>
-          <metric class="log_lemma_freq" value="3.65528"/>
+          <metric class="word_freq" value="0"/>
+          <metric class="log_word_freq" value="3.71464"/>
+          <metric class="lemma_freq" value="11"/>
+          <metric class="log_lemma_freq" value="4.79382"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-5.93888"/>
-          <metric class="lprob10_bwd" value="-5.93888"/>
           <metric class="semtype" value="ongedefinieerd"/>
         </w>
         <w xml:id="tscan.p.1.s.4.w.9" class="WORD" space="no">
@@ -3023,6 +3003,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>op</t>
+                <feat class="[op]preposition" subset="structure"/>
                 <pos class="P" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -3032,6 +3013,7 @@
               </morpheme>
               <morpheme class="stem">
                 <t>stuur</t>
+                <feat class="[stuur]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -3047,20 +3029,19 @@
           <metric class="prevalenceP" value="0.997534"/>
           <metric class="prevalenceZ" value="2.81146"/>
           <metric class="top20000" value="true"/>
-          <metric class="word_freq" value="1322"/>
-          <metric class="log_word_freq" value="3.44157"/>
-          <metric class="lemma_freq" value="2459"/>
-          <metric class="log_lemma_freq" value="3.7553"/>
+          <metric class="word_freq" value="2"/>
+          <metric class="log_word_freq" value="4.19176"/>
+          <metric class="lemma_freq" value="3"/>
+          <metric class="log_lemma_freq" value="4.3167"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-5.71901"/>
-          <metric class="lprob10_bwd" value="-4.89787"/>
           <metric class="property" value="voltooid_deelw"/>
-          <metric class="semtype" value="abstract-actie"/>
+          <metric class="semtype" value="niet-gevonden"/>
         </w>
         <w xml:id="tscan.p.1.s.4.w.10" class="PUNCTUATION">
           <t>.</t>
-          <pos class="LET()" confidence="0.999956" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <pos class="LET()" confidence="1.0" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <lemma class="."/>
           <morphology>
             <morpheme class="stem">
               <t>.</t>
@@ -3068,37 +3049,34 @@
               <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
-          <lemma class="."/>
           <metric class="word_freq" value="0"/>
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.483112"/>
-          <metric class="lprob10_bwd" value="-0.0927787"/>
           <metric class="property" value="punctuatie"/>
         </w>
         <chunking xml:id="tscan.p.1.s.4.chunking.1">
-          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.1" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.1" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.4.w.1" t="Ik"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.2" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.2" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.4.w.2" t="heb"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.3" class="ADVP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.3" class="ADVP" confidence="1.0">
             <wref id="tscan.p.1.s.4.w.3" t="dus"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.4" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.4" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.4.w.4" t="8"/>
             <wref id="tscan.p.1.s.4.w.5" t="punten"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.5" class="CONJP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.5" class="CONJP" confidence="1.0">
             <wref id="tscan.p.1.s.4.w.6" t="en"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.6" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.6" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.4.w.7" t="2"/>
             <wref id="tscan.p.1.s.4.w.8" t="repen"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.7" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.4.chunking.1.chunk.7" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.4.w.9" t="opgestuurd"/>
           </chunk>
         </chunking>
@@ -3199,24 +3177,18 @@
         <metric class="top5000StrictContent" value="1"/>
         <metric class="top10000StrictContent" value="1"/>
         <metric class="top20000StrictContent" value="2"/>
-        <metric class="word_freq" value="17.8695"/>
-        <metric class="word_freq_no_names" value="17.8695"/>
-        <metric class="log_word_freq" value="4.46738"/>
-        <metric class="log_word_freq_no_names" value="4.46738"/>
-        <metric class="lemma_freq" value="18.9905"/>
-        <metric class="lemma_freq_no_names" value="18.9905"/>
-        <metric class="log_lemma_freq" value="4.74762"/>
-        <metric class="log_lemma_freq_no_names" value="4.74762"/>
-        <metric class="log_word_freq_strict" value="3.93101"/>
-        <metric class="log_word_freq_no_names_strict" value="3.93101"/>
-        <metric class="log_lemma_freq_strict" value="4.32134"/>
-        <metric class="log_lemma_freq_no_names_strict" value="4.32134"/>
-        <metric class="wopr_logprob_fwd" value="-3.07951"/>
-        <metric class="wopr_entropy_fwd" value="1.15189"/>
-        <metric class="wopr_perplexity_fwd" value="2.22205"/>
-        <metric class="wopr_logprob_bwd" value="-3.09876"/>
-        <metric class="wopr_entropy_bwd" value="0.775758"/>
-        <metric class="wopr_perplexity_bwd" value="1.71209"/>
+        <metric class="word_freq" value="18.7813"/>
+        <metric class="word_freq_no_names" value="18.7813"/>
+        <metric class="log_word_freq" value="4.69532"/>
+        <metric class="log_word_freq_no_names" value="4.69532"/>
+        <metric class="lemma_freq" value="20.3534"/>
+        <metric class="lemma_freq_no_names" value="20.3534"/>
+        <metric class="log_lemma_freq" value="5.08835"/>
+        <metric class="log_lemma_freq_no_names" value="5.08835"/>
+        <metric class="log_word_freq_strict" value="4.26571"/>
+        <metric class="log_word_freq_no_names_strict" value="4.26571"/>
+        <metric class="log_lemma_freq_strict" value="4.78974"/>
+        <metric class="log_lemma_freq_no_names_strict" value="4.78974"/>
         <metric class="broad_adj" value="0"/>
         <metric class="strict_adj" value="0"/>
         <metric class="human_adj_count" value="0"/>
@@ -3249,6 +3221,15 @@
         <metric class="intens_nw_count" value="0"/>
         <metric class="intens_tuss_count" value="0"/>
         <metric class="intens_ww_count" value="0"/>
+        <metric class="formal_count" value="0"/>
+        <metric class="formal_bvnw_count" value="0"/>
+        <metric class="formal_bw_count" value="0"/>
+        <metric class="formal_vgw_count" value="0"/>
+        <metric class="formal_vnw_count" value="0"/>
+        <metric class="formal_vz_count" value="0"/>
+        <metric class="formal_vzg_count" value="0"/>
+        <metric class="formal_ww_count" value="0"/>
+        <metric class="formal_znw_count" value="0"/>
         <metric class="general_noun_count" value="0"/>
         <metric class="general_noun_sep_count" value="0"/>
         <metric class="general_noun_rel_count" value="0"/>
@@ -3284,15 +3265,15 @@
         <metric class="undefined_nouns_count" value="2"/>
         <metric class="covered_nouns_count" value="2"/>
         <metric class="uncovered_nouns_count" value="0"/>
-        <metric class="abstract_ww" value="2"/>
+        <metric class="abstract_ww" value="1"/>
         <metric class="concrete_ww" value="0"/>
         <metric class="undefined_ww" value="0"/>
         <metric class="undefined_ATP" value="0"/>
         <metric class="state_count" value="1"/>
-        <metric class="action_count" value="1"/>
+        <metric class="action_count" value="0"/>
         <metric class="process_count" value="0"/>
-        <metric class="covered_verb_count" value="2"/>
-        <metric class="uncovered_verb_count" value="0"/>
+        <metric class="covered_verb_count" value="1"/>
+        <metric class="uncovered_verb_count" value="1"/>
         <metric class="indef_np_count" value="0"/>
         <metric class="np_count" value="3"/>
         <metric class="np_size" value="5"/>
@@ -3339,6 +3320,7 @@
               <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>want</t>
+                <feat class="[want]conjunction" subset="structure"/>
                 <pos class="C" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -3354,8 +3336,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.6219"/>
-          <metric class="lprob10_bwd" value="-1.80569"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.2" class="WORD">
           <t>ik</t>
@@ -3375,6 +3355,7 @@
               <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>ik</t>
+                <feat class="[ik]pronoun" subset="structure"/>
                 <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -3391,8 +3372,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="1"/>
           <metric class="lemma_overlap_count" value="1"/>
-          <metric class="lprob10_fwd" value="-1.74896"/>
-          <metric class="lprob10_bwd" value="-0.860338"/>
           <metric class="property" value="voornaamwoord_1"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.3" class="WORD">
@@ -3410,6 +3389,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>wil</t>
+                <feat class="[wil]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -3427,6 +3407,7 @@
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 <morpheme class="stem">
                   <t>wil</t>
+                  <feat class="[wil]verb" subset="structure"/>
                   <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 </morpheme>
                 <morpheme class="inflection">
@@ -3445,6 +3426,7 @@
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 <morpheme class="stem">
                   <t>wil</t>
+                  <feat class="[wil]verb" subset="structure"/>
                   <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 </morpheme>
                 <morpheme class="inflection">
@@ -3464,6 +3446,7 @@
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 <morpheme class="stem">
                   <t>wil</t>
+                  <feat class="[wil]verb" subset="structure"/>
                   <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 </morpheme>
                 <morpheme class="inflection">
@@ -3485,14 +3468,12 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.967815"/>
-          <metric class="lprob10_bwd" value="-0.940232"/>
           <metric class="property" value="tegenwoordige_tijd"/>
           <metric class="semtype" value="abstract-toestand"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.4" class="WORD">
           <t>heel</t>
-          <pos class="ADJ(vrij,basis,zonder)" confidence="0.95902" head="ADJ" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
+          <pos class="ADJ(vrij,basis,zonder)" confidence="0.959022" head="ADJ" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="vrij" subset="positie"/>
             <feat class="basis" subset="graad"/>
             <feat class="zonder" subset="buiging"/>
@@ -3505,6 +3486,7 @@
               <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>heel</t>
+                <feat class="[heel]adjective" subset="structure"/>
                 <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -3521,14 +3503,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="443548"/>
-          <metric class="log_word_freq" value="5.96695"/>
-          <metric class="lemma_freq" value="564210"/>
-          <metric class="log_lemma_freq" value="6.1158"/>
+          <metric class="word_freq" value="440"/>
+          <metric class="log_word_freq" value="6.35908"/>
+          <metric class="lemma_freq" value="619"/>
+          <metric class="log_lemma_freq" value="6.50703"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.35073"/>
-          <metric class="lprob10_bwd" value="-3.27711"/>
           <metric class="semtype" value="alg-evaluatief"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.5" class="WORD">
@@ -3542,6 +3522,7 @@
               <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>graag</t>
+                <feat class="[graag]adverb" subset="structure"/>
                 <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -3553,14 +3534,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="141345"/>
-          <metric class="log_word_freq" value="5.47029"/>
-          <metric class="lemma_freq" value="121166"/>
-          <metric class="log_lemma_freq" value="5.44774"/>
+          <metric class="word_freq" value="80"/>
+          <metric class="log_word_freq" value="5.62313"/>
+          <metric class="lemma_freq" value="80"/>
+          <metric class="log_lemma_freq" value="5.62313"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.31627"/>
-          <metric class="lprob10_bwd" value="-3.79986"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.6" class="WORD">
           <t>die</t>
@@ -3580,6 +3559,7 @@
               <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>die</t>
+                <feat class="[die]pronoun" subset="structure"/>
                 <pos class="O" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -3596,8 +3576,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.14963"/>
-          <metric class="lprob10_bwd" value="-2.14963"/>
           <metric class="property" value="aanwijzend"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.7" class="WORD">
@@ -3617,6 +3595,7 @@
               <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>telefoon</t>
+                <feat class="[telefoon]noun" subset="structure"/>
                 <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -3629,14 +3608,12 @@
           <metric class="prevalenceP" value="0.99707"/>
           <metric class="prevalenceZ" value="2.75555"/>
           <metric class="top3000" value="true"/>
-          <metric class="word_freq" value="25573"/>
-          <metric class="log_word_freq" value="4.72781"/>
-          <metric class="lemma_freq" value="23693"/>
-          <metric class="log_lemma_freq" value="4.739"/>
+          <metric class="word_freq" value="11"/>
+          <metric class="log_word_freq" value="4.79382"/>
+          <metric class="lemma_freq" value="14"/>
+          <metric class="log_lemma_freq" value="4.89073"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-4.58759"/>
-          <metric class="lprob10_bwd" value="-4.33731"/>
           <metric class="semtype" value="gebruiksvoorwerp"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.8" class="WORD">
@@ -3654,6 +3631,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>heb</t>
+                <feat class="[heb]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -3673,14 +3651,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="1100057"/>
-          <metric class="log_word_freq" value="6.36143"/>
-          <metric class="lemma_freq" value="4005447"/>
-          <metric class="log_lemma_freq" value="6.96701"/>
+          <metric class="word_freq" value="555"/>
+          <metric class="log_word_freq" value="6.45972"/>
+          <metric class="lemma_freq" value="2177"/>
+          <metric class="log_lemma_freq" value="7.0527"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.63199"/>
-          <metric class="lprob10_bwd" value="-2.29024"/>
           <metric class="property" value="tegenwoordige_tijd"/>
           <metric class="semtype" value="abstract-toestand"/>
         </w>
@@ -3695,6 +3671,7 @@
               <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>dus</t>
+                <feat class="[dus]adverb" subset="structure"/>
                 <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -3707,14 +3684,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="570809"/>
-          <metric class="log_word_freq" value="6.0765"/>
-          <metric class="lemma_freq" value="459319"/>
-          <metric class="log_lemma_freq" value="6.02648"/>
+          <metric class="word_freq" value="185"/>
+          <metric class="log_word_freq" value="5.98415"/>
+          <metric class="lemma_freq" value="185"/>
+          <metric class="log_lemma_freq" value="5.98415"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-3.00577"/>
-          <metric class="lprob10_bwd" value="-3.34756"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.10" class="WORD">
           <t>stuur</t>
@@ -3731,6 +3706,7 @@
               <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>stuur</t>
+                <feat class="[stuur]verb" subset="structure"/>
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -3748,6 +3724,7 @@
                 <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 <morpheme class="stem">
                   <t>stuur</t>
+                  <feat class="[stuur]verb" subset="structure"/>
                   <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
                 </morpheme>
                 <morpheme class="inflection">
@@ -3760,22 +3737,19 @@
             </morphology>
           </alt>
           <pos class="wwform(hoofdww)" set="tscan-set"/>
-          <metric class="full-lemma" value="terugsturen"/>
           <metric class="content_word" value="true"/>
           <metric class="content_word_strict" value="true"/>
           <metric class="prevalenceP" value="0.998353"/>
           <metric class="prevalenceZ" value="2.93888"/>
           <metric class="top3000" value="true"/>
-          <metric class="word_freq" value="17935"/>
-          <metric class="log_word_freq" value="4.57374"/>
-          <metric class="lemma_freq" value="2227"/>
-          <metric class="log_lemma_freq" value="3.71228"/>
+          <metric class="word_freq" value="13"/>
+          <metric class="log_word_freq" value="4.86077"/>
+          <metric class="lemma_freq" value="41"/>
+          <metric class="log_lemma_freq" value="5.33789"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-4.79986"/>
-          <metric class="lprob10_bwd" value="-4.79986"/>
           <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="abstract-actie"/>
+          <metric class="semtype" value="ongedefinieerd-actie"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.11" class="WORD">
           <t>zo</t>
@@ -3788,6 +3762,7 @@
               <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>zo</t>
+                <feat class="[zo]adverb" subset="structure"/>
                 <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -3800,14 +3775,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="1015312"/>
-          <metric class="log_word_freq" value="6.32661"/>
-          <metric class="lemma_freq" value="854798"/>
-          <metric class="log_lemma_freq" value="6.29622"/>
+          <metric class="word_freq" value="866"/>
+          <metric class="log_word_freq" value="6.65266"/>
+          <metric class="lemma_freq" value="866"/>
+          <metric class="log_lemma_freq" value="6.65266"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.84652"/>
-          <metric class="lprob10_bwd" value="-0.0037674"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.12" class="WORD">
           <t>snel</t>
@@ -3824,6 +3797,7 @@
               <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>snel</t>
+                <feat class="[snel]adjective" subset="structure"/>
                 <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -3839,14 +3813,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="171009"/>
-          <metric class="log_word_freq" value="5.55303"/>
-          <metric class="lemma_freq" value="212280"/>
-          <metric class="log_lemma_freq" value="5.69127"/>
+          <metric class="word_freq" value="85"/>
+          <metric class="log_word_freq" value="5.64914"/>
+          <metric class="lemma_freq" value="110"/>
+          <metric class="log_lemma_freq" value="5.75996"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.51456"/>
-          <metric class="lprob10_bwd" value="-0.635669"/>
           <metric class="semtype" value="tijd"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.13" class="WORD">
@@ -3864,6 +3836,7 @@
               <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>mogelijk</t>
+                <feat class="[mogelijk]adjective" subset="structure"/>
                 <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -3878,14 +3851,12 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="173590"/>
-          <metric class="log_word_freq" value="5.55954"/>
-          <metric class="lemma_freq" value="203437"/>
-          <metric class="log_lemma_freq" value="5.67279"/>
+          <metric class="word_freq" value="47"/>
+          <metric class="log_word_freq" value="5.39588"/>
+          <metric class="lemma_freq" value="52"/>
+          <metric class="log_lemma_freq" value="5.43892"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.207053"/>
-          <metric class="lprob10_bwd" value="-2.95182"/>
           <metric class="semtype" value="epist-pos"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.14" class="WORD">
@@ -3903,6 +3874,7 @@
               <pos class="D" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>een</t>
+                <feat class="[een]article" subset="structure"/>
                 <pos class="D" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -3918,8 +3890,6 @@
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.07835"/>
-          <metric class="lprob10_bwd" value="-0.425969"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.15" class="WORD">
           <t>brief</t>
@@ -3938,6 +3908,7 @@
               <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>brief</t>
+                <feat class="[brief]noun" subset="structure"/>
                 <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
               <morpheme class="inflection">
@@ -3951,14 +3922,12 @@
           <metric class="prevalenceZ" value="2.97234"/>
           <metric class="f80" value="true"/>
           <metric class="top2000" value="true"/>
-          <metric class="word_freq" value="34961"/>
-          <metric class="log_word_freq" value="4.86361"/>
-          <metric class="lemma_freq" value="49759"/>
-          <metric class="log_lemma_freq" value="5.06124"/>
+          <metric class="word_freq" value="16"/>
+          <metric class="log_word_freq" value="4.94509"/>
+          <metric class="lemma_freq" value="43"/>
+          <metric class="log_lemma_freq" value="5.35809"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.27416"/>
-          <metric class="lprob10_bwd" value="-3.28803"/>
           <metric class="semtype" value="gebruiksvoorwerp"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.16" class="WORD">
@@ -3972,6 +3941,7 @@
               <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               <morpheme class="stem">
                 <t>terug</t>
+                <feat class="[terug]adverb" subset="structure"/>
                 <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
               </morpheme>
             </morpheme>
@@ -3984,20 +3954,19 @@
           <metric class="f77" value="true"/>
           <metric class="f80" value="true"/>
           <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="251443"/>
-          <metric class="log_word_freq" value="5.72045"/>
-          <metric class="lemma_freq" value="220033"/>
-          <metric class="log_lemma_freq" value="5.70685"/>
+          <metric class="word_freq" value="119"/>
+          <metric class="log_word_freq" value="5.79382"/>
+          <metric class="lemma_freq" value="119"/>
+          <metric class="log_lemma_freq" value="5.79382"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-2.77573"/>
-          <metric class="lprob10_bwd" value="-3.39122"/>
         </w>
         <w xml:id="tscan.p.1.s.5.w.17" class="ABBREVIATION">
           <t>a.u.b.</t>
-          <pos class="SPEC(afk)" confidence="1" head="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
+          <pos class="SPEC(afk)" confidence="1.0" head="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
             <feat class="afk" subset="spectype"/>
           </pos>
+          <lemma class="a.u.b."/>
           <morphology>
             <morpheme class="stem">
               <t>a.u.b.</t>
@@ -4005,64 +3974,219 @@
               <pos class="SPEC" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
             </morpheme>
           </morphology>
-          <lemma class="a.u.b."/>
           <metric class="word_freq" value="0"/>
           <metric class="lemma_freq" value="0"/>
           <metric class="word_overlap_count" value="0"/>
           <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-6.67924"/>
-          <metric class="lprob10_bwd" value="-6.37094"/>
           <metric class="afktype" value="Generiek"/>
         </w>
+        <w xml:id="tscan.p.1.s.5.w.18" class="WORD">
+          <t>Alvast</t>
+          <pos class="BW()" confidence="0.995867" head="BW" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <lemma class="alvast"/>
+          <morphology>
+            <morpheme class="stem">
+              <t>alvast</t>
+              <feat class="[alvast]adverb" subset="structure"/>
+              <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+            </morpheme>
+          </morphology>
+          <metric class="content_word" value="true"/>
+          <metric class="connective" value="temporeel"/>
+          <metric class="situation" value="tijd"/>
+          <metric class="prevalenceP" value="0.996417"/>
+          <metric class="prevalenceZ" value="2.68905"/>
+          <metric class="top1000" value="true"/>
+          <metric class="word_freq" value="5"/>
+          <metric class="log_word_freq" value="4.49279"/>
+          <metric class="lemma_freq" value="5"/>
+          <metric class="log_lemma_freq" value="4.49279"/>
+          <metric class="word_overlap_count" value="0"/>
+          <metric class="lemma_overlap_count" value="0"/>
+        </w>
+        <w xml:id="tscan.p.1.s.5.w.19" class="WORD">
+          <t>hartelijk</t>
+          <pos class="ADJ(prenom,basis,zonder)" confidence="1.0" head="ADJ" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
+            <feat class="prenom" subset="positie"/>
+            <feat class="basis" subset="graad"/>
+            <feat class="zonder" subset="buiging"/>
+          </pos>
+          <lemma class="hartelijk"/>
+          <morphology>
+            <morpheme class="complex">
+              <t>hartelijk</t>
+              <feat class="[[hart]noun[elijk]]adjective/positive" subset="structure"/>
+              <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="complex">
+                <feat class="A_N*" subset="applied_rule"/>
+                <feat class="[[hart]noun[elijk]]adjective" subset="structure"/>
+                <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                <morpheme class="stem">
+                  <t>hart</t>
+                  <feat class="[hart]noun" subset="structure"/>
+                  <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="affix">
+                  <t>elijk</t>
+                  <feat class="[elijk]" subset="structure"/>
+                </morpheme>
+              </morpheme>
+              <morpheme class="inflection">
+                <feat class="positive" subset="inflection"/>
+              </morpheme>
+            </morpheme>
+          </morphology>
+          <metric class="content_word" value="true"/>
+          <metric class="content_word_strict" value="true"/>
+          <metric class="prevalenceP" value="0.994057"/>
+          <metric class="prevalenceZ" value="2.51552"/>
+          <metric class="top20000" value="true"/>
+          <metric class="word_freq" value="4"/>
+          <metric class="log_word_freq" value="4.41361"/>
+          <metric class="lemma_freq" value="4"/>
+          <metric class="log_lemma_freq" value="4.41361"/>
+          <metric class="word_overlap_count" value="0"/>
+          <metric class="lemma_overlap_count" value="0"/>
+          <metric class="semtype" value="emoties-sociaal"/>
+        </w>
+        <w xml:id="tscan.p.1.s.5.w.20" class="WORD" space="no">
+          <t>dank</t>
+          <pos class="WW(pv,tgw,ev)" confidence="1.0" head="WW" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
+            <feat class="pv" subset="wvorm"/>
+            <feat class="tgw" subset="pvtijd"/>
+            <feat class="ev" subset="pvagr"/>
+          </pos>
+          <lemma class="danken"/>
+          <morphology>
+            <morpheme class="complex">
+              <t>dank</t>
+              <feat class="[dank]verb/present-tense/singular/1st-person-verb" subset="structure"/>
+              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              <morpheme class="stem">
+                <t>dank</t>
+                <feat class="[dank]verb" subset="structure"/>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+              </morpheme>
+              <morpheme class="inflection">
+                <feat class="present-tense" subset="inflection"/>
+                <feat class="singular" subset="inflection"/>
+                <feat class="1st-person-verb" subset="inflection"/>
+              </morpheme>
+            </morpheme>
+          </morphology>
+          <alt xml:id="tscan.p.1.s.5.w.20.alt-mor.1" auth="no">
+            <morphology>
+              <morpheme class="complex">
+                <t>dank</t>
+                <feat class="[dank]verb/present-tense/singular/2nd-person-verb/inversed" subset="structure"/>
+                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                <morpheme class="stem">
+                  <t>dank</t>
+                  <feat class="[dank]verb" subset="structure"/>
+                  <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+                </morpheme>
+                <morpheme class="inflection">
+                  <feat class="present-tense" subset="inflection"/>
+                  <feat class="singular" subset="inflection"/>
+                  <feat class="2nd-person-verb" subset="inflection"/>
+                  <feat class="inversed" subset="inflection"/>
+                </morpheme>
+              </morpheme>
+            </morphology>
+          </alt>
+          <pos class="wwform(hoofdww)" set="tscan-set"/>
+          <metric class="content_word" value="true"/>
+          <metric class="content_word_strict" value="true"/>
+          <metric class="imperative" value="true"/>
+          <metric class="prevalenceP" value="0.998165"/>
+          <metric class="prevalenceZ" value="2.90521"/>
+          <metric class="f77" value="true"/>
+          <metric class="f80" value="true"/>
+          <metric class="top5000" value="true"/>
+          <metric class="word_freq" value="23"/>
+          <metric class="log_word_freq" value="5.09485"/>
+          <metric class="lemma_freq" value="29"/>
+          <metric class="log_lemma_freq" value="5.19176"/>
+          <metric class="word_overlap_count" value="0"/>
+          <metric class="lemma_overlap_count" value="0"/>
+          <metric class="property" value="tegenwoordige_tijd"/>
+          <metric class="semtype" value="niet-gevonden"/>
+        </w>
+        <w xml:id="tscan.p.1.s.5.w.21" class="PUNCTUATION">
+          <t>.</t>
+          <pos class="LET()" confidence="1.0" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
+          <lemma class="."/>
+          <morphology>
+            <morpheme class="stem">
+              <t>.</t>
+              <feat class="[.]" subset="structure"/>
+              <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
+            </morpheme>
+          </morphology>
+          <metric class="word_freq" value="0"/>
+          <metric class="lemma_freq" value="0"/>
+          <metric class="word_overlap_count" value="0"/>
+          <metric class="lemma_overlap_count" value="0"/>
+          <metric class="property" value="punctuatie"/>
+        </w>
         <chunking xml:id="tscan.p.1.s.5.chunking.1">
-          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.1" class="PP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.1" class="PP" confidence="1.0">
             <wref id="tscan.p.1.s.5.w.1" t="Want"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.2" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.2" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.5.w.2" t="ik"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.3" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.3" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.5.w.3" t="wil"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.4" class="ADJP" confidence="0.420265">
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.4" class="ADJP" confidence="0.420266">
             <wref id="tscan.p.1.s.5.w.4" t="heel"/>
             <wref id="tscan.p.1.s.5.w.5" t="graag"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.5" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.5" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.5.w.6" t="die"/>
             <wref id="tscan.p.1.s.5.w.7" t="telefoon"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.6" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.6" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.5.w.8" t="hebben"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.7" class="ADVP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.7" class="ADVP" confidence="1.0">
             <wref id="tscan.p.1.s.5.w.9" t="dus"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.8" class="VP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.8" class="VP" confidence="1.0">
             <wref id="tscan.p.1.s.5.w.10" t="stuur"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.9" class="ADVP" confidence="0.668282">
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.9" class="ADVP" confidence="0.668283">
             <wref id="tscan.p.1.s.5.w.11" t="zo"/>
           </chunk>
           <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.10" class="NP" confidence="0.670859">
             <wref id="tscan.p.1.s.5.w.12" t="snel"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.11" class="ADJP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.11" class="ADJP" confidence="1.0">
             <wref id="tscan.p.1.s.5.w.13" t="mogelijk"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.12" class="NP" confidence="1">
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.12" class="NP" confidence="1.0">
             <wref id="tscan.p.1.s.5.w.14" t="een"/>
             <wref id="tscan.p.1.s.5.w.15" t="brief"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.13" class="ADVP" confidence="0.406624">
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.13" class="ADVP" confidence="0.506734">
             <wref id="tscan.p.1.s.5.w.16" t="terug"/>
           </chunk>
-          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.14" class="NP" confidence="0.782829">
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.14" class="NP" confidence="0.77616">
             <wref id="tscan.p.1.s.5.w.17" t="a.u.b."/>
           </chunk>
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.15" class="ADVP" confidence="1.0">
+            <wref id="tscan.p.1.s.5.w.18" t="Alvast"/>
+          </chunk>
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.16" class="ADJP" confidence="1.0">
+            <wref id="tscan.p.1.s.5.w.19" t="hartelijk"/>
+          </chunk>
+          <chunk xml:id="tscan.p.1.s.5.chunking.1.chunk.17" class="VP" confidence="0.849527">
+            <wref id="tscan.p.1.s.5.w.20" t="dank"/>
+          </chunk>
         </chunking>
-        <metric class="word_count" value="17"/>
-        <metric class="word_count_incl_stopwords" value="17"/>
+        <metric class="word_count" value="20"/>
+        <metric class="word_count_incl_stopwords" value="20"/>
         <metric class="bv_vd_count" value="0"/>
         <metric class="nw_vd_count" value="0"/>
         <metric class="vrij_vd_count" value="0"/>
@@ -4078,7 +4202,7 @@
         <metric class="smain_cnj_count" value="2"/>
         <metric class="ssub_cnj_count" value="0"/>
         <metric class="sv1_cnj_count" value="0"/>
-        <metric class="present_verb_count" value="3"/>
+        <metric class="present_verb_count" value="4"/>
         <metric class="past_verb_count" value="0"/>
         <metric class="subjonct_count" value="0"/>
         <metric class="name_count" value="0"/>
@@ -4098,30 +4222,30 @@
         <metric class="pers_ref_count" value="1"/>
         <metric class="pron_ref_count" value="1"/>
         <metric class="archaic_count" value="0"/>
-        <metric class="content_count" value="11"/>
-        <metric class="content_strict_count" value="7"/>
+        <metric class="content_count" value="14"/>
+        <metric class="content_strict_count" value="9"/>
         <metric class="nominal_count" value="0"/>
-        <metric class="adj_count" value="3"/>
+        <metric class="adj_count" value="4"/>
         <metric class="vg_count" value="1"/>
         <metric class="vnw_count" value="2"/>
         <metric class="lid_count" value="1"/>
         <metric class="vz_count" value="0"/>
-        <metric class="bw_count" value="4"/>
+        <metric class="bw_count" value="5"/>
         <metric class="tw_count" value="0"/>
         <metric class="noun_count" value="2"/>
-        <metric class="verb_count" value="3"/>
+        <metric class="verb_count" value="4"/>
         <metric class="tsw_count" value="0"/>
         <metric class="spec_count" value="1"/>
-        <metric class="let_count" value="0"/>
+        <metric class="let_count" value="1"/>
         <metric class="rel_count" value="0"/>
-        <metric class="all_connector_count" value="2"/>
-        <metric class="temporal_connector_count" value="0"/>
+        <metric class="all_connector_count" value="3"/>
+        <metric class="temporal_connector_count" value="1"/>
         <metric class="reeks_wg_connector_count" value="0"/>
         <metric class="reeks_zin_connector_count" value="0"/>
         <metric class="contrast_connector_count" value="0"/>
         <metric class="comparatief_connector_count" value="0"/>
         <metric class="causaal_connector_count" value="2"/>
-        <metric class="time_situation_count" value="0"/>
+        <metric class="time_situation_count" value="1"/>
         <metric class="space_situation_count" value="1"/>
         <metric class="cause_situation_count" value="0"/>
         <metric class="emotion_situation_count" value="0"/>
@@ -4131,56 +4255,50 @@
         <metric class="voorzetsel_expression_count" value="0"/>
         <metric class="word_overlap_count" value="1"/>
         <metric class="lemma_overlap_count" value="1"/>
-        <metric class="prevalenceP" value="15.957"/>
-        <metric class="prevalenceZ" value="45.6837"/>
-        <metric class="prevalenceContentP" value="10.9697"/>
-        <metric class="prevalenceContentZ" value="31.217"/>
-        <metric class="prevalenceCovered" value="16"/>
-        <metric class="prevalenceContentCovered" value="11"/>
+        <metric class="prevalenceP" value="18.9456"/>
+        <metric class="prevalenceZ" value="53.7935"/>
+        <metric class="prevalenceContentP" value="13.9583"/>
+        <metric class="prevalenceContentZ" value="39.3268"/>
+        <metric class="prevalenceCovered" value="19"/>
+        <metric class="prevalenceContentCovered" value="14"/>
         <metric class="freq50" value="6"/>
         <metric class="freq65" value="12"/>
-        <metric class="freq77" value="13"/>
-        <metric class="freq80" value="14"/>
-        <metric class="top1000" value="13"/>
-        <metric class="top2000" value="14"/>
-        <metric class="top3000" value="16"/>
-        <metric class="top5000" value="16"/>
-        <metric class="top10000" value="16"/>
-        <metric class="top20000" value="16"/>
-        <metric class="top1000Content" value="8"/>
-        <metric class="top2000Content" value="9"/>
-        <metric class="top3000Content" value="11"/>
-        <metric class="top5000Content" value="11"/>
-        <metric class="top10000Content" value="11"/>
-        <metric class="top20000Content" value="11"/>
+        <metric class="freq77" value="14"/>
+        <metric class="freq80" value="15"/>
+        <metric class="top1000" value="14"/>
+        <metric class="top2000" value="15"/>
+        <metric class="top3000" value="17"/>
+        <metric class="top5000" value="18"/>
+        <metric class="top10000" value="18"/>
+        <metric class="top20000" value="19"/>
+        <metric class="top1000Content" value="9"/>
+        <metric class="top2000Content" value="10"/>
+        <metric class="top3000Content" value="12"/>
+        <metric class="top5000Content" value="13"/>
+        <metric class="top10000Content" value="13"/>
+        <metric class="top20000Content" value="14"/>
         <metric class="top1000StrictContent" value="4"/>
         <metric class="top2000StrictContent" value="5"/>
         <metric class="top3000StrictContent" value="7"/>
-        <metric class="top5000StrictContent" value="7"/>
-        <metric class="top10000StrictContent" value="7"/>
-        <metric class="top20000StrictContent" value="7"/>
-        <metric class="word_freq" value="61.2"/>
-        <metric class="word_freq_no_names" value="61.2"/>
-        <metric class="log_word_freq" value="5.56363"/>
-        <metric class="log_word_freq_no_names" value="5.56363"/>
-        <metric class="lemma_freq" value="61.4367"/>
-        <metric class="lemma_freq_no_names" value="61.4367"/>
-        <metric class="log_lemma_freq" value="5.58515"/>
-        <metric class="log_lemma_freq_no_names" value="5.58515"/>
-        <metric class="log_word_freq_strict" value="5.3723"/>
-        <metric class="log_word_freq_no_names_strict" value="5.3723"/>
-        <metric class="log_lemma_freq_strict" value="5.42277"/>
-        <metric class="log_lemma_freq_no_names_strict" value="5.42277"/>
-        <metric class="wopr_logprob_fwd" value="-2.5033"/>
-        <metric class="wopr_entropy_fwd" value="2.04316"/>
-        <metric class="wopr_perplexity_fwd" value="4.12148"/>
-        <metric class="wopr_logprob_bwd" value="-2.62796"/>
-        <metric class="wopr_entropy_bwd" value="2.00253"/>
-        <metric class="wopr_perplexity_bwd" value="4.00701"/>
-        <metric class="broad_adj" value="1"/>
-        <metric class="strict_adj" value="0"/>
+        <metric class="top5000StrictContent" value="8"/>
+        <metric class="top10000StrictContent" value="8"/>
+        <metric class="top20000StrictContent" value="9"/>
+        <metric class="word_freq" value="76.5185"/>
+        <metric class="word_freq_no_names" value="76.5185"/>
+        <metric class="log_word_freq" value="5.46561"/>
+        <metric class="log_word_freq_no_names" value="5.46561"/>
+        <metric class="lemma_freq" value="78.4973"/>
+        <metric class="lemma_freq_no_names" value="78.4973"/>
+        <metric class="log_lemma_freq" value="5.60695"/>
+        <metric class="log_lemma_freq_no_names" value="5.60695"/>
+        <metric class="log_word_freq_strict" value="5.33022"/>
+        <metric class="log_word_freq_no_names_strict" value="5.33022"/>
+        <metric class="log_lemma_freq_strict" value="5.55008"/>
+        <metric class="log_lemma_freq_no_names_strict" value="5.55008"/>
+        <metric class="broad_adj" value="2"/>
+        <metric class="strict_adj" value="1"/>
         <metric class="human_adj_count" value="0"/>
-        <metric class="emo_adj_count" value="0"/>
+        <metric class="emo_adj_count" value="1"/>
         <metric class="nonhuman_adj_count" value="0"/>
         <metric class="shape_adj_count" value="0"/>
         <metric class="color_adj_count" value="0"/>
@@ -4199,7 +4317,7 @@
         <metric class="neg_epi_adj_count" value="0"/>
         <metric class="abstract_adj" value="0"/>
         <metric class="undefined_adj_count" value="0"/>
-        <metric class="covered_adj_count" value="3"/>
+        <metric class="covered_adj_count" value="4"/>
         <metric class="uncovered_adj_count" value="0"/>
         <metric class="intens_count" value="0"/>
         <metric class="intens_bvnw_count" value="0"/>
@@ -4209,6 +4327,15 @@
         <metric class="intens_nw_count" value="0"/>
         <metric class="intens_tuss_count" value="0"/>
         <metric class="intens_ww_count" value="0"/>
+        <metric class="formal_count" value="0"/>
+        <metric class="formal_bvnw_count" value="0"/>
+        <metric class="formal_bw_count" value="0"/>
+        <metric class="formal_vgw_count" value="0"/>
+        <metric class="formal_vnw_count" value="0"/>
+        <metric class="formal_vz_count" value="0"/>
+        <metric class="formal_vzg_count" value="0"/>
+        <metric class="formal_ww_count" value="0"/>
+        <metric class="formal_znw_count" value="0"/>
         <metric class="general_noun_count" value="0"/>
         <metric class="general_noun_sep_count" value="0"/>
         <metric class="general_noun_rel_count" value="0"/>
@@ -4244,30 +4371,32 @@
         <metric class="undefined_nouns_count" value="0"/>
         <metric class="covered_nouns_count" value="2"/>
         <metric class="uncovered_nouns_count" value="0"/>
-        <metric class="abstract_ww" value="3"/>
+        <metric class="abstract_ww" value="2"/>
         <metric class="concrete_ww" value="0"/>
-        <metric class="undefined_ww" value="0"/>
+        <metric class="undefined_ww" value="1"/>
         <metric class="undefined_ATP" value="0"/>
         <metric class="state_count" value="2"/>
         <metric class="action_count" value="1"/>
         <metric class="process_count" value="0"/>
         <metric class="covered_verb_count" value="3"/>
-        <metric class="uncovered_verb_count" value="0"/>
+        <metric class="uncovered_verb_count" value="1"/>
         <metric class="indef_np_count" value="1"/>
         <metric class="np_count" value="5"/>
         <metric class="np_size" value="7"/>
-        <metric class="vc_modifier_count" value="2"/>
+        <metric class="vc_modifier_count" value="4"/>
         <metric class="vc_modifier_single_count" value="0"/>
-        <metric class="adj_np_modifier_count" value="0"/>
-        <metric class="np_modifier_count" value="0"/>
-        <metric class="character_count" value="76"/>
-        <metric class="character_count_min_names" value="76"/>
-        <metric class="morpheme_count" value="18"/>
-        <metric class="morpheme_count_min_names" value="18"/>
-        <metric class="d_level" value="4"/>
+        <metric class="adj_np_modifier_count" value="1"/>
+        <metric class="np_modifier_count" value="2"/>
+        <metric class="character_count" value="95"/>
+        <metric class="character_count_min_names" value="95"/>
+        <metric class="morpheme_count" value="22"/>
+        <metric class="morpheme_count_min_names" value="22"/>
+        <metric class="d_level" value="7"/>
+        <metric class="d_level_gt4" value="1"/>
+        <metric class="imperative_count" value="1"/>
         <metric class="sub_verb_dist" value="4"/>
-        <metric class="obj_verb_dist" value="2"/>
-        <metric class="lijdend_verb_dist" value="NA"/>
+        <metric class="obj_verb_dist" value="4.5"/>
+        <metric class="lijdend_verb_dist" value="4"/>
         <metric class="verb_pp_dist" value="NA"/>
         <metric class="noun_det_dist" value="0"/>
         <metric class="prep_obj_dist" value="NA"/>
@@ -4276,17 +4405,18 @@
         <metric class="crd_cnj_dist" value="2.5"/>
         <metric class="verb_comp_dist" value="NA"/>
         <metric class="noun_vc_dist" value="NA"/>
-        <metric class="verb_svp_dist" value="5"/>
+        <metric class="verb_svp_dist" value="NA"/>
         <metric class="verb_cop_dist" value="NA"/>
         <metric class="verb_adj_dist" value="NA"/>
-        <metric class="verb_bw_mod_dist" value="NA"/>
+        <metric class="verb_bw_mod_dist" value="5.5"/>
         <metric class="verb_adv_mod_dist" value="1.5"/>
         <metric class="verb_noun_dist" value="NA"/>
-        <metric class="deplen" value="2.53846"/>
-        <metric class="max_deplen" value="7"/>
+        <metric class="deplen" value="3.2"/>
+        <metric class="max_deplen" value="9"/>
+        <metric class="isImperative" value="true"/>
       </s>
-      <metric class="word_count" value="74"/>
-      <metric class="word_count_incl_stopwords" value="74"/>
+      <metric class="word_count" value="77"/>
+      <metric class="word_count_incl_stopwords" value="77"/>
       <metric class="bv_vd_count" value="0"/>
       <metric class="nw_vd_count" value="0"/>
       <metric class="vrij_vd_count" value="1"/>
@@ -4302,7 +4432,7 @@
       <metric class="smain_cnj_count" value="9"/>
       <metric class="ssub_cnj_count" value="1"/>
       <metric class="sv1_cnj_count" value="0"/>
-      <metric class="present_verb_count" value="10"/>
+      <metric class="present_verb_count" value="11"/>
       <metric class="past_verb_count" value="3"/>
       <metric class="subjonct_count" value="0"/>
       <metric class="name_count" value="2"/>
@@ -4322,30 +4452,30 @@
       <metric class="pers_ref_count" value="9"/>
       <metric class="pron_ref_count" value="1"/>
       <metric class="archaic_count" value="0"/>
-      <metric class="content_count" value="32"/>
-      <metric class="content_strict_count" value="23"/>
+      <metric class="content_count" value="35"/>
+      <metric class="content_strict_count" value="25"/>
       <metric class="nominal_count" value="2"/>
-      <metric class="adj_count" value="3"/>
+      <metric class="adj_count" value="4"/>
       <metric class="vg_count" value="7"/>
       <metric class="vnw_count" value="13"/>
       <metric class="lid_count" value="4"/>
       <metric class="vz_count" value="5"/>
-      <metric class="bw_count" value="9"/>
+      <metric class="bw_count" value="10"/>
       <metric class="tw_count" value="5"/>
       <metric class="noun_count" value="10"/>
-      <metric class="verb_count" value="15"/>
+      <metric class="verb_count" value="16"/>
       <metric class="tsw_count" value="0"/>
       <metric class="spec_count" value="3"/>
-      <metric class="let_count" value="6"/>
+      <metric class="let_count" value="7"/>
       <metric class="rel_count" value="0"/>
-      <metric class="all_connector_count" value="7"/>
-      <metric class="temporal_connector_count" value="1"/>
+      <metric class="all_connector_count" value="8"/>
+      <metric class="temporal_connector_count" value="2"/>
       <metric class="reeks_wg_connector_count" value="0"/>
       <metric class="reeks_zin_connector_count" value="0"/>
       <metric class="contrast_connector_count" value="1"/>
       <metric class="comparatief_connector_count" value="0"/>
       <metric class="causaal_connector_count" value="5"/>
-      <metric class="time_situation_count" value="2"/>
+      <metric class="time_situation_count" value="3"/>
       <metric class="space_situation_count" value="1"/>
       <metric class="cause_situation_count" value="0"/>
       <metric class="emotion_situation_count" value="0"/>
@@ -4355,56 +4485,50 @@
       <metric class="voorzetsel_expression_count" value="0"/>
       <metric class="word_overlap_count" value="7"/>
       <metric class="lemma_overlap_count" value="7"/>
-      <metric class="prevalenceP" value="65.8621"/>
-      <metric class="prevalenceZ" value="195.845"/>
-      <metric class="prevalenceContentP" value="29.9403"/>
-      <metric class="prevalenceContentZ" value="89.6543"/>
-      <metric class="prevalenceCovered" value="66"/>
-      <metric class="prevalenceContentCovered" value="30"/>
+      <metric class="prevalenceP" value="68.8507"/>
+      <metric class="prevalenceZ" value="203.955"/>
+      <metric class="prevalenceContentP" value="32.929"/>
+      <metric class="prevalenceContentZ" value="97.7641"/>
+      <metric class="prevalenceCovered" value="69"/>
+      <metric class="prevalenceContentCovered" value="33"/>
       <metric class="freq50" value="35"/>
       <metric class="freq65" value="50"/>
-      <metric class="freq77" value="57"/>
-      <metric class="freq80" value="58"/>
-      <metric class="top1000" value="63"/>
-      <metric class="top2000" value="65"/>
-      <metric class="top3000" value="67"/>
-      <metric class="top5000" value="67"/>
-      <metric class="top10000" value="68"/>
-      <metric class="top20000" value="69"/>
-      <metric class="top1000Content" value="23"/>
-      <metric class="top2000Content" value="24"/>
-      <metric class="top3000Content" value="26"/>
-      <metric class="top5000Content" value="26"/>
-      <metric class="top10000Content" value="27"/>
-      <metric class="top20000Content" value="28"/>
+      <metric class="freq77" value="58"/>
+      <metric class="freq80" value="59"/>
+      <metric class="top1000" value="64"/>
+      <metric class="top2000" value="66"/>
+      <metric class="top3000" value="68"/>
+      <metric class="top5000" value="69"/>
+      <metric class="top10000" value="70"/>
+      <metric class="top20000" value="72"/>
+      <metric class="top1000Content" value="24"/>
+      <metric class="top2000Content" value="25"/>
+      <metric class="top3000Content" value="27"/>
+      <metric class="top5000Content" value="28"/>
+      <metric class="top10000Content" value="29"/>
+      <metric class="top20000Content" value="31"/>
       <metric class="top1000StrictContent" value="14"/>
       <metric class="top2000StrictContent" value="15"/>
       <metric class="top3000StrictContent" value="17"/>
-      <metric class="top5000StrictContent" value="17"/>
-      <metric class="top10000StrictContent" value="18"/>
-      <metric class="top20000StrictContent" value="19"/>
-      <metric class="word_freq" value="165.601"/>
-      <metric class="word_freq_no_names" value="157.407"/>
-      <metric class="log_word_freq" value="5.17503"/>
-      <metric class="log_word_freq_no_names" value="5.24689"/>
-      <metric class="lemma_freq" value="170.192"/>
-      <metric class="lemma_freq_no_names" value="161.964"/>
-      <metric class="log_lemma_freq" value="5.3185"/>
-      <metric class="log_lemma_freq_no_names" value="5.3988"/>
-      <metric class="log_word_freq_strict" value="4.79751"/>
-      <metric class="log_word_freq_no_names_strict" value="4.86421"/>
-      <metric class="log_lemma_freq_strict" value="5.00621"/>
-      <metric class="log_lemma_freq_no_names_strict" value="5.09119"/>
-      <metric class="wopr_logprob_fwd" value="-12.1701"/>
-      <metric class="wopr_entropy_fwd" value="11.6438"/>
-      <metric class="wopr_perplexity_fwd" value="35.4529"/>
-      <metric class="wopr_logprob_bwd" value="-12.1263"/>
-      <metric class="wopr_entropy_bwd" value="11.205"/>
-      <metric class="wopr_perplexity_bwd" value="31.4311"/>
-      <metric class="broad_adj" value="1"/>
-      <metric class="strict_adj" value="0"/>
+      <metric class="top5000StrictContent" value="18"/>
+      <metric class="top10000StrictContent" value="19"/>
+      <metric class="top20000StrictContent" value="21"/>
+      <metric class="word_freq" value="184.222"/>
+      <metric class="word_freq_no_names" value="175.948"/>
+      <metric class="log_word_freq" value="5.26349"/>
+      <metric class="log_word_freq_no_names" value="5.33175"/>
+      <metric class="lemma_freq" value="191.636"/>
+      <metric class="lemma_freq_no_names" value="183.362"/>
+      <metric class="log_lemma_freq" value="5.47532"/>
+      <metric class="log_lemma_freq_no_names" value="5.55642"/>
+      <metric class="log_word_freq_strict" value="4.95487"/>
+      <metric class="log_word_freq_no_names_strict" value="5.02597"/>
+      <metric class="log_lemma_freq_strict" value="5.25137"/>
+      <metric class="log_lemma_freq_no_names_strict" value="5.34825"/>
+      <metric class="broad_adj" value="2"/>
+      <metric class="strict_adj" value="1"/>
       <metric class="human_adj_count" value="0"/>
-      <metric class="emo_adj_count" value="0"/>
+      <metric class="emo_adj_count" value="1"/>
       <metric class="nonhuman_adj_count" value="0"/>
       <metric class="shape_adj_count" value="0"/>
       <metric class="color_adj_count" value="0"/>
@@ -4423,7 +4547,7 @@
       <metric class="neg_epi_adj_count" value="0"/>
       <metric class="abstract_adj" value="0"/>
       <metric class="undefined_adj_count" value="0"/>
-      <metric class="covered_adj_count" value="3"/>
+      <metric class="covered_adj_count" value="4"/>
       <metric class="uncovered_adj_count" value="0"/>
       <metric class="intens_count" value="0"/>
       <metric class="intens_bvnw_count" value="0"/>
@@ -4433,6 +4557,15 @@
       <metric class="intens_nw_count" value="0"/>
       <metric class="intens_tuss_count" value="0"/>
       <metric class="intens_ww_count" value="0"/>
+      <metric class="formal_count" value="0"/>
+      <metric class="formal_bvnw_count" value="0"/>
+      <metric class="formal_bw_count" value="0"/>
+      <metric class="formal_vgw_count" value="0"/>
+      <metric class="formal_vnw_count" value="0"/>
+      <metric class="formal_vz_count" value="0"/>
+      <metric class="formal_vzg_count" value="0"/>
+      <metric class="formal_ww_count" value="0"/>
+      <metric class="formal_znw_count" value="0"/>
       <metric class="general_noun_count" value="0"/>
       <metric class="general_noun_sep_count" value="0"/>
       <metric class="general_noun_rel_count" value="0"/>
@@ -4449,11 +4582,11 @@
       <metric class="general_verb_deve_count" value="0"/>
       <metric class="general_adverb_count" value="0"/>
       <metric class="specific_adverb_count" value="0"/>
-      <metric class="broad_noun" value="6"/>
-      <metric class="strict_noun" value="4"/>
+      <metric class="broad_noun" value="5"/>
+      <metric class="strict_noun" value="3"/>
       <metric class="human_nouns_count" value="1"/>
       <metric class="nonhuman_nouns_count" value="0"/>
-      <metric class="artefact_nouns_count" value="3"/>
+      <metric class="artefact_nouns_count" value="2"/>
       <metric class="concrother_nouns_count" value="0"/>
       <metric class="substance_conc_nouns_count" value="0"/>
       <metric class="foodcare_nouns_count" value="0"/>
@@ -4466,667 +4599,51 @@
       <metric class="nondynamic_nouns_count" value="0"/>
       <metric class="institut_nouns_count" value="0"/>
       <metric class="undefined_nouns_count" value="5"/>
-      <metric class="covered_nouns_count" value="12"/>
-      <metric class="uncovered_nouns_count" value="0"/>
-      <metric class="abstract_ww" value="14"/>
+      <metric class="covered_nouns_count" value="11"/>
+      <metric class="uncovered_nouns_count" value="1"/>
+      <metric class="abstract_ww" value="11"/>
       <metric class="concrete_ww" value="0"/>
-      <metric class="undefined_ww" value="1"/>
+      <metric class="undefined_ww" value="2"/>
       <metric class="undefined_ATP" value="0"/>
       <metric class="state_count" value="10"/>
-      <metric class="action_count" value="4"/>
+      <metric class="action_count" value="2"/>
       <metric class="process_count" value="1"/>
-      <metric class="covered_verb_count" value="15"/>
-      <metric class="uncovered_verb_count" value="0"/>
+      <metric class="covered_verb_count" value="13"/>
+      <metric class="uncovered_verb_count" value="3"/>
       <metric class="indef_np_count" value="1"/>
       <metric class="np_count" value="23"/>
       <metric class="np_size" value="36"/>
-      <metric class="vc_modifier_count" value="7"/>
+      <metric class="vc_modifier_count" value="9"/>
       <metric class="vc_modifier_single_count" value="0"/>
-      <metric class="adj_np_modifier_count" value="0"/>
-      <metric class="np_modifier_count" value="4"/>
-      <metric class="character_count" value="278"/>
-      <metric class="character_count_min_names" value="269"/>
-      <metric class="morpheme_count" value="89"/>
-      <metric class="morpheme_count_min_names" value="87"/>
-      <metric class="d_level" value="17"/>
-      <metric class="d_level_gt4" value="1"/>
+      <metric class="adj_np_modifier_count" value="1"/>
+      <metric class="np_modifier_count" value="7"/>
+      <metric class="character_count" value="297"/>
+      <metric class="character_count_min_names" value="288"/>
+      <metric class="morpheme_count" value="93"/>
+      <metric class="morpheme_count_min_names" value="91"/>
+      <metric class="d_level" value="21"/>
+      <metric class="d_level_gt4" value="2"/>
+      <metric class="imperative_count" value="1"/>
       <metric class="sub_verb_dist" value="1.8"/>
-      <metric class="obj_verb_dist" value="2.16667"/>
-      <metric class="lijdend_verb_dist" value="NA"/>
+      <metric class="obj_verb_dist" value="3"/>
+      <metric class="lijdend_verb_dist" value="4"/>
       <metric class="verb_pp_dist" value="2"/>
       <metric class="noun_det_dist" value="0"/>
       <metric class="prep_obj_dist" value="1"/>
-      <metric class="verb_vc_dist" value="2.6"/>
+      <metric class="verb_vc_dist" value="3.25"/>
       <metric class="comp_body_dist" value="5"/>
       <metric class="crd_cnj_dist" value="2.90909"/>
       <metric class="verb_comp_dist" value="10"/>
       <metric class="noun_vc_dist" value="NA"/>
-      <metric class="verb_svp_dist" value="2.5"/>
+      <metric class="verb_svp_dist" value="0"/>
       <metric class="verb_cop_dist" value="0"/>
       <metric class="verb_adj_dist" value="NA"/>
-      <metric class="verb_bw_mod_dist" value="1.25"/>
+      <metric class="verb_bw_mod_dist" value="2.66667"/>
       <metric class="verb_adv_mod_dist" value="1.5"/>
       <metric class="verb_noun_dist" value="NA"/>
-      <metric class="deplen" value="1.69158"/>
-      <metric class="max_deplen" value="6.6"/>
+      <metric class="deplen" value="1.84392"/>
+      <metric class="max_deplen" value="7"/>
       <metric class="sentence_count" value="5"/>
-    </p>
-    <p xml:id="tscan.p.2">
-      <s xml:id="tscan.p.2.s.1">
-        <w xml:id="tscan.p.2.s.1.w.1" class="WORD">
-          <t>Alvast</t>
-          <pos class="BW()" confidence="0.995867" head="BW" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
-          <lemma class="alvast"/>
-          <morphology>
-            <morpheme class="stem">
-              <t>alvast</t>
-              <feat class="[alvast]adverb" subset="structure"/>
-              <pos class="B" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-            </morpheme>
-          </morphology>
-          <metric class="content_word" value="true"/>
-          <metric class="connective" value="temporeel"/>
-          <metric class="situation" value="tijd"/>
-          <metric class="prevalenceP" value="0.996417"/>
-          <metric class="prevalenceZ" value="2.68905"/>
-          <metric class="top1000" value="true"/>
-          <metric class="word_freq" value="39084"/>
-          <metric class="log_word_freq" value="4.91202"/>
-          <metric class="lemma_freq" value="35645"/>
-          <metric class="log_lemma_freq" value="4.91637"/>
-          <metric class="word_overlap_count" value="0"/>
-          <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-5.22481"/>
-          <metric class="lprob10_bwd" value="-6.4362"/>
-        </w>
-        <w xml:id="tscan.p.2.s.1.w.2" class="WORD">
-          <t>hartelijk</t>
-          <pos class="ADJ(prenom,basis,zonder)" confidence="1" head="ADJ" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
-            <feat class="prenom" subset="positie"/>
-            <feat class="basis" subset="graad"/>
-            <feat class="zonder" subset="buiging"/>
-          </pos>
-          <lemma class="hartelijk"/>
-          <morphology>
-            <morpheme class="complex">
-              <t>hartelijk</t>
-              <feat class="[[hart]noun[elijk]]adjective/positive" subset="structure"/>
-              <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-              <morpheme class="complex">
-                <feat class="A_N*" subset="applied_rule"/>
-                <feat class="[[hart]noun[elijk]]adjective" subset="structure"/>
-                <pos class="A" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-                <morpheme class="stem">
-                  <t>hart</t>
-                  <pos class="N" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-                </morpheme>
-                <morpheme class="affix">
-                  <t>elijk</t>
-                  <feat class="[elijk]" subset="structure"/>
-                </morpheme>
-              </morpheme>
-              <morpheme class="inflection">
-                <feat class="positive" subset="inflection"/>
-              </morpheme>
-            </morpheme>
-          </morphology>
-          <metric class="content_word" value="true"/>
-          <metric class="content_word_strict" value="true"/>
-          <metric class="prevalenceP" value="0.994057"/>
-          <metric class="prevalenceZ" value="2.51552"/>
-          <metric class="top20000" value="true"/>
-          <metric class="word_freq" value="4741"/>
-          <metric class="log_word_freq" value="3.99597"/>
-          <metric class="lemma_freq" value="4699"/>
-          <metric class="log_lemma_freq" value="4.03646"/>
-          <metric class="word_overlap_count" value="0"/>
-          <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-5.4362"/>
-          <metric class="lprob10_bwd" value="-1.43136"/>
-          <metric class="semtype" value="emoties-sociaal"/>
-        </w>
-        <w xml:id="tscan.p.2.s.1.w.3" class="WORD" space="no">
-          <t>dank</t>
-          <pos class="WW(pv,tgw,ev)" confidence="1" head="WW" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn">
-            <feat class="pv" subset="wvorm"/>
-            <feat class="tgw" subset="pvtijd"/>
-            <feat class="ev" subset="pvagr"/>
-          </pos>
-          <lemma class="danken"/>
-          <morphology>
-            <morpheme class="complex">
-              <t>dank</t>
-              <feat class="[dank]verb/present-tense/singular/1st-person-verb" subset="structure"/>
-              <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-              <morpheme class="stem">
-                <t>dank</t>
-                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-              </morpheme>
-              <morpheme class="inflection">
-                <feat class="present-tense" subset="inflection"/>
-                <feat class="singular" subset="inflection"/>
-                <feat class="1st-person-verb" subset="inflection"/>
-              </morpheme>
-            </morpheme>
-          </morphology>
-          <alt xml:id="tscan.p.2.s.1.w.3.alt-mor.1" auth="no">
-            <morphology>
-              <morpheme class="complex">
-                <t>dank</t>
-                <feat class="[dank]verb/present-tense/singular/2nd-person-verb/inversed" subset="structure"/>
-                <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-                <morpheme class="stem">
-                  <t>dank</t>
-                  <pos class="V" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-                </morpheme>
-                <morpheme class="inflection">
-                  <feat class="present-tense" subset="inflection"/>
-                  <feat class="singular" subset="inflection"/>
-                  <feat class="2nd-person-verb" subset="inflection"/>
-                  <feat class="inversed" subset="inflection"/>
-                </morpheme>
-              </morpheme>
-            </morphology>
-          </alt>
-          <pos class="wwform(hoofdww)" set="tscan-set"/>
-          <metric class="content_word" value="true"/>
-          <metric class="content_word_strict" value="true"/>
-          <metric class="imperative" value="true"/>
-          <metric class="prevalenceP" value="0.998165"/>
-          <metric class="prevalenceZ" value="2.90521"/>
-          <metric class="f77" value="true"/>
-          <metric class="f80" value="true"/>
-          <metric class="top5000" value="true"/>
-          <metric class="word_freq" value="60903"/>
-          <metric class="log_word_freq" value="5.10466"/>
-          <metric class="lemma_freq" value="39892"/>
-          <metric class="log_lemma_freq" value="4.96526"/>
-          <metric class="word_overlap_count" value="0"/>
-          <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-1.58263"/>
-          <metric class="lprob10_bwd" value="-4.95586"/>
-          <metric class="property" value="tegenwoordige_tijd"/>
-          <metric class="semtype" value="abstract-ongedefinieerd"/>
-        </w>
-        <w xml:id="tscan.p.2.s.1.w.4" class="PUNCTUATION">
-          <t>.</t>
-          <pos class="LET()" confidence="0.999956" head="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-cgn"/>
-          <morphology>
-            <morpheme class="stem">
-              <t>.</t>
-              <feat class="[.]" subset="structure"/>
-              <pos class="LET" set="http://ilk.uvt.nl/folia/sets/frog-mbpos-clex"/>
-            </morpheme>
-          </morphology>
-          <lemma class="."/>
-          <metric class="word_freq" value="0"/>
-          <metric class="lemma_freq" value="0"/>
-          <metric class="word_overlap_count" value="0"/>
-          <metric class="lemma_overlap_count" value="0"/>
-          <metric class="lprob10_fwd" value="-0.60206"/>
-          <metric class="lprob10_bwd" value="-0.0927787"/>
-          <metric class="property" value="punctuatie"/>
-        </w>
-        <chunking xml:id="tscan.p.2.s.1.chunking.1">
-          <chunk xml:id="tscan.p.2.s.1.chunking.1.chunk.1" class="ADVP" confidence="0.408845">
-            <wref id="tscan.p.2.s.1.w.1" t="Alvast"/>
-          </chunk>
-          <chunk xml:id="tscan.p.2.s.1.chunking.1.chunk.2" class="ADJP" confidence="1">
-            <wref id="tscan.p.2.s.1.w.2" t="hartelijk"/>
-          </chunk>
-          <chunk xml:id="tscan.p.2.s.1.chunking.1.chunk.3" class="VP" confidence="0.850123">
-            <wref id="tscan.p.2.s.1.w.3" t="dank"/>
-          </chunk>
-        </chunking>
-        <metric class="word_count" value="3"/>
-        <metric class="word_count_incl_stopwords" value="3"/>
-        <metric class="bv_vd_count" value="0"/>
-        <metric class="nw_vd_count" value="0"/>
-        <metric class="vrij_vd_count" value="0"/>
-        <metric class="bv_od_count" value="0"/>
-        <metric class="nw_od_count" value="0"/>
-        <metric class="vrij_od_count" value="0"/>
-        <metric class="bv_inf_count" value="0"/>
-        <metric class="nw_inf_count" value="0"/>
-        <metric class="vrij_inf_count" value="0"/>
-        <metric class="smain_count" value="0"/>
-        <metric class="ssub_count" value="0"/>
-        <metric class="sv1_count" value="0"/>
-        <metric class="smain_cnj_count" value="0"/>
-        <metric class="ssub_cnj_count" value="0"/>
-        <metric class="sv1_cnj_count" value="0"/>
-        <metric class="present_verb_count" value="1"/>
-        <metric class="past_verb_count" value="0"/>
-        <metric class="subjonct_count" value="0"/>
-        <metric class="name_count" value="0"/>
-        <metric class="personal_name_count" value="0"/>
-        <metric class="location_name_count" value="0"/>
-        <metric class="organization_name_count" value="0"/>
-        <metric class="product_name_count" value="0"/>
-        <metric class="event_name_count" value="0"/>
-        <metric class="pers_pron_1_count" value="0"/>
-        <metric class="pers_pron_2_count" value="0"/>
-        <metric class="pers_pron_3_count" value="0"/>
-        <metric class="passive_count" value="0"/>
-        <metric class="modal_count" value="0"/>
-        <metric class="time_count" value="0"/>
-        <metric class="koppel_count" value="0"/>
-        <metric class="pers_ref_count" value="0"/>
-        <metric class="pron_ref_count" value="0"/>
-        <metric class="archaic_count" value="0"/>
-        <metric class="content_count" value="3"/>
-        <metric class="content_strict_count" value="2"/>
-        <metric class="nominal_count" value="0"/>
-        <metric class="adj_count" value="1"/>
-        <metric class="vg_count" value="0"/>
-        <metric class="vnw_count" value="0"/>
-        <metric class="lid_count" value="0"/>
-        <metric class="vz_count" value="0"/>
-        <metric class="bw_count" value="1"/>
-        <metric class="tw_count" value="0"/>
-        <metric class="noun_count" value="0"/>
-        <metric class="verb_count" value="1"/>
-        <metric class="tsw_count" value="0"/>
-        <metric class="spec_count" value="0"/>
-        <metric class="let_count" value="1"/>
-        <metric class="rel_count" value="0"/>
-        <metric class="all_connector_count" value="1"/>
-        <metric class="temporal_connector_count" value="1"/>
-        <metric class="reeks_wg_connector_count" value="0"/>
-        <metric class="reeks_zin_connector_count" value="0"/>
-        <metric class="contrast_connector_count" value="0"/>
-        <metric class="comparatief_connector_count" value="0"/>
-        <metric class="causaal_connector_count" value="0"/>
-        <metric class="time_situation_count" value="1"/>
-        <metric class="space_situation_count" value="0"/>
-        <metric class="cause_situation_count" value="0"/>
-        <metric class="emotion_situation_count" value="0"/>
-        <metric class="prop_neg_count" value="0"/>
-        <metric class="morph_neg_count" value="0"/>
-        <metric class="multiple_neg_count" value="0"/>
-        <metric class="voorzetsel_expression_count" value="0"/>
-        <metric class="word_overlap_count" value="0"/>
-        <metric class="lemma_overlap_count" value="0"/>
-        <metric class="prevalenceP" value="2.98864"/>
-        <metric class="prevalenceZ" value="8.10979"/>
-        <metric class="prevalenceContentP" value="2.98864"/>
-        <metric class="prevalenceContentZ" value="8.10979"/>
-        <metric class="prevalenceCovered" value="3"/>
-        <metric class="prevalenceContentCovered" value="3"/>
-        <metric class="freq50" value="0"/>
-        <metric class="freq65" value="0"/>
-        <metric class="freq77" value="1"/>
-        <metric class="freq80" value="1"/>
-        <metric class="top1000" value="1"/>
-        <metric class="top2000" value="1"/>
-        <metric class="top3000" value="1"/>
-        <metric class="top5000" value="2"/>
-        <metric class="top10000" value="2"/>
-        <metric class="top20000" value="3"/>
-        <metric class="top1000Content" value="1"/>
-        <metric class="top2000Content" value="1"/>
-        <metric class="top3000Content" value="1"/>
-        <metric class="top5000Content" value="2"/>
-        <metric class="top10000Content" value="2"/>
-        <metric class="top20000Content" value="3"/>
-        <metric class="top1000StrictContent" value="0"/>
-        <metric class="top2000StrictContent" value="0"/>
-        <metric class="top3000StrictContent" value="0"/>
-        <metric class="top5000StrictContent" value="1"/>
-        <metric class="top10000StrictContent" value="1"/>
-        <metric class="top20000StrictContent" value="2"/>
-        <metric class="word_freq" value="14.0126"/>
-        <metric class="word_freq_no_names" value="14.0126"/>
-        <metric class="log_word_freq" value="4.67088"/>
-        <metric class="log_word_freq_no_names" value="4.67088"/>
-        <metric class="lemma_freq" value="13.9181"/>
-        <metric class="lemma_freq_no_names" value="13.9181"/>
-        <metric class="log_lemma_freq" value="4.63936"/>
-        <metric class="log_lemma_freq_no_names" value="4.63936"/>
-        <metric class="log_word_freq_strict" value="4.55031"/>
-        <metric class="log_word_freq_no_names_strict" value="4.55031"/>
-        <metric class="log_lemma_freq_strict" value="4.50086"/>
-        <metric class="log_lemma_freq_no_names_strict" value="4.50086"/>
-        <metric class="wopr_logprob_fwd" value="-3.21143"/>
-        <metric class="wopr_entropy_fwd" value="0.637618"/>
-        <metric class="wopr_perplexity_fwd" value="1.55576"/>
-        <metric class="wopr_logprob_bwd" value="-3.22905"/>
-        <metric class="wopr_entropy_bwd" value="0.425217"/>
-        <metric class="wopr_perplexity_bwd" value="1.34277"/>
-        <metric class="broad_adj" value="1"/>
-        <metric class="strict_adj" value="1"/>
-        <metric class="human_adj_count" value="0"/>
-        <metric class="emo_adj_count" value="1"/>
-        <metric class="nonhuman_adj_count" value="0"/>
-        <metric class="shape_adj_count" value="0"/>
-        <metric class="color_adj_count" value="0"/>
-        <metric class="matter_adj_count" value="0"/>
-        <metric class="sound_adj_count" value="0"/>
-        <metric class="other_nonhuman_adj_count" value="0"/>
-        <metric class="techn_adj_count" value="0"/>
-        <metric class="time_adj_count" value="0"/>
-        <metric class="place_adj_count" value="0"/>
-        <metric class="pos_spec_adj_count" value="0"/>
-        <metric class="neg_spec_adj_count" value="0"/>
-        <metric class="pos_adj_count" value="0"/>
-        <metric class="neg_adj_count" value="0"/>
-        <metric class="evaluative_adj_count" value="0"/>
-        <metric class="pos_epi_adj_count" value="0"/>
-        <metric class="neg_epi_adj_count" value="0"/>
-        <metric class="abstract_adj" value="0"/>
-        <metric class="undefined_adj_count" value="0"/>
-        <metric class="covered_adj_count" value="1"/>
-        <metric class="uncovered_adj_count" value="0"/>
-        <metric class="intens_count" value="0"/>
-        <metric class="intens_bvnw_count" value="0"/>
-        <metric class="intens_bvbw_count" value="0"/>
-        <metric class="intens_bw_count" value="0"/>
-        <metric class="intens_combi_count" value="0"/>
-        <metric class="intens_nw_count" value="0"/>
-        <metric class="intens_tuss_count" value="0"/>
-        <metric class="intens_ww_count" value="0"/>
-        <metric class="general_noun_count" value="0"/>
-        <metric class="general_noun_sep_count" value="0"/>
-        <metric class="general_noun_rel_count" value="0"/>
-        <metric class="general_noun_act_count" value="0"/>
-        <metric class="general_noun_know_count" value="0"/>
-        <metric class="general_noun_disc_count" value="0"/>
-        <metric class="general_noun_deve_count" value="0"/>
-        <metric class="general_verb_count" value="0"/>
-        <metric class="general_verb_sep_count" value="0"/>
-        <metric class="general_verb_rel_count" value="0"/>
-        <metric class="general_verb_act_count" value="0"/>
-        <metric class="general_verb_know_count" value="0"/>
-        <metric class="general_verb_disc_count" value="0"/>
-        <metric class="general_verb_deve_count" value="0"/>
-        <metric class="general_adverb_count" value="0"/>
-        <metric class="specific_adverb_count" value="0"/>
-        <metric class="broad_noun" value="0"/>
-        <metric class="strict_noun" value="0"/>
-        <metric class="human_nouns_count" value="0"/>
-        <metric class="nonhuman_nouns_count" value="0"/>
-        <metric class="artefact_nouns_count" value="0"/>
-        <metric class="concrother_nouns_count" value="0"/>
-        <metric class="substance_conc_nouns_count" value="0"/>
-        <metric class="foodcare_nouns_count" value="0"/>
-        <metric class="time_nouns_count" value="0"/>
-        <metric class="place_nouns_count" value="0"/>
-        <metric class="measure_nouns_count" value="0"/>
-        <metric class="dynamic_conc_nouns_count" value="0"/>
-        <metric class="substance_abstr_nouns_count" value="0"/>
-        <metric class="dynamic_abstr_nouns_count" value="0"/>
-        <metric class="nondynamic_nouns_count" value="0"/>
-        <metric class="institut_nouns_count" value="0"/>
-        <metric class="undefined_nouns_count" value="0"/>
-        <metric class="covered_nouns_count" value="0"/>
-        <metric class="uncovered_nouns_count" value="0"/>
-        <metric class="abstract_ww" value="1"/>
-        <metric class="concrete_ww" value="0"/>
-        <metric class="undefined_ww" value="0"/>
-        <metric class="undefined_ATP" value="0"/>
-        <metric class="state_count" value="0"/>
-        <metric class="action_count" value="0"/>
-        <metric class="process_count" value="0"/>
-        <metric class="covered_verb_count" value="1"/>
-        <metric class="uncovered_verb_count" value="0"/>
-        <metric class="indef_np_count" value="0"/>
-        <metric class="np_count" value="0"/>
-        <metric class="np_size" value="0"/>
-        <metric class="vc_modifier_count" value="0"/>
-        <metric class="vc_modifier_single_count" value="0"/>
-        <metric class="adj_np_modifier_count" value="0"/>
-        <metric class="np_modifier_count" value="0"/>
-        <metric class="character_count" value="19"/>
-        <metric class="character_count_min_names" value="19"/>
-        <metric class="morpheme_count" value="4"/>
-        <metric class="morpheme_count_min_names" value="4"/>
-        <metric class="d_level" value="0"/>
-        <metric class="imperative_count" value="1"/>
-        <metric class="sub_verb_dist" value="NA"/>
-        <metric class="obj_verb_dist" value="NA"/>
-        <metric class="lijdend_verb_dist" value="NA"/>
-        <metric class="verb_pp_dist" value="NA"/>
-        <metric class="noun_det_dist" value="NA"/>
-        <metric class="prep_obj_dist" value="NA"/>
-        <metric class="verb_vc_dist" value="NA"/>
-        <metric class="comp_body_dist" value="NA"/>
-        <metric class="crd_cnj_dist" value="NA"/>
-        <metric class="verb_comp_dist" value="NA"/>
-        <metric class="noun_vc_dist" value="NA"/>
-        <metric class="verb_svp_dist" value="NA"/>
-        <metric class="verb_cop_dist" value="NA"/>
-        <metric class="verb_adj_dist" value="NA"/>
-        <metric class="verb_bw_mod_dist" value="NA"/>
-        <metric class="verb_adv_mod_dist" value="NA"/>
-        <metric class="verb_noun_dist" value="NA"/>
-        <metric class="deplen" value="NA"/>
-        <metric class="max_deplen" value="0"/>
-        <metric class="isImperative" value="true"/>
-      </s>
-      <metric class="word_count" value="3"/>
-      <metric class="word_count_incl_stopwords" value="3"/>
-      <metric class="bv_vd_count" value="0"/>
-      <metric class="nw_vd_count" value="0"/>
-      <metric class="vrij_vd_count" value="0"/>
-      <metric class="bv_od_count" value="0"/>
-      <metric class="nw_od_count" value="0"/>
-      <metric class="vrij_od_count" value="0"/>
-      <metric class="bv_inf_count" value="0"/>
-      <metric class="nw_inf_count" value="0"/>
-      <metric class="vrij_inf_count" value="0"/>
-      <metric class="smain_count" value="0"/>
-      <metric class="ssub_count" value="0"/>
-      <metric class="sv1_count" value="0"/>
-      <metric class="smain_cnj_count" value="0"/>
-      <metric class="ssub_cnj_count" value="0"/>
-      <metric class="sv1_cnj_count" value="0"/>
-      <metric class="present_verb_count" value="1"/>
-      <metric class="past_verb_count" value="0"/>
-      <metric class="subjonct_count" value="0"/>
-      <metric class="name_count" value="0"/>
-      <metric class="personal_name_count" value="0"/>
-      <metric class="location_name_count" value="0"/>
-      <metric class="organization_name_count" value="0"/>
-      <metric class="product_name_count" value="0"/>
-      <metric class="event_name_count" value="0"/>
-      <metric class="pers_pron_1_count" value="0"/>
-      <metric class="pers_pron_2_count" value="0"/>
-      <metric class="pers_pron_3_count" value="0"/>
-      <metric class="passive_count" value="0"/>
-      <metric class="modal_count" value="0"/>
-      <metric class="time_count" value="0"/>
-      <metric class="koppel_count" value="0"/>
-      <metric class="pers_ref_count" value="0"/>
-      <metric class="pron_ref_count" value="0"/>
-      <metric class="archaic_count" value="0"/>
-      <metric class="content_count" value="3"/>
-      <metric class="content_strict_count" value="2"/>
-      <metric class="nominal_count" value="0"/>
-      <metric class="adj_count" value="1"/>
-      <metric class="vg_count" value="0"/>
-      <metric class="vnw_count" value="0"/>
-      <metric class="lid_count" value="0"/>
-      <metric class="vz_count" value="0"/>
-      <metric class="bw_count" value="1"/>
-      <metric class="tw_count" value="0"/>
-      <metric class="noun_count" value="0"/>
-      <metric class="verb_count" value="1"/>
-      <metric class="tsw_count" value="0"/>
-      <metric class="spec_count" value="0"/>
-      <metric class="let_count" value="1"/>
-      <metric class="rel_count" value="0"/>
-      <metric class="all_connector_count" value="1"/>
-      <metric class="temporal_connector_count" value="1"/>
-      <metric class="reeks_wg_connector_count" value="0"/>
-      <metric class="reeks_zin_connector_count" value="0"/>
-      <metric class="contrast_connector_count" value="0"/>
-      <metric class="comparatief_connector_count" value="0"/>
-      <metric class="causaal_connector_count" value="0"/>
-      <metric class="time_situation_count" value="1"/>
-      <metric class="space_situation_count" value="0"/>
-      <metric class="cause_situation_count" value="0"/>
-      <metric class="emotion_situation_count" value="0"/>
-      <metric class="prop_neg_count" value="0"/>
-      <metric class="morph_neg_count" value="0"/>
-      <metric class="multiple_neg_count" value="0"/>
-      <metric class="voorzetsel_expression_count" value="0"/>
-      <metric class="word_overlap_count" value="0"/>
-      <metric class="lemma_overlap_count" value="0"/>
-      <metric class="prevalenceP" value="2.98864"/>
-      <metric class="prevalenceZ" value="8.10979"/>
-      <metric class="prevalenceContentP" value="2.98864"/>
-      <metric class="prevalenceContentZ" value="8.10979"/>
-      <metric class="prevalenceCovered" value="3"/>
-      <metric class="prevalenceContentCovered" value="3"/>
-      <metric class="freq50" value="0"/>
-      <metric class="freq65" value="0"/>
-      <metric class="freq77" value="1"/>
-      <metric class="freq80" value="1"/>
-      <metric class="top1000" value="1"/>
-      <metric class="top2000" value="1"/>
-      <metric class="top3000" value="1"/>
-      <metric class="top5000" value="2"/>
-      <metric class="top10000" value="2"/>
-      <metric class="top20000" value="3"/>
-      <metric class="top1000Content" value="1"/>
-      <metric class="top2000Content" value="1"/>
-      <metric class="top3000Content" value="1"/>
-      <metric class="top5000Content" value="2"/>
-      <metric class="top10000Content" value="2"/>
-      <metric class="top20000Content" value="3"/>
-      <metric class="top1000StrictContent" value="0"/>
-      <metric class="top2000StrictContent" value="0"/>
-      <metric class="top3000StrictContent" value="0"/>
-      <metric class="top5000StrictContent" value="1"/>
-      <metric class="top10000StrictContent" value="1"/>
-      <metric class="top20000StrictContent" value="2"/>
-      <metric class="word_freq" value="14.0126"/>
-      <metric class="word_freq_no_names" value="14.0126"/>
-      <metric class="log_word_freq" value="4.67088"/>
-      <metric class="log_word_freq_no_names" value="4.67088"/>
-      <metric class="lemma_freq" value="13.9181"/>
-      <metric class="lemma_freq_no_names" value="13.9181"/>
-      <metric class="log_lemma_freq" value="4.63936"/>
-      <metric class="log_lemma_freq_no_names" value="4.63936"/>
-      <metric class="log_word_freq_strict" value="4.55031"/>
-      <metric class="log_word_freq_no_names_strict" value="4.55031"/>
-      <metric class="log_lemma_freq_strict" value="4.50086"/>
-      <metric class="log_lemma_freq_no_names_strict" value="4.50086"/>
-      <metric class="wopr_logprob_fwd" value="-3.21143"/>
-      <metric class="wopr_entropy_fwd" value="0.637618"/>
-      <metric class="wopr_perplexity_fwd" value="1.55576"/>
-      <metric class="wopr_logprob_bwd" value="-3.22905"/>
-      <metric class="wopr_entropy_bwd" value="0.425217"/>
-      <metric class="wopr_perplexity_bwd" value="1.34277"/>
-      <metric class="broad_adj" value="1"/>
-      <metric class="strict_adj" value="1"/>
-      <metric class="human_adj_count" value="0"/>
-      <metric class="emo_adj_count" value="1"/>
-      <metric class="nonhuman_adj_count" value="0"/>
-      <metric class="shape_adj_count" value="0"/>
-      <metric class="color_adj_count" value="0"/>
-      <metric class="matter_adj_count" value="0"/>
-      <metric class="sound_adj_count" value="0"/>
-      <metric class="other_nonhuman_adj_count" value="0"/>
-      <metric class="techn_adj_count" value="0"/>
-      <metric class="time_adj_count" value="0"/>
-      <metric class="place_adj_count" value="0"/>
-      <metric class="pos_spec_adj_count" value="0"/>
-      <metric class="neg_spec_adj_count" value="0"/>
-      <metric class="pos_adj_count" value="0"/>
-      <metric class="neg_adj_count" value="0"/>
-      <metric class="evaluative_adj_count" value="0"/>
-      <metric class="pos_epi_adj_count" value="0"/>
-      <metric class="neg_epi_adj_count" value="0"/>
-      <metric class="abstract_adj" value="0"/>
-      <metric class="undefined_adj_count" value="0"/>
-      <metric class="covered_adj_count" value="1"/>
-      <metric class="uncovered_adj_count" value="0"/>
-      <metric class="intens_count" value="0"/>
-      <metric class="intens_bvnw_count" value="0"/>
-      <metric class="intens_bvbw_count" value="0"/>
-      <metric class="intens_bw_count" value="0"/>
-      <metric class="intens_combi_count" value="0"/>
-      <metric class="intens_nw_count" value="0"/>
-      <metric class="intens_tuss_count" value="0"/>
-      <metric class="intens_ww_count" value="0"/>
-      <metric class="general_noun_count" value="0"/>
-      <metric class="general_noun_sep_count" value="0"/>
-      <metric class="general_noun_rel_count" value="0"/>
-      <metric class="general_noun_act_count" value="0"/>
-      <metric class="general_noun_know_count" value="0"/>
-      <metric class="general_noun_disc_count" value="0"/>
-      <metric class="general_noun_deve_count" value="0"/>
-      <metric class="general_verb_count" value="0"/>
-      <metric class="general_verb_sep_count" value="0"/>
-      <metric class="general_verb_rel_count" value="0"/>
-      <metric class="general_verb_act_count" value="0"/>
-      <metric class="general_verb_know_count" value="0"/>
-      <metric class="general_verb_disc_count" value="0"/>
-      <metric class="general_verb_deve_count" value="0"/>
-      <metric class="general_adverb_count" value="0"/>
-      <metric class="specific_adverb_count" value="0"/>
-      <metric class="broad_noun" value="0"/>
-      <metric class="strict_noun" value="0"/>
-      <metric class="human_nouns_count" value="0"/>
-      <metric class="nonhuman_nouns_count" value="0"/>
-      <metric class="artefact_nouns_count" value="0"/>
-      <metric class="concrother_nouns_count" value="0"/>
-      <metric class="substance_conc_nouns_count" value="0"/>
-      <metric class="foodcare_nouns_count" value="0"/>
-      <metric class="time_nouns_count" value="0"/>
-      <metric class="place_nouns_count" value="0"/>
-      <metric class="measure_nouns_count" value="0"/>
-      <metric class="dynamic_conc_nouns_count" value="0"/>
-      <metric class="substance_abstr_nouns_count" value="0"/>
-      <metric class="dynamic_abstr_nouns_count" value="0"/>
-      <metric class="nondynamic_nouns_count" value="0"/>
-      <metric class="institut_nouns_count" value="0"/>
-      <metric class="undefined_nouns_count" value="0"/>
-      <metric class="covered_nouns_count" value="0"/>
-      <metric class="uncovered_nouns_count" value="0"/>
-      <metric class="abstract_ww" value="1"/>
-      <metric class="concrete_ww" value="0"/>
-      <metric class="undefined_ww" value="0"/>
-      <metric class="undefined_ATP" value="0"/>
-      <metric class="state_count" value="0"/>
-      <metric class="action_count" value="0"/>
-      <metric class="process_count" value="0"/>
-      <metric class="covered_verb_count" value="1"/>
-      <metric class="uncovered_verb_count" value="0"/>
-      <metric class="indef_np_count" value="0"/>
-      <metric class="np_count" value="0"/>
-      <metric class="np_size" value="0"/>
-      <metric class="vc_modifier_count" value="0"/>
-      <metric class="vc_modifier_single_count" value="0"/>
-      <metric class="adj_np_modifier_count" value="0"/>
-      <metric class="np_modifier_count" value="0"/>
-      <metric class="character_count" value="19"/>
-      <metric class="character_count_min_names" value="19"/>
-      <metric class="morpheme_count" value="4"/>
-      <metric class="morpheme_count_min_names" value="4"/>
-      <metric class="d_level" value="0"/>
-      <metric class="imperative_count" value="1"/>
-      <metric class="sub_verb_dist" value="NA"/>
-      <metric class="obj_verb_dist" value="NA"/>
-      <metric class="lijdend_verb_dist" value="NA"/>
-      <metric class="verb_pp_dist" value="NA"/>
-      <metric class="noun_det_dist" value="NA"/>
-      <metric class="prep_obj_dist" value="NA"/>
-      <metric class="verb_vc_dist" value="NA"/>
-      <metric class="comp_body_dist" value="NA"/>
-      <metric class="crd_cnj_dist" value="NA"/>
-      <metric class="verb_comp_dist" value="NA"/>
-      <metric class="noun_vc_dist" value="NA"/>
-      <metric class="verb_svp_dist" value="NA"/>
-      <metric class="verb_cop_dist" value="NA"/>
-      <metric class="verb_adj_dist" value="NA"/>
-      <metric class="verb_bw_mod_dist" value="NA"/>
-      <metric class="verb_adv_mod_dist" value="NA"/>
-      <metric class="verb_noun_dist" value="NA"/>
-      <metric class="deplen" value="NA"/>
-      <metric class="max_deplen" value="NA"/>
-      <metric class="sentence_count" value="1"/>
     </p>
     <metric class="word_count" value="77"/>
     <metric class="word_count_incl_stopwords" value="77"/>
@@ -5226,24 +4743,18 @@
     <metric class="top5000StrictContent" value="18"/>
     <metric class="top10000StrictContent" value="19"/>
     <metric class="top20000StrictContent" value="21"/>
-    <metric class="word_freq" value="179.614"/>
-    <metric class="word_freq_no_names" value="171.419"/>
-    <metric class="log_word_freq" value="5.13182"/>
-    <metric class="log_word_freq_no_names" value="5.19453"/>
-    <metric class="lemma_freq" value="184.11"/>
-    <metric class="lemma_freq_no_names" value="175.882"/>
-    <metric class="log_lemma_freq" value="5.26029"/>
-    <metric class="log_lemma_freq_no_names" value="5.32976"/>
-    <metric class="log_word_freq_strict" value="4.77774"/>
-    <metric class="log_word_freq_no_names_strict" value="4.83692"/>
-    <metric class="log_lemma_freq_strict" value="4.96579"/>
-    <metric class="log_lemma_freq_no_names_strict" value="5.03986"/>
-    <metric class="wopr_logprob_fwd" value="-15.3816"/>
-    <metric class="wopr_entropy_fwd" value="12.2814"/>
-    <metric class="wopr_perplexity_fwd" value="37.0086"/>
-    <metric class="wopr_logprob_bwd" value="-15.3554"/>
-    <metric class="wopr_entropy_bwd" value="11.6302"/>
-    <metric class="wopr_perplexity_bwd" value="32.7739"/>
+    <metric class="word_freq" value="184.222"/>
+    <metric class="word_freq_no_names" value="175.948"/>
+    <metric class="log_word_freq" value="5.26349"/>
+    <metric class="log_word_freq_no_names" value="5.33175"/>
+    <metric class="lemma_freq" value="191.636"/>
+    <metric class="lemma_freq_no_names" value="183.362"/>
+    <metric class="log_lemma_freq" value="5.47532"/>
+    <metric class="log_lemma_freq_no_names" value="5.55642"/>
+    <metric class="log_word_freq_strict" value="4.95487"/>
+    <metric class="log_word_freq_no_names_strict" value="5.02597"/>
+    <metric class="log_lemma_freq_strict" value="5.25137"/>
+    <metric class="log_lemma_freq_no_names_strict" value="5.34825"/>
     <metric class="broad_adj" value="2"/>
     <metric class="strict_adj" value="1"/>
     <metric class="human_adj_count" value="0"/>
@@ -5276,6 +4787,15 @@
     <metric class="intens_nw_count" value="0"/>
     <metric class="intens_tuss_count" value="0"/>
     <metric class="intens_ww_count" value="0"/>
+    <metric class="formal_count" value="0"/>
+    <metric class="formal_bvnw_count" value="0"/>
+    <metric class="formal_bw_count" value="0"/>
+    <metric class="formal_vgw_count" value="0"/>
+    <metric class="formal_vnw_count" value="0"/>
+    <metric class="formal_vz_count" value="0"/>
+    <metric class="formal_vzg_count" value="0"/>
+    <metric class="formal_ww_count" value="0"/>
+    <metric class="formal_znw_count" value="0"/>
     <metric class="general_noun_count" value="0"/>
     <metric class="general_noun_sep_count" value="0"/>
     <metric class="general_noun_rel_count" value="0"/>
@@ -5292,11 +4812,11 @@
     <metric class="general_verb_deve_count" value="0"/>
     <metric class="general_adverb_count" value="0"/>
     <metric class="specific_adverb_count" value="0"/>
-    <metric class="broad_noun" value="6"/>
-    <metric class="strict_noun" value="4"/>
+    <metric class="broad_noun" value="5"/>
+    <metric class="strict_noun" value="3"/>
     <metric class="human_nouns_count" value="1"/>
     <metric class="nonhuman_nouns_count" value="0"/>
-    <metric class="artefact_nouns_count" value="3"/>
+    <metric class="artefact_nouns_count" value="2"/>
     <metric class="concrother_nouns_count" value="0"/>
     <metric class="substance_conc_nouns_count" value="0"/>
     <metric class="foodcare_nouns_count" value="0"/>
@@ -5309,52 +4829,52 @@
     <metric class="nondynamic_nouns_count" value="0"/>
     <metric class="institut_nouns_count" value="0"/>
     <metric class="undefined_nouns_count" value="5"/>
-    <metric class="covered_nouns_count" value="12"/>
-    <metric class="uncovered_nouns_count" value="0"/>
-    <metric class="abstract_ww" value="15"/>
+    <metric class="covered_nouns_count" value="11"/>
+    <metric class="uncovered_nouns_count" value="1"/>
+    <metric class="abstract_ww" value="11"/>
     <metric class="concrete_ww" value="0"/>
-    <metric class="undefined_ww" value="1"/>
+    <metric class="undefined_ww" value="2"/>
     <metric class="undefined_ATP" value="0"/>
     <metric class="state_count" value="10"/>
-    <metric class="action_count" value="4"/>
+    <metric class="action_count" value="2"/>
     <metric class="process_count" value="1"/>
-    <metric class="covered_verb_count" value="16"/>
-    <metric class="uncovered_verb_count" value="0"/>
+    <metric class="covered_verb_count" value="13"/>
+    <metric class="uncovered_verb_count" value="3"/>
     <metric class="indef_np_count" value="1"/>
     <metric class="np_count" value="23"/>
     <metric class="np_size" value="36"/>
-    <metric class="vc_modifier_count" value="7"/>
+    <metric class="vc_modifier_count" value="9"/>
     <metric class="vc_modifier_single_count" value="0"/>
-    <metric class="adj_np_modifier_count" value="0"/>
-    <metric class="np_modifier_count" value="4"/>
+    <metric class="adj_np_modifier_count" value="1"/>
+    <metric class="np_modifier_count" value="7"/>
     <metric class="character_count" value="297"/>
     <metric class="character_count_min_names" value="288"/>
     <metric class="morpheme_count" value="93"/>
     <metric class="morpheme_count_min_names" value="91"/>
-    <metric class="d_level" value="17"/>
-    <metric class="d_level_gt4" value="1"/>
+    <metric class="d_level" value="21"/>
+    <metric class="d_level_gt4" value="2"/>
     <metric class="imperative_count" value="1"/>
     <metric class="sub_verb_dist" value="1.8"/>
-    <metric class="obj_verb_dist" value="2.16667"/>
-    <metric class="lijdend_verb_dist" value="NA"/>
+    <metric class="obj_verb_dist" value="3"/>
+    <metric class="lijdend_verb_dist" value="4"/>
     <metric class="verb_pp_dist" value="2"/>
     <metric class="noun_det_dist" value="0"/>
     <metric class="prep_obj_dist" value="1"/>
-    <metric class="verb_vc_dist" value="2.6"/>
+    <metric class="verb_vc_dist" value="3.25"/>
     <metric class="comp_body_dist" value="5"/>
     <metric class="crd_cnj_dist" value="2.90909"/>
     <metric class="verb_comp_dist" value="10"/>
     <metric class="noun_vc_dist" value="NA"/>
-    <metric class="verb_svp_dist" value="2.5"/>
+    <metric class="verb_svp_dist" value="0"/>
     <metric class="verb_cop_dist" value="0"/>
     <metric class="verb_adj_dist" value="NA"/>
-    <metric class="verb_bw_mod_dist" value="1.25"/>
+    <metric class="verb_bw_mod_dist" value="2.66667"/>
     <metric class="verb_adv_mod_dist" value="1.5"/>
     <metric class="verb_noun_dist" value="NA"/>
-    <metric class="deplen" value="0.845791"/>
-    <metric class="max_deplen" value="3.3"/>
-    <metric class="sentence_count" value="6"/>
-    <metric class="paragraph_count" value="2"/>
+    <metric class="deplen" value="1.84392"/>
+    <metric class="max_deplen" value="7"/>
+    <metric class="sentence_count" value="5"/>
+    <metric class="paragraph_count" value="1"/>
     <metric class="word_ttr" value="0.727273"/>
     <metric class="word_mtld" value="78.0267"/>
     <metric class="lemma_ttr" value="0.675325"/>
