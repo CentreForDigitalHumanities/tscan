@@ -8,6 +8,9 @@ cd ~/.tscan-deps
 if [ ! -d $directory ];
 then
     git clone $repository
+    new=1
+else
+    new=0
 fi
 cd $directory
 old_commit_hash=$(git rev-parse HEAD)
@@ -22,7 +25,7 @@ fi
 
 commit_hash=$(git rev-parse HEAD)
 # only build if something changed
-if [[ $commit_hash != $old_commit_hash ]]; then
+if [[ $new == 1 || $commit_hash != $old_commit_hash ]]; then
     echo "Building $1..."
     bash bootstrap.sh
     ./configure $OPENMPFLAG
