@@ -14,7 +14,12 @@ else
 fi
 cd $directory
 old_commit_hash=$(git rev-parse HEAD)
-if [[ $version != $old_commit_hash ]];
+
+if [[ -z $version ]];
+then
+    echo "Get latest version"
+    git pull
+elif [[ $version != $old_commit_hash ]];
 then
     echo "Resetting to $version"
     git pull
