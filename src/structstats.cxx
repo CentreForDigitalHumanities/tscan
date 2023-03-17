@@ -153,7 +153,7 @@ void structStats::topPredictorsToCSV( ostream& os ) const {
   os << toMString( al_max ) << ","; //AL_max
 
   double bijzinCnt = betrCnt + bijwCnt + complCnt;
-  os << proportion( bijzinCnt + infinComplCnt, sentCnt ) << ","; //Bijzin_per_zin
+  os << proportion( bijzinCnt + infinComplBepCnt, sentCnt ) << ","; //Bijzin_per_zin
 
   int npModCorrectedCnt = max(0, npModCnt - betrCnt);
   os << proportion( npModCorrectedCnt, correctedClauseCnt ) << ",";  //Bijv_bep_dz_zbijzin
@@ -306,7 +306,7 @@ void structStats::sentDifficultiesHeader( ostream& os ) const {
      << "Wrd_per_nwg,"
      << "Betr_bijzin_per_zin,Bijw_bijzin_per_zin,"
      << "Compl_bijzin_per_zin,Fin_bijzin_per_zin,"
-     << "Mv_fin_inbed_per_zin,Infin_compl_per_zin,"
+     << "Mv_fin_inbed_per_zin,"
      << "Infin_compl_bep_per_zin,"
      << "Mv_inbed_per_zin,"
      << "Betr_bijzin_los,Bijw_compl_bijzin_los,"
@@ -350,7 +350,6 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
     os << proportion( complCnt, sentCnt ) << ","; //Compl_bijzin_per_zin
     os << proportion( bijzinCnt, sentCnt ) << ","; //Fin_bijzin_per_zin
     os << proportion( mvFinInbedCnt, sentCnt ) << ","; //Mv_fin_inbed_per_zin
-    os << proportion( infinComplCnt, sentCnt ) << ","; // Infin_compl_per_zin
     os << proportion( infinComplBepCnt, sentCnt ) << ","; // Infin_compl_bep_per_zin
     os << proportion( mvInbedCnt, sentCnt ) << ","; //Mv_inbed_per_zin
     os << proportion( losBetrCnt, sentCnt ) << ","; //Betr_bijzin_los
@@ -1425,7 +1424,6 @@ void structStats::merge( structStats *ss ){
   bijwCnt += ss->bijwCnt;
   complCnt += ss->complCnt;
   mvFinInbedCnt += ss->mvFinInbedCnt;
-  infinComplCnt += ss->infinComplCnt;
   infinComplBepCnt += ss->infinComplBepCnt;
   mvInbedCnt += ss->mvInbedCnt;
   losBetrCnt += ss->losBetrCnt;

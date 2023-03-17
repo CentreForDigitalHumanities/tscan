@@ -609,17 +609,14 @@ void sentStats::resolveRelativeClauses( xmlDoc *alpDoc ) {
   complNodes.merge(complementNodes(TiCC::FindNodes(alpDoc, complCpPath), cpNodes));
 
   // Infinietcomplementen
-  string infinComplPath = notTop + "/node[(@cat='ti' or @cat='oti') and @rel!='mod']";
-  list<xmlNode*> tiNodes = TiCC::FindNodes(alpDoc, infinComplPath);
-
-  string infinComplBepPath = notTop + "/node[@cat='ti']";
+  // only count ti or oti once
+  string infinComplBepPath = notTop + "/node[@cat='ti' or @cat='oti' and not(.//node[@cat='ti' or @cat='oti'])]";
   list<xmlNode*> tiBepNodes = TiCC::FindNodes(alpDoc, infinComplBepPath);
 
   // Save counts
   betrCnt = relNodes.size();
   bijwCnt = cpNodes.size();
   complCnt = complNodes.size();
-  infinComplCnt = tiNodes.size();
   infinComplBepCnt = tiBepNodes.size();
 
   // Checks for embedded finite clauses
@@ -648,7 +645,7 @@ void sentStats::resolveRelativeClauses( xmlDoc *alpDoc ) {
   mvFinInbedCnt = mvFinEmbedIds.size();
 
   // Checks for all embedded clauses
-  allRelNodes.merge(tiNodes);
+  allRelNodes.merge(tiBepNodes);
   ids.clear();
   for (auto& node : allRelNodes) {
     list<xmlNode*> embedRelNodes = getNodesByRelCat(node, "mod", "rel", hasFiniteVerb);
