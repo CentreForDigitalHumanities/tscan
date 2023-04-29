@@ -37,7 +37,8 @@ jobs:
           #   alpino: Alpino-x86_64-Linux-glibc-2.17-git819-sicstus
           # versions known to works
           - dependencies: pinned
-            alpino: Alpino-x86_64-Linux-glibc-2.17-git819-sicstus
+            # removed for speed, using pre-parsed trees only
+            # alpino: Alpino-x86_64-Linux-glibc-2.17-git819-sicstus
             ticcutils: fd408a4db606ded411b002c04c96369120449a0f # 0.30
             libfolia: 2722c53122d7e47028a999a919fd0bbc6e58a664 # 2.12
             uctodata: a8be6cf7512998f4c8963d1021f402b8b1290085 # 0.9.1
@@ -89,11 +90,11 @@ jobs:
         mkdir -p ~/.tscan-deps
         ls -la ~/.tscan-deps
 
-    - name: Install Alpino
-      env:
-        ALPINO_VERSION: ${{ matrix.alpino }}
-      run: |
-        .github/workflows/cpp-prep-alpino.sh $ALPINO_VERSION
+    # - name: Install Alpino
+    #   env:
+    #     ALPINO_VERSION: ${{ matrix.alpino }}
+    #   run: |
+    #     .github/workflows/cpp-prep-alpino.sh $ALPINO_VERSION
 
     - name: Install ticcutils
       run: |
@@ -133,23 +134,23 @@ jobs:
         sudo make install
     - name: Start services
       run: |
-        export ALPINO_HOME=~/.tscan-deps/Alpino
+        # export ALPINO_HOME=~/.tscan-deps/Alpino
         export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
         cd webservice
-        ls -la ~/.tscan-deps/Alpino
-        ./startalpino.sh &
+        # ls -la ~/.tscan-deps/Alpino
+        # ./startalpino.sh &
         ./startfrog.sh &
     - name: Services up?
-      run: |
+      run: |        
+        # .github/workflows/cpp-check-service.sh 7003
         .github/workflows/cpp-check-service.sh 7001
-        .github/workflows/cpp-check-service.sh 7003
         sleep 1
     - name: Run unit tests
       run: |
         make check
-    - name: Clear extracted Alpino files
-      run: |
-        rm -rf ~/.tscan-deps/Alpino
+    # - name: Clear extracted Alpino files
+    #   run: |
+    #     rm -rf ~/.tscan-deps/Alpino
     - name: Debug information
       if: ${{ !success() }}
       run: |
@@ -157,7 +158,5 @@ jobs:
         [ -f src/test-suite.log ] && cat src/test-suite.log
         [ -f src/test.sh.log ] && cat src/test.sh.log
         tests/logdiffs.sh
-        echo "*** ALPINO LOG ***"
-        cat /tmp/alpino_server.log
         echo "*** FROG LOG ***"
         cat /tmp/frog-tscan.log
