@@ -18,6 +18,7 @@ do if test -e $file
 	\rm -f $file.err
 	\rm -f $file.out
 	\rm -f $file.tscan.xml
+	\rm -f $file.*.alpino.xml
 	echo -n "Tscanning  $file "
 	$comm --config=tscan.cfg --skip=c -t $file > $file.out 2> $file.err
 	./foliadiff.sh $file.tscan.xml $file.ok >& $file.diff
