@@ -14,7 +14,7 @@
 ###############################################################
 
 from clam.common.parameters import *
-from clam.common.formats import *
+from clam.common.formats import AlpinoXMLFormat, CSVFormat, FoLiAXMLFormat, PlainTextFormat, XMLStyleSheet
 from clam.common.converters import *
 from clam.common.viewers import *
 from clam.common.data import *  # AbstractConverter
@@ -35,7 +35,7 @@ except ModuleNotFoundError:
 
 
 class DocumentTextConverter(AbstractConverter):
-    acceptforinput = [clam.common.formats.PlainTextFormat]
+    acceptforinput = [PlainTextFormat]
 
     converttool = 'textract'
 
@@ -215,6 +215,17 @@ PROFILES = [
             extension='.data',
             optional=True,
             unique=True,
+        ),
+        # 20230318: Added possibility to enter pre-parsed treebanks
+        InputTemplate(
+            'alpino',
+            AlpinoXMLFormat,
+            'Alpino XML',
+            StaticParameter(id='encoding', name='Encoding',
+                            description='The character encoding of the file', value='utf-8'),
+            extension='.xml',
+            optional=True,
+            multi=True
         ),
         # ------------------------------------------------------------------------------------------------------------------------
         OutputTemplate(

@@ -23,6 +23,8 @@ import shutil
 import glob
 import signal
 
+from lxml import etree
+
 #import CLAM-specific modules. The CLAM API makes a lot of stuff easily accessible.
 import clam.common.data
 import clam.common.status
@@ -71,12 +73,39 @@ def load_custom_wordlist(configfile, inputdir, tscan_name, inputtemplate, defaul
     if wordlist:
         configfile.write(tscan_name + "=\"" + wordlist + "\"\n")
 
+
+def init_alpino_lookup(configfile, inputdir, outputdir):
+    alpino_lookup = []
+
+    for alpino_xml in clamdata.inputfiles("alpino"):
+        filepath = inputdir + alpino_xml.filename
+        corpus = etree.parse(filepath)
+        root = corpus.getroot()
+        # treebanks start counting from zero, xpath queries are also 1-based
+        trees = [(0, root)] if root.tag == 'alpino_ds' else enumerate(corpus.findall("alpino_ds"), 1)
+        for index, tree in trees:
+            # reconstruct the sentence from the words
+            words = {}
+            for word in tree.findall("//node[@word]"):
+                words[int(word.attrib['begin'])] = word.attrib['word']
+            sentence = ' '.join(map(lambda x: x[1], sorted(words.items(), key=lambda x: x[0])))
+            alpino_lookup.append((sentence, filepath, index))
+
+    if len(alpino_lookup):
+        with open(outputdir + '/alpino_lookup.data', 'w') as alpino_lookup_file:
+            for sentence, filepath, index in alpino_lookup:
+                alpino_lookup_file.write(f"{sentence}\t{filepath}\t{index}\n")
+
+        configfile.write(f"alpino_lookup=\"{outputdir}/alpino_lookup.data\"\n")
+
 #Write configuration file
 
 f = open(outputdir + '/tscan.cfg', 'w')
 if 'useAlpino' in clamdata and clamdata['useAlpino'] == 'yes':
     f.write("useAlpinoServer=1\n")
     f.write("useAlpino=1\n")
+    f.write("saveAlpinoOutput=1\n")
+    f.write("saveAlpinoMetadata=1\n")
 else:
     f.write("useAlpinoServer=0\n")
     f.write("useAlpino=0\n")
@@ -127,6 +156,8 @@ f.write("verb_semtypes=\"verbs_semtype.data\"\n")
 f.write("general_nouns=\"general_nouns.data\"\n")
 f.write("general_verbs=\"general_verbs.data\"\n")
 f.write("adverbs=\"adverbs.data\"\n")
+
+init_alpino_lookup(f, inputdir, outputdir)
 
 # 20180305: This allows a stoplist.
 load_custom_wordlist(f, inputdir, "stop_lemmata", "stoplist")
