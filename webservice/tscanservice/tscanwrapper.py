@@ -74,6 +74,32 @@ def load_custom_wordlist(configfile, inputdir, tscan_name, inputtemplate, defaul
         configfile.write(tscan_name + "=\"" + wordlist + "\"\n")
 
 
+def save_alpino_lookup(outputdir, alpino_lookup):
+    with open(outputdir + '/alpino_lookup.data', 'w') as alpino_lookup_file:
+        for sentence, filepath, index in alpino_lookup:
+            alpino_lookup_file.write(f"{sentence}\t{filepath}\t{index}\n")
+
+
+def get_tree(filename, index):
+    corpus = etree.parse(filename)
+    root = corpus.getroot()
+    if root.tag == 'alpino_ds':
+        return root
+
+    trees = corpus.findall("alpino_ds")
+    # index is 1-based
+    return trees[index-1]
+
+
+def get_output_trees(inputdir, outputdir):
+    with open(outputdir + '/alpino_lookup.data', 'r') as alpino_lookup_file:
+        for line in alpino_lookup_file.readlines():
+            sentence, filename, index = line.split("\t")
+            if filename.startswith("input/"):
+                filename = filename.replace("input/", inputdir)
+            yield sentence, get_tree(filename, int(index))
+
+
 def init_alpino_lookup(configfile, inputdir, outputdir):
     alpino_lookup = []
 
@@ -82,19 +108,19 @@ def init_alpino_lookup(configfile, inputdir, outputdir):
         corpus = etree.parse(filepath)
         root = corpus.getroot()
         # treebanks start counting from zero, xpath queries are also 1-based
-        trees = [(0, root)] if root.tag == 'alpino_ds' else enumerate(corpus.findall("alpino_ds"), 1)
+        trees = [(0, root)] if root.tag == 'alpino_ds' else enumerate(
+            corpus.findall("alpino_ds"), 1)
         for index, tree in trees:
             # reconstruct the sentence from the words
             words = {}
-            for word in tree.findall("//node[@word]"):
+            for word in tree.findall(".//node[@word]"):
                 words[int(word.attrib['begin'])] = word.attrib['word']
-            sentence = ' '.join(map(lambda x: x[1], sorted(words.items(), key=lambda x: x[0])))
+            sentence = ' '.join(
+                map(lambda x: x[1], sorted(words.items(), key=lambda x: x[0])))
             alpino_lookup.append((sentence, filepath, index))
 
     if len(alpino_lookup):
-        with open(outputdir + '/alpino_lookup.data', 'w') as alpino_lookup_file:
-            for sentence, filepath, index in alpino_lookup:
-                alpino_lookup_file.write(f"{sentence}\t{filepath}\t{index}\n")
+        save_alpino_lookup(outputdir, alpino_lookup)
 
         configfile.write(f"alpino_lookup=\"{outputdir}/alpino_lookup.data\"\n")
 
@@ -256,6 +282,10 @@ signal.signal(signal.SIGTERM, sigterm_handler)
 
 shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
 
+# remove any previous output
+for f in glob.glob(outputdir + "/../out*.alpino_lookup.data"):
+    os.remove(f)
+
 #pass all input files at once
 clam.common.status.write(statusfile, "Processing " + str(len(inputfiles)) + " files, this may take a while...", 10)  # status update
 ref = os.system('ALPINO_HOME="' + ALPINOHOME + '" TCL_LIBRARY="' + ALPINOHOME + '/create_bin/tcl8.5" TCLLIBPATH="' + ALPINOHOME + '/create_bin/tcl8.5" tscan --config=' + outputdir + '/tscan.cfg ' + ' '.join(['"' + x + '"' for x in inputfiles]))
@@ -290,7 +320,25 @@ for f in glob.glob(outputdir + "/*.sentences.csv"):
 for f in glob.glob(outputdir + "/*.document.csv"):
     os.system("sed 1d \"" + f + "\" >> " + outputdir + "/total.doc.csv")
 
-#A nice status message to indicate we're done
+# Merge all the Alpino output
+if 'alpinoOutput' in clamdata and clamdata['alpinoOutput'] != 'no':
+    clam.common.status.write(statusfile, "Merging Alpino output", 95)
+    # Move the generated lookup file
+    os.rename(outputdir + "/../out.alpino_lookup.data", outputdir + "/alpino_lookup.data")
+    merged_lookup = []
+    merged_treebank = etree.Element("treebank")
+    for sentence, tree in get_output_trees(inputdir, outputdir):
+        merged_treebank.append(tree)
+        merged_lookup.append(
+            (sentence, "alpino.xml", len(merged_treebank.getchildren())))
+
+    etree.indent(merged_treebank)
+    etree.ElementTree(merged_treebank).write(
+        outputdir + "/alpino.xml", xml_declaration=True, pretty_print=True, encoding="UTF-8")
+    save_alpino_lookup(outputdir, merged_lookup)
+
+# A nice status message to indicate we're done
 clam.common.status.write(statusfile, "Done", 100)  # status update
 
-sys.exit(ref)  # non-zero exit codes indicate an error and will be picked up by CLAM as such!
+# non-zero exit codes indicate an error and will be picked up by CLAM as such!
+sys.exit(ref)

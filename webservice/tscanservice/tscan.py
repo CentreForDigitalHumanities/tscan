@@ -370,6 +370,8 @@ parameters_list = [
                    description='MTLD factor size', default=0.720),
     ChoiceParameter(id='useAlpino', name='Use Alpino parser',
                     description='Use Alpino parser?', choices=['yes', 'no'], default='yes'),
+    ChoiceParameter(id='alpinoOutput', name='Store Alpino output',
+                    description='Store the Alpino output and input as a treebank file', choices=['yes', 'no'], default='no'),
     ChoiceParameter(id='useWopr', name='Use Wopr', description='Use Wopr?', choices=[
         'yes', 'no'], default='yes'),
     ChoiceParameter(id='sentencePerLine', name='One sentence per line',

@@ -3,13 +3,15 @@ from lxml import etree
 from glob import glob
 import re
 
-# 
 
 def get_tree(filename, index):
     corpus = etree.parse(filename)
     root = corpus.getroot()
-    trees = [root] if root.tag == 'alpino_ds' else corpus.findall("alpino_ds")
-    return trees[index]
+    if root.tag == 'alpino_ds':
+        return root
+
+    trees = corpus.findall("alpino_ds")
+    return trees[index-1]
 
 
 def get_alpino_target_filename(filename):
