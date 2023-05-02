@@ -1,8 +1,6 @@
 # pinned to this version of develop (known to work)
 FROM proycon/lamachine@sha256:8eacbcba4cbd2b73de2148f1353f0661bbbd7db4742b90684cc0ac3449f1774a
 
-# fallback for old configuration location
-COPY docker/*config.* /deployment/
 COPY docker/deployment/ /deployment/
 WORKDIR /deployment
 RUN bash config.sh
