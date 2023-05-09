@@ -309,7 +309,6 @@ struct structStats: public basicStats {
     bijwCnt(0),
     complCnt(0),
     mvFinInbedCnt(0),
-    infinComplCnt(0),
     infinComplBepCnt(0),
     mvInbedCnt(0),
     losBetrCnt(0),
@@ -656,7 +655,6 @@ struct structStats: public basicStats {
   int bijwCnt;
   int complCnt;
   int mvFinInbedCnt;
-  int infinComplCnt;
   int infinComplBepCnt;
   int mvInbedCnt;
   int losBetrCnt;
