@@ -7,14 +7,16 @@ services:
     restart: unless-stopped
     ports:
       - 8830:80
-      - 8820:8820
     volumes:
       - type: bind
         source: ./data
-        target: /usr/local/src/tscan/data
+        target: /usr/local/share/tscan
       - type: bind
         source: ./docker/data
         target: /data
+      - type: bind
+        source: ./docker/deployment
+        target: /deployment
       - type: bind
         source: ./docker/log
         target: /usr/local/var/log

@@ -2,12 +2,7 @@
 export PORT=7003
 export TIMEOUT=300000
 export MEMLIMIT=1500M
-if [[ -z $LM_PREFIX ]]
-then
-    export LOGDIR=/tmp
-else
-    export LOGDIR=${LM_PREFIX}/var/log
-fi
+export LOGDIR=/var/log
 export TCLLIBPATH=${ALPINO_HOME}/create_bin/tcl8.5
 export TCL_LIBRARY=${ALPINO_HOME}/create_bin/tcl8.5
 

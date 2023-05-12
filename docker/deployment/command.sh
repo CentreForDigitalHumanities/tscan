@@ -1,15 +1,38 @@
 #!/bin/bash
-source lamachine-activate
+cd /deployment
+./store-dependencies.sh
 
-bash /deployment/store-compound-splitter-dependencies.sh
+# Default values
+export TSCAN_DIR=/usr/local/bin
+export TSCAN_DATA=/usr/local/share/tscan
+export TSCAN_SRC=/src/tscan
+export CLAM_DEBUG=false
+export CLAM_OAUTH_CLIENT_URL=
+export CLAM_OAUTH_REVOKE_URL=
+# This must be a well-formed JSON!
+export CLAM_OAUTH_SCOPE="{}"
+export CLAM_CUSTOMHTML_INDEX=
+export CLAM_CUSTOMHTML_PROJECTSTART=
+export CLAM_CUSTOMHTML_PROJECTDONE=
+export CLAM_CUSTOMHTML_PROJECTFAILED=
+export CLAM_INTERFACEOPT=
 
-# work around for https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=934731
-sudo chmod -f 600 /run/uwsgi-emperor.pid
-sudo lamachine-stop-webserver
-sudo pkill uwsgi
+if [[ -e config.sh ]];
+then
+    source config.sh
+fi
 
-# sudo for moving data-folder required
-sudo lamachine-start-webserver
+cd /src/tscan/webservice
+./startalpino.sh &
+./startcompound.sh &
+./startfrog.sh &
+./startwopr02.sh &
+./startwopr20.sh &
 
-# keep it open
-bash
+# Configure webserver and uwsgi server
+mkdir -p /etc/service/nginx /etc/service/uwsgi
+ln -sf /deployment/runit.d/nginx.run.sh /etc/service/nginx/run
+ln -sf /deployment/runit.d/uwsgi.run.sh /etc/service/uwsgi/run
+ln -sf /deployment/tscan_webservice.nginx.conf /etc/nginx/sites-enabled/default
+
+runsvdir -P /etc/service

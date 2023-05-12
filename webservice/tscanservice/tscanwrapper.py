@@ -36,7 +36,9 @@ statusfile = sys.argv[2]
 inputdir = sys.argv[3]
 outputdir = sys.argv[4]
 TSCANDIR = sys.argv[5]
-ALPINOHOME = sys.argv[6]
+TSCANDATA = sys.argv[6]
+TSCANSRC = sys.argv[7]
+ALPINOHOME = sys.argv[8]
 
 #Obtain all data from the CLAM system (passed in $DATAFILE (clam.xml))
 clamdata = clam.common.data.getclamdata(datafile)
@@ -67,7 +69,7 @@ def load_custom_wordlist(configfile, inputdir, tscan_name, inputtemplate, defaul
     else:
         # When no inputfile is found, revert to the default (if there is one)
         if default_location:
-            wordlist = TSCANDIR + default_location
+            wordlist = TSCANDATA + default_location
 
     # Write the wordlist to the config file
     if wordlist:
@@ -177,7 +179,7 @@ f.write("overlapSize=" + str(overlapsize) + "\n")
 f.write("frequencyClip=" + str(freqclip) + "\n")
 f.write("mtldThreshold=" + str(mtldthreshold) + "\n")
 
-f.write("configDir=" + TSCANDIR + "/data\n")
+f.write("configDir=" + TSCANDATA + "\n")
 f.write("verb_semtypes=\"verbs_semtype.data\"\n")
 f.write("general_nouns=\"general_nouns.data\"\n")
 f.write("general_verbs=\"general_verbs.data\"\n")
@@ -190,11 +192,11 @@ load_custom_wordlist(f, inputdir, "stop_lemmata", "stoplist")
 # 20160802: This allows a completely dcustom classification.
 load_custom_wordlist(f, inputdir, "my_classification", "myclassification")
 # 20150316: This allows custom adjective classification.
-load_custom_wordlist(f, inputdir, "adj_semtypes", "adjclassification", "/data/adjs_semtype.data")
+load_custom_wordlist(f, inputdir, "adj_semtypes", "adjclassification", "/adjs_semtype.data")
 # 20141121: This allows a custom noun classification.
-load_custom_wordlist(f, inputdir, "noun_semtypes", "nounclassification", "/data/nouns_semtype.data")
+load_custom_wordlist(f, inputdir, "noun_semtypes", "nounclassification", "/nouns_semtype.data")
 # 20150203: This allows custom intensifying words.
-load_custom_wordlist(f, inputdir, "intensify", "intensify", "/data/intensiveringen.data")
+load_custom_wordlist(f, inputdir, "intensify", "intensify", "/intensiveringen.data")
 
 f.write("word_freq_lex=\"" + clamdata['word_freq_lex'] + "\"\n")  # freqlist_staphorsius_CLIB_words.freq
 f.write("lemma_freq_lex=\"" + clamdata['lemma_freq_lex'] + "\"\n")  # freqlist_staphorsius_CLIB_lemma.freq
@@ -280,7 +282,7 @@ def sigterm_handler():
 
 signal.signal(signal.SIGTERM, sigterm_handler)
 
-shutil.copyfile(TSCANDIR + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
+shutil.copyfile(TSCANSRC + "/view/tscanview.xsl", outputdir + "/tscanview.xsl")
 
 # remove any previous output
 for f in glob.glob(outputdir + "/../out*.alpino_lookup.data"):

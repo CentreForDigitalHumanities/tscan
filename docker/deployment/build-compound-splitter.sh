@@ -1,13 +1,12 @@
 #!/bin/bash
-source lamachine-activate
-export SRCDIR=${LM_PREFIX}/src
+export SRCDIR=/src
 export SPLITTERDIR=${SRCDIR}/compound-splitter
 
 # retrieve source again, make sure to clear prepared binaries
 # otherwise an old version of a splitter method might linger
 if [[ -d $SPLITTERDIR ]]
 then
-    sudo rm -rf $SPLITTERDIR
+    rm -rf $SPLITTERDIR
 fi
 
 cd $SRCDIR
@@ -24,14 +23,12 @@ then
     echo "Existing dependencies reused"
     ls -l $DEPDIR
     mkdir -p dependencies
-    sudo mv $DEPDIR/* dependencies
+    mv $DEPDIR/* dependencies
 fi
 
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 
 python3 retrieve.py
 python3 prepare.py
 
 python3 setup.py sdist --formats zip
-
-sudo pip3 install dist/*.zip

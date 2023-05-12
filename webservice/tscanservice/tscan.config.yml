@@ -1,4 +1,29 @@
-port: 8080
-root: "{{VIRTUAL_ENV}}/tscan.clam"
-tscandir: "{{VIRTUAL_ENV}}/src/tscan"
+# This is a generic configuration file for the webservice.
+# it in turns draws from environment variables.
+# It will only be used when there is no host-specific configuration file
+# (tscan_webservice.\$HOSTNAME.yml)
+port: "{{CLAM_PORT=80}}"
+root: "{{CLAM_ROOT=/data/www-data}}/tscan.clam"
+tscandir: "{{TSCAN_DIR=/usr/local/bin}}"
+tscandata: "{{TSCAN_DATA=/usr/local/share/tscan}}"
+tscansrc: "{{TSCAN_SRC=/src/tscan}}"
+use_forwarded_host: "{{CLAM_USE_FORWARDED_HOST|bool=false}}" #(set to true or false, enable this if you run behind a properly configured reverse proxy only)
 switchboard_forward_url: "https://switchboard.clarin.eu/#/tscan/$BACKLINK/$MIMETYPE/nld"
+debug: "{{CLAM_DEBUG|bool=false}}"
+oauth: "{{CLAM_OAUTH|bool=false}}"
+oauth_client_id: "{{CLAM_OAUTH_CLIENT_ID}}"
+oauth_client_secret: "{{CLAM_OAUTH_CLIENT_SECRET}}"
+oauth_client_url: "{{CLAM_OAUTH_CLIENT_URL}}"
+oauth_auth_url: "{{CLAM_OAUTH_AUTH_URL}}"
+oauth_token_url: "{{CLAM_OAUTH_TOKEN_URL}}"
+oauth_userinfo_url: "{{CLAM_OAUTH_USERINFO_URL}}"
+oauth_revoke_url: "{{CLAM_OAUTH_REVOKE_URL}}"
+oauth_scope: "{{CLAM_OAUTH_SCOPE|json}}"
+
+#Interface customisation
+customhtml_index: "{{CLAM_CUSTOMHTML_INDEX}}"
+customhtml_projectstart: "{{CLAM_CUSTOMHTML_PROJECTSTART}}"
+customhtml_projectdone: "{{CLAM_CUSTOMHTML_PROJECTDONE}}"
+customhtml_projectfailed: "{{CLAM_CUSTOMHTML_PROJECTFAILED}}"
+interfaceoptions: "{{CLAM_INTERFACEOPTIONS}}"
+customcss: "{{CLAM_CUSTOMCSS}}"
