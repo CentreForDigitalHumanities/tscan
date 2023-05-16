@@ -1,8 +1,8 @@
-[![Actions Status](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/cpp.yml/badge.svg)](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/cpp.yml) [![Actions Status](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/webservice.yml/badge.svg)](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/webservice.yml) [![Language Machines Badge](https://applejack.science.ru.nl/lamabadge.php/tscan)](http://applejack.science.ru.nl/languagemachines/) [![DOI](https://zenodo.org/badge/36359165.svg)](https://zenodo.org/badge/latestdoi/36359165)
+[![Actions Status](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/cpp.yml/badge.svg)](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/cpp.yml) [![Actions Status](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/webservice.yml/badge.svg)](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/webservice.yml) [![DOI](https://zenodo.org/badge/36359165.svg)](https://zenodo.org/badge/latestdoi/36359165)
 
 # T-Scan
 
-tscan 0.9 (c) TiCC/ 1998 - 2020
+tscan 0.9 (c) TiCC/ 1998 - 2023
 
     Tilburg centre for Cognition and Communication, Tilburg University.
     UiL-OTS, Utrecht University
@@ -38,22 +38,15 @@ Installation is not trivial, to be able to successfully build T-Scan from the ta
 - [wopr](https://github.com/LanguageMachines/wopr)
 - [CLAM](https://github.com/proycon/clam)
 
-To facilitate installation, T-Scan is included as an extra option in [LaMachine](https://proycon.github.io/LaMachine)
+We strongly recommend to use Docker to install T-scan. Be aware that T-scan and dependencies are memory intensive, we recommend at least 16GB RAM for proper operation. If WOPR is used (which is enabled by default!) more RAM is required: 32 GB is recommended.
 
-We strongly recommend to use [LaMachine](https://proycon.github.io/LaMachine) to install T-scan. In addition, T-Scan also uses Alpino, which is also included in LaMachine. Be aware that T-scan and
-dependencies are memory intensive, we recommend at least 16GB RAM for proper operation. If WOPR is used (which is enabled by default!) more RAM is required: 32 GB is recommended.
-
-To install T-Scan in an existing LaMachine environment you may need to adapt your installation manifest, as it is **not** included by default:
-
-    (lamachine)$ lamachine-update --edit
-
-It is also possible to run this version of T-Scan directly from Docker locally using LaMachine:
+This version of T-Scan can run directly from Docker:
 
     $ docker-compose up
 
 Default address: http://localhost:8830
 
-If you do not want to use LaMachine, first make sure you have **all** necessary dependencies and then compile/install as follows:
+If you do not want to use (the provided) dockerfile, first make sure you have **all** necessary dependencies and then compile/install as follows:
 
     $ bash bootstrap.sh
     $ ./configure --prefix=/path/to/installation/
@@ -63,10 +56,6 @@ If you do not want to use LaMachine, first make sure you have **all** necessary 
     $ sudo python3 setup.py install
 
 ## Usage
-
-If you use LaMachine as recommended, always activate the virtual environment first.
-
-    $ source lamachine-activate
 
 Before you can use T-Scan you need to start the background servers (you may need to edit the scripts to set ports and paths):
 
@@ -83,11 +72,7 @@ Then either run T-Scan from the command-line, which will produce a FoLiA XML fil
     (edit tscan.cfg if necessary)
     $ tscan --config=tscan.cfg input.txt
 
-... or use the webapplication/webservice, which you can start in LaMachine with either:
-
-    $ lamachine-start-webserver
-
-.. or manually with:
+... or use the webapplication/webservice, which you can start with:
 
     $ cd tscan/webservice/tscanservice
     $ clamservice tscanservice.tscan   #this starts the CLAM service for T-Scan
@@ -96,12 +81,22 @@ And then navigate to the host and port specified.
 
 ## Tests
 
-Tests can be run using `make check`. This requires running the Alpino and Frog services:
+Tests can be run using `make check`. This requires running the Frog services:
 
 ```bash
 cd webservice
-./startalpino.sh &
 ./startfrog.sh &
+```
+
+Pre-parsed Alpino files are included. It is also possible to remove these and update them for a newer version of Alpino.
+
+```bash
+./startalpino.sh &
+cd ../tests/
+rm alpino_lookup.data
+rm *.alpino
+./testall
+./merge_alpino_output.py
 ```
 
 Note: the output can change when a different version of Alpino or Frog is used.
