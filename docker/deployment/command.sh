@@ -3,6 +3,7 @@ cd /deployment
 ./store-dependencies.sh
 
 # Default values
+export URLPREFIX=
 export TSCAN_DIR=/usr/local/bin
 export TSCAN_DATA=/usr/local/share/tscan
 export TSCAN_SRC=/src/tscan
@@ -33,6 +34,6 @@ cd /src/tscan/webservice
 mkdir -p /etc/service/nginx /etc/service/uwsgi
 ln -sf /deployment/runit.d/nginx.run.sh /etc/service/nginx/run
 ln -sf /deployment/runit.d/uwsgi.run.sh /etc/service/uwsgi/run
-ln -sf /deployment/tscan_webservice.nginx.conf /etc/nginx/sites-enabled/default
+envsubst '$URLPREFIX' < /deployment/tscan_webservice.nginx.conf > /etc/nginx/sites-enabled/default
 
 runsvdir -P /etc/service

@@ -13,4 +13,5 @@ uwsgi --plugin python3 \
       --wsgi-file /src/tscan/webservice/tscanservice/tscan.wsgi \
       --processes ${UWSGI_PROCESSES:-2} \
       --threads ${UWSGI_THREADS:-2} \
-      --manage-script-name
+      --manage-script-name \
+      --logto ${LOGDIR=/var/log}/tscan.uwsgi.log

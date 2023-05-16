@@ -13,7 +13,7 @@ ENV TK_LIBRARY /Alpino/create_bin/extralibs/tk8.5
 RUN ldconfig /Alpino/boost /Alpino/fadd /Alpino/unix /Alpino/TreebankTools/IndexedCorpus
 
 RUN apt-get update
-RUN apt-get install -y locales
+RUN apt-get install -y locales gettext
 RUN echo "en_US UTF-8\nen_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 
 # T-Scan dependencies:

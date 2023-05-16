@@ -1,6 +1,6 @@
 #!/bin/bash -x
 FROGPATH="/usr/local/"
-LOGFILE="/var/log/frog-tscan.log"
+LOGFILE="${LOGDIR=/var/log}/frog-tscan.log"
 THREADS=0 #all we can get
 
 PORT=7001

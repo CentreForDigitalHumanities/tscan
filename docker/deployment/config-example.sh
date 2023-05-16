@@ -4,6 +4,9 @@ export UWSGI_THREADS=2
 export UWSGI_UID=100
 export UWSGI_GID=100
 
+# if a prefix is used, also update urlprefix and internalurlprefix in clam_custom.config.yml
+export URLPREFIX=tscan
+
 # By default, data from the webservice will be stored on the mount you provide
 export CLAM_ROOT=/data/www-data
 export CLAM_PORT=80
