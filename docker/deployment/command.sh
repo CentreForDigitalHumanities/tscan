@@ -3,6 +3,8 @@ cd /deployment
 ./store-dependencies.sh
 
 # Default values
+export UWSGI_UID=$(id -u)
+export UWSGI_GID=$(id -g)
 export URLPREFIX=
 export TSCAN_DIR=/usr/local/bin
 export TSCAN_DATA=/usr/local/share/tscan

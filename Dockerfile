@@ -1,3 +1,6 @@
+# A base container which is used for both the builder and the final container
+# This way rebuilds are speed up because the common dependencies are re-used.
+# The final container is also smaller because it doesn't contain build dependencies.
 FROM ubuntu:22.04 AS base
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH /Alpino/bin:/Alpino/Tokenization:/usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -103,6 +106,8 @@ COPY docker/data/ /src/tscan/docker/data/
 WORKDIR /deployment
 # Prepare and install all the dependencies
 RUN ./add-alpino.sh
+# These will create .deb packages which can be re-used by the final container
+# or during a rebuild
 RUN ./prep-dep.sh ticcutils https://github.com/LanguageMachines/ticcutils
 RUN ./prep-dep.sh libfolia https://github.com/LanguageMachines/libfolia
 RUN ./prep-dep.sh uctodata https://github.com/LanguageMachines/uctodata
