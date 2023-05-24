@@ -40,11 +40,24 @@ Installation is not trivial, to be able to successfully build T-Scan from the ta
 
 We strongly recommend to use Docker to install T-scan. Be aware that T-scan and dependencies are memory intensive, we recommend at least 16GB RAM for proper operation. If WOPR is used (which is enabled by default!) more RAM is required: 32 GB is recommended.
 
+### Docker
+
 This version of T-Scan can run directly from Docker:
 
     $ docker-compose up
 
 Default address: http://localhost:8830
+
+To speed up rebuilds the Dockerfile makes extensive use of caching. The following can be found in `docker/data`:
+
+* `build-cache`: this contains the output of the compiled C++ code, helps speed up a rebuild where the code didn't change
+* `compound-dependencies`: dependencies for the compound splitter, nearly 820 MB which you really don't want to have to download again on every rebuild
+* `compound-dependencies/dist`: the Python package for the [compound splitter](https://github.com/UUDigitalHumanitieslab/compound-splitter)
+* `packages`: the prebuilt dependencies (Frog, Ucto, etc)
+
+Only the `build-cache` has automatic invalidation, if you want to update your dependencies you need to delete (parts) of this cache. The cache will be automatically recreated during startup.
+
+### Manual Build
 
 If you do not want to use (the provided) dockerfile, first make sure you have **all** necessary dependencies and then compile/install as follows:
 

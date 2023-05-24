@@ -1,12 +1,22 @@
 #!/bin/bash
 export SRCDIR=/src
 export SPLITTERDIR=${SRCDIR}/compound-splitter
+export DEPDIR=${SRCDIR}/tscan/docker/data/compound-dependencies
+export DIST=$(ls ${DEPDIR}/dist/*.zip 2>/dev/null)
 
 # retrieve source again, make sure to clear prepared binaries
 # otherwise an old version of a splitter method might linger
 if [[ -d $SPLITTERDIR ]]
 then
     rm -rf $SPLITTERDIR
+fi
+
+if [[ ! -z "$DIST" ]]
+then
+    echo "Existing dist reused"
+    mkdir -p $SPLITTERDIR/dist
+    cp $DIST $SPLITTERDIR/dist/
+    exit 0
 fi
 
 cd $SRCDIR
@@ -17,7 +27,6 @@ cd $SPLITTERDIR
 # itself (tscan/docker/data/compound-dependencies)
 # this way a rebuild doesn't need to retrieve all this data from
 # scratch again
-export DEPDIR=${SRCDIR}/tscan/docker/data/compound-dependencies
 if [[ -d $DEPDIR ]]
 then
     echo "Existing dependencies reused"

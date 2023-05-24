@@ -43,6 +43,10 @@ RUN apt-get install -y antiword \
         libmagic1
 # MCS (compound splitter) dependencies:
 RUN apt-get install -y default-jre
+# Frog dependency:
+RUN apt-get install -y netbase
+# (found out the hard way after getting the following error message and being lost as to why)
+# failure in getaddrinfo: Servname not supported for ai_socktype
 
 FROM base AS builder
 RUN apt-get update
@@ -119,17 +123,19 @@ RUN ./prep-dep.sh frogdata https://github.com/LanguageMachines/frogdata
 RUN ./prep-dep.sh frog https://github.com/LanguageMachines/frog
 RUN ./prep-dep.sh wopr https://github.com/LanguageMachines/wopr
 
-# WORKDIR /src
-COPY . /src/tscan
-
-# WORKDIR /deployment
 RUN ./build-compound-splitter.sh
+
+# Have the copying and build as the very last item,
+# this way only the source itself will have to rebuild during a change
+COPY . /src/tscan
 RUN ./build.sh
 
 FROM base AS tscan
 
 COPY --from=builder /src/*.deb /src/
 COPY --from=builder /src/compound-splitter/ /src/compound-splitter/
+# Build output (for caching)
+COPY --from=builder /src/tscan/src/*.o /src/tscan/src/
 COPY --from=builder /src/tscan/webservice/ /src/tscan/webservice/
 COPY --from=builder /src/tscan/view/ /src/tscan/view/
 COPY --from=builder /Alpino/ /Alpino/
