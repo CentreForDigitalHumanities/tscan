@@ -25,17 +25,15 @@ then
     source config.sh
 fi
 
-cd /src/tscan/webservice
-./startalpino.sh &
-./startcompound.sh &
-./startfrog.sh &
-./startwopr02.sh &
-./startwopr20.sh &
+# Configure services
+cd runit.d
+SERVICE_FOLDER=/etc/service
+for service in $(ls *run.sh); do
+    service_name="${service/\.run\.sh/}"
+    mkdir -p $SERVICE_FOLDER/$service_name
+    ln -sf $PWD/$service $SERVICE_FOLDER/$service_name/run
+done
 
-# Configure webserver and uwsgi server
-mkdir -p /etc/service/nginx /etc/service/uwsgi
-ln -sf /deployment/runit.d/nginx.run.sh /etc/service/nginx/run
-ln -sf /deployment/runit.d/uwsgi.run.sh /etc/service/uwsgi/run
 envsubst '$URLPREFIX' < /deployment/tscan_webservice.nginx.conf > /etc/nginx/sites-enabled/default
 
 runsvdir -P /etc/service
