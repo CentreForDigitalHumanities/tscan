@@ -1019,9 +1019,9 @@ void structStats::miscToCSV( ostream& os ) const {
     - 3.829 * inhwrd_dz_zonder_abw 
     + 13.096 * conc_nw_ruim_p)));
 
-  double level1 = 36;
-  double level2 = 51;
-  double level3 = 61.5;
+  double level1 = 34;
+  double level2 = 46;
+  double level3 = 60;
 
   int lint_level_1;
   if (lint_score_1 <= level1) { lint_level_1 = 1; }
