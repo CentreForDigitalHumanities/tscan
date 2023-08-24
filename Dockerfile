@@ -34,10 +34,18 @@ RUN apt-get install -y --no-install-recommends \
         nginx \
         uwsgi \
         uwsgi-plugin-python3 \
+        build-essential \
+        python3-dev \
         python3-pip \
         python3-yaml \
         python3-lxml \
-        python3-requests
+        python3-requests \
+        pkg-config \
+        libmariadb-dev
+
+# Support authentication through MariaDB/MySQL
+RUN pip install mysqlclient
+
 # T-Scan webservice dependencies:
 RUN apt-get install -y antiword \
         libmagic1
