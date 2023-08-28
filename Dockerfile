@@ -15,19 +15,18 @@ ENV TK_LIBRARY /Alpino/create_bin/extralibs/tk8.5
 # Add libraries to standard path
 RUN ldconfig /Alpino/boost /Alpino/fadd /Alpino/unix /Alpino/TreebankTools/IndexedCorpus
 
-RUN apt-get update
-RUN apt-get install -y locales gettext
+RUN apt-get update && apt-get install -y locales gettext
 RUN echo "en_US UTF-8\nen_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 
 # T-Scan dependencies:
-RUN apt-get install -y libicu70 \
+RUN apt-get update && apt-get install -y libicu70 \
         libxml2 \
         libgomp1 \
-        libexttextcat-2.0-0
+        libexttextcat-2.0-0 \
 # Alpino dependencies:
-RUN apt-get install -y libxft2 libxss1
+        libxft2 libxss1
 # Clam dependencies:
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
         runit \
         curl \
         ca-certificates \
@@ -47,18 +46,17 @@ RUN apt-get install -y --no-install-recommends \
 RUN pip install mysqlclient
 
 # T-Scan webservice dependencies:
-RUN apt-get install -y antiword \
-        libmagic1
+RUN apt-get update && apt-get install -y antiword \
+        libmagic1 \
 # MCS (compound splitter) dependencies:
-RUN apt-get install -y default-jre
+        default-jre \
 # Frog dependency:
-RUN apt-get install -y netbase
+        netbase
 # (found out the hard way after getting the following error message and being lost as to why)
 # failure in getaddrinfo: Servname not supported for ai_socktype
 
 FROM base AS builder
-RUN apt-get update
-RUN apt-get install -y autoconf \
+RUN apt-get update && install -y autoconf \
         autoconf-archive \
         automake \
         autotools-dev \
