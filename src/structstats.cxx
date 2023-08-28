@@ -1013,15 +1013,15 @@ void structStats::miscToCSV( ostream& os ) const {
     - 5.965 * bijv_bep_dz_zbijzin 
     - 0.093 * alg_nw_d 
     - 0.995 * al_max)));
-  double lint_score_2 = min(100.0, max(0.0, 100 - (-9.925 
-    + 18.264 * wrd_freq_log_zn_corr 
-    - 3.766 * inhwrd_dz_zonder_abw 
-    + 13.796 * conc_nw_ruim_p 
-    - 1.126 * al_max)));
+  double lint_score_2 = min(100.0, max(0.0, 100 - (3.204 
+    + 15.845 * wrd_freq_log_zn_corr 
+    - 1.331 * al_max
+    - 3.829 * inhwrd_dz_zonder_abw 
+    + 13.096 * conc_nw_ruim_p)));
 
-  double level1 = 36;
-  double level2 = 51;
-  double level3 = 61.5;
+  double level1 = 34;
+  double level2 = 46;
+  double level3 = 60;
 
   int lint_level_1;
   if (lint_score_1 <= level1) { lint_level_1 = 1; }
