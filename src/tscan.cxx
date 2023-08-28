@@ -101,7 +101,10 @@ struct tagged_classification {
 struct settingData {
   void init( const TiCC::Configuration & );
   bool doAlpino;
+  bool doAlpinoLookup;
   bool doAlpinoServer;
+  bool saveAlpinoOutput;
+  bool saveAlpinoMetadata;
   bool doWopr;
   bool doXfiles;
   bool showProblems;
@@ -111,6 +114,8 @@ struct settingData {
   unsigned int overlapSize;
   double freq_clip;
   double mtld_threshold;
+  /// @brief map from tokenized sentences to Alpino XML filenames
+  map<string, pair<string, int>> alpinoLookup;
   map<string, SEM::Type> adj_sem;
   map<string, noun> noun_sem;
   map<string, SEM::Type> verb_sem;
@@ -157,6 +162,61 @@ struct settingData {
 };
 
 settingData settings;
+
+string unique_filename( const string &filename, const string &extension );
+
+bool fillAlpinoLookup( map<string, pair<string, int>> &m, istream &is ) {
+  string line;
+  while ( safe_getline( is, line ) ) {
+    // Trim the lines
+    line = TiCC::trim( line );
+    if ( line.empty() )
+      continue;
+
+    // Split at a tab; the line should contain three values (tokens, filename and offset)
+    vector<string> parts;
+    int i = TiCC::split_at( line, parts, "\t" );
+    if ( i != 3 ) {
+      cerr << "skip line: " << line << " (expected 3 values, got " << i << ")" << endl;
+      continue;
+    }
+
+    // It contains the tokens, the Alpino XML filename and Alpino_DS index
+    m[parts[0]] = make_pair( parts[1], TiCC::stringTo<int>( parts[2] ) );
+  }
+  return true;
+}
+
+bool fillAlpinoLookup( map<string, pair<string, int>> &m, const string &filename ) {
+  ifstream is( filename.c_str() );
+  if ( is ) {
+    return fillAlpinoLookup( m, is );
+  }
+  else {
+    cerr << "couldn't open file: " << filename << endl;
+  }
+  return false;
+}
+
+bool saveAlpinoLookup( map<string, pair<string, int>> &m, const string &filename ) {
+  ofstream out( unique_filename( filename, ".alpino_lookup.data" ) );
+  if ( out ) {
+    auto it = m.begin();
+    while ( it != m.end() ) {
+      auto tokens = it->first;
+      auto filename = it->second.first;
+      auto index = it->second.second;
+      out << tokens << "\t" << filename << "\t" << index << endl;
+      ++it;
+    }
+    cerr << "stored Alpino lookup in " << filename << endl;
+    return true;
+  }
+  else {
+    cerr << "storing Alpino lookup in " << filename << " FAILED!" << endl;
+  }
+  return false;
+}
 
 bool fillN( map<string, noun> &m, istream &is ) {
   string line;
@@ -815,6 +875,24 @@ void settingData::init( const TiCC::Configuration &cf ) {
       exit( EXIT_FAILURE );
     }
   }
+  saveAlpinoOutput = false;
+  val = cf.lookUp( "saveAlpinoOutput" );
+  if ( !val.empty() ) {
+    if ( !TiCC::stringTo( val, saveAlpinoOutput ) ) {
+      cerr << "invalid value for 'saveAlpinoOutput' in config file" << endl;
+      exit( EXIT_FAILURE );
+    }
+  }
+  saveAlpinoMetadata = false;
+  if ( saveAlpinoOutput ) {
+    val = cf.lookUp( "saveAlpinoMetadata" );
+    if ( !val.empty() ) {
+      if ( !TiCC::stringTo( val, saveAlpinoMetadata ) ) {
+        cerr << "invalid value for 'saveAlpinoMetadata' in config file" << endl;
+        exit( EXIT_FAILURE );
+      }
+    }
+  }
   doWopr = false;
   val = cf.lookUp( "useWopr" );
   if ( !val.empty() ) {
@@ -875,6 +953,16 @@ void settingData::init( const TiCC::Configuration &cf ) {
             || ( mtld_threshold < 0 ) || ( mtld_threshold > 1.0 ) ) {
     cerr << "invalid value for 'frequencyClip' in config file" << endl;
     exit( EXIT_FAILURE );
+  }
+
+  val = cf.lookUp( "alpino_lookup" );
+  if ( !val.empty() ) {
+    doAlpinoLookup = true;
+    if ( !fillAlpinoLookup( alpinoLookup, val ) )
+      exit( EXIT_FAILURE );
+  }
+  else {
+    doAlpinoLookup = false;
   }
 
   val = cf.lookUp( "adj_semtypes" );
@@ -1971,7 +2059,31 @@ void orderWopr( const string &type, const string &txt, vector<double> &wordProbs
   cerr << "done with Wopr" << endl;
 }
 
+xmlDoc *AlpinoLookup( folia::Sentence * );
+void AlpinoLookupAdd( folia::Sentence *, const string & );
 xmlDoc *AlpinoServerParse( folia::Sentence * );
+
+/// @brief Returns the filename if this does not exist or otherwise it will suffix
+/// it with a number to make sure this file is unique
+/// @param filename filename to check
+/// @param extension extension which will be placed at the end of the filename, after the suffix
+/// @return a unique filename
+string unique_filename( const string &filename, const string &extension ) {
+  int suffix = 0;
+  bool exist;
+  string outName = filename + extension;
+  do {
+    struct stat buffer;
+    // https://stackoverflow.com/a/12774387/8438971
+    exist = ( stat( outName.c_str(), &buffer ) == 0 );
+    if ( exist ) {
+      suffix++;
+      outName = filename + " (" + to_string( suffix ) + ")" + extension;
+    }
+  } while ( exist );
+
+  return outName;
+}
 
 void fill_word_lemma_buffers( const sentStats *ss,
                               vector<string> &wv,
@@ -2007,7 +2119,7 @@ void np_length( folia::Sentence *s, int &npcount, int &indefcount, int &size ) {
   }
 }
 
-sentStats::sentStats( int index, folia::Sentence *s, const sentStats *pred ) :
+sentStats::sentStats( const string &inName, int index, folia::Sentence *s, const sentStats *pred ) :
     structStats( index, s, "sent" ) {
   text = TiCC::UnicodeToUTF8( s->toktext() );
   cerr << "analyse tokenized sentence=" << text << endl;
@@ -2027,8 +2139,14 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats *pred ) :
   {
 #pragma omp section
     {
-      if ( settings.doAlpino || settings.doAlpinoServer ) {
-        if ( settings.doAlpinoServer ) {
+      if ( settings.doAlpino || settings.doAlpinoLookup || settings.doAlpinoServer ) {
+        bool alreadyParsed = false;
+        alpDoc = AlpinoLookup( s );
+        if ( alpDoc ) {
+          alreadyParsed = true;
+          cerr << "pre-parsed alpino found!" << endl;
+        }
+        else if ( settings.doAlpinoServer ) {
           cerr << "calling Alpino Server" << endl;
           alpDoc = AlpinoServerParse( s );
           if ( !alpDoc ) {
@@ -2044,7 +2162,34 @@ sentStats::sentStats( int index, folia::Sentence *s, const sentStats *pred ) :
           }
           cerr << "done with Alpino parser" << endl;
         }
+
         if ( alpDoc ) {
+          if ( !alreadyParsed && settings.saveAlpinoOutput ) {
+            cerr << "saving parse" << endl;
+
+            // add a suffix if it already exists
+            // this can happen when restarting on a modified input
+            string outName = unique_filename( inName + "." + to_string( index + 1 ), ".alpino.xml" );
+
+            xmlSaveFormatFileEnc( outName.c_str(), alpDoc, "UTF8", 1 );
+
+            if ( settings.saveAlpinoMetadata ) {
+              int filenameIndex = outName.find_last_of( "/\\" ) + 1;
+              string dirname = outName.substr( 0, filenameIndex );
+              string metadataFilename = dirname + "." + outName.substr( filenameIndex ) + ".METADATA";
+              ofstream metadataFile( metadataFilename.c_str() );
+
+              metadataFile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
+              metadataFile << "<CLAMMetaData format=\"AlpinoXMLFormat\" mimetype=\"application/xml\" inputtemplate=\"alpino\">" << endl;
+              metadataFile << "  <meta id=\"encoding\">utf-8</meta>" << endl;
+              metadataFile << "</CLAMMetaData>" << endl;
+              metadataFile.close();
+            }
+
+            // add the tokens and Alpino XML filename to the lookup
+            AlpinoLookupAdd( s, outName );
+          }
+
           parseFailCnt = 0; // OK
           for ( size_t i = 0; i < w.size(); ++i ) {
             vector<folia::PosAnnotation *> posV = w[i]->select<folia::PosAnnotation>( frog_pos_set );
@@ -2850,13 +2995,13 @@ void sentStats::resolveAdverbials( xmlDoc *alpDoc ) {
   }
 }
 
-parStats::parStats( int index, folia::Paragraph *p ) :
+parStats::parStats( const string &inName, int index, folia::Paragraph *p ) :
     structStats( index, p, "par" ) {
   sentCnt = 0;
   vector<folia::Sentence *> sents = p->sentences();
   sentStats *prev = 0;
   for ( size_t i = 0; i < sents.size(); ++i ) {
-    sentStats *ss = new sentStats( i, sents[i], prev );
+    sentStats *ss = new sentStats( inName + "." + to_string( index + 1 ), i, sents[i], prev );
     prev = ss;
     merge( ss );
   }
@@ -2928,7 +3073,7 @@ void docStats::calculate_doc_overlap() {
   }
 }
 
-docStats::docStats( folia::Document *doc ) :
+docStats::docStats( const string &inName, folia::Document *doc ) :
     structStats( 0, 0, "document" ),
     doc_word_overlapCnt( 0 ), doc_lemma_overlapCnt( 0 ) {
   sentCnt = 0;
@@ -2945,7 +3090,7 @@ docStats::docStats( folia::Document *doc ) :
   if ( pars.size() > 0 )
     folia_node = pars[0]->parent();
   for ( size_t i = 0; i != pars.size(); ++i ) {
-    parStats *ps = new parStats( i, pars[i] );
+    parStats *ps = new parStats( inName, i, pars[i] );
     merge( ps );
   }
   calculate_MTLDs();
@@ -3068,7 +3213,43 @@ folia::Document *getFrogResult( istream &is ) {
   return doc;
 }
 
-//#define DEBUG_ALPINO
+/// @brief Lookup whether this sentence is available in the pre-parsed
+/// treebank
+/// @param sent
+/// @return the Alpino XML or 0 if not found
+xmlDoc *AlpinoLookup( folia::Sentence *sent ) {
+  string tokens = TiCC::UnicodeToUTF8( sent->toktext() );
+  cerr << "LOOKING UP: " << tokens << endl;
+  // lookup filename
+  auto sit = settings.alpinoLookup.find( tokens );
+  if ( sit != settings.alpinoLookup.end() ) {
+    auto location = sit->second;
+    xmlDoc *xmldoc = xmlReadFile( location.first.c_str(), 0, XML_PARSE_NOBLANKS );
+    if ( xmldoc ) {
+      if ( location.second == 0 ) {
+        // 0: file contains single treebank
+        return xmldoc;
+      }
+      auto trees = TiCC::FindNodes( xmldoc, "//alpino_ds[" + to_string( location.second ) + "]" );
+      auto tree = trees.begin();
+      if ( tree != trees.end() ) {
+        // point at the right tree (if it contains multiple)
+        xmlDocSetRootElement( xmldoc, *tree );
+        // open the file and return it
+        return xmldoc;
+      }
+    }
+  }
+
+  return 0;
+}
+
+void AlpinoLookupAdd( folia::Sentence *sent, const string &filename ) {
+  string tokens = TiCC::UnicodeToUTF8( sent->toktext() );
+  settings.alpinoLookup[tokens] = make_pair(filename, 0);
+}
+
+// #define DEBUG_ALPINO
 
 xmlDoc *AlpinoServerParse( folia::Sentence *sent ) {
   string host = config.lookUp( "host", "alpino" );
@@ -3241,7 +3422,7 @@ int main( int argc, char *argv[] ) {
         continue;
       }
       else {
-        docStats analyse( doc );
+        docStats analyse( inName, doc );
         analyse.addMetrics(); // add metrics info to doc
         doc->save( outName );
         if ( settings.doXfiles ) {
@@ -3254,6 +3435,9 @@ int main( int argc, char *argv[] ) {
         cerr << "saved output in " << outName << endl;
       }
     }
+  }
+  if ( settings.saveAlpinoOutput ) {
+    saveAlpinoLookup( settings.alpinoLookup, "out" );
   }
   exit( EXIT_SUCCESS );
 }

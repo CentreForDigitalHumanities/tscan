@@ -919,7 +919,7 @@ struct structStats: public basicStats {
 
 
 struct sentStats : public structStats {
-  sentStats( int, folia::Sentence*, const sentStats* );
+  sentStats( const std::string&, int, folia::Sentence*, const sentStats* );
   bool isSentence() const override { return true; };
   void resolveConnectives();
   void resolveSituations();
@@ -944,13 +944,13 @@ struct sentStats : public structStats {
 
 
 struct parStats: public structStats {
-  parStats( int, folia::Paragraph* );
+  parStats( const std::string&, int, folia::Paragraph* );
   void addMetrics() const override;
 };
 
 
 struct docStats : public structStats {
-  explicit docStats( folia::Document* );
+  explicit docStats( const std::string&, folia::Document* );
   bool isDocument() const override { return true; };
   void toCSV( const std::string&, csvKind ) const;
   double rarity( int level ) const override;

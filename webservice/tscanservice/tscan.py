@@ -14,7 +14,7 @@
 ###############################################################
 
 from clam.common.parameters import *
-from clam.common.formats import *
+from clam.common.formats import AlpinoXMLFormat, CSVFormat, FoLiAXMLFormat, PlainTextFormat, XMLStyleSheet
 from clam.common.converters import *
 from clam.common.viewers import *
 from clam.common.data import *  # AbstractConverter
@@ -35,7 +35,7 @@ except ModuleNotFoundError:
 
 
 class DocumentTextConverter(AbstractConverter):
-    acceptforinput = [clam.common.formats.PlainTextFormat]
+    acceptforinput = [PlainTextFormat]
 
     converttool = 'textract'
 
@@ -216,6 +216,17 @@ PROFILES = [
             optional=True,
             unique=True,
         ),
+        # 20230318: Added possibility to enter pre-parsed treebanks
+        InputTemplate(
+            'alpino',
+            AlpinoXMLFormat,
+            'Alpino XML',
+            StaticParameter(id='encoding', name='Encoding',
+                            description='The character encoding of the file', value='utf-8'),
+            extension='.xml',
+            optional=True,
+            multi=True
+        ),
         # ------------------------------------------------------------------------------------------------------------------------
         OutputTemplate(
             'foliaout',
@@ -359,6 +370,8 @@ parameters_list = [
                    description='MTLD factor size', default=0.720),
     ChoiceParameter(id='useAlpino', name='Use Alpino parser',
                     description='Use Alpino parser?', choices=['yes', 'no'], default='yes'),
+    ChoiceParameter(id='alpinoOutput', name='Store Alpino output',
+                    description='Store the Alpino output and input as a treebank file', choices=['yes', 'no'], default='no'),
     ChoiceParameter(id='useWopr', name='Use Wopr', description='Use Wopr?', choices=[
         'yes', 'no'], default='yes'),
     ChoiceParameter(id='sentencePerLine', name='One sentence per line',

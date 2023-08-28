@@ -27,7 +27,7 @@ jobs:
       run: |
         sudo apt install libmagic-dev antiword
         python -m pip install --upgrade pip
-        pip install flake8 textract python-magic
+        pip install flake8 lxml textract python-magic
     - name: Lint with flake8
       run: |
         cd webservice
