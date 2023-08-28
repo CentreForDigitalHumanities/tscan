@@ -10,7 +10,8 @@ mkdir -p /data/packages
 mv ${SRCDIR}/*.deb /data/packages/
 
 mkdir -p /data/compound-dependencies/dist
-mv ${SRCDIR}/compound-splitter/dist/compound-splitters-nl*.zip /data/compound-dependencies/dist/compound-splitters-nl.zip
+mv ${SRCDIR}/compound-splitter/dist/.version /data/compound-dependencies/dist/.version
+mv ${SRCDIR}/compound-splitter/dist/compound-splitters-nl*.tar.gz /data/compound-dependencies/dist/compound-splitters-nl.tar.gz
 
 mkdir -p /data/build-cache
 mv ${SRCDIR}/tscan/src/*.o /data/build-cache/

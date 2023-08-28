@@ -9,7 +9,7 @@ pip install .
 ln -s /usr/local/lib/python3.*/dist-packages/clam /opt/clam
 
 cd /src/compound-splitter
-pip install dist/*.zip
+pip install dist/*.tar.gz
 
 # Patch to set proper mimetype for CLAM's logs; maximum upload size
 sed -i 's/txt;/txt log;/' /etc/nginx/mime.types
