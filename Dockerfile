@@ -56,7 +56,7 @@ RUN apt-get update && apt-get install -y antiword \
 # failure in getaddrinfo: Servname not supported for ai_socktype
 
 FROM base AS builder
-RUN apt-get update && install -y autoconf \
+RUN apt-get update && apt-get install -y autoconf \
         autoconf-archive \
         automake \
         autotools-dev \
