@@ -22,6 +22,8 @@ fi
 cd $SRCDIR
 git clone https://github.com/UUDigitalHumanitieslab/compound-splitter
 cd $SPLITTERDIR
+# TODO: pinned to latest version known to work
+git checkout 3f8b787471f9e03215d7b2a78a94a76e4e039bcc
 
 # dependencies might already have been retrieved in the tscan clone
 # itself (tscan/docker/data/compound-dependencies)
