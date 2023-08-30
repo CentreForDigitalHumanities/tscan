@@ -1,2 +1,7 @@
-# clam_custom.config.yml is automatically set by build.sh
-include: "/usr/local/etc/clam_base.config.yml"
+include: "/src/tscan/webservice/tscanservice/tscan.config.yml"
+# if a prefix is used, also update $URLPREFIX in the config.sh
+urlprefix: "tscan"
+internalurlprefix: "/tscan"
+forcehttps: false
+base_url: "https://tscan.hum.uu.nl"
+use_forwarded_host: false

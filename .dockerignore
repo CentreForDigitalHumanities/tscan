@@ -5,6 +5,7 @@
 *.slo
 *.lo
 *.o
+!docker/data/build-cache/*.o
 *.obj
 
 # Precompiled Headers
@@ -59,6 +60,5 @@ ChangeLog
 
 # make sure the compound-dependencies ARE copied
 # those are used by install-compound-splitter.sh
-docker/data/compound-splitter/
 docker/data/www-data/
 docker/log/

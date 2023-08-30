@@ -232,7 +232,7 @@ PROFILES = [
             'foliaout',
             FoLiAXMLFormat,
             'Output analysis',
-            XSLTViewer(file=TSCANDIR + '/view/tscanview.xsl'),
+            XSLTViewer(file=TSCANSRC + '/view/tscanview.xsl'),
             ForwardViewer(id='switchboardforwarder', name="Open in CLARIN Switchboard", forwarder=Forwarder(
                 'switchboard', 'CLARIN Switchboard', SWITCHBOARD_FORWARD_URL), allowdefault=False) if SWITCHBOARD_FORWARD_URL else None,
             removeextension='.txt',  # remove prior to adding
@@ -341,23 +341,24 @@ PROFILES = [
 #                        (set to "anonymous" if there is none)
 #     $PARAMETERS      - List of chosen parameters, using the specified flags
 #
-COMMAND = TSCANDIR + "/webservice/tscanservice/tscanwrapper.py $DATAFILE $STATUSFILE $INPUTDIRECTORY $OUTPUTDIRECTORY " + \
-    TSCANDIR + " " + ALPINOHOME
+dir_path = os.path.dirname(os.path.realpath(__file__))
+COMMAND = os.path.join(dir_path, "tscanwrapper.py") + " $DATAFILE $STATUSFILE $INPUTDIRECTORY $OUTPUTDIRECTORY " + \
+    TSCANDIR + " " + TSCANDATA + " " + TSCANSRC + " " + ALPINOHOME
 
 # ======== PARAMETER DEFINITIONS ===========
 
 # The parameters are subdivided into several groups. In the form of a list of (groupname, parameters) tuples. The parameters are a list of instances from common/parameters.py
 
 wordfreqlist = []
-for f in glob.glob(TSCANDIR + "/data/*words.freq"):
+for f in glob.glob(TSCANDATA + "/*words.freq"):
     wordfreqlist.append((os.path.basename(f), os.path.basename(f)))
 
 lemmafreqlist = []
-for f in glob.glob(TSCANDIR + "/data/*lemma.freq"):
+for f in glob.glob(TSCANDATA + "/*lemma.freq"):
     lemmafreqlist.append((os.path.basename(f), os.path.basename(f)))
 
 topfreqlist = []
-for f in glob.glob(TSCANDIR + "/data/*20000.freq"):
+for f in glob.glob(TSCANDATA + "/*20000.freq"):
     topfreqlist.append((os.path.basename(f), os.path.basename(f)))
 
 

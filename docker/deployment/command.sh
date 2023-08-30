@@ -1,15 +1,39 @@
 #!/bin/bash
-source lamachine-activate
+cd /deployment
+./store-dependencies.sh
 
-bash /deployment/store-compound-splitter-dependencies.sh
+# Default values
+export UWSGI_UID=$(id -u)
+export UWSGI_GID=$(id -g)
+export URLPREFIX=
+export TSCAN_DIR=/usr/local/bin
+export TSCAN_DATA=/usr/local/share/tscan
+export TSCAN_SRC=/src/tscan
+export CLAM_DEBUG=false
+export CLAM_OAUTH_CLIENT_URL=
+export CLAM_OAUTH_REVOKE_URL=
+# This must be a well-formed JSON!
+export CLAM_OAUTH_SCOPE="{}"
+export CLAM_CUSTOMHTML_INDEX=
+export CLAM_CUSTOMHTML_PROJECTSTART=
+export CLAM_CUSTOMHTML_PROJECTDONE=
+export CLAM_CUSTOMHTML_PROJECTFAILED=
+export CLAM_INTERFACEOPT=
 
-# work around for https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=934731
-sudo chmod -f 600 /run/uwsgi-emperor.pid
-sudo lamachine-stop-webserver
-sudo pkill uwsgi
+if [[ -e config.sh ]];
+then
+    source config.sh
+fi
 
-# sudo for moving data-folder required
-sudo lamachine-start-webserver
+# Configure services
+cd runit.d
+SERVICE_FOLDER=/etc/service
+for service in $(ls *run.sh); do
+    service_name="${service/\.run\.sh/}"
+    mkdir -p $SERVICE_FOLDER/$service_name
+    ln -sf $PWD/$service $SERVICE_FOLDER/$service_name/run
+done
 
-# keep it open
-bash
+envsubst '$URLPREFIX' < /deployment/tscan_webservice.nginx.conf > /etc/nginx/sites-enabled/default
+
+runsvdir -P /etc/service
