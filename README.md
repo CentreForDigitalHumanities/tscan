@@ -18,7 +18,7 @@ Sloot (Tilburg University), Martijn van der Klis (Utrecht University) and is cur
 ## Web application / Webservice
 
 This repository contains the T-Scan source code, allowing you to run it
-yourself on your own system. In addition, T-Scan is available as a web application and webservice through https://tscan.hum.uu.nl/tscan/. Please [contact us](https://dig.hum.uu.nl/contact-and-links/) for an account.
+yourself on your own system. In addition, T-Scan is available as a web application and webservice through https://tscan.hum.uu.nl/tscan/. You can [create an account](https://tmanage.hum.uu.nl/accounts/signup/) or [contact us](https://dig.hum.uu.nl/contact-and-links/) if your institution is not (yet) recognized.
 
 ## Documentation
 
