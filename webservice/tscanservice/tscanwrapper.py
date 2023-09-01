@@ -15,6 +15,7 @@
 
 #This script will be called by CLAM and will run with the current working directory set to the specified project directory
 from __future__ import print_function
+from itertools import chain
 
 #import some general python modules:
 import sys
@@ -105,8 +106,15 @@ def get_output_trees(inputdir, outputdir):
 def init_alpino_lookup(configfile, inputdir, outputdir):
     alpino_lookup = []
 
-    for alpino_xml in clamdata.inputfiles("alpino"):
-        filepath = inputdir + alpino_xml.filename
+    # hidden files containing the output of the parsing are added to
+    # the input folder, to speed up (re)analyzing the same sentences
+    alpino_filenames = set(
+        chain(
+            (alpino_xml.filename for alpino_xml in clamdata.inputfiles("alpino")),
+            (os.path.basename(x) for x in glob.iglob(inputdir + ".*.alpino.xml"))))
+
+    for alpino_filename in alpino_filenames:
+        filepath = inputdir + alpino_filename
         corpus = etree.parse(filepath)
         root = corpus.getroot()
         # treebanks start counting from zero, xpath queries are also 1-based
@@ -133,7 +141,7 @@ if 'useAlpino' in clamdata and clamdata['useAlpino'] == 'yes':
     f.write("useAlpinoServer=1\n")
     f.write("useAlpino=1\n")
     f.write("saveAlpinoOutput=1\n")
-    f.write("saveAlpinoMetadata=1\n")
+    f.write("saveAlpinoMetadata=0\n")
 else:
     f.write("useAlpinoServer=0\n")
     f.write("useAlpino=0\n")

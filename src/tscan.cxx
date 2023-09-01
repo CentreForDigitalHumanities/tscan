@@ -2165,11 +2165,22 @@ sentStats::sentStats( const string &inName, int index, folia::Sentence *s, const
 
         if ( alpDoc ) {
           if ( !alreadyParsed && settings.saveAlpinoOutput ) {
-            cerr << "saving parse" << endl;
+            string baseName;
+
+            if ( settings.saveAlpinoMetadata ) {
+              baseName = inName;
+            } else {
+              // hide parsed files from input
+              int inFilenameIndex = inName.find_last_of( "/\\" ) + 1;
+              string inDir = inName.substr( 0, inFilenameIndex );            
+              baseName = inDir + "." + inName.substr( inFilenameIndex );
+            }
 
             // add a suffix if it already exists
             // this can happen when restarting on a modified input
-            string outName = unique_filename( inName + "." + to_string( index + 1 ), ".alpino.xml" );
+            string outName = unique_filename( baseName + "." + to_string( index + 1 ), ".alpino.xml" );
+
+            cerr << "saving parse: " << outName << endl;
 
             xmlSaveFormatFileEnc( outName.c_str(), alpDoc, "UTF8", 1 );
 
