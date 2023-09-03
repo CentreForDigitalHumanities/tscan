@@ -41,6 +41,13 @@ TSCANDATA = sys.argv[6]
 TSCANSRC = sys.argv[7]
 ALPINOHOME = sys.argv[8]
 
+
+# Remove all the output files from a crashed earlier attempt
+for filepath in chain(
+    glob.glob(f"{inputdir}/*.tscan.xml"),
+    glob.glob(f"{inputdir}/*.csv")):
+    os.remove(filepath)
+
 #Obtain all data from the CLAM system (passed in $DATAFILE (clam.xml))
 clamdata = clam.common.data.getclamdata(datafile)
 
@@ -129,10 +136,12 @@ def init_alpino_lookup(configfile, inputdir, outputdir):
                 map(lambda x: x[1], sorted(words.items(), key=lambda x: x[0])))
             alpino_lookup.append((sentence, filepath, index))
 
-    if len(alpino_lookup):
-        save_alpino_lookup(outputdir, alpino_lookup)
+    # always save the Alpino lookup even when empty:
+    # this way when we're dealing with multiple documents,
+    # there will always be an Alpino lookup which can processed
+    save_alpino_lookup(outputdir, alpino_lookup)
 
-        configfile.write(f"alpino_lookup=\"{outputdir}/alpino_lookup.data\"\n")
+    configfile.write(f"alpino_lookup=\"{outputdir}/alpino_lookup.data\"\n")
 
 #Write configuration file
 
@@ -298,7 +307,28 @@ for f in glob.glob(outputdir + "/../out*.alpino_lookup.data"):
 
 #pass all input files at once
 clam.common.status.write(statusfile, "Processing " + str(len(inputfiles)) + " files, this may take a while...", 10)  # status update
-ref = os.system('ALPINO_HOME="' + ALPINOHOME + '" TCL_LIBRARY="' + ALPINOHOME + '/create_bin/tcl8.5" TCLLIBPATH="' + ALPINOHOME + '/create_bin/tcl8.5" tscan --config=' + outputdir + '/tscan.cfg ' + ' '.join(['"' + x + '"' for x in inputfiles]))
+ref = 0
+step_size = 80 / len(inputfiles)
+for i, infile in enumerate(inputfiles):
+    if i > 0:
+        try:
+            # Use the generated lookup file as input
+            os.rename(outputdir + "/../out.alpino_lookup.data", outputdir + "/alpino_lookup.data")
+            clam.common.status.write(statusfile, "Updated Alpino lookup cache", int(10 + i * step_size))
+        except FileNotFoundError:
+            clam.common.status.write(statusfile, "No Alpino parses, empty document?", int(10 + i * step_size))
+    clam.common.status.write(statusfile, f"Started processing ... {infile}", int(10 + i * step_size))
+    try:
+        exit_status = os.system('ALPINO_HOME="' + ALPINOHOME + '" TCL_LIBRARY="' + ALPINOHOME + '/create_bin/tcl8.5" TCLLIBPATH="' + ALPINOHOME + '/create_bin/tcl8.5" tscan --config=' + outputdir + '/tscan.cfg ' + infile)
+    except Exception as error:
+        exit_status = 1
+
+    if exit_status == 0:
+        clam.common.status.write(statusfile, f"Finished processing {infile}", int(10 + i * step_size))
+    else:
+        clam.common.status.write(statusfile, f"PROBLEM PROCESSING {infile} ERROR CODE {exit_status} consult error log", int(10 + i * step_size))
+        ref = exit_status
+
 
 #collect output
 clam.common.status.write(statusfile, "Postprocessing", 90)  # status update
