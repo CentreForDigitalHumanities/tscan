@@ -118,16 +118,16 @@ WORKDIR /deployment
 RUN ./add-alpino.sh
 # These will create .deb packages which can be re-used by the final container
 # or during a rebuild
-RUN ./prep-dep.sh ticcutils https://github.com/LanguageMachines/ticcutils
-RUN ./prep-dep.sh libfolia https://github.com/LanguageMachines/libfolia
-RUN ./prep-dep.sh uctodata https://github.com/LanguageMachines/uctodata
-RUN ./prep-dep.sh ucto https://github.com/LanguageMachines/ucto
-RUN ./prep-dep.sh timbl https://github.com/LanguageMachines/timbl
-RUN ./prep-dep.sh mbt https://github.com/LanguageMachines/mbt
-RUN ./prep-dep.sh mbtserver https://github.com/LanguageMachines/mbtserver
-RUN ./prep-dep.sh frogdata https://github.com/LanguageMachines/frogdata
-RUN ./prep-dep.sh frog https://github.com/LanguageMachines/frog
-RUN ./prep-dep.sh wopr https://github.com/LanguageMachines/wopr
+RUN ./prep-dep.sh ticcutils https://github.com/LanguageMachines/ticcutils ecb62eb116ffc3677626c53f012f34e00854e4c4
+RUN ./prep-dep.sh libfolia https://github.com/LanguageMachines/libfolia 1a3f462f8f048df60889817325701130b6271e8a
+RUN ./prep-dep.sh uctodata https://github.com/LanguageMachines/uctodata a8be6cf7512998f4c8963d1021f402b8b1290085
+RUN ./prep-dep.sh ucto https://github.com/LanguageMachines/ucto d22029833b264a969351ead0ee3ab9b3f97db97d
+RUN ./prep-dep.sh timbl https://github.com/LanguageMachines/timbl 61929ce6dc7d7077cb5eeceafef86de38eb40daa
+RUN ./prep-dep.sh mbt https://github.com/LanguageMachines/mbt fd7cb7ebdd52bef2794f16f329569bedad3143e9
+RUN ./prep-dep.sh mbtserver https://github.com/LanguageMachines/mbtserver a6f04f30f62965c8660ee92be99d4eb86fc4bf65
+RUN ./prep-dep.sh frogdata https://github.com/LanguageMachines/frogdata 99de9597105c2304faeb797264231ba180fcdb20
+RUN ./prep-dep.sh frog https://github.com/LanguageMachines/frog 991f6977cfd81b9a6538db0c6de3d26908ec16b7
+RUN ./prep-dep.sh wopr https://github.com/LanguageMachines/wopr 6e3068047c0f9d3c66fcedb9c25e68907770ac9d
 
 RUN ./build-compound-splitter.sh
 
