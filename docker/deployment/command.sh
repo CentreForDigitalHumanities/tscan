@@ -26,7 +26,7 @@ then
 fi
 
 # same user as dispatcher
-sudo -u _apt ./restart-projects.py &
+sudo -u _apt LD_LIBRARY_PATH="$LD_LIBRARY_PATH" ./restart-projects.py &
 
 # Configure services
 cd runit.d
