@@ -51,9 +51,11 @@ RUN apt-get update && apt-get install -y antiword \
 # MCS (compound splitter) dependencies:
         default-jre \
 # Frog dependency:
-        netbase
+        netbase \
 # (found out the hard way after getting the following error message and being lost as to why)
 # failure in getaddrinfo: Servname not supported for ai_socktype
+# We need sudo to be able to restart projects using the right user
+        sudo
 
 FROM base AS builder
 RUN apt-get update && apt-get install -y autoconf \

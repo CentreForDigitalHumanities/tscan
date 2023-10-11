@@ -25,6 +25,9 @@ then
     source config.sh
 fi
 
+# same user as dispatcher
+sudo -u _apt ./restart-projects.py &
+
 # Configure services
 cd runit.d
 SERVICE_FOLDER=/etc/service
