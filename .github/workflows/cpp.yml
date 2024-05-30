@@ -60,6 +60,9 @@ jobs:
       run: |
         $CC --version
         $CXX --version
+    - name: Check T-Scan version
+      run: |
+        python sync_versions.py
     - name: Install clang-tools
       if: ${{ matrix.compiler.compiler == 'LLVM' }}
       run: sudo apt install clang-tools

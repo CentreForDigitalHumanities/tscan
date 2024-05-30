@@ -25,6 +25,7 @@ import glob
 import signal
 
 from lxml import etree
+from libtscan.tscan import connect_frog, file_to_folia, analyse
 
 #import CLAM-specific modules. The CLAM API makes a lot of stuff easily accessible.
 import clam.common.data
@@ -163,7 +164,9 @@ if 'compoundSplitterMethod' in clamdata and clamdata['compoundSplitterMethod'] !
 else:
     f.write("useCompoundSplitter=0\n")
 
+sentence_per_line = False
 if 'sentencePerLine' in clamdata and clamdata['sentencePerLine'] == 'yes':
+    sentence_per_line = True
     f.write("sentencePerLine=1\n")
 else:
     f.write("sentencePerLine=0\n")
@@ -309,6 +312,12 @@ for f in glob.glob(outputdir + "/../out*.alpino_lookup.data"):
 clam.common.status.write(statusfile, "Processing " + str(len(inputfiles)) + " files, this may take a while...", 10)  # status update
 ref = 0
 step_size = 80 / len(inputfiles)
+os.environ['ALPINO_HOME'] = ALPINOHOME
+os.environ['TCL_LIBRARY'] = ALPINOHOME + '/create_bin/tcl8.5'
+os.environ['TCLLIBPATH'] = ALPINOHOME + '/create_bin/tcl8.5'
+
+connect_frog("127.0.0.1", 7001)
+
 for i, infile in enumerate(inputfiles):
     if i > 0:
         try:
@@ -319,8 +328,10 @@ for i, infile in enumerate(inputfiles):
             clam.common.status.write(statusfile, "No Alpino parses, empty document?", int(10 + i * step_size))
     clam.common.status.write(statusfile, f"Started processing ... {infile}", int(10 + i * step_size))
     try:
-        exit_status = os.system('ALPINO_HOME="' + ALPINOHOME + '" TCL_LIBRARY="' + ALPINOHOME + '/create_bin/tcl8.5" TCLLIBPATH="' + ALPINOHOME + '/create_bin/tcl8.5" tscan --config=' + outputdir + '/tscan.cfg ' + infile)
+        document = file_to_folia(infile, sentence_per_line)
+        exit_status = analyse(os.path.basename(infile), outputdir, document, outputdir + '/tscan.cfg')
     except Exception as error:
+        print(error, file=sys.stderr)
         exit_status = 1
 
     if exit_status == 0:

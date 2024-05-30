@@ -9,7 +9,7 @@ from setuptools import setup
 
 
 setup(
-    name = "tscan",
+    name = "tscan_clam",
     version = "0.9.9", #also change in ../configure.ac and ../codemeta.json!
     author = "Sheean Spoel, Luka van der Plas, Martijn van der Klis, Ko van der Sloot, Maarten van Gompel",
     author_email = "s.j.j.spoel@uu.nl",

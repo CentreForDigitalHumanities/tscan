@@ -141,6 +141,7 @@ RUN ./build.sh
 FROM base AS tscan
 
 COPY --from=builder /src/*.deb /src/
+COPY --from=builder /src/*.tar.gz /src/
 COPY --from=builder /src/compound-splitter/ /src/compound-splitter/
 # Build output (for caching)
 COPY --from=builder /src/tscan/src/*.o /src/tscan/src/

@@ -2,10 +2,10 @@
 
 # T-Scan
 
-tscan 0.9 (c) TiCC/ 1998 - 2023
+tscan 0.9.9 (c) TiCC/ 1998 - 2023
 
     Tilburg centre for Cognition and Communication, Tilburg University.
-    UiL-OTS, Utrecht University
+    Centre for Digital Humanities, Utrecht University
     Language Machines, Centre for Language Studies, Nijmegen
 
 T-Scan is distributed under the GNU Affero Public Licence (see the file COPYING).

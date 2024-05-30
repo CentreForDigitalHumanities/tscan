@@ -100,6 +100,7 @@ struct tagged_classification {
 
 struct settingData {
   void init( const TiCC::Configuration & );
+  bool alreadyFolia;
   bool doAlpino;
   bool doAlpinoLookup;
   bool doAlpinoServer;
@@ -861,7 +862,15 @@ void settingData::init( const TiCC::Configuration &cf ) {
   doXfiles = true;
   doAlpino = false;
   doAlpinoServer = false;
-  string val = cf.lookUp( "useAlpinoServer" );
+  alreadyFolia = false;
+  string val = cf.lookUp( "alreadyFolia" );
+  if ( !val.empty() ) {
+    if ( !TiCC::stringTo( val, alreadyFolia ) ) {
+      cerr << "invalid value for 'alreadyFolia' in config file" << endl;
+      exit( EXIT_FAILURE );
+    }
+  }
+  val = cf.lookUp( "useAlpinoServer" );
   if ( !val.empty() ) {
     if ( !TiCC::stringTo( val, doAlpinoServer ) ) {
       cerr << "invalid value for 'useAlpinoServer' in config file" << endl;
@@ -1123,7 +1132,8 @@ inline void usage() {
   cerr << "\t--config=<file> read configuration from 'file' " << endl;
   cerr << "\t-V or --version show version " << endl;
   cerr << "\t-n assume input file to hold one sentence per line" << endl;
-  cerr << "\t--skip=[aclw]    Skip Alpino (a), CSV output (c) or Wopr (w).\n";
+  cerr << "\t-F input files are already converted to FoLiA" << endl;
+  cerr << "\t--skip=[acw]    Skip Alpino (a), CSV output (c) or Wopr (w).\n";
   cerr << "\t-t <file> process the 'file'. (deprecated)" << endl;
   cerr << endl;
 }
@@ -3306,7 +3316,7 @@ int main( int argc, char *argv[] ) {
   }
   cerr << "TScan " << VERSION << endl;
   cerr << "working dir " << workdir_name << endl;
-  string shortOpt = "ht:o:Vn";
+  string shortOpt = "ht:o:VnF";
   string longOpt = "threads:,config:,skip:,version";
   TiCC::CL_Options opts( shortOpt, longOpt );
   try {
@@ -3381,6 +3391,9 @@ int main( int argc, char *argv[] ) {
   if ( opts.extract( 'n' ) ) {
     settings.sentencePerLine = true;
   }
+  if ( opts.extract( 'F' ) ) {
+    settings.alreadyFolia = true;
+  }
   if ( opts.extract( "skip", val ) ) {
     string skip = val;
     if ( skip.find_first_of( "wW" ) != string::npos ) {
@@ -3412,9 +3425,36 @@ int main( int argc, char *argv[] ) {
     else {
       outName = inName + ".tscan.xml";
     }
-    ifstream is( inName.c_str() );
-    if ( !is ) {
-      cerr << "failed to open file '" << inName << "'" << endl;
+
+    folia::Document *doc = 0;
+    if ( settings.alreadyFolia ) {
+      doc = new folia::Document();
+      try {
+        doc->read_from_file( inName );
+      }
+      catch ( std::exception &e ) {
+        cerr << "FoLiaParsing failed:" << endl
+            << e.what() << endl;
+        continue;
+      }
+    }
+    else {
+      ifstream is( inName.c_str() );
+      if ( !is ) {
+        cerr << "failed to open file '" << inName << "'" << endl;
+        if ( !o_option.empty() ) {
+          // just 1 inputfile
+          exit( EXIT_FAILURE );
+        }
+        continue;
+      }
+      
+      cerr << "opened file " << inName << endl;
+      doc = getFrogResult( is );
+    }
+  
+    if ( !doc ) {
+      cerr << "big trouble: no FoLiA document created " << endl;
       if ( !o_option.empty() ) {
         // just 1 inputfile
         exit( EXIT_FAILURE );
@@ -3422,29 +3462,17 @@ int main( int argc, char *argv[] ) {
       continue;
     }
     else {
-      cerr << "opened file " << inName << endl;
-      folia::Document *doc = getFrogResult( is );
-      if ( !doc ) {
-        cerr << "big trouble: no FoLiA document created " << endl;
-        if ( !o_option.empty() ) {
-          // just 1 inputfile
-          exit( EXIT_FAILURE );
-        }
-        continue;
+      docStats analyse( inName, doc );
+      analyse.addMetrics(); // add metrics info to doc
+      doc->save( outName );
+      if ( settings.doXfiles ) {
+        analyse.toCSV( inName, DOC_CSV );
+        analyse.toCSV( inName, PAR_CSV );
+        analyse.toCSV( inName, SENT_CSV );
+        analyse.toCSV( inName, WORD_CSV );
       }
-      else {
-        docStats analyse( inName, doc );
-        analyse.addMetrics(); // add metrics info to doc
-        doc->save( outName );
-        if ( settings.doXfiles ) {
-          analyse.toCSV( inName, DOC_CSV );
-          analyse.toCSV( inName, PAR_CSV );
-          analyse.toCSV( inName, SENT_CSV );
-          analyse.toCSV( inName, WORD_CSV );
-        }
-        delete doc;
-        cerr << "saved output in " << outName << endl;
-      }
+      delete doc;
+      cerr << "saved output in " << outName << endl;
     }
   }
   if ( settings.saveAlpinoOutput ) {

@@ -13,3 +13,6 @@ checkinstall -y
 
 # collect all the packages in the /src/ folder
 mv *.deb ..
+
+python3 setup.py sdist
+mv dist/*.tar.gz ..

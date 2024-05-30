@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 cd /src
 dpkg -i *.deb
+pip install *.tar.gz
 # This data is used through a volume binding
 rm -rf /usr/local/share/tscan
 

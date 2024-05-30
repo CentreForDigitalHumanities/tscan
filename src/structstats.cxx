@@ -360,28 +360,28 @@ void structStats::sentDifficultiesToCSV( ostream& os ) const {
     os << "NA,NA,NA,NA,NA,NA,NA,";
   }
   else {
-    os << proportion( smainCnt, sentCnt ) << ",";
-    os << proportion( ssubCnt, sentCnt ) << ",";
-    os << proportion( sv1Cnt, sentCnt ) << ",";
-    os << proportion( smainCnjCnt, sentCnt ) << ",";
-    os << proportion( ssubCnjCnt, sentCnt ) << ",";
-    os << proportion( sv1CnjCnt, sentCnt ) << ",";
-    os << proportion( clauseCnt, sentCnt ) << ",";
+    os << proportion( smainCnt, sentCnt ) << ","; //Pv_hzin_per_zin
+    os << proportion( ssubCnt, sentCnt ) << ","; //Pv_bijzin_per_zin
+    os << proportion( sv1Cnt, sentCnt ) << ","; //Pv_ww1_per_zin
+    os << proportion( smainCnjCnt, sentCnt ) << ","; //Hzin_conj
+    os << proportion( ssubCnjCnt, sentCnt ) << ","; //Bijzin_conj
+    os << proportion( sv1CnjCnt, sentCnt ) << ","; //Ww1_conj
+    os << proportion( clauseCnt, sentCnt ) << ","; //Pv_Alpino_per_zin
   }
 
   double frogClauseCnt = pastCnt + presentCnt;
-  os << density( frogClauseCnt, wordInclCnt ) << ",";
-  os << proportion( frogClauseCnt, sentCnt ) << ",";
+  os << density( frogClauseCnt, wordInclCnt ) << ","; //Pv_Frog_d
+  os << proportion( frogClauseCnt, sentCnt ) << ","; //Pv_Frog_per_zin
 
-  os << proportion( dLevel, sentCnt ) << ",";
+  os << proportion( dLevel, sentCnt ) << ","; //D_level
   if ( !isSentence() ){
-    os << proportion( dLevel_gt4, sentCnt ) << ",";
+    os << proportion( dLevel_gt4, sentCnt ) << ","; //D_level_gt4_p
   }
-  os << density( nominalCnt, wordCnt ) << ",";
-  os << density( passiveCnt, wordInclCnt ) << ",";
-  os << proportion( passiveCnt, correctedClauseCnt ) << ",";
-  os << density( propNegCnt, wordInclCnt ) << ",";
-  os << proportion( propNegCnt, correctedClauseCnt ) << ",";
+  os << density( nominalCnt, wordCnt ) << ","; //Nom_d
+  os << density( passiveCnt, wordInclCnt ) << ","; //Lijdv_d
+  os << proportion( passiveCnt, correctedClauseCnt ) << ","; //Lijdv_dz
+  os << density( propNegCnt, wordInclCnt ) << ","; //Ontk_zin_d
+  os << proportion( propNegCnt, correctedClauseCnt ) << ","; //Ontk_zin_dz
   os << density( morphNegCnt, wordInclCnt ) << ",";
   os << proportion( morphNegCnt, correctedClauseCnt ) << ",";
   os << density( propNegCnt+morphNegCnt, wordInclCnt ) << ",";
