@@ -1,4 +1,4 @@
-[![Actions Status](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/cpp.yml/badge.svg)](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/cpp.yml) [![Actions Status](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/webservice.yml/badge.svg)](https://github.com/UUDigitalHumanitieslab/tscan/actions/workflows/webservice.yml) [![DOI](https://zenodo.org/badge/36359165.svg)](https://zenodo.org/badge/latestdoi/36359165)
+[![Actions Status](https://github.com/CentreForDigitalHumanities/tscan/actions/workflows/cpp.yml/badge.svg)](https://github.com/CentreForDigitalHumanities/tscan/actions/workflows/cpp.yml) [![Actions Status](https://github.com/CentreForDigitalHumanities/tscan/actions/workflows/webservice.yml/badge.svg)](https://github.com/CentreForDigitalHumanities/tscan/actions/workflows/webservice.yml) [![DOI](https://zenodo.org/badge/36359165.svg)](https://zenodo.org/badge/latestdoi/36359165)
 
 # T-Scan
 

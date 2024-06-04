@@ -68,7 +68,7 @@ SYSTEM_AFFILIATION = "Utrecht University"
 # An informative description for this system (this should be fairly short, about one paragraph, and may not contain HTML)
 SYSTEM_DESCRIPTION = "T-Scan is an analysis tool for Dutch text, mainly focusing on text complexity. It has been initially conceptualized by Rogier Kraf and Henk Pander Maat. Rogier Kraf also programmed the first versions. From 2012 on, Henk Pander Maat supervised the development of the extended versions of the tool. These versions were programmed by Maarten van Gompel, Ko van der Sloot, Martijn van der Klis, Sheean Spoel and Luka van der Plas."
 
-SYSTEM_URL = "https://github.com/UUDigitalHumanitieslab/tscan"
+SYSTEM_URL = "https://github.com/CentreForDigitalHumanities/tscan"
 
 SYSTEM_EMAIL = "s.j.j.spoel@uu.nl"
 
@@ -139,7 +139,9 @@ CUSTOM_FORMATS_MODULE = None
 #    InputSource(id='sampledocs',label='Sample texts',path=ROOT+'/inputsources/sampledata',defaultmetadata=PlainTextFormat(None, encoding='utf-8') ),
 # ]
 
-CUSTOMHTML_INDEX = CUSTOMHTML_PROJECTSTART = f"<p>Please consult the <a href=\"{SYSTEM_URL}/raw/master/docs/tscanhandleiding.pdf\">Handleiding</a> when using T-Scan.</p>"
+CUSTOMHTML_INDEX = CUSTOMHTML_PROJECTSTART = f"<p>Please consult the <a href=\"{SYSTEM_URL}/raw/master/docs/tscanhandleiding.pdf\">Handleiding</a> when using T-Scan.</p>" + \
+"<p>You can create an account or reset your password <a href=\"https://tmanage.hum.uu.nl\">here</a>.</p>"
+
 
 # ======== PROFILE DEFINITIONS ===========
 
