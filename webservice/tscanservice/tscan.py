@@ -140,7 +140,7 @@ CUSTOM_FORMATS_MODULE = None
 # ]
 
 CUSTOMHTML_INDEX = CUSTOMHTML_PROJECTSTART = f"<p>Please consult the <a href=\"{SYSTEM_URL}/raw/master/docs/tscanhandleiding.pdf\">Handleiding</a> when using T-Scan.</p>" + \
-"<p>You can create an account or reset your password <a href=\"https://tmanage.hum.uu.nl\">here</a>.</p>"
+"<p>You can <strong>create an account or reset your password</strong> <a href=\"https://tmanage.hum.uu.nl\">here</a>. Login using your <strong>username</strong> below. <strong>Your email address will not work.</strong> If you forgot your username, you can request it <a href=\"https://tmanage.hum.uu.nl/accounts/password_reset/\">here</a>.</p>"
 
 
 # ======== PROFILE DEFINITIONS ===========
