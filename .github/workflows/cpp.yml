@@ -32,22 +32,6 @@ jobs:
               OPENMPFLAG: --disable-openmp
             }
         dependencies: [ pinned ] # TODO: latest is known to fail //, latest ]
-        include:
-          # - dependencies: latest
-          #   alpino: Alpino-x86_64-Linux-glibc-2.17-git819-sicstus
-          # versions known to works
-          - dependencies: pinned
-            # removed for speed, using pre-parsed trees only
-            # alpino: Alpino-x86_64-Linux-glibc-2.17-git819-sicstus
-            ticcutils: ecb62eb116ffc3677626c53f012f34e00854e4c4 # 0.33 2023-04-29
-            libfolia: 1a3f462f8f048df60889817325701130b6271e8a # 2.15 2023-05-01
-            uctodata: a8be6cf7512998f4c8963d1021f402b8b1290085 # 0.9.1 2022-10-04
-            ucto: d22029833b264a969351ead0ee3ab9b3f97db97d # 0.30 2023-04-29
-            timbl: 61929ce6dc7d7077cb5eeceafef86de38eb40daa # 6.9 2023-04-29
-            mbt: fd7cb7ebdd52bef2794f16f329569bedad3143e9 # 3.10 2023-04-29
-            mbtserver: a6f04f30f62965c8660ee92be99d4eb86fc4bf65 # 0.17 2023-04-30
-            frogdata: 99de9597105c2304faeb797264231ba180fcdb20 # 0.22 2023-03-07
-            frog: 991f6977cfd81b9a6538db0c6de3d26908ec16b7 # 0.29 2023-05-03
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
@@ -98,31 +82,31 @@ jobs:
 
     - name: Install ticcutils
       run: |
-        .github/workflows/cpp-prep-dep.sh ticcutils https://github.com/LanguageMachines/ticcutils "${{ matrix.ticcutils }}"
+        .github/workflows/cpp-prep-dep.sh ticcutils https://github.com/LanguageMachines/ticcutils
     - name: Install libfolia
       run: |
-        .github/workflows/cpp-prep-dep.sh libfolia https://github.com/LanguageMachines/libfolia "${{ matrix.libfolia }}"
+        .github/workflows/cpp-prep-dep.sh libfolia https://github.com/LanguageMachines/libfolia
     - name: Install uctodata
       run: |
-        .github/workflows/cpp-prep-dep.sh uctodata https://github.com/LanguageMachines/uctodata "${{ matrix.uctodata }}"
+        .github/workflows/cpp-prep-dep.sh uctodata https://github.com/LanguageMachines/uctodata
     - name: Install ucto
       run: |
-        .github/workflows/cpp-prep-dep.sh ucto https://github.com/LanguageMachines/ucto "${{ matrix.ucto }}"
+        .github/workflows/cpp-prep-dep.sh ucto https://github.com/LanguageMachines/ucto
     - name: Install timbl
       run: |
-        .github/workflows/cpp-prep-dep.sh timbl https://github.com/LanguageMachines/timbl "${{ matrix.timbl }}"
+        .github/workflows/cpp-prep-dep.sh timbl https://github.com/LanguageMachines/timbl
     - name: Install mbt
       run: |
-        .github/workflows/cpp-prep-dep.sh mbt https://github.com/LanguageMachines/mbt "${{ matrix.mbt }}"
+        .github/workflows/cpp-prep-dep.sh mbt https://github.com/LanguageMachines/mbt
     - name: Install mbtserver
       run: |
-        .github/workflows/cpp-prep-dep.sh mbtserver https://github.com/LanguageMachines/mbtserver "${{ matrix.mbtserver }}"
+        .github/workflows/cpp-prep-dep.sh mbtserver https://github.com/LanguageMachines/mbtserver
     - name: Install frogdata
       run: |
-        .github/workflows/cpp-prep-dep.sh frogdata https://github.com/LanguageMachines/frogdata "${{ matrix.frogdata }}"
+        .github/workflows/cpp-prep-dep.sh frogdata https://github.com/LanguageMachines/frogdata
     - name: Install frog
       run: |
-        .github/workflows/cpp-prep-dep.sh frog https://github.com/LanguageMachines/frog "${{ matrix.frog }}"
+        .github/workflows/cpp-prep-dep.sh frog https://github.com/LanguageMachines/frog
     - name: Install
       run: |
         bash bootstrap.sh

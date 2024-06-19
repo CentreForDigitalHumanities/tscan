@@ -4,6 +4,13 @@ directory=$1
 repository=$2
 version=$3
 
+if [[ -z $version && $version != "latest" ]];
+then
+    # use the dependencies
+    source dependencies.cfg
+    version="${!directory}"
+fi
+
 cd ~/.tscan-deps
 if [ ! -d $directory ];
 then
@@ -15,7 +22,7 @@ fi
 cd $directory
 old_commit_hash=$(git rev-parse HEAD)
 
-if [[ -z $version ]];
+if [[ -z $version || $version == "latest" ]];
 then
     echo "Get latest version"
     git pull
