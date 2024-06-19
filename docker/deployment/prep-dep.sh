@@ -18,7 +18,14 @@ else
     cd $directory
     old_commit_hash=$(git rev-parse HEAD)
 
-    if [[ -z $version ]];
+    if [[ -z $version && $version != "latest" ]];
+    then
+        # use the dependencies
+        source /src/tscan/dependencies.cfg
+        version="${!directory}"
+    fi
+
+    if [[ -z $version || $version == "latest" ]];
     then
         echo "Using latest version"
     elif [[ $version != $old_commit_hash ]];

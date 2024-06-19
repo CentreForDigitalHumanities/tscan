@@ -44,7 +44,7 @@ We strongly recommend to use Docker to install T-scan. Be aware that T-scan and 
 
 This version of T-Scan can run directly from Docker:
 
-    $ docker-compose up
+    $ docker compose up
 
 Default address: http://localhost:8830
 
