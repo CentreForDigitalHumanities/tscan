@@ -23,6 +23,7 @@ import os
 import shutil
 import glob
 import signal
+import re
 
 from lxml import etree
 
@@ -273,6 +274,49 @@ for inputfile in clamdata.inputfiles('textinput'):
     inputfiles.append(str(inputfile))
 
 
+def copy_modify_metadata(outputdir: str, source_filename: str, total_filename: str) -> None:
+    with open(os.path.join(outputdir, f".{source_filename}.METADATA"), 'r') as source_file:
+        with open(os.path.join(outputdir, f".{total_filename}.METADATA"), 'w') as target_file:
+            content = source_file.read()
+            content = content.replace("Document statistics", "Corpus statistics")
+            content = content.replace(re.sub(r'\.[^\.]+\.csv$', '', source_filename), "TOTAL")
+            target_file.write(content)
+
+
+def merge_output(outputdir: str, type: str) -> None:
+    first_file = True
+    total_filename = f"total.{type}.csv"
+
+    # create the empty target file
+    open(total_filename, 'w').close()
+
+    for f in glob.glob(f"{outputdir}/*.{type}.csv"):
+        filename = os.path.basename(f)
+        if filename == total_filename:
+            # ignore lingering total files
+            continue
+
+        if first_file:
+            # copy and modify metadata
+            copy_modify_metadata(outputdir, filename, total_filename)
+
+        first_line = True
+        with open(os.path.join(outputdir, total_filename), 'a') as target_file:
+            with open(os.path.join(outputdir, filename), 'r') as source_file:
+                while True:
+                    line = source_file.readline()
+                    if not line:
+                        break
+
+                    if first_line and not first_file:
+                        # skip the first line
+                        first_line = False
+                    else:
+                        # except for the first file, so the file will have the column names
+                        first_file = False
+                        target_file.write(line)
+
+
 def sigterm_handler():
     #collect output
     clam.common.status.write(statusfile, "Postprocessing after forceful abortion", 90)  # status update
@@ -282,19 +326,10 @@ def sigterm_handler():
     #tscan writes CSV file in input directory, move:
     os.system("mv -f " + inputdir + "/*.csv " + outputdir)
 
-    os.system("cat " + outputdir + "/*.words.csv | head -n 1 > " + outputdir + "/total.word.csv")
-    os.system("cat " + outputdir + "/*.paragraphs.csv | head -n 1 > " + outputdir + "/total.par.csv")
-    os.system("cat " + outputdir + "/*.sentences.csv | head -n 1 > " + outputdir + "/total.sen.csv")
-    os.system("cat " + outputdir + "/*.document.csv | head -n 1 > " + outputdir + "/total.doc.csv")
-
-    for f in glob.glob(outputdir + "/*.words.csv"):
-        os.system("sed 1d " + f + " >> " + outputdir + "/total.word.csv")
-    for f in glob.glob(outputdir + "/*.paragraphs.csv"):
-        os.system("sed 1d " + f + " >> " + outputdir + "/total.par.csv")
-    for f in glob.glob(outputdir + "/*.sentences.csv"):
-        os.system("sed 1d " + f + " >> " + outputdir + "/total.sen.csv")
-    for f in glob.glob(outputdir + "/*.document.csv"):
-        os.system("sed 1d " + f + " >> " + outputdir + "/total.doc.csv")
+    merge_output(outputdir, "words")
+    merge_output(outputdir, "paragraphs")
+    merge_output(outputdir, "sentences")
+    merge_output(outputdir, "document")
     sys.exit(5)
 
 signal.signal(signal.SIGTERM, sigterm_handler)
@@ -345,20 +380,10 @@ if ref != 0:
 os.system("mv -f " + inputdir + "/*.csv " + outputdir)
 
 #write the csv headers to a file with all results ('total.<type>.csv')
-os.system("cat " + outputdir + "/*.words.csv | head -n 1 > " + outputdir + "/total.word.csv")
-os.system("cat " + outputdir + "/*.paragraphs.csv | head -n 1 > " + outputdir + "/total.par.csv")
-os.system("cat " + outputdir + "/*.sentences.csv | head -n 1 > " + outputdir + "/total.sen.csv")
-os.system("cat " + outputdir + "/*.document.csv | head -n 1 > " + outputdir + "/total.doc.csv")
-
-#move the contents of the files to the total files
-for f in glob.glob(outputdir + "/*.words.csv"):
-    os.system("sed 1d \"" + f + "\" >> " + outputdir + "/total.word.csv")
-for f in glob.glob(outputdir + "/*.paragraphs.csv"):
-    os.system("sed 1d \"" + f + "\" >> " + outputdir + "/total.par.csv")
-for f in glob.glob(outputdir + "/*.sentences.csv"):
-    os.system("sed 1d \"" + f + "\" >> " + outputdir + "/total.sen.csv")
-for f in glob.glob(outputdir + "/*.document.csv"):
-    os.system("sed 1d \"" + f + "\" >> " + outputdir + "/total.doc.csv")
+merge_output(outputdir, "words")
+merge_output(outputdir, "paragraphs")
+merge_output(outputdir, "sentences")
+merge_output(outputdir, "document")
 
 # Merge all the Alpino output
 if 'alpinoOutput' in clamdata and clamdata['alpinoOutput'] != 'no':
