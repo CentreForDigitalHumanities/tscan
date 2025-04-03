@@ -23,6 +23,9 @@ def exit_status(project, user):
     try:
         with open(done_path) as f:
             return int(f.read(1024))
+    except ValueError:
+        # writing the done status failed
+        return 1
     except FileNotFoundError:
         # did not start
         return 1

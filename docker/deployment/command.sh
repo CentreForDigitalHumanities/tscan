@@ -23,6 +23,10 @@ export CLAM_INTERFACEOPT=
 if [[ -e config.sh ]];
 then
     source config.sh
+elif [[ -e config-example.sh ]];
+then
+    cp config-example.sh config.sh
+    source config.sh
 fi
 
 # same user as dispatcher

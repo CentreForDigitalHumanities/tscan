@@ -4,6 +4,10 @@
 if [ -e /deployment/clam_custom.config.yml ];
 then
     export CONFIGFILE=/deployment/clam_custom.config.yml
+elif [ -e /deployment/clam_custom-example.config.yml ];
+then
+    cp /deployment/clam_custom-example.config.yml /deployment/clam_custom.config.yml
+    export CONFIGFILE=/deployment/clam_custom.config.yml
 fi
 uwsgi --plugin python3 \
       --uid ${UWSGI_UID} \

@@ -46,6 +46,9 @@ This version of T-Scan can run directly from Docker:
 
     $ docker compose up
 
+You might want to adjust `docker/deployment/config.sh` and `docker/deployment/clam_custom.config.yml`.
+If they do not yet exist, copy the example files and adjust those.
+
 Default address: http://localhost:8830
 
 To speed up rebuilds the Dockerfile makes extensive use of caching. The following can be found in `docker/data`:
