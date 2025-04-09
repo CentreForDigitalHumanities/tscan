@@ -121,7 +121,7 @@ Note: the output can change when a different version of Alpino or Frog is used.
 
 [Word prevalence values](http://crr.ugent.be/programs-data/word-prevalence-values) (in `data/prevalence_nl.data` and `data/prevalence_be.data`) courtesy of Keuleers et al., Center for Reading Research, Ghent University.
 
-Certain parts of T-Scan use data from [Referentiebestand Nederlands](http://tst.inl.nl/producten/rbn/), which we can not distribute due to restrictive licensing issues, so this functionality will not be available.
+Certain parts of T-Scan use data from [Referentiebestand Nederlands](https://taalmaterialen.ivdnt.org/download/tstc-referentiebestand-nederlands/), which we can not distribute due to restrictive licensing issues, so this functionality will not be available.
 
 Certain other data is too large for GitHub, but will be downloaded for you automatically by the ``./downloaddata.sh`` script.
 
