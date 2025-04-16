@@ -9,6 +9,7 @@ export URLPREFIX=tscan
 
 # By default, data from the webservice will be stored on the mount you provide
 # Make sure it exists!
+export CLAM_DEBUG=false
 export CLAM_ROOT=/data/www-data
 export CLAM_PORT=80
 # (set to true or false, enable this if you run behind a properly configured reverse proxy only)

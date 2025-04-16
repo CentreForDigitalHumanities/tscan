@@ -112,30 +112,31 @@ def get_output_trees(inputdir, outputdir):
 
 
 def init_alpino_lookup(configfile, inputdir, outputdir):
-    alpino_lookup = []
+    def yield_lookup():
+        # hidden files containing the output of the parsing are added to
+        # the input folder, to speed up (re)analyzing the same sentences
+        alpino_filenames = set(
+            chain(
+                (alpino_xml.filename for alpino_xml in clamdata.inputfiles("alpino")),
+                (os.path.basename(x) for x in glob.iglob(inputdir + ".*.alpino.xml"))))
 
-    # hidden files containing the output of the parsing are added to
-    # the input folder, to speed up (re)analyzing the same sentences
-    alpino_filenames = set(
-        chain(
-            (alpino_xml.filename for alpino_xml in clamdata.inputfiles("alpino")),
-            (os.path.basename(x) for x in glob.iglob(inputdir + ".*.alpino.xml"))))
+        for alpino_filename in alpino_filenames:
+            filepath = inputdir + alpino_filename
+            corpus = etree.parse(filepath)
+            root = corpus.getroot()
+            # treebanks start counting from zero, xpath queries are also 1-based
+            trees = [(0, root)] if root.tag == 'alpino_ds' else enumerate(
+                corpus.findall("alpino_ds"), 1)
+            for index, tree in trees:
+                # reconstruct the sentence from the words
+                words = {}
+                for word in tree.findall(".//node[@word]"):
+                    words[int(word.attrib['begin'])] = word.attrib['word']
+                sentence = ' '.join(
+                    map(lambda x: x[1], sorted(words.items(), key=lambda x: x[0])))
+                yield (sentence, filepath, index)
 
-    for alpino_filename in alpino_filenames:
-        filepath = inputdir + alpino_filename
-        corpus = etree.parse(filepath)
-        root = corpus.getroot()
-        # treebanks start counting from zero, xpath queries are also 1-based
-        trees = [(0, root)] if root.tag == 'alpino_ds' else enumerate(
-            corpus.findall("alpino_ds"), 1)
-        for index, tree in trees:
-            # reconstruct the sentence from the words
-            words = {}
-            for word in tree.findall(".//node[@word]"):
-                words[int(word.attrib['begin'])] = word.attrib['word']
-            sentence = ' '.join(
-                map(lambda x: x[1], sorted(words.items(), key=lambda x: x[0])))
-            alpino_lookup.append((sentence, filepath, index))
+    alpino_lookup = yield_lookup()
 
     # always save the Alpino lookup even when empty:
     # this way when we're dealing with multiple documents,
@@ -323,8 +324,7 @@ def sigterm_handler():
     for inputfile in inputfiles:
         os.rename(inputfile + '.tscan.xml', outputdir + '/' + os.path.basename(inputfile).replace('.txt.tscan', '').replace('.txt', '') + '.xml')
 
-    #tscan writes CSV file in input directory, move:
-    os.system("mv -f " + inputdir + "/*.csv " + outputdir)
+    move_csv_to_output()
 
     merge_output(outputdir, "words")
     merge_output(outputdir, "paragraphs")
@@ -376,8 +376,12 @@ for inputfile in inputfiles:
 if ref != 0:
     clam.common.status.write(statusfile, "Failed", 90)  # status update
 
-#tscan writes CSV file in input directory, move:
-os.system("mv -f " + inputdir + "/*.csv " + outputdir)
+def move_csv_to_output():
+    # tscan writes CSV file in input directory, move:
+    for csv in glob.glob(f"{inputdir}/*.csv"):
+        shutil.move(csv, outputdir)
+
+move_csv_to_output()
 
 #write the csv headers to a file with all results ('total.<type>.csv')
 merge_output(outputdir, "words")
@@ -390,16 +394,20 @@ if 'alpinoOutput' in clamdata and clamdata['alpinoOutput'] != 'no':
     clam.common.status.write(statusfile, "Merging Alpino output", 95)
     # Move the generated lookup file
     os.rename(outputdir + "/../out.alpino_lookup.data", outputdir + "/alpino_lookup.data")
-    merged_lookup = []
-    merged_treebank = etree.Element("treebank")
-    for sentence, tree in get_output_trees(inputdir, outputdir):
-        merged_treebank.append(tree)
-        merged_lookup.append(
-            (sentence, "alpino.xml", len(merged_treebank.getchildren())))
 
-    etree.indent(merged_treebank)
-    etree.ElementTree(merged_treebank).write(
-        outputdir + "/alpino.xml", xml_declaration=True, pretty_print=True, encoding="UTF-8")
+    def yield_trees():
+        merged_treebank = etree.Element("treebank")
+        for sentence, tree in get_output_trees(inputdir, outputdir):
+            merged_treebank.append(tree)
+            yield (sentence, "alpino.xml", len(merged_treebank.getchildren()))
+
+        etree.indent(merged_treebank)
+        etree.ElementTree(merged_treebank).write(
+            outputdir + "/alpino.xml", xml_declaration=True, pretty_print=True, encoding="UTF-8")
+        
+    # prevent generating an enormous in-memory object
+    merged_lookup = yield_trees()
+
     save_alpino_lookup(outputdir, merged_lookup)
 
 # A nice status message to indicate we're done

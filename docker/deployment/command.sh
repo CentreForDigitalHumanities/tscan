@@ -14,11 +14,12 @@ export CLAM_OAUTH_CLIENT_URL=
 export CLAM_OAUTH_REVOKE_URL=
 # This must be a well-formed JSON!
 export CLAM_OAUTH_SCOPE="{}"
+export CLAM_CUSTOMCSS=
 export CLAM_CUSTOMHTML_INDEX=
 export CLAM_CUSTOMHTML_PROJECTSTART=
 export CLAM_CUSTOMHTML_PROJECTDONE=
 export CLAM_CUSTOMHTML_PROJECTFAILED=
-export CLAM_INTERFACEOPT=
+export CLAM_INTERFACEOPTIONS=
 
 if [[ -e config.sh ]];
 then
@@ -30,7 +31,7 @@ then
 fi
 
 # same user as dispatcher
-sudo -u _apt LD_LIBRARY_PATH="$LD_LIBRARY_PATH" ./restart-projects.py &
+sudo -E -u _apt LD_LIBRARY_PATH="$LD_LIBRARY_PATH" ./restart-projects.py &
 
 # Configure services
 cd runit.d
