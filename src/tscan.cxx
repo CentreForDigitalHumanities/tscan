@@ -80,7 +80,7 @@ struct cf_data {
 
 struct noun {
   noun() :
-      type( SEM::NO_SEMTYPE ), is_compound( false ), compound_parts( 0 ){};
+      type( SEM::NO_SEMTYPE ), is_compound( false ), compound_parts( 0 ) {};
   SEM::Type type;
   bool is_compound;
   string head;
@@ -199,7 +199,8 @@ bool fillAlpinoLookup( map<string, pair<string, int>> &m, const string &filename
 }
 
 bool saveAlpinoLookup( map<string, pair<string, int>> &m, const string &filename ) {
-  ofstream out( unique_filename( filename, ".alpino_lookup.data" ) );
+  string out_filename = unique_filename( filename, ".alpino_lookup.data" );
+  ofstream out( out_filename );
   if ( out ) {
     auto it = m.begin();
     while ( it != m.end() ) {
@@ -209,11 +210,12 @@ bool saveAlpinoLookup( map<string, pair<string, int>> &m, const string &filename
       out << tokens << "\t" << filename << "\t" << index << endl;
       ++it;
     }
-    cerr << "stored Alpino lookup in " << filename << endl;
+    out.close();
+    cerr << "stored Alpino lookup in " << out_filename << endl;
     return true;
   }
   else {
-    cerr << "storing Alpino lookup in " << filename << " FAILED!" << endl;
+    cerr << "storing Alpino lookup in " << out_filename << " FAILED!" << endl;
   }
   return false;
 }
@@ -1119,12 +1121,13 @@ void settingData::init( const TiCC::Configuration &cf ) {
 inline void usage() {
   cerr << "usage:  tscan [options] <inputfiles> " << endl;
   cerr << "options: " << endl;
-  cerr << "\t-o <file> store XML in 'file' " << endl;
-  cerr << "\t--config=<file> read configuration from 'file' " << endl;
-  cerr << "\t-V or --version show version " << endl;
-  cerr << "\t-n assume input file to hold one sentence per line" << endl;
-  cerr << "\t--skip=[aclw]    Skip Alpino (a), CSV output (c) or Wopr (w).\n";
-  cerr << "\t-t <file> process the 'file'. (deprecated)" << endl;
+  cerr << "\t-o <file>         store XML in 'file' " << endl;
+  cerr << "\t--config=<file>   read configuration from 'file' " << endl;
+  cerr << "\t-V or --version   show version " << endl;
+  cerr << "\t-n                assume input file to hold one sentence per line" << endl;
+  cerr << "\t--skip=[aclw]     skip Alpino (a), CSV output (c) or Wopr (w).\n";
+  cerr << "\t-S or --stdin     read the filenames from STDIN, end the process by passing a single dot .\n";
+  cerr << "\t-t <file>         process the 'file'. (deprecated)" << endl;
   cerr << endl;
 }
 
@@ -1322,7 +1325,8 @@ string lemmatize( const string &word ) {
       cerr << "Frog parsing failed:" << endl
            << e.what() << endl;
     }
-  } else {
+  }
+  else {
     cerr << "Empty result from frog for " << word << endl;
   }
 
@@ -1797,7 +1801,7 @@ wordStats::wordStats( int index,
   }
 }
 
-//#define DEBUG_MTLD
+// #define DEBUG_MTLD
 
 double calculate_mtld( const vector<string> &v ) {
   if ( v.size() == 0 ) {
@@ -1970,7 +1974,7 @@ void structStats::calculate_MTLDs() {
   all_conn_mtld = average_mtld( all_conn );
 }
 
-//#define DEBUG_WOPR
+// #define DEBUG_WOPR
 void orderWopr( const string &type, const string &txt, vector<double> &wordProbsV,
                 double &sentProb, double &entropy, double &perplexity ) {
   string host = config.lookUp( "host_" + type, "wopr" );
@@ -2169,10 +2173,11 @@ sentStats::sentStats( const string &inName, int index, folia::Sentence *s, const
 
             if ( settings.saveAlpinoMetadata ) {
               baseName = inName;
-            } else {
+            }
+            else {
               // hide parsed files from input
               int inFilenameIndex = inName.find_last_of( "/\\" ) + 1;
-              string inDir = inName.substr( 0, inFilenameIndex );            
+              string inDir = inName.substr( 0, inFilenameIndex );
               baseName = inDir + "." + inName.substr( inFilenameIndex );
             }
 
@@ -2240,7 +2245,7 @@ sentStats::sentStats( const string &inName, int index, folia::Sentence *s, const
         orderWopr( "bwd", text, woprProbsV_bwd, sentProb_bwd, sentEntropy_bwd, sentPerplexity_bwd );
       }
     } // omp section
-  }   // omp sections
+  } // omp sections
 
   sentCnt = 1; // so only count the sentence when not failed
 
@@ -2909,7 +2914,7 @@ void sentStats::resolveMultiWordIntensify() {
     word->intensify_type = type;
   };
 
-  resolveMultiWord(sv, settings.intensify, max_length_intensify, assign);
+  resolveMultiWord( sv, settings.intensify, max_length_intensify, assign );
 }
 
 void sentStats::resolveMultiWordFormal() {
@@ -2917,7 +2922,7 @@ void sentStats::resolveMultiWordFormal() {
     word->formal_type = type;
   };
 
-  resolveMultiWord(sv, settings.formal, max_length_formal, assign);
+  resolveMultiWord( sv, settings.formal, max_length_formal, assign );
 
   for ( size_t i = 0; i < sv.size(); ++i ) {
     sentStats::setFormalCounts( dynamic_cast<wordStats *>( sv[i] ) );
@@ -3029,7 +3034,7 @@ parStats::parStats( const string &inName, int index, folia::Paragraph *p ) :
   lemma_freq_log_n_strict = proportion( lemma_freq_n_strict, contentStrictCnt - nameCnt ).p;
 }
 
-//#define DEBUG_DOL
+// #define DEBUG_DOL
 
 void docStats::calculate_doc_overlap() {
   vector<const wordStats *> wv2 = collectWords();
@@ -3121,7 +3126,7 @@ docStats::docStats( const string &inName, folia::Document *doc ) :
   rarity_index = rarity( settings.rarityLevel );
 }
 
-//#define DEBUG_FROG
+// #define DEBUG_FROG
 
 folia::Document *getFrogResult( istream &is ) {
   string host = config.lookUp( "host", "frog" );
@@ -3218,7 +3223,8 @@ folia::Document *getFrogResult( istream &is ) {
       cerr << "FoLiaParsing failed:" << endl
            << e.what() << endl;
     }
-  } else {
+  }
+  else {
     cerr << "Empty result for FoLiaParsing " << endl;
   }
   return doc;
@@ -3257,7 +3263,7 @@ xmlDoc *AlpinoLookup( folia::Sentence *sent ) {
 
 void AlpinoLookupAdd( folia::Sentence *sent, const string &filename ) {
   string tokens = TiCC::UnicodeToUTF8( sent->toktext() );
-  settings.alpinoLookup[tokens] = make_pair(filename, 0);
+  settings.alpinoLookup[tokens] = make_pair( filename, 0 );
 }
 
 // #define DEBUG_ALPINO
@@ -3306,8 +3312,8 @@ int main( int argc, char *argv[] ) {
   }
   cerr << "TScan " << VERSION << endl;
   cerr << "working dir " << workdir_name << endl;
-  string shortOpt = "ht:o:Vn";
-  string longOpt = "threads:,config:,skip:,version";
+  string shortOpt = "ht:o:VnS";
+  string longOpt = "threads:,config:,skip:,version,stdin";
   TiCC::CL_Options opts( shortOpt, longOpt );
   try {
     opts.init( argc, argv );
@@ -3337,13 +3343,15 @@ int main( int argc, char *argv[] ) {
     inputnames = TiCC::searchFiles( t_option );
   }
 
-  if ( inputnames.size() == 0 ) {
+  bool fromStdin = opts.extract( 'S' ) || opts.extract( "stdin" );
+
+  if ( !fromStdin && inputnames.size() == 0 ) {
     cerr << "no input file(s) found" << endl;
     exit( EXIT_FAILURE );
   }
   string o_option;
   if ( opts.extract( 'o', o_option ) ) {
-    if ( inputnames.size() > 1 ) {
+    if ( fromStdin || inputnames.size() > 1 ) {
       cerr << "-o option not supported for multiple input files" << endl;
       exit( EXIT_FAILURE );
     }
@@ -3402,8 +3410,38 @@ int main( int argc, char *argv[] ) {
   if ( inputnames.size() > 1 ) {
     cerr << "processing " << inputnames.size() << " files." << endl;
   }
-  for ( size_t i = 0; i < inputnames.size(); ++i ) {
-    string inName = inputnames[i];
+
+  if ( fromStdin ) {
+      cout << "$ WAITING ON STDIN. USE . TO EXIT " << endl;
+  }
+  size_t i = 0;
+  while ( true ) {
+    string inName;
+    if ( fromStdin ) {
+      // read the filename from the standard input
+      safe_getline( std::cin, inName );
+      inName = TiCC::trim( inName );
+
+      if ( inName == "." ) {
+        break;
+      }
+      else if ( inName == "" ) {
+        // wait 0.1s and try reading again
+        // we don't want to block everything,
+        // but should wait for the next file to process
+        usleep(100);
+        continue;
+      }
+    }
+    else if ( i < inputnames.size() ) {
+      // read the filename from the list of input files
+      inName = inputnames[i];
+      ++i;
+    }
+    else {
+      break;
+    }
+
     string outName;
     if ( !o_option.empty() ) {
       // just 1 inputfile
@@ -3445,6 +3483,11 @@ int main( int argc, char *argv[] ) {
         delete doc;
         cerr << "saved output in " << outName << endl;
       }
+    }
+
+    if ( fromStdin ) {
+      // show that the file has been processed
+      cout << inName << endl;
     }
   }
   if ( settings.saveAlpinoOutput ) {

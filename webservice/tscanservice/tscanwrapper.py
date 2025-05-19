@@ -24,6 +24,8 @@ import shutil
 import glob
 import signal
 import re
+import subprocess
+from typing import List
 
 from lxml import etree
 
@@ -102,13 +104,12 @@ def get_tree(filename, index):
     return trees[index-1]
 
 
-def get_output_trees(inputdir, outputdir):
-    with open(outputdir + '/alpino_lookup.data', 'r') as alpino_lookup_file:
-        for line in alpino_lookup_file.readlines():
-            sentence, filename, index = line.split("\t")
-            if filename.startswith("input/"):
-                filename = filename.replace("input/", inputdir)
-            yield sentence, get_tree(filename, int(index))
+def get_output_trees(inputdir, lines: List[str]):
+    for line in lines:
+        sentence, filename, index = line.split("\t")
+        if filename.startswith("input/"):
+            filename = filename.replace("input/", inputdir)
+        yield sentence, get_tree(filename, int(index))
 
 
 def init_alpino_lookup(configfile, inputdir, outputdir):
@@ -266,7 +267,7 @@ if 'compoundSplitterMethod' in clamdata and clamdata['compoundSplitterMethod'] !
 f.close()
 
 #collect all input files
-inputfiles = []
+inputfiles: List[str] = []
 for inputfile in clamdata.inputfiles('textinput'):
     if '"' in str(inputfile):
         clam.common.status.write(statusfile, "Failed, filename has a &quot;, illegal!", 100)  # status update
@@ -344,6 +345,83 @@ for f in glob.glob(outputdir + "/../out*.alpino_lookup.data"):
 clam.common.status.write(statusfile, "Processing " + str(len(inputfiles)) + " files, this may take a while...", 10)  # status update
 ref = 0
 step_size = 80 / len(inputfiles)
+# keep T-scan process open;
+# this way it won't need to run the initializations over and over for each file
+p: subprocess.Popen[str] = None
+
+def start_tscan(attempt=3):
+    """Starts a T-scan subprocess if needed
+    """
+    global p
+    if p is not None and p.poll() is None:
+        # running just fine already!
+        return
+    
+    clam.common.status.write(statusfile, "Starting T-scan subprocess")
+    p = subprocess.Popen(
+        ['tscan', '--config=' + os.path.join(outputdir, 'tscan.cfg'), '--stdin'],
+        env=dict(os.environ,
+            ALPINO_HOME=ALPINOHOME,
+            TCL_LIBRARY=ALPINOHOME + '/create_bin/tcl8.5'),
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True)
+    return_code = p.poll()
+
+    if return_code is not None:
+        clam.common.status.write(statusfile, f"T-scan process exited with {return_code}. Attempt(s) remaining: {attempt}")
+        if attempt > 0:
+            start_tscan(attempt-1)
+            return
+        else:
+            # We cannot start T-scan! Complete abort
+            clam.common.status.write(statusfile, "T-scan could not be started. Abort processing.")
+            exit(-1)
+
+    sys.stdout.reconfigure(line_buffering=True)
+
+    clam.common.status.write(statusfile, f"T-scan process started PID={p.pid}")
+
+    while True:
+        line = p.stdout.readline()
+        if line.startswith('$ WAITING ON STDIN'):
+            # signaled that filenames can be sent from the STDIN
+            # ready for receiving messages!
+            break
+        else:
+            # forward all the T-scan log lines
+            print(line, end='', file=sys.stderr)
+
+
+def stop_tscan():
+    """Starts a T-scan subprocess if needed
+    """
+    if p is None:
+        return "No T-scan process to stop. Did we process any file?"
+    
+    return_code = p.poll()
+    if return_code != None:
+        return f"T-scan process stopped with return code {return_code}"
+    
+    # sends an abort signal
+    stdout, stderr = p.communicate(input='.\n', timeout=60)
+
+    # forward the T-scan log lines
+    if stdout:
+        for line in stdout.splitlines():
+            print(line, file=sys.stderr)
+
+    if stderr:
+        for line in stderr.splitlines():
+            print('ERROR ' + line, file=sys.stderr)
+
+    try:
+        return f"Abort received by T-scan process and responded with return code: {p.wait(60)}"
+    except subprocess.TimeoutExpired:
+        p.kill()
+        return "T-scan process not stopped after timeout; forcibly killed."
+
 for i, infile in enumerate(inputfiles):
     if i > 0:
         try:
@@ -351,11 +429,25 @@ for i, infile in enumerate(inputfiles):
             os.rename(outputdir + "/../out.alpino_lookup.data", outputdir + "/alpino_lookup.data")
             clam.common.status.write(statusfile, "Updated Alpino lookup cache", int(10 + i * step_size))
         except FileNotFoundError:
-            clam.common.status.write(statusfile, "No Alpino parses, empty document?", int(10 + i * step_size))
+            pass  # it won't be saved whilst the process is still open
     clam.common.status.write(statusfile, f"Started processing ... {infile}", int(10 + i * step_size))
+    start_tscan()
     try:
-        exit_status = os.system('ALPINO_HOME="' + ALPINOHOME + '" TCL_LIBRARY="' + ALPINOHOME + '/create_bin/tcl8.5" TCLLIBPATH="' + ALPINOHOME + '/create_bin/tcl8.5" tscan --config=' + outputdir + '/tscan.cfg ' + infile)
+        # send the filename to the T-scan process
+        p.stdin.write(infile + '\n')
+        p.stdin.flush()
+        while p.poll() is None:
+            line = p.stdout.readline()
+            if line.strip() == infile:
+                # the file has been processed!
+                break
+            else:
+                # forward the T-scan log lines
+                print(line, end='', file=sys.stderr)
+
+        exit_status = 0
     except Exception as error:
+        print(str(error), file=sys.stderr)
         exit_status = 1
 
     if exit_status == 0:
@@ -364,6 +456,7 @@ for i, infile in enumerate(inputfiles):
         clam.common.status.write(statusfile, f"PROBLEM PROCESSING {infile} ERROR CODE {exit_status} consult error log", int(10 + i * step_size))
         ref = exit_status
 
+clam.common.status.write(statusfile, stop_tscan())
 
 #collect output
 clam.common.status.write(statusfile, "Postprocessing", 90)  # status update
@@ -389,24 +482,33 @@ merge_output(outputdir, "paragraphs")
 merge_output(outputdir, "sentences")
 merge_output(outputdir, "document")
 
+# Move the generated lookup file
+try:
+    os.rename(outputdir + "/../out.alpino_lookup.data", outputdir + "/alpino_lookup.data")
+except FileNotFoundError:
+    pass
+
+
 # Merge all the Alpino output
 if 'alpinoOutput' in clamdata and clamdata['alpinoOutput'] != 'no':
     clam.common.status.write(statusfile, "Merging Alpino output", 95)
-    # Move the generated lookup file
-    os.rename(outputdir + "/../out.alpino_lookup.data", outputdir + "/alpino_lookup.data")
 
-    def yield_trees():
+    def yield_trees(lines: List[str]):
         merged_treebank = etree.Element("treebank")
-        for sentence, tree in get_output_trees(inputdir, outputdir):
+        for sentence, tree in get_output_trees(inputdir, lines):
             merged_treebank.append(tree)
             yield (sentence, "alpino.xml", len(merged_treebank.getchildren()))
 
         etree.indent(merged_treebank)
         etree.ElementTree(merged_treebank).write(
             outputdir + "/alpino.xml", xml_declaration=True, pretty_print=True, encoding="UTF-8")
-        
+
+    # read the file before we overwrite it
+    with open(outputdir + '/alpino_lookup.data', 'r') as alpino_lookup_file:
+        lines = alpino_lookup_file.readlines()
+
     # prevent generating an enormous in-memory object
-    merged_lookup = yield_trees()
+    merged_lookup = yield_trees(lines)
 
     save_alpino_lookup(outputdir, merged_lookup)
 
