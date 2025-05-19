@@ -310,13 +310,16 @@ def merge_output(outputdir: str, type: str) -> None:
                     if not line:
                         break
 
-                    if first_line and not first_file:
+                    if first_file or not first_line:
+                        # after copying the first file
+                        # skip the first line containing the column names
+                        target_file.write(line)
+
+                    if first_line:
                         # skip the first line
                         first_line = False
-                    else:
-                        # except for the first file, so the file will have the column names
-                        first_file = False
-                        target_file.write(line)
+
+        first_file = False
 
 
 def sigterm_handler():
