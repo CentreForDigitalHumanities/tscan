@@ -205,9 +205,9 @@ bool saveAlpinoLookup( map<string, pair<string, int>> &m, const string &filename
     auto it = m.begin();
     while ( it != m.end() ) {
       auto tokens = it->first;
-      auto filename = it->second.first;
+      auto tree_filename = it->second.first;
       auto index = it->second.second;
-      out << tokens << "\t" << filename << "\t" << index << endl;
+      out << tokens << "\t" << tree_filename << "\t" << index << endl;
       ++it;
     }
     out.close();
@@ -1302,7 +1302,7 @@ string lemmatize( const string &word ) {
   if ( !client.connect( host, port ) ) {
     cerr << "failed to open Frog connection: " << host << ":" << port << endl;
     cerr << "Reason: " << client.getMessage() << endl;
-    return 0;
+    return word;
   }
 
   client.write( word + "\nEOT\n" );
