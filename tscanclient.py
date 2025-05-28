@@ -9,7 +9,7 @@ from xml.etree import ElementTree
 
 username = input("👤 Username: ")
 password = input("🔒 Password: ")
-address = "https://acc.tscan.hum.uu.nl/tscan"
+address = "https://tscan.hum.uu.nl/tscan"
 
 @dataclass
 class Project:
@@ -59,6 +59,12 @@ def create_project(name: str) -> bool:
     session = requests.Session()
     session.auth = (username, password)
     return session.put(address + '/' + name).status_code == 200
+
+
+def delete_project(name: str) -> bool:
+    session = requests.Session()
+    session.auth = (username, password)
+    return session.delete(address + '/' + name).status_code == 200
 
 
 def add_input(project: str, name: str, contents: str) -> bool:
@@ -185,3 +191,10 @@ for file in filenames:
 print("Downloading zip file")
 save_output_zip(project_name)
 print("DONE! 🎉")
+while True:
+    should_delete = input("Delete project (y/N)? ")
+    if not should_delete or should_delete.strip().lower() == "n":
+        break
+    elif should_delete.strip().lower() == "y":
+        delete_project(project_name)
+        break
