@@ -40,7 +40,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-lxml \
         python3-requests \
         pkg-config \
-        libmariadb-dev
+        libmariadb-dev \
+        zip
 
 # Support authentication through MariaDB/MySQL
 RUN pip install mysqlclient
@@ -105,7 +106,6 @@ RUN apt-get update && apt-get install -y autoconf \
         unrtf \
         unzip \
         wget \
-        zip \
         zlib1g-dev
 
 COPY docker/deployment/ /deployment/

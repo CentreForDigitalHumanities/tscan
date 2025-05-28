@@ -47,7 +47,7 @@ def text_convert(filepath: str) -> bool:
         text = f"Unexpected {type(error)}: {error}"
         success = False
 
-    if type(text) == bytes:
+    if isinstance(text, bytes):
         text = text.decode('utf-8')
 
     # combine consecutive newlines
